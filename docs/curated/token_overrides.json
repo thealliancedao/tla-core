@@ -1,0 +1,167 @@
+{
+  "_meta": {
+    "description": "Per-token overrides for display name, subtype, or any field the auto-discovery got wrong. Address-keyed. Only fields you set here override the cron's auto-discovered values; everything else falls through.",
+    "lastUpdated": "2026-06-05",
+    "schema": {
+      "display_name": "preferred display (overrides Eris/Astroport/etc.)",
+      "subtype": "override subtype (e.g. force 'lst')",
+      "notes": "free text \u2014 shown on the catalog view page",
+      "flags_added": "extra flags to add to scoring.flags",
+      "verified": "boolean \u2014 has this been confirmed?",
+      "warning": "free text \u2014 shown prominently if present (for tokens that have a real risk)",
+      "logo_url": "Direct URL to a token logo image (PNG/SVG, ~64-256px square). Used by catalog UI and downstream consumers. Falls back to a colored letter-circle if the URL 404s or isn't set."
+    },
+    "note_on_hardcoded_overrides": "Some overrides live in the cron code itself (Stage 7b HARDCODED_OVERRIDES dict) rather than this file \u2014 specifically the boneLUNA naming case, which also needs to propagate _display_overridden + _display_original to sources.eris for transparency UI. Normal cases belong here. See PROJECT_KNOWLEDGE.md 'Two-tier override system' for context.",
+    "notes_2026_06_05": "Audited all curated logo URLs against chain-registry assetlists. Many had wrong filename casing (e.g. arbLUNA.png \u2192 arbluna.svg) or wrong chain (e.g. FUEL was on migaloo, actually on neutron). All 20 URLs now HTTP 200 verified."
+  },
+  "tokens": {
+    "ibc/88386AC48152D48B34B082648DF836F975506F0B57DBBFC10A54213B1BF484CB": {
+      "display_name": "wBTC.atom",
+      "subtype": "ibc",
+      "notes": "Bridged WBTC from Ethereum via Cosmos Hub (Eureka IBC route). The '.atom' suffix refers to the bridge path through Cosmos Hub, not a Cosmos-native asset. Acquire via Skip.go (Send to Terra \u2192 WBTC) or manually via Eureka bridge.",
+      "warning": "Multiple wBTC variants exist on Terra: wBTC.atom (this \u2014 Ethereum via Cosmos Hub), WBTC.axl (Ethereum via Axelar), WBTC.osmo (Ethereum via Osmosis). They are SEPARATE Terra addresses for the same underlying Ethereum WBTC. TLA pools whitelist specific variants \u2014 confirm address before depositing.",
+      "verified": true,
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/wbtc.png"
+    },
+    "ibc/05D299885B07905B6886F554B39346EA6761246076A1120B1950049B92B922DD": {
+      "display_name": "WBTC.axl",
+      "subtype": "ibc",
+      "notes": "Bridged WBTC from Ethereum via the Axelar network. Distinct from wBTC.atom (Cosmos Hub route) and WBTC.osmo (Osmosis route).",
+      "warning": "Variant trap: TLA may have pools for wBTC.atom but NOT WBTC.axl, or vice versa. WBTC.axl appears in the WBTC.axl-WBTC.osmo LP, NOT in LUNA-wBTC.atom LP. Always verify pool's exact underlying token addresses before depositing.",
+      "verified": true,
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/wbtc.png"
+    },
+    "ibc/CF57A83CED6CEC7D706631B5DC53ABC21B7EDA7DF7490732B4361E6D5DD19C73": {
+      "display_name": "WBTC.osmo",
+      "subtype": "ibc",
+      "notes": "Bridged WBTC from Ethereum via Osmosis. Distinct from wBTC.atom (Cosmos Hub route) and WBTC.axl (Axelar route).",
+      "warning": "Variant trap: WBTC.osmo appears in LUNA-WBTC.osmo LP (Skeleton Swap variant) and in the WBTC.axl-WBTC.osmo LP. Not interchangeable with wBTC.atom \u2014 they have separate Terra addresses despite the same underlying Ethereum asset.",
+      "verified": true,
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/wbtc.png"
+    },
+    "_example_wBTCatom_disabled": {
+      "_note": "OBSOLETE \u2014 replaced by the live entry above at the actual ibc/88386AC4... address. Remove this stub when comfortable.",
+      "display_name": "wBTC.atom (stub)",
+      "verified": false
+    },
+    "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2": {
+      "display_name": "ATOM",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/cosmoshub/images/atom.png",
+      "notes": "ATOM from Cosmos Hub via standard IBC. Logo from cosmos/chain-registry cosmoshub folder.",
+      "verified": true
+    },
+    "ibc/223FF539430381ADAB3A66AC4822E253C3F845E9841F17FEEC207B3AA9F8D915": {
+      "display_name": "dATOM",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/neutron/images/dATOM.svg",
+      "notes": "Drop Protocol's liquid-staked ATOM (dATOM) \u2014 issued on Cosmos Hub via Drop's chain.",
+      "verified": true
+    },
+    "ibc/08095CEDEA29977C9DD0CE9A48329FDA622C183359D5F90CF04CC4FF80CBE431": {
+      "display_name": "stLUNA",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/stride/images/stluna.png",
+      "notes": "Stride's liquid-staked LUNA.",
+      "verified": true
+    },
+    "ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6": {
+      "display_name": "xASTRO",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/neutron/images/xAstro.svg",
+      "notes": "Astroport's staked governance token, native on Neutron, bridged to Terra via IBC.",
+      "verified": true
+    },
+    "ibc/A356EC90DC3AE43D485514DA7260EDC7ABB5CFAA0654CE2524C739392975AD3C": {
+      "display_name": "wstETH",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/wsteth.svg",
+      "notes": "Lido's wrapped staked ETH, bridged via Neutron.",
+      "verified": true
+    },
+    "ibc/792AAE6279F4709F66068E29A79E6F16BBC0A9B93561A91FC040606793E62D6B": {
+      "display_name": "SWTH",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/carbon/images/swth.png",
+      "notes": "Carbon Network governance token.",
+      "verified": true
+    },
+    "ibc/0E90026619DD296AD4EF9546396F292B465BAB6B5BE00ABD6162AA1CE8E68098": {
+      "display_name": "rSWTH",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/carbon/images/swth.png",
+      "notes": "Restricted SWTH \u2014 Carbon's vesting token variant.",
+      "verified": true
+    },
+    "ibc/B3F639855EE7478750CC8F82072307ED6E131A8EFF20345E1D136B50C4E5EC36": {
+      "display_name": "ampWHALE",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/migaloo/images/ampwhale.svg",
+      "notes": "Eris's amplified WHALE \u2014 auto-compounded WHALE LST on Migaloo.",
+      "verified": true
+    },
+    "ibc/517E13F14A1245D4DE8CF467ADD4DA0058974CDCC880FA6AE536DBCA1D16D84E": {
+      "display_name": "bWHALE",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/migaloo/images/bWHALE.png",
+      "notes": "Backbone Labs' liquid-staked WHALE.",
+      "verified": true
+    },
+    "ibc/4B44179AC2F0BEE50C16A673B3B886398988692885B2848A1C8AEF27148B3961": {
+      "display_name": "FUEL",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/neutron/images/fuel.png",
+      "notes": "Migaloo's FUEL token.",
+      "verified": true
+    },
+    "terra15hhqg8gyz04zapynqtk7uvlsp7lzay7etrt9ann0276v94yae63sxygeat": {
+      "display_name": "wETH.wh",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/weth.svg",
+      "notes": "Wormhole-bridged Ethereum WETH on Terra.",
+      "verified": true
+    },
+    "terra1ctelwayk6t2zu30a8v9kdg3u2gr0slpjdfny5pjp7m3tuquk32ysugyjdg": {
+      "display_name": "wSOL.wh",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/solana/images/sol.svg",
+      "notes": "Wormhole-bridged Solana SOL on Terra.",
+      "verified": true
+    },
+    "terra1xc7ynquupyfcn43sye5pfmnlzjcw2ck9keh0l2w2a4rhjnkp64uq4pr388": {
+      "display_name": "wBNB.wh",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/binancesmartchain/images/bnb.png",
+      "notes": "Wormhole-bridged BNB on Terra.",
+      "verified": true
+    },
+    "ibc/1319C6B38CA613C89D78C2D1461B305038B1085F6855E8CD276FE3F7C9600B4C": {
+      "display_name": "wBNB.axl",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/binancesmartchain/images/bnb.png",
+      "notes": "Axelar-bridged BNB on Terra.",
+      "verified": true
+    },
+    "ibc/BC8A77AFBD872FDC32A348D3FB10CC09277C266CFE52081DE341C7EC6752E674": {
+      "display_name": "WETH.axl",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/weth.svg",
+      "notes": "Axelar-bridged ETH (WETH) on Terra.",
+      "verified": true
+    },
+    "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490": {
+      "display_name": "arbLUNA",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/terra2/images/arbluna.svg",
+      "notes": "Eris's arbitrage-protected LUNA LST.",
+      "verified": true
+    },
+    "terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc": {
+      "display_name": "wBTC.creda.a",
+      "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/_non-cosmos/ethereum/images/wbtc.png",
+      "notes": "Creda Finance's wrapped WBTC on Terra. Minted natively against collateral on Creda \u2014 not a bridge. Uses generic WBTC logo as visual reference.",
+      "verified": true
+    }
+  },
+  "_curation_queue": {
+    "description": "Tokens we want to override but haven't filled in yet. Move to 'tokens' above when ready.",
+    "candidates": [
+      {
+        "hint": "USDC at ibc/2C962DAB... \u2014 Eris API claims coingecko_id 'usd-coin' but CG actually maps this Terra address to 'ibc-bridged-usdc' (a.k.a. USDC.N for the Noble variant). Verified by independent CG terra-2 platform lookup during 2026-06-02 audit. Catalog Stage 7c surfaces this as a 'mismatch' status already; an override could add a note explaining the canonical CG ID is ibc-bridged-usdc."
+      },
+      {
+        "hint": "EURe at ibc/8D52B251... \u2014 Eris API claims 'monerium-eur-money' (which is the deprecated v1 token labeled 'EURe [OLD]' on CG). Should be 'monerium-eur-money-2'. Catalog Stage 7c flags as 'mismatch'."
+      },
+      {
+        "hint": "WETH.axl at the WETH.axl address \u2014 Eris API claims 'ethereum' (i.e. native ETH!). Should be 'weth' (the wrapped token). Critical confusion: WETH \u2260 ETH, even at CG level."
+      },
+      {
+        "hint": "PAXG at ibc/0EF56305... \u2014 successfully resolved to 'pax-gold' via Stage 7c bridge-trace fallback (Ethereum 0x45804880...). Consider adding an explicit note that this token represents 1 troy ounce of physical gold held by Paxos (real-world counterparty risk distinct from pure crypto)."
+      }
+    ]
+  }
+}
