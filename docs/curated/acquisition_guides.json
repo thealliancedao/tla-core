@@ -1,0 +1,144 @@
+{
+  "_meta": {
+    "description": "Per-token guidance on how to safely acquire it. Critical for tokens with multiple bridge variants (wBTC, USDC) where 'just search the wallet' would give wrong address.",
+    "lastUpdated": "2026-06-02",
+    "schema": {
+      "native_chain": "the chain that originally issues this token",
+      "native_address": "the address on the native chain",
+      "route_to_terra": "ordered array of steps to safely acquire on Terra",
+      "warnings": "array of things to NOT do",
+      "alternative_routes": "other valid acquisition paths",
+      "verified": "true = personally tested by council member; false / 'route_known_unverified' = documented from research but not test-deposited"
+    }
+  },
+  "tokens": {
+    "ibc/2C962DAB9F57FE0921435426AE75196009FAA1981BF86991203C8411F8980FDB": {
+      "_label": "USDC (Noble)",
+      "native_chain": "Noble",
+      "native_address": "uusdc on Noble",
+      "route_to_terra": [
+        "1. Acquire USDC on Noble — either via Circle CCTP (from Ethereum, Polygon, Base, Avalanche, Solana, etc.) or directly on Noble",
+        "2. IBC send to Terra via Noble → Terra channel"
+      ],
+      "warnings": [
+        "Keplr search for 'USDC' shows DOZENS of variants across Ethereum, Polygon, Solana, Sei, Osmosis, etc. — only Noble-issued USDC routed via IBC is correct for Terra.",
+        "Do NOT use Polygon USDC, Solana USDC, or Ethereum-bridged USDC directly — those don't exist on Terra as the same address.",
+        "If unsure: use Skip.go and select 'send to Terra: USDC'. Skip.go will handle the bridging in one tx and select the correct path."
+      ],
+      "alternative_routes": [
+        "Skip.go can handle the full bridge in one transaction — select destination Terra and asset USDC."
+      ],
+      "verified": true,
+      "verified_by": "defipatriot",
+      "verified_date": "2026-06-02"
+    },
+
+    "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2": {
+      "_label": "ATOM",
+      "native_chain": "Cosmos Hub",
+      "native_address": "uatom on cosmoshub-4",
+      "route_to_terra": [
+        "1. Hold ATOM on a Cosmos Hub address (e.g. via Keplr)",
+        "2. IBC transfer from Cosmos Hub → Terra using Keplr's built-in cross-chain transfer",
+        "3. Token arrives on Terra as ATOM at ibc/27394FB0...",
+        "4. Works in both Astroport AND Skeleton Swap LPs within TLA"
+      ],
+      "warnings": [
+        "Skeleton Swap's API labels this as 'ATOM on Dungeon' at a different IBC denom (ibc/C3988DBA...) — that label is misleading. The actual SS pool contracts hold the standard ATOM at ibc/27394FB0... (verified by depositing standard-IBC ATOM successfully into both DEX's LUNA-ATOM LPs)."
+      ],
+      "alternative_routes": [
+        "Skip.go select 'Cosmos Hub → Terra → ATOM' — handles the IBC transfer in one click"
+      ],
+      "verified": true,
+      "verified_by": "defipatriot",
+      "verified_date": "2026-06-02",
+      "notes": "Empirically tested 2026-06-02: same denom accepted by Astroport's ATOM-LUNA LP and Skeleton Swap's ATOM-LUNA LP. Cross-DEX verification (17 pairs) confirmed all TLA pools use this exact ATOM denom."
+    },
+
+    "ibc/88386AC48152D48B34B082648DF836F975506F0B57DBBFC10A54213B1BF484CB": {
+      "_label": "wBTC.atom",
+      "native_chain": "Ethereum",
+      "native_address": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599 (WBTC contract)",
+      "route_to_terra": [
+        "1. Acquire WBTC on Ethereum (any exchange or onchain swap to 0x2260...)",
+        "2. Use Skip.go: select 'Send to Terra: WBTC' — Skip handles the Eureka IBC bridge route via Cosmos Hub",
+        "3. Token arrives on Terra as wBTC.atom (at ibc/88386AC4...) — Astroport's UI labels this simply 'WBTC' without the .atom suffix"
+      ],
+      "warnings": [
+        "TLA uses wBTC.atom SPECIFICALLY — not wBTC.axl (ibc/05D29988...) or wBTC.osmo (ibc/CF57A83C...). These are all separate Terra addresses for the same underlying Ethereum asset but bridged via different paths.",
+        "Astroport's wallet view labels this as just 'WBTC' (no suffix). The Terra address is the only stable identity — confirm before depositing.",
+        "Eris UI's '.atom' label refers to the bridge path (via Cosmos Hub), not a Cosmos-native asset."
+      ],
+      "alternative_routes": [
+        "Direct route: WBTC on Ethereum → bridge to Cosmos Hub via Eureka → IBC to Terra. Skip.go automates this whole path."
+      ],
+      "verified": false,
+      "verification_status": "route_known_unverified",
+      "notes": "Route documented based on bridge metadata (Skip.go + Eureka IBC). Council deposit test would upgrade to verified=true."
+    },
+
+    "ibc/0EF5630576C66968EF0787868CF09FD866FAD131BC148D24A148358A85F0EB62": {
+      "_label": "PAXG",
+      "native_chain": "Ethereum",
+      "native_address": "0x45804880De22913dAFE09f4980848ECE6EcbAf78 (Paxos Gold contract)",
+      "route_to_terra": [
+        "1. Acquire PAX Gold (PAXG) on Ethereum (Coinbase, Kraken, Paxos directly, etc.)",
+        "2. Use Skip.go: select 'Send to Terra: PAXG' — same Eureka IBC route as wBTC.atom",
+        "3. Token arrives on Terra as PAXG at ibc/0EF56305..."
+      ],
+      "warnings": [
+        "PAXG is gold-backed (1 PAXG ≈ 1 troy ounce of physical gold held by Paxos). It carries real-world counterparty risk distinct from a pure crypto asset.",
+        "Same bridge path as wBTC.atom (Ethereum → Cosmos Hub via Eureka → Terra). If wBTC.atom worked for you, PAXG should follow the same pattern."
+      ],
+      "alternative_routes": [
+        "Manual route via wallets if Skip.go doesn't list PAXG: PAXG on Ethereum → Cosmos Hub (Eureka bridge) → IBC to Terra"
+      ],
+      "verified": false,
+      "verification_status": "route_known_unverified",
+      "notes": "Bridge data shows source_chain=ethereum, route mirrors wBTC.atom. CG verification matched 'pax-gold' via bridge-trace fallback (Stage 7c)."
+    },
+
+    "terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc": {
+      "_label": "wBTC.creda.a",
+      "native_chain": "Terra (minted on Creda Finance)",
+      "native_address": "(this address — Terra-native cw20, not bridged)",
+      "route_to_terra": [
+        "1. Visit creda.money to deposit approved collateral and mint wBTC.creda.a",
+        "2. Minted token is delivered directly to your Terra address — no bridge involved",
+        "3. Acquisition mechanics, fees, and collateral requirements are per Creda's product (not an IBC bridge)"
+      ],
+      "warnings": [
+        "This is NOT a bridged wBTC — it's a synthetic wBTC issued by Creda Finance natively on Terra. Treat it as a Creda product with Creda's specific collateralization risks.",
+        "Do not confuse with wBTC.atom (true bridged WBTC from Ethereum via Cosmos Hub), wBTC.axl (Axelar bridge), or wBTC.osmo (Osmosis bridge).",
+        "Acquisition route is via Creda's frontend; council members have not personally tested the mint flow."
+      ],
+      "verified": false,
+      "verification_status": "route_known_unverified",
+      "source": "creda_minting",
+      "notes": "Confirmed cw20 (not IBC) — minted natively on Terra by Creda. Single-asset stake in TLA's 'single' bucket."
+    },
+
+    "_example_wbtc_atom_disabled": {
+      "_note": "OBSOLETE — replaced by the live entry above at the actual address. Remove this stub when comfortable.",
+      "_label": "wBTC.atom (stub)",
+      "verified": false
+    }
+  },
+  "_curation_queue": {
+    "description": "Tokens we know need acquisition guides. Fill in addresses + steps as you confirm.",
+    "candidates": [
+      { "hint": "USDt (Tether) — bridge data suggests Kava IBC route. Address: ibc/9B19062D46CAB50361CE9B0A3E6D0A7A53AC9E7CB361F32A73CC733144A9A9E5. Owner has not personally verified the Kava route." },
+      { "hint": "EURe — bridge data shows it's from Polygon, but owner noted: 'truly don't know how you get it'. Address: ibc/8D52B251B447B7160421ACFBD50F6B0ABE5F98D2C404B03701130F12044439A1. Needs research." },
+      { "hint": "ASTRO (Neutron) — native Neutron token, IBC to Terra. Verified-not-yet." },
+      { "hint": "xASTRO (Neutron) — staked ASTRO, IBC to Terra. Verified-not-yet." },
+      { "hint": "FUEL (Neutron) — native Neutron, IBC to Terra. Verified-not-yet." },
+      { "hint": "INJ (Injective) — IBC to Terra. Verified-not-yet." },
+      { "hint": "ROAR — Terra-native cw20, available on Astroport/SS. Acquire by swapping LUNA→ROAR via Astroport." },
+      { "hint": "CAPA — Terra-native, available on Astroport/SS. Acquire by swapping LUNA→CAPA." },
+      { "hint": "SOLID — Terra-native stablecoin, available via Solid Protocol or USDC-SOLID LP swap." },
+      { "hint": "ampLUNA / arbLUNA / ampROAR / ampCAPA — Terra-native LSTs, mint from Eris Protocol directly using the input asset." },
+      { "hint": "WBTC.axl at ibc/05D29988... — bridged via Axelar (Ethereum → Axelar → Terra). Different from wBTC.atom." },
+      { "hint": "WBTC.osmo at ibc/CF57A83C... — bridged via Osmosis (Ethereum → Osmosis → Terra). Different from wBTC.atom." }
+    ]
+  }
+}
