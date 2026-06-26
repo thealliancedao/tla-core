@@ -1,0 +1,242 @@
+{
+  "_meta": {
+    "topic": "eris-protocol",
+    "label": "Eris Protocol",
+    "official_docs": "https://docs.erisprotocol.com/",
+    "github": "https://github.com/erisprotocol",
+    "verified_at": "2026-06-26",
+    "summary": "Terra liquid-staking & vault platform behind the Alliance Liquidity Hub (TLA). 'RealYield, no platform token' — value accrues into amp[TOKEN] itself.",
+    "schema": "see ecosystem-knowledge/README.md"
+  },
+  "facts": [
+    {
+      "id": "eris.model.realyield",
+      "claim": "Eris accrues value into the amp[TOKEN] itself rather than a separate governance/platform token.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/vision/",
+      "source_section": "RealYield - No BS",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+
+    {
+      "id": "ampluna.mechanism",
+      "claim": "ampLUNA is an auto-compounding liquid-staking receipt: deposit LUNA, Eris stakes it with whitelisted validators, harvests and restakes rewards daily, so the underlying LUNA per ampLUNA rises continuously.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/amplifier/",
+      "source_section": "Amplifier",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "ampluna.price_behavior",
+      "claim": "Because ampLUNA's value is plain staking yield, its redemption price (LUNA × hub ratio) tracks its market price tightly — it is the textbook 'clean staking derivative'. Larger transient gaps are almost always snapshot timing, not real divergence.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/amplifier/",
+      "source_section": "Amplifier",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Confirmed in our own runs: an 8% reading collapsed to 0.5% one snapshot later — pure timing. This is why our LST review threshold is 10%, not 2%."
+    },
+    {
+      "id": "ampluna.hub_ratio",
+      "claim": "ampLUNA's current on-chain hub exchange rate (accumulated LUNA per ampLUNA).",
+      "kind": "live_binding",
+      "value": null,
+      "source_url": "https://docs.erisprotocol.com/products/amplifier/",
+      "source_type": "chain",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": "token-catalog:pricing_stats.lst_ratios.ampLUNA.ratio",
+      "notes": "Rises daily; never hardcode. Query is {exchange_rates:{}} on the ampLUNA hub."
+    },
+    {
+      "id": "ampluna.fees",
+      "claim": "ampLUNA (Amplifier) fees: deposit 0%, performance 5% to Protocol Treasury, withdrawal 0%.",
+      "kind": "static_sourced",
+      "value": 5,
+      "unit": "percent",
+      "source_url": "https://docs.erisprotocol.com/products/amplifier/#fees",
+      "source_section": "Fees",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+
+    {
+      "id": "arbluna.mechanism",
+      "claim": "arbLUNA is an arbitrage vault, NOT a staking receipt. It captures the ~1-2% premium between instantly swapping an LST and waiting out the 21-24 day unbond, executing only profitable arbitrage each ~21-25 day cycle and compounding the profit into the token. Its value grows only through captured market inefficiencies — no minted token, no incentives.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/arb-vault/",
+      "source_section": "Sneak Peak / Performance model",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "This is the key fact for understanding why arbLUNA's price behaves unlike ampLUNA's."
+    },
+    {
+      "id": "arbluna.strategy_lst",
+      "claim": "arbLUNA is a 'strategy LST': its hub ratio reflects accumulated arbitrage profit (not staking yield), so its ratio is higher and its market price can legitimately diverge from a naive read.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/arb-vault/",
+      "source_section": "Performance model",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "arbluna.unbond_days",
+      "claim": "Redeeming arbLUNA back to LUNA takes 25 days (normal unbond).",
+      "kind": "static_sourced",
+      "value": 25,
+      "unit": "days",
+      "source_url": "https://docs.erisprotocol.com/products/arb-vault/",
+      "source_section": "Withdrawals",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "arbluna.instant_exit_fee",
+      "claim": "Instant withdrawal of arbLUNA (when contract liquidity is available) costs a 5% markup fee, dropping linearly to zero as the position reaches its 25-day unlock.",
+      "kind": "static_sourced",
+      "value": 5,
+      "unit": "percent",
+      "source_url": "https://docs.erisprotocol.com/products/arb-vault/",
+      "source_section": "Withdrawals",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "arbluna.unbonding_target",
+      "claim": "The Arb Vault deliberately targets keeping roughly three-quarters of capital unbonding for efficiency, so instantly-withdrawable idle liquidity is limited by design.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/arb-vault/",
+      "source_section": "Dynamic execution",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "arbluna.discount_explanation",
+      "claim": "arbLUNA's liquid market price can sit below its redemption value because realizing redemption requires either a 25-day wait or up to a 5% instant-exit fee. The market prices in this time-lock / exit-cost friction. This is expected behavior, not a depeg or a data error.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/arb-vault/",
+      "source_section": "Withdrawals",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Explains the DIRECTION and CAUSE of the gap. The SIZE is a separate live_binding (arbluna.market_vs_redemption) — never hardcode the percentage."
+    },
+    {
+      "id": "arbluna.market_vs_redemption",
+      "claim": "The current gap between arbLUNA's market price and its redemption value, as measured by our token-catalog cron.",
+      "kind": "live_binding",
+      "value": null,
+      "source_url": "https://docs.erisprotocol.com/products/arb-vault/",
+      "source_type": "self",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": "token-catalog:lst.market_vs_redemption_pct",
+      "notes": "Changes constantly. Show current value and, as snapshot history accrues, the observed range. A value within normal range = healthy friction pricing; far outside = review (thin pool or real event)."
+    },
+    {
+      "id": "arbluna.fees",
+      "claim": "arbLUNA (Arb Vault) fees: deposit 0%, performance 5% to holders + 5% to Treasury (10% total, higher because arbitrage needs complex bots), withdrawal 0.5% (shared with ampLUNA holders).",
+      "kind": "static_sourced",
+      "value": 10,
+      "unit": "percent",
+      "source_url": "https://docs.erisprotocol.com/products/arb-vault/#fees",
+      "source_section": "Fees",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "arbluna.apy_unpredictable",
+      "claim": "arbLUNA's APY cannot be calculated in advance — it depends on how often arbitrage opportunities appear and their size. Eris publishes an illustrative table (e.g. a 1% opportunity every 21 days ≈ 18.9% APY; 2% ≈ 41%).",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/arb-vault/",
+      "source_section": "Performance model / APY Calculation",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+
+    {
+      "id": "amplp.mechanism",
+      "claim": "ampLP is an amplified LP position (Amp Compounder): deposit an Astroport LP, a controller bot claims and restakes pool rewards daily while NO new ampLP are minted, so the ampLP-to-LP conversion rate rises every day.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/amp-compounder/",
+      "source_section": "Controller",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "amplp.valuation_rule",
+      "claim": "ampLP must be valued by its share of the underlying LP (LP-conversion-rate × the LP's reserves-based intrinsic value), NOT as amount × per-unit price. Its design is fixed supply with rising backing, so the per-unit-price model is provably wrong.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/amp-compounder/",
+      "source_section": "Advantages / Controller",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Authoritative source for our LP/ampLP share-fraction valuation doctrine."
+    },
+    {
+      "id": "amplp.fees",
+      "claim": "ampLP (Amp Compounder) fees: deposit 0%, performance 2.5% to amp[TOKEN] holders + 2.5% Treasury (5% total), withdrawal 0%.",
+      "kind": "static_sourced",
+      "value": 5,
+      "unit": "percent",
+      "source_url": "https://docs.erisprotocol.com/products/amp-compounder/#fees",
+      "source_section": "Fees",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+
+    {
+      "id": "eris.amp_governance.vamp",
+      "claim": "Amp Governance issues vAMP (vote-escrowed ampLUNA) for governance — this is the VOTING_ESCROW / vAMP minter referenced in our contracts config.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/amp-governance/",
+      "source_section": "Amp Governance",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "eris.liquidity_hub",
+      "claim": "The Alliance Liquidity Hub is the TLA primitive itself — Eris-operated infrastructure that turns staking rewards into liquidity incentives via community voting.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/liquidity-hub/",
+      "source_section": "Alliance Liquidity Hub",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    }
+  ]
+}
