@@ -1,13 +1,13 @@
 {
   "meta": {
-    "version": "token-catalog-1.3.0-stage3",
+    "version": "token-catalog-1.4.0-stage3.1",
     "schemaVersion": 3,
-    "stage": "discovery+identity+verification+pricing",
-    "generated_at": "2026-06-26T15:40:37.060Z",
+    "stage": "discovery+identity+verification+pricing+dex",
+    "generated_at": "2026-06-26T15:52:24.551Z",
     "epoch": 191,
     "status": "ok",
     "source": "token-catalog cron (platform-crons/token-catalog)",
-    "note": "discovered identity + coingecko verification + snapshot-coherent pricing (TLA + CoinGecko) + composite grade. Astroport/SkeletonSwap DEX divergence joins in 3.1. Overrides merge on read (never written here)."
+    "note": "four-source snapshot-coherent pricing (TLA, CoinGecko, Astroport, SkeletonSwap pair-implied) + LST redemption cross-check + composite grade. SkeletonSwap prices are anchor-derived from constant-product pools (stableswap skipped). Overrides merge on read."
   },
   "counts": {
     "pools_total": 75,
@@ -43,11 +43,13 @@
   "pricing_stats": {
     "sources_ok": {
       "tla": true,
-      "coingecko": false
+      "coingecko": true,
+      "astroport": true,
+      "skeletonswap": true
     },
     "tokens_priced": 36,
     "total_tokens": 38,
-    "captured_at": "2026-06-26T15:40:45.082Z",
+    "captured_at": "2026-06-26T15:52:32.178Z",
     "lst_ratios_ok": 5,
     "lst_ratios_total": 5,
     "lst_ratios": {
@@ -58,7 +60,7 @@
         "base_denom": "uluna",
         "lst_denom": "terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct",
         "source": "eris-hub-chain",
-        "captured_at": "2026-06-26T15:40:45.085Z"
+        "captured_at": "2026-06-26T15:52:32.183Z"
       },
       "arbLUNA": {
         "ratio": 2.9632885069608017,
@@ -67,7 +69,7 @@
         "base_denom": "uluna",
         "lst_denom": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
         "source": "eris-hub-chain",
-        "captured_at": "2026-06-26T15:40:45.085Z"
+        "captured_at": "2026-06-26T15:52:32.183Z"
       },
       "ampROAR": {
         "ratio": 1.174762618010405,
@@ -76,7 +78,7 @@
         "base_denom": "terra1lxx40s29qvkrcj8fsa3yzyehy7w50umdvvnls2r830rys6lu2zns63eelv",
         "lst_denom": "factory/terra1vklefn7n6cchn0u962w3gaszr4vf52wjvd4y95t2sydwpmpdtszsqvk9wy/ampROAR",
         "source": "eris-hub-chain",
-        "captured_at": "2026-06-26T15:40:45.085Z"
+        "captured_at": "2026-06-26T15:52:32.183Z"
       },
       "ampCAPA": {
         "ratio": 1.1055377425624693,
@@ -85,7 +87,7 @@
         "base_denom": "terra1t4p3u8khpd7f8qzurwyafxt648dya6mp6vur3vaapswt6m24gkuqrfdhar",
         "lst_denom": "factory/terra186rpfczl7l2kugdsqqedegl4es4hp624phfc7ddy8my02a4e8lgq5rlx7y/ampCAPA",
         "source": "eris-hub-chain",
-        "captured_at": "2026-06-26T15:40:45.085Z"
+        "captured_at": "2026-06-26T15:52:32.183Z"
       },
       "bLUNA": {
         "ratio": 1.7698785542713436,
@@ -94,7 +96,7 @@
         "base_denom": "uluna",
         "lst_denom": "terra17aj4ty4sz4yhgm08na8drc0v03v2jwr3waxcqrwhajj729zhl7zqnpc0ml",
         "source": "eris-hub-chain",
-        "captured_at": "2026-06-26T15:40:45.085Z"
+        "captured_at": "2026-06-26T15:52:32.183Z"
       }
     }
   },
@@ -2396,8 +2398,8 @@
             "coingecko": -5
           }
         },
-        "price": 55,
-        "overall": 65,
+        "price": 90,
+        "overall": 91,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -2406,25 +2408,34 @@
       },
       "prices": {
         "tla": {
-          "usd": 0.04878327,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.04880528,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
-          "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
-          "status": "no_data"
+          "usd": 0.04875431,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "astroport": {
+          "usd": 0.04876907,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 0.04817123356461203,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 4,
+        "sources_agreeing": 4,
+        "spread_pct": 1.3,
+        "score": 90,
+        "flags": []
       }
     },
     {
@@ -2475,8 +2486,8 @@
             "coingecko": -5
           }
         },
-        "price": 55,
-        "overall": 65,
+        "price": 100,
+        "overall": 99,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -2485,25 +2496,33 @@
       },
       "prices": {
         "tla": {
-          "usd": 0.999686,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.999803,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
+          "usd": 0.999705,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "astroport": {
+          "usd": 0.999706,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 3,
+        "sources_agreeing": 3,
+        "spread_pct": 0.01,
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -2551,8 +2570,8 @@
             "coingecko": -25
           }
         },
-        "price": 55,
-        "overall": 60,
+        "price": 100,
+        "overall": 94,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -2562,24 +2581,32 @@
       "prices": {
         "tla": {
           "usd": 0.00007988,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 0.00007988,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
+        "sources_available": 2,
+        "sources_agreeing": 2,
         "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -2621,8 +2648,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 100,
+        "overall": 88,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -2632,24 +2659,32 @@
       "prices": {
         "tla": {
           "usd": 1.61,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 1.6,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 2,
+        "sources_agreeing": 2,
+        "spread_pct": 0.623,
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -2697,8 +2732,8 @@
             "coingecko": -5
           }
         },
-        "price": 55,
-        "overall": 65,
+        "price": 100,
+        "overall": 99,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -2707,25 +2742,33 @@
       },
       "prices": {
         "tla": {
-          "usd": 0.99866,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.998663,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
+          "usd": 0.998654,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "astroport": {
+          "usd": 0.998654,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 3,
+        "sources_agreeing": 3,
+        "spread_pct": 0.001,
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -2771,8 +2814,8 @@
             "coingecko": 0
           }
         },
-        "price": 55,
-        "overall": 66,
+        "price": 90,
+        "overall": 93,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -2781,25 +2824,34 @@
       },
       "prices": {
         "tla": {
-          "usd": 1.99169370714e-7,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 1.99259729209e-7,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
-          "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
-          "status": "no_data"
+          "usd": 2.01332e-7,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "astroport": {
+          "usd": 1.99111074912e-7,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 2.0279814393748945e-7,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 4,
+        "sources_agreeing": 4,
+        "spread_pct": 1.841,
+        "score": 90,
+        "flags": []
       }
     },
     {
@@ -2848,8 +2900,8 @@
             "coingecko": -5
           }
         },
-        "price": 55,
-        "overall": 65,
+        "price": 90,
+        "overall": 91,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -2859,24 +2911,33 @@
       "prices": {
         "tla": {
           "usd": 1.14,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
-          "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
-          "status": "no_data"
+          "usd": 1.14,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "astroport": {
+          "usd": 1.14,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 1.157742794651759,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 4,
+        "sources_agreeing": 4,
+        "spread_pct": 1.556,
+        "score": 90,
+        "flags": []
       }
     },
     {
@@ -2921,8 +2982,8 @@
             "coingecko": 0
           }
         },
-        "price": 55,
-        "overall": 66,
+        "price": 100,
+        "overall": 100,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -2931,25 +2992,34 @@
       },
       "prices": {
         "tla": {
-          "usd": 1.002345620445241,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 1.0025000384456733,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
-          "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
-          "status": "no_data"
+          "usd": 1.006,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "astroport": {
+          "usd": 1.0023320619152816,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 1.0075533207008798,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 4,
+        "sources_agreeing": 4,
+        "spread_pct": 0.52,
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -2993,8 +3063,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 50,
+        "overall": 50,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3003,24 +3073,35 @@
       },
       "prices": {
         "tla": {
-          "usd": 0.00044585,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.00044578,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 0.00044553,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 0.0003959821219903708,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
+        "sources_available": 3,
+        "sources_agreeing": 2,
+        "spread_pct": 11.177,
+        "score": 50,
         "flags": [
-          "single_source"
+          "wide_divergence"
         ]
       }
     },
@@ -3070,8 +3151,8 @@
             "coingecko": -25
           }
         },
-        "price": 55,
-        "overall": 60,
+        "price": 100,
+        "overall": 94,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3080,25 +3161,34 @@
       },
       "prices": {
         "tla": {
-          "usd": 1957.57,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 1958.88,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 1953.59,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 1971.2372828310517,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 3,
+        "sources_agreeing": 3,
+        "spread_pct": 0.901,
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -3142,8 +3232,8 @@
             "coingecko": 0
           }
         },
-        "price": 55,
-        "overall": 66,
+        "price": 100,
+        "overall": 100,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3152,25 +3242,34 @@
       },
       "prices": {
         "tla": {
-          "usd": 0.001126621555099649,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.001127130054206743,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
-          "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
-          "status": "no_data"
+          "usd": 0.00111966,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "astroport": {
+          "usd": 0.001126293436255034,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 0.0011175093458808802,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 4,
+        "sources_agreeing": 4,
+        "spread_pct": 0.857,
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -3209,8 +3308,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 100,
+        "overall": 88,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3219,25 +3318,33 @@
       },
       "prices": {
         "tla": {
-          "usd": 60160,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 60272,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 60261,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 2,
+        "sources_agreeing": 2,
+        "spread_pct": 0.018,
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -3283,8 +3390,8 @@
             "coingecko": 0
           }
         },
-        "price": 55,
-        "overall": 66,
+        "price": 50,
+        "overall": 63,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3295,33 +3402,44 @@
         "is_lst": true,
         "hub_ratio": 2.9632885069608017,
         "base": "LUNA",
-        "redemption_price": 0.14455890332296567,
-        "market_price": 0.13109511024459986,
-        "market_vs_redemption_pct": -9.314,
+        "redemption_price": 0.14462412530300386,
+        "market_price": 0.13028826955079006,
+        "market_vs_redemption_pct": -9.912,
         "review_flag": false,
         "note": "market sits below redemption value",
-        "captured_at": "2026-06-26T15:40:45.085Z"
+        "captured_at": "2026-06-26T15:52:32.183Z"
       },
       "prices": {
         "tla": {
-          "usd": 0.13109511024459986,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.13028826955079006,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
-          "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
-          "status": "no_data"
+          "usd": 0.142362,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "astroport": {
+          "usd": 0.1302138643519521,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 0.1430117952624867,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
+        "sources_available": 4,
+        "sources_agreeing": 0,
+        "spread_pct": 9.388,
+        "score": 50,
         "flags": [
-          "single_source"
+          "wide_divergence"
         ]
       }
     },
@@ -3365,8 +3483,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 50,
+        "overall": 50,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3376,23 +3494,34 @@
       "prices": {
         "tla": {
           "usd": 79871,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 79871,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 43455.01771295393,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
+        "sources_available": 3,
+        "sources_agreeing": 2,
+        "spread_pct": 45.593,
+        "score": 50,
         "flags": [
-          "single_source"
+          "wide_divergence"
         ]
       }
     },
@@ -3436,8 +3565,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 90,
+        "overall": 80,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3446,25 +3575,34 @@
       },
       "prices": {
         "tla": {
-          "usd": 60160,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 60272,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 60261,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 61264.538006531955,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 3,
+        "sources_agreeing": 3,
+        "spread_pct": 1.665,
+        "score": 90,
+        "flags": []
       }
     },
     {
@@ -3507,8 +3645,8 @@
             "coingecko": 0
           }
         },
-        "price": 55,
-        "overall": 66,
+        "price": 90,
+        "overall": 93,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3519,34 +3657,43 @@
         "is_lst": true,
         "hub_ratio": 2.1850932403434187,
         "base": "LUNA",
-        "redemption_price": 0.10659599351884788,
-        "market_price": 0.10714082685387778,
-        "market_vs_redemption_pct": 0.511,
+        "redemption_price": 0.10664408742106785,
+        "market_price": 0.10585784137765322,
+        "market_vs_redemption_pct": -0.737,
         "review_flag": false,
         "note": "market ≈ redemption value",
-        "captured_at": "2026-06-26T15:40:45.085Z"
+        "captured_at": "2026-06-26T15:52:32.183Z"
       },
       "prices": {
         "tla": {
-          "usd": 0.10714082685387778,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.10585784137765322,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
-          "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
-          "status": "no_data"
+          "usd": 0.104624,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "astroport": {
+          "usd": 0.10581372253550249,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 0.10492176002056215,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 4,
+        "sources_agreeing": 4,
+        "spread_pct": 1.171,
+        "score": 90,
+        "flags": []
       }
     },
     {
@@ -3593,8 +3740,8 @@
             "coingecko": -25
           }
         },
-        "price": 55,
-        "overall": 60,
+        "price": 50,
+        "overall": 56,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3605,33 +3752,44 @@
         "is_lst": true,
         "hub_ratio": 1.7698785542713436,
         "base": "LUNA",
-        "redemption_price": 0.0863404633802286,
-        "market_price": 0.08633948994702376,
-        "market_vs_redemption_pct": -0.001,
+        "redemption_price": 0.08637941840720811,
+        "market_price": 0.08638055112948285,
+        "market_vs_redemption_pct": 0.001,
         "review_flag": false,
         "note": "market ≈ redemption value",
-        "captured_at": "2026-06-26T15:40:45.085Z"
+        "captured_at": "2026-06-26T15:52:32.183Z"
       },
       "prices": {
         "tla": {
-          "usd": 0.08633948994702376,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.08638055112948285,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 0.048768454172117746,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 0.08476713390129846,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
+        "sources_available": 3,
+        "sources_agreeing": 2,
+        "spread_pct": 44.371,
+        "score": 50,
         "flags": [
-          "single_source"
+          "wide_divergence"
         ]
       }
     },
@@ -3677,8 +3835,8 @@
             "coingecko": -5
           }
         },
-        "price": 55,
-        "overall": 65,
+        "price": 50,
+        "overall": 61,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3687,24 +3845,35 @@
       },
       "prices": {
         "tla": {
-          "usd": 0.000408656898179471,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.000409935116151424,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
-          "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
-          "status": "no_data"
+          "usd": 0.00055036,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "astroport": {
+          "usd": 0.000409631075313774,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 0.0003338181480968639,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
+        "sources_available": 4,
+        "sources_agreeing": 2,
+        "spread_pct": 52.843,
+        "score": 50,
         "flags": [
-          "single_source"
+          "wide_divergence"
         ]
       }
     },
@@ -3747,8 +3916,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 50,
+        "overall": 50,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3757,24 +3926,35 @@
       },
       "prices": {
         "tla": {
-          "usd": 0.04878327,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.04880528,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 0.04876907,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 0.08295831959617661,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
+        "sources_available": 3,
+        "sources_agreeing": 2,
+        "spread_pct": 70.052,
+        "score": 50,
         "flags": [
-          "single_source"
+          "wide_divergence"
         ]
       }
     },
@@ -3816,8 +3996,8 @@
             "no_discovered_symbol": -15
           }
         },
-        "price": 55,
-        "overall": 56,
+        "price": 90,
+        "overall": 83,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3826,25 +4006,34 @@
       },
       "prices": {
         "tla": {
-          "usd": 4.63,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 4.65,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 4.66,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 4.572598453518063,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 3,
+        "sources_agreeing": 3,
+        "spread_pct": 1.88,
+        "score": 90,
+        "flags": []
       }
     },
     {
@@ -3888,8 +4077,8 @@
             "coingecko": -25
           }
         },
-        "price": 55,
-        "overall": 60,
+        "price": 100,
+        "overall": 94,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -3898,25 +4087,33 @@
       },
       "prices": {
         "tla": {
-          "usd": 4077.5,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 4083.94,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 4083.36,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 2,
+        "sources_agreeing": 2,
+        "spread_pct": 0.014,
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -3973,23 +4170,33 @@
         "is_lst": true,
         "hub_ratio": 1.174762618010405,
         "base": "ROAR",
-        "redemption_price": 2.3397673136746352e-7,
-        "market_price": 2.3695147764322917e-7,
-        "market_vs_redemption_pct": 1.271,
+        "redemption_price": 2.340828811496092e-7,
+        "market_price": 2.3743890403830578e-7,
+        "market_vs_redemption_pct": 1.434,
         "review_flag": false,
         "note": "market ≈ redemption value",
-        "captured_at": "2026-06-26T15:40:45.085Z"
+        "captured_at": "2026-06-26T15:52:32.183Z"
       },
       "prices": {
         "tla": {
-          "usd": 2.3695147764322917e-7,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 2.3743890403830578e-7,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
@@ -4042,8 +4249,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 50,
+        "overall": 50,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -4052,24 +4259,35 @@
       },
       "prices": {
         "tla": {
-          "usd": 566.41,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 565.77,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 565.95,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 265.1172531428571,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
+        "sources_available": 3,
+        "sources_agreeing": 2,
+        "spread_pct": 53.172,
+        "score": 50,
         "flags": [
-          "single_source"
+          "wide_divergence"
         ]
       }
     },
@@ -4112,8 +4330,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 50,
+        "overall": 50,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -4122,24 +4340,35 @@
       },
       "prices": {
         "tla": {
-          "usd": 71.71,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 71.76,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 71.84,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": 21.124989368856813,
+          "pair_implied": true,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
+        "sources_available": 3,
+        "sources_agreeing": 2,
+        "spread_pct": 70.673,
+        "score": 50,
         "flags": [
-          "single_source"
+          "wide_divergence"
         ]
       }
     },
@@ -4178,8 +4407,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 100,
+        "overall": 88,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -4189,24 +4418,32 @@
       "prices": {
         "tla": {
           "usd": 2.8246312614488036,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 2.807086967899432,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 2,
+        "sources_agreeing": 2,
+        "spread_pct": 0.623,
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -4244,8 +4481,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 100,
+        "overall": 88,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -4255,24 +4492,32 @@
       "prices": {
         "tla": {
           "usd": 0.00017512,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 0.00017512,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
+        "sources_available": 2,
+        "sources_agreeing": 2,
         "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -4310,8 +4555,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 100,
+        "overall": 88,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -4321,24 +4566,32 @@
       "prices": {
         "tla": {
           "usd": 0.000081505620459309,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 0.000081505620459309,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
+        "sources_available": 2,
+        "sources_agreeing": 2,
         "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -4391,13 +4644,23 @@
       "prices": {
         "tla": {
           "usd": 0.00188089,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
@@ -4460,13 +4723,23 @@
       "prices": {
         "tla": {
           "usd": 7.183213377191131,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
@@ -4514,8 +4787,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 100,
+        "overall": 88,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -4524,25 +4797,33 @@
       },
       "prices": {
         "tla": {
-          "usd": 0.002694468510199401,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.002695684198526762,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 0.002693684195149491,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 2,
+        "sources_agreeing": 2,
+        "spread_pct": 0.074,
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -4596,23 +4877,33 @@
         "is_lst": true,
         "hub_ratio": 1.1055377425624693,
         "base": "CAPA",
-        "redemption_price": 0.0012455226507470845,
-        "market_price": 0.0012403470148905362,
-        "market_vs_redemption_pct": -0.416,
+        "redemption_price": 0.0012460848157020365,
+        "market_price": 0.0012429008070758555,
+        "market_vs_redemption_pct": -0.256,
         "review_flag": false,
         "note": "market ≈ redemption value",
-        "captured_at": "2026-06-26T15:40:45.085Z"
+        "captured_at": "2026-06-26T15:52:32.183Z"
       },
       "prices": {
         "tla": {
-          "usd": 0.0012403470148905362,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.0012429008070758555,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
@@ -4670,14 +4961,24 @@
       },
       "prices": {
         "tla": {
-          "usd": 60258.85715208093,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 60371.04119465129,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
@@ -4735,14 +5036,24 @@
       },
       "prices": {
         "tla": {
-          "usd": 0.000664385397128042,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 0.0007209149079518787,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
@@ -4790,8 +5101,8 @@
             "no_logo": -10
           }
         },
-        "price": 55,
-        "overall": 54,
+        "price": 100,
+        "overall": 88,
         "weights": {
           "price": 0.75,
           "identity": 0.25
@@ -4800,25 +5111,33 @@
       },
       "prices": {
         "tla": {
-          "usd": 565.21,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 565.28,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": 565.41,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "ok"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
       "price_confidence": {
-        "sources_available": 1,
-        "sources_agreeing": 1,
-        "spread_pct": 0,
-        "score": 55,
-        "flags": [
-          "single_source"
-        ]
+        "sources_available": 2,
+        "sources_agreeing": 2,
+        "spread_pct": 0.023,
+        "score": 100,
+        "flags": []
       }
     },
     {
@@ -4866,13 +5185,23 @@
       "prices": {
         "tla": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_data"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
@@ -4930,14 +5259,24 @@
       },
       "prices": {
         "tla": {
-          "usd": 1583.03,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 1579.7,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
@@ -4996,13 +5335,23 @@
       "prices": {
         "tla": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_data"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
@@ -5064,14 +5413,24 @@
       },
       "prices": {
         "tla": {
-          "usd": 1583.03,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "usd": 1579.7,
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "ok"
         },
         "coingecko": {
           "usd": null,
-          "captured_at": "2026-06-26T15:40:45.082Z",
+          "captured_at": "2026-06-26T15:52:32.178Z",
           "status": "no_id"
+        },
+        "astroport": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
+        },
+        "skeletonswap": {
+          "usd": null,
+          "captured_at": "2026-06-26T15:52:32.178Z",
+          "status": "no_data"
         }
       },
       "snapshot_window_ms": 0,
