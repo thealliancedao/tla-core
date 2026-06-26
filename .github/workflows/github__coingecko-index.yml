@@ -1,0 +1,43 @@
+name: Update CoinGecko terra-2 index
+
+# Manual trigger only — runs when you click "Run workflow" in the Actions tab.
+# Never scheduled: the CoinGecko coin list changes slowly, so refresh it
+# deliberately. The token-catalog cron reads the committed index; it never calls
+# CoinGecko's coin list itself.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write   # lets the built-in GITHUB_TOKEN commit the index back — no PAT needed
+
+jobs:
+  build-index:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build CoinGecko terra-2 index
+        env:
+          # Optional: add a free CoinGecko Demo key as a repo secret named
+          # COINGECKO_API_KEY if the anonymous call gets blocked (403/429).
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: node .github/scripts/build-coingecko-index.js
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add docs/curated/coingecko-terra2-index.json
+          if git diff --staged --quiet; then
+            echo "No change in the index — nothing to commit."
+          else
+            git commit -m "Update CoinGecko terra-2 index"
+            git push
+            echo "Committed updated index."
+          fi
