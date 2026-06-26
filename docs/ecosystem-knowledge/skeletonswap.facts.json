@@ -1,0 +1,59 @@
+{
+  "_meta": {
+    "topic": "skeletonswap",
+    "label": "Skeleton Swap",
+    "official_docs": "https://skeleton.swap",
+    "verified_at": "2026-06-26",
+    "summary": "Terra DEX hosting some TLA pools (typically XYK). We price its pools via the warlock backend using the reserve-ratio anchor method. Same pair can exist on both Astroport and SkeletonSwap, splitting liquidity.",
+    "schema": "see ecosystem-knowledge/README.md"
+  },
+  "facts": [
+    {
+      "id": "skeletonswap.data_source",
+      "claim": "SkeletonSwap pool data comes from the warlock backend at dex.warlock.backbonelabs.io/api/pools/phoenix-1, returning pools with token_0/token_1, reserves, decimals, and tvl_usd.",
+      "kind": "static_sourced",
+      "source_url": "https://dex.warlock.backbonelabs.io/api/pools/phoenix-1",
+      "source_section": "pools response",
+      "source_type": "api",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "skeletonswap.pricing_method",
+      "claim": "We price SkeletonSwap tokens by the anchor method: price_token = (reserve_anchor / reserve_token) × anchor_price, using LUNA/USDC/USDt as trusted anchors. This is valid because SS pools are constant-product (XYK).",
+      "kind": "static_sourced",
+      "source_url": "https://docs.astroport.fi/docs/learn/astro-pools/constant-product-pools",
+      "source_section": "How Constant Product Pools Work",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "XYK mechanism is the same across DEXes; we cite Astroport's clear writeup for the reserve-ratio=price rule. The naive tvl/2 method is WRONG (gives one token two prices) — anchor method validated 7/8 within 3%."
+    },
+    {
+      "id": "skeletonswap.dust_pool_floor",
+      "claim": "Near-empty pools produce noise prices (a pool with ~$0.16 of liquidity manufactured a $43k wBTC price). We skip pools below a $500 TVL floor so dust pools cannot produce fake prices.",
+      "kind": "static_sourced",
+      "source_url": "https://dex.warlock.backbonelabs.io/api/pools/phoenix-1",
+      "source_section": "tvl_usd",
+      "source_type": "self",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Our own pricing rule, derived from observed dust-pool failures. Floor reduced noisy SS prices from 24 to 10."
+    },
+    {
+      "id": "skeletonswap.liquidity_split",
+      "claim": "The same token pair can have pools on BOTH Astroport and SkeletonSwap, splitting liquidity between venues. This is why our catalog tracks pools per-DEX and why a token may have multiple pool-implied prices.",
+      "kind": "static_sourced",
+      "source_url": "https://skeleton.swap",
+      "source_section": "pools",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "needs_source",
+      "live_ref": null,
+      "notes": "Stated in our curated protocols.json; canonical SS doc link to be confirmed."
+    }
+  ]
+}

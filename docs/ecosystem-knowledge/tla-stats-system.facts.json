@@ -1,0 +1,102 @@
+{
+  "_meta": {
+    "topic": "tla-stats-system",
+    "label": "TLA Stats — our own architecture",
+    "official_docs": "https://thealliancedao.com",
+    "verified_at": "2026-06-26",
+    "summary": "How TLA Stats sources, computes, and verifies its numbers. Lets a reader (or on-site agent) answer 'where does this number come from and how is it verified?' the same way they'd ask about any protocol. source_type 'self' = our own method.",
+    "schema": "see ecosystem-knowledge/README.md"
+  },
+  "facts": [
+    {
+      "id": "system.layers",
+      "claim": "TLA Stats data is organized in layers: address-catalog (WHO — wallets, members, contracts), token-catalog (WHAT/WORTH — token identity + four-source pricing + LST redemption), and downstream crons for DEX, staking, and member data. Shared data lives in the tla-core repo under module/product/files.",
+      "kind": "static_sourced",
+      "source_url": "https://github.com/thealliancedao/tla-core",
+      "source_section": "README",
+      "source_type": "self",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "system.pricing.four_source",
+      "claim": "Token prices come from four sources captured in one coherent snapshot: TLA (Eris backend /prices), CoinGecko, Astroport (tokens.byChain), and SkeletonSwap (warlock pools, pair-implied). We show all four plus a confidence/spread score rather than collapsing to one number.",
+      "kind": "static_sourced",
+      "source_url": "https://github.com/thealliancedao/platform-crons",
+      "source_section": "token-catalog",
+      "source_type": "self",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "system.pricing.snapshot_coherence",
+      "claim": "All price sources and LST hub ratios are fetched in the same tight batch so they describe the same instant. Comparisons across sources captured at different times are invalid — this snapshot-coherence rule is why prices and ratios are captured together, not separately.",
+      "kind": "static_sourced",
+      "source_url": "https://github.com/thealliancedao/platform-crons",
+      "source_section": "token-catalog",
+      "source_type": "self",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Demonstrated: an ampLUNA gap of 8% in one snapshot was 0.5% the next — timing, not a real divergence. Coherence + a 10% review threshold prevents false alarms."
+    },
+    {
+      "id": "system.lst.redemption_doctrine",
+      "claim": "For LSTs, the on-chain hub exchange rate gives the robust redemption price (base_price × ratio). The market/pool price is a weaker cross-check that can legitimately differ. We present both and only flag a large (>10%) gap for review — we never auto-correct or hide a source.",
+      "kind": "static_sourced",
+      "source_url": "https://github.com/thealliancedao/platform-crons",
+      "source_section": "token-catalog LST block",
+      "source_type": "self",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "system.lp.valuation",
+      "claim": "LP and ampLP positions are valued by share fraction (staked_shares / total_shares × pool_usd) from on-chain pool reserves — NOT amount × per-unit price. The per-unit model is provably wrong for these (confirmed by UI-vs-calc mismatches and by the ampLP fixed-supply/rising-backing design).",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/amp-compounder/",
+      "source_section": "Controller",
+      "source_type": "self",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Mechanism sourced to Eris Amp Compounder (amplp.valuation_rule); the share-fraction implementation is ours."
+    },
+    {
+      "id": "system.verification.parallel_run",
+      "claim": "Before a new cron replaces a legacy one, both run in parallel and their outputs are diffed; the new cron must match or beat the old on every shared number before the old is retired. token-catalog matched legacy LST ratios exactly (10 decimals) and prices 11/12 within 3% (the 12th being arbLUNA, where the difference is which source is headline, not a disagreement).",
+      "kind": "static_sourced",
+      "source_url": "https://github.com/thealliancedao/tla-core",
+      "source_section": "changelogs",
+      "source_type": "self",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "system.honesty_doctrine",
+      "claim": "Core principle: honest data over false positives. We never ship a number that can't be sourced to chain truth, never silently correct a source we disagree with, and surface disagreement (with its size) rather than hiding it. Overrides live in curated config with notes, never invented into cron output.",
+      "kind": "static_sourced",
+      "source_url": "https://github.com/thealliancedao/tla-core",
+      "source_section": "docs/curated",
+      "source_type": "self",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "system.tile_freshness",
+      "claim": "Dashboard tiles are live feeds (RPC/chain primary) with the cron as fallback and historical capture only. Tile freshness is never tied to the cron's hourly cadence — live-primary, cron-fallback, snapshot last-resort.",
+      "kind": "static_sourced",
+      "source_url": "https://github.com/defipatriot/website-adao-core",
+      "source_section": "adao-live-data.js",
+      "source_type": "self",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    }
+  ]
+}

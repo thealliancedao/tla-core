@@ -1,0 +1,161 @@
+{
+  "_meta": {
+    "topic": "astroport",
+    "label": "Astroport",
+    "official_docs": "https://docs.astroport.fi/",
+    "github": "https://github.com/astroport-fi",
+    "verified_at": "2026-06-26",
+    "summary": "Primary AMM DEX on Terra phoenix-1. Three pool types matter for our pricing: constant-product (XYK), passive concentrated liquidity (PCL), and stableswap. Pool mechanics determine whether a reserve-ratio price is valid.",
+    "schema": "see ecosystem-knowledge/README.md"
+  },
+  "facts": [
+    {
+      "id": "astroport.xyk.mechanism",
+      "claim": "Constant-product (XYK) pools keep reserves balanced by Rx·Ry=k. Liquidity is spread across all prices, so they trade at any price even in large moves. Best for volatile pairs.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.astroport.fi/docs/learn/astro-pools/constant-product-pools",
+      "source_section": "How Constant Product Pools Work",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "astroport.xyk.pricing_valid",
+      "claim": "For an XYK pool, the spot price of one token in terms of the other equals the reserve ratio (Ry/Rx). This is why our reserve-ratio anchor method is valid for XYK pools: price_token = (reserve_anchor / reserve_token) × anchor_price.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.astroport.fi/docs/learn/astro-pools/constant-product-pools",
+      "source_section": "How Constant Product Pools Work",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Validated empirically: anchor method landed within 0.1-2.5% of known prices on XYK anchor/anchor pools."
+    },
+    {
+      "id": "astroport.stableswap.mechanism",
+      "claim": "Stableswap pools use an amplified invariant (amplification parameter A) that sits between constant-product and constant-price curves, concentrating liquidity near a 1:1 exchange rate for low slippage on stable pairs.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.astroport.fi/docs/learn/astro-pools/stableswap-pools",
+      "source_section": "How Stableswap Invariant Pools Work",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "astroport.stableswap.pricing_invalid",
+      "claim": "For stableswap pools the reserve ratio is NOT the price ratio (the amplified curve deliberately holds price near 1:1 across unequal reserves). Reserve-ratio pricing must be skipped for stableswap pools or it returns wrong prices.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.astroport.fi/docs/learn/astro-pools/stableswap-pools",
+      "source_section": "How Stableswap Invariant Pools Work",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Confirmed empirically: USDC/USDt stableswap pool gave a 5.3% error under reserve-ratio pricing. Our token-catalog cron skips pools whose type contains 'stable'."
+    },
+    {
+      "id": "astroport.pcl.mechanism",
+      "claim": "Passive Concentrated Liquidity (PCL) pools cluster liquidity around a 'Price Scale' and track an internal 'Price Oracle' — an exponential moving average of recent trade prices governed by an ema_half_time parameter.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.astroport.fi/docs/learn/astro-pools/passive-concentrated-liquidity-pools/how-pcl-pools-work",
+      "source_section": "How PCL Pools Work",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "astroport.pcl.repeg",
+      "claim": "A PCL pool re-pegs its Price Scale toward the Price Oracle only when accrued fees are enough to offset at least half the potential impermanent loss from re-pegging. Until it can, it offers slightly worse execution than a plain XYK pool.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.astroport.fi/docs/learn/astro-pools/passive-concentrated-liquidity-pools/how-pcl-pools-work",
+      "source_section": "Repegging",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "astroport.pcl.price_lag",
+      "claim": "Because a PCL pool's price tracks an EMA oracle and only re-pegs when fee-justified, its instantaneous reserve ratio can lag the true spot price during fast moves. A PCL pool-derived price is therefore a weaker spot read than an XYK one and may diverge from other sources.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.astroport.fi/docs/learn/astro-pools/passive-concentrated-liquidity-pools/how-pcl-pools-work",
+      "source_section": "How PCL Pools Work / Repegging",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Relevant when a pool-implied price disagrees with TLA/CoinGecko: a PCL pool can legitimately lag, so the disagreement may be the pool, not the other sources."
+    },
+    {
+      "id": "astroport.pcl.fees_dynamic",
+      "claim": "PCL pools raise transaction fees as volatility widens the gap between Price Scale and Price Oracle, distributing the extra fees to liquidity providers as impermanent-loss compensation.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.astroport.fi/docs/learn/astro-pools/passive-concentrated-liquidity-pools/how-pcl-pools-work",
+      "source_section": "How PCL Pools Work",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "astroport.pcl.il_profile",
+      "claim": "PCL reduces impermanent loss for price moves within its concentrated range, but on a tail event (price moving far outside the range) IL and slippage can be severe because liquidity becomes scarce there. Re-pegging mitigates but never eliminates IL; LPs remain exposed to unrealized IL accrued before a re-peg.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.astroport.fi/docs/learn/astro-pools/passive-concentrated-liquidity-pools/tail-risks",
+      "source_section": "Tail Risks",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "astroport.xyk.il_profile",
+      "claim": "XYK pools spread liquidity (and IL risk) evenly across the whole price range. They are more exposed to routine impermanent loss than in-range PCL, but retain liquidity and degrade more gracefully during extreme moves.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.astroport.fi/docs/learn/astro-pools/passive-concentrated-liquidity-pools/tail-risks",
+      "source_section": "Tail Risks",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "astroport.token_price_quirk",
+      "claim": "Astroport's tokens.byChain API returns a priceUsd per token that occasionally reflects a mispricing for derivative assets (e.g. it has priced bLUNA at ~LUNA's price rather than applying bLUNA's redemption ratio). We report Astroport's value as one source and let cross-source divergence flag it; we do not silently correct or hide it.",
+      "kind": "static_sourced",
+      "source_url": "https://app.astroport.fi/api/trpc/tokens.byChain",
+      "source_section": "tokens.byChain response",
+      "source_type": "api",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Observed in our run: Astroport bLUNA priceUsd ≈ LUNA price, ~44% below TLA's bLUNA price. Confirmed it is Astroport's own data via the denom key, not our parsing bug. Multi-source design surfaces this as wide_divergence."
+    },
+    {
+      "id": "astroport.pool_price",
+      "claim": "The current Astroport priceUsd for a given token, as captured in our pricing snapshot.",
+      "kind": "live_binding",
+      "value": null,
+      "source_url": "https://app.astroport.fi/api/trpc/tokens.byChain",
+      "source_type": "api",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": "token-catalog:prices.astroport.usd",
+      "notes": "Per-token live value from the token-catalog snapshot; never hardcoded."
+    },
+    {
+      "id": "astroport.tla_role",
+      "claim": "Astroport is the primary DEX whose LP pools TLA incentivizes; LP and ampLP positions in TLA buckets are Astroport pools. Pool reserves drive both DEX prices and LP/ampLP intrinsic valuation.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.astroport.fi/docs/learn/astro-pools/astro-pools-intro",
+      "source_section": "Astro Pools Intro",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    }
+  ]
+}

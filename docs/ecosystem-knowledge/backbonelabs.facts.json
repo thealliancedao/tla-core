@@ -1,0 +1,70 @@
+{
+  "_meta": {
+    "topic": "backbonelabs",
+    "label": "BackBone Labs",
+    "official_docs": "https://docs.backbonelabs.io",
+    "verified_at": "2026-06-26",
+    "summary": "Terra protocol building bLUNA (a LUNA liquid-staking token) and the BackBone (BBL) Marketplace. bLUNA is in TLA pools and our pricing path. Also operates the warlock DEX backend (SkeletonSwap data source).",
+    "schema": "see ecosystem-knowledge/README.md"
+  },
+  "facts": [
+    {
+      "id": "backbone.bluna.is_lst",
+      "claim": "bLUNA is a LUNA liquid-staking token issued by BackBone Labs. It has an on-chain hub with an exchange rate, queried via {state:{}} returning exchange_rate, used for redemption pricing (LUNA × ratio).",
+      "kind": "static_sourced",
+      "source_url": "https://docs.backbonelabs.io",
+      "source_section": "bLUNA",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "needs_source",
+      "live_ref": null,
+      "notes": "Hub query shape proven in our cron (matches legacy network-and-prices exactly). Docs site was unreachable from our environment at verification time; source_status=needs_source until a human confirms the canonical doc URL/section."
+    },
+    {
+      "id": "backbone.bluna.clean_lst",
+      "claim": "In our data bLUNA behaves as a clean staking derivative: its market price tracks its redemption value (LUNA × hub ratio) tightly — distinct from a strategy LST like arbLUNA.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.backbonelabs.io",
+      "source_section": "bLUNA",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "needs_source",
+      "live_ref": null,
+      "notes": "Observed: bLUNA market ≈ redemption to ~0.002% in our runs. Mechanism doc link to be confirmed."
+    },
+    {
+      "id": "backbone.bluna.hub_ratio",
+      "claim": "bLUNA's current on-chain hub exchange rate.",
+      "kind": "live_binding",
+      "value": null,
+      "source_url": "https://docs.backbonelabs.io",
+      "source_type": "chain",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": "token-catalog:pricing_stats.lst_ratios.bLUNA.ratio",
+      "notes": "Live from the bLUNA hub; never hardcode."
+    },
+    {
+      "id": "backbone.marketplace",
+      "claim": "BackBone Labs operates the BackBone (BBL) Marketplace on Terra, an NFT marketplace used in the aDAO ecosystem (BBL rarity ranks feed our NFT pipeline).",
+      "kind": "static_sourced",
+      "source_url": "https://docs.backbonelabs.io",
+      "source_section": "Marketplace",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "needs_source",
+      "live_ref": null
+    },
+    {
+      "id": "backbone.warlock_backend",
+      "claim": "BackBone Labs hosts the warlock DEX backend (dex.warlock.backbonelabs.io), which is the data source our token-catalog uses for SkeletonSwap pool reserves and pair-implied pricing.",
+      "kind": "static_sourced",
+      "source_url": "https://dex.warlock.backbonelabs.io/api/pools/phoenix-1",
+      "source_section": "pools API",
+      "source_type": "api",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    }
+  ]
+}
