@@ -68,6 +68,26 @@ Every entry in a `.facts.json` `facts[]` array:
 
 ---
 
+## Sourced fact vs. our conclusion — a first-class distinction
+
+A reader must always be able to tell **what a source says** from **what we concluded
+from it**. This is core to the project's honesty: we use officially sourced data, and
+where we draw our own conclusion on top of it, we label it as ours.
+
+- `source_type: "doc"` / `"chain"` / `"api"` → an **external, officially-sourced fact**.
+  The `source_url` points at the verifiable artifact (protocol docs, contract code, an
+  audit). The reader can check it themselves.
+- `source_type: "self"` → **our own conclusion, method, or measurement.** Grounded in
+  sourced facts, but the interpretation is ours. The `source_url` points at our own
+  repo/spec so the reasoning is traceable.
+
+Never present a `self` conclusion as if a protocol or auditor stated it. When a fact
+combines both ("the docs say X, therefore we do Y"), split it into two records — the
+sourced X (`doc`) and our Y (`self`) — so the line stays clean. Audits and contract
+source code are the highest-authority `doc` sources; prefer them when available.
+
+---
+
 ## static_sourced vs live_binding — the core rule
 
 **If a number can change, it does NOT get written down here.** Only the *reason* it

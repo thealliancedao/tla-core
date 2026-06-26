@@ -20,7 +20,6 @@
       "source_status": "ok",
       "live_ref": null
     },
-
     {
       "id": "ampluna.mechanism",
       "claim": "ampLUNA is an auto-compounding liquid-staking receipt: deposit LUNA, Eris stakes it with whitelisted validators, harvests and restakes rewards daily, so the underlying LUNA per ampLUNA rises continuously.",
@@ -45,18 +44,6 @@
       "notes": "Confirmed in our own runs: an 8% reading collapsed to 0.5% one snapshot later — pure timing. This is why our LST review threshold is 10%, not 2%."
     },
     {
-      "id": "ampluna.hub_ratio",
-      "claim": "ampLUNA's current on-chain hub exchange rate (accumulated LUNA per ampLUNA).",
-      "kind": "live_binding",
-      "value": null,
-      "source_url": "https://docs.erisprotocol.com/products/amplifier/",
-      "source_type": "chain",
-      "verified_at": "2026-06-26",
-      "source_status": "ok",
-      "live_ref": "token-catalog:pricing_stats.lst_ratios.ampLUNA.ratio",
-      "notes": "Rises daily; never hardcode. Query is {exchange_rates:{}} on the ampLUNA hub."
-    },
-    {
       "id": "ampluna.fees",
       "claim": "ampLUNA (Amplifier) fees: deposit 0%, performance 5% to Protocol Treasury, withdrawal 0%.",
       "kind": "static_sourced",
@@ -69,7 +56,6 @@
       "source_status": "ok",
       "live_ref": null
     },
-
     {
       "id": "arbluna.mechanism",
       "claim": "arbLUNA is an arbitrage vault, NOT a staking receipt. It captures the ~1-2% premium between instantly swapping an LST and waiting out the 21-24 day unbond, executing only profitable arbitrage each ~21-25 day cycle and compounding the profit into the token. Its value grows only through captured market inefficiencies — no minted token, no incentives.",
@@ -143,18 +129,6 @@
       "notes": "Explains the DIRECTION and CAUSE of the gap. The SIZE is a separate live_binding (arbluna.market_vs_redemption) — never hardcode the percentage."
     },
     {
-      "id": "arbluna.market_vs_redemption",
-      "claim": "The current gap between arbLUNA's market price and its redemption value, as measured by our token-catalog cron.",
-      "kind": "live_binding",
-      "value": null,
-      "source_url": "https://docs.erisprotocol.com/products/arb-vault/",
-      "source_type": "self",
-      "verified_at": "2026-06-26",
-      "source_status": "ok",
-      "live_ref": "token-catalog:lst.market_vs_redemption_pct",
-      "notes": "Changes constantly. Show current value and, as snapshot history accrues, the observed range. A value within normal range = healthy friction pricing; far outside = review (thin pool or real event)."
-    },
-    {
       "id": "arbluna.fees",
       "claim": "arbLUNA (Arb Vault) fees: deposit 0%, performance 5% to holders + 5% to Treasury (10% total, higher because arbitrage needs complex bots), withdrawal 0.5% (shared with ampLUNA holders).",
       "kind": "static_sourced",
@@ -178,7 +152,6 @@
       "source_status": "ok",
       "live_ref": null
     },
-
     {
       "id": "amplp.mechanism",
       "claim": "ampLP is an amplified LP position (Amp Compounder): deposit an Astroport LP, a controller bot claims and restakes pool rewards daily while NO new ampLP are minted, so the ampLP-to-LP conversion rate rises every day.",
@@ -215,7 +188,6 @@
       "source_status": "ok",
       "live_ref": null
     },
-
     {
       "id": "eris.amp_governance.vamp",
       "claim": "Amp Governance issues vAMP (vote-escrowed ampLUNA) for governance — this is the VOTING_ESCROW / vAMP minter referenced in our contracts config.",
@@ -237,6 +209,55 @@
       "verified_at": "2026-06-26",
       "source_status": "ok",
       "live_ref": null
+    },
+    {
+      "id": "eris.audits",
+      "claim": "Eris contracts have independent third-party security audits. SCV Security publishes audits of Amplified Staking, amp-compounder, ve3 contracts, Tokenfactory, Phoenix Treasury, and Ampz. Oak Security audited the Amplified Staking Hub. These are public and verifiable.",
+      "kind": "static_sourced",
+      "value": null,
+      "source_url": "https://github.com/SCV-Security/PublicReports/tree/main/Eris%20Protocol",
+      "source_section": "Eris Protocol audit reports",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Also: https://github.com/oak-security/audit-reports/tree/master/Eris%20Protocol . Source code at github.com/erisprotocol (contracts-terra = staking hub; contracts-ve3 = TLA ve3 contracts)."
+    },
+    {
+      "id": "eris.source_repos",
+      "claim": "Eris contract source code is open: github.com/erisprotocol/contracts-terra (Amplified Staking hub — the ampLUNA/bLUNA exchange-rate mechanism) and github.com/erisprotocol/contracts-ve3 (the TLA ve3 asset-staking + voting-escrow + global-config contracts).",
+      "kind": "static_sourced",
+      "value": null,
+      "source_url": "https://github.com/erisprotocol",
+      "source_section": "repositories",
+      "source_type": "doc",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": null
+    },
+    {
+      "id": "ampluna.hub_ratio",
+      "claim": "ampLUNA's current on-chain hub exchange rate (accumulated LUNA per ampLUNA).",
+      "kind": "live_binding",
+      "value": null,
+      "source_url": "https://docs.erisprotocol.com/products/amplifier/",
+      "source_type": "chain",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": "token-catalog:pricing_stats.lst_ratios.ampLUNA.ratio",
+      "notes": "Rises daily; never hardcode. Query is {exchange_rates:{}} on the ampLUNA hub."
+    },
+    {
+      "id": "arbluna.market_vs_redemption",
+      "claim": "The current gap between arbLUNA's market price and its redemption value, as measured by our token-catalog cron.",
+      "kind": "live_binding",
+      "value": null,
+      "source_url": "https://docs.erisprotocol.com/products/arb-vault/",
+      "source_type": "self",
+      "verified_at": "2026-06-26",
+      "source_status": "ok",
+      "live_ref": "token-catalog:lst.market_vs_redemption_pct",
+      "notes": "Changes constantly. Show current value and, as snapshot history accrues, the observed range. A value within normal range = healthy friction pricing; far outside = review (thin pool or real event)."
     }
   ]
 }
