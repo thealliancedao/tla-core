@@ -314,3 +314,15 @@ Footer copy for the Stage 2 override page:
 > `thealliancedao/tla-core` at `docs/curated/token_overrides.json`. Maintainers review
 > the diff and merge. Edits are proposals — branch protection means nothing changes
 > until approved.
+
+---
+
+## Parked: ecosystem-knowledge content source
+
+`tla-core/docs/ecosystem-knowledge/{astroport,backbonelabs,boost-dao,credia,phoenix-directive,solid-protocol,terra-liquidity-alliance,votion}` are **placeholder stubs** for per-protocol deep-dives, created to lock the folder structure early.
+
+When filling them: **mine the existing `tla-docs.html`** on the live site
+(`thealliancedao.com/tla-docs.html`) — substantial deep-dive content already exists
+there from a prior pass. Verify for staleness (some has changed), update, and bring it
+in, rather than writing from scratch. Same lift-don't-rebuild discipline as the catalog.
+Keep public phrasing descriptive, not attributive (public repo).
