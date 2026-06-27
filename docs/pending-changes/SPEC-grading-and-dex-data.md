@@ -185,6 +185,18 @@ grading on distrusted history poisons the whole system.
 - **SkeletonSwap**: trustworthy only AFTER the warlock fix (it went stale before; the
   pre-2026-04-16 backups are the only old volume history and are suspect). SS history
   starts at the fix.
+  - **Built & verified (dex-data v1.0.1):** the SS adapter does NOT use the warlock
+    bulk endpoint (the stale source). It reads pool METADATA from pools_list.json and
+    queries RESERVES directly from chain ({"pool":{}} -> data.assets[].amount +
+    total_share). Volume is honestly NULL — SkeletonSwap has no trustworthy volume
+    source (confirmed against the old cron, which writes it empty: "no trustworthy
+    source"). TVL is null at capture, priced downstream from chain reserves x
+    token-catalog prices. **Grading implication: SkeletonSwap contributes
+    liquidity/depth (once priced) but NOT volume to grades** — honest data, not a flaw.
+  - **Doctrine — fail honest, never fake:** if a DEX has no trustworthy source for a
+    metric, the pool shows null, never a fabricated/stale number to look votable. A
+    pool too thin to verify can't be confidently graded or voted on — correct pressure
+    on the DEX/project to expose proper data, not on us to subsidize its absence.
 - **Astroport**: the current old cron is reasonably trusted on capture, BUT its
   day/week/month/year averaging method is under review — we will design the averaging
   fresh (§3) rather than inherit a method we're unsure of. Matching the old cron 1:1
