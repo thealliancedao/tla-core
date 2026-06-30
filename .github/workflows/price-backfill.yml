@@ -1,0 +1,55 @@
+name: Price Backfill
+
+# On-demand historical price + LST-ratio backfill. Pick a token from the
+# dropdown in the Actions tab and run. Writes month-files to price-history/.
+
+on:
+  workflow_dispatch:
+    inputs:
+      token:
+        description: 'Token to backfill'
+        required: true
+        type: choice
+        options:
+          - LUNA
+          - ATOM
+          - INJ
+          - wBTC
+          - ETH
+          - USDC
+          - USDT
+          - PAXG
+          - EURe
+          - ASTRO
+          - CAPA
+          - SOLID
+          - ROAR
+          - ampLUNA
+          - arbLUNA
+          - bLUNA
+          - ampCAPA
+      backfill_from:
+        description: 'Backfill from date (YYYY-MM-DD). Default = TLA genesis.'
+        required: false
+        default: '2022-10-31'
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Run backfill
+        env:
+          TOKEN: ${{ github.event.inputs.token }}
+          BACKFILL_FROM: ${{ github.event.inputs.backfill_from }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: thealliancedao/tla-core
+          COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
+        run: node price-backfill/backfill.js
