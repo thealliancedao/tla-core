@@ -215,11 +215,16 @@ async function backfillLst(sym) {
   const rh = await readJsonUrl(RATIO_HISTORY_URL);
   const exactPts = (rh && rh.tokens && rh.tokens[sym] && rh.tokens[sym].points) ? rh.tokens[sym].points : [];
 
-  // cg-derived ratio anchors (where LST's OWN CG price is real, not dead-zone)
+  // cg-derived ratio anchors (where LST's OWN CG price is real, not dead-zone).
+  // The LST's earliest own CG data point is its LAUNCH FLOOR — we never emit a
+  // price before the token existed (arbLUNA/ampCAPA launched after genesis).
   const derivedAnchors = [];
+  let lstLaunchMs = null;
   if (cfg.cgId) {
     try {
       const lstPrices = await cgDailyPrices(cfg.cgId, fromMs, Date.now());
+      const lstDays = [...lstPrices.keys()].sort();
+      if (lstDays.length) lstLaunchMs = Date.parse(lstDays[0]);
       for (const [day, lstUsd] of lstPrices) {
         const baseUsd = basePrices.get(day);
         if (baseUsd && lstUsd) derivedAnchors.push([day, lstUsd / baseUsd]);
@@ -241,16 +246,28 @@ async function backfillLst(sym) {
   if (!anchors.length) { console.warn(`    ⚠ ${sym}: no ratio anchors — skipping`); return { sym, days: 0, skipped: true }; }
 
   const exactSet = new Set(exactPts.map(p => p[0]));
+  // Honest floor: do NOT fabricate a price before the token's earliest known
+  // anchor (the token likely did not exist yet). arbLUNA/ampCAPA launched after
+  // genesis, so flat-extrapolating a ratio backward into pre-launch dates would
+  // invent prices for a non-existent token. We only emit days on/after the
+  // earliest anchor date, and we DROP the 'edge' tier entirely.
+  // Launch floor = the later of (earliest ratio anchor, LST's own CG launch date).
+  // This guarantees no fabricated pre-launch prices.
+  const anchorMs = Date.parse(anchors[0][0]);
+  const earliestAnchorMs = lstLaunchMs ? Math.max(anchorMs, lstLaunchMs) : anchorMs;
   const pricePatch = {}, ratioPatch = {};
-  let nExact = 0, nInterp = 0;
+  let nExact = 0, nInterp = 0, nSkipped = 0;
   for (const [day, baseUsd] of basePrices) {
+    if (Date.parse(day) < earliestAnchorMs) { nSkipped++; continue; } // pre-launch: emit nothing
     let ratio, tier;
     if (exactSet.has(day)) { ratio = exactPts.find(p => p[0] === day)[1]; tier = 'chain_exact'; }
     else { const r = interpRatio(day, anchors); ratio = r.ratio; tier = r.tier; }
+    if (tier === 'edge') { nSkipped++; continue; } // no extrapolation beyond real anchors
     if (tier === 'chain_exact') nExact++; else nInterp++;
     ratioPatch[day] = { [sym]: { ratio: Number(ratio.toFixed(8)), base, tier } };
     pricePatch[day] = { [sym]: { usd: Number((baseUsd * ratio).toFixed(8)), src: `${base}×ratio(${tier})` } };
   }
+  if (nSkipped) console.log(`    (skipped ${nSkipped} pre-launch/edge days — no fabricated prices)`);
   const pN = await mergeIntoMonthFiles('price-history', pricePatch, 'daily avg USD prices', `price-backfill: ${sym} price`);
   const rN = await mergeIntoMonthFiles('price-history/ratios', ratioPatch, 'daily LST ratios', `price-backfill: ${sym} ratio`);
   console.log(`    ${basePrices.size} days (${nExact} exact, ${nInterp} interpolated) → ${pN}+${rN} month-files`);
@@ -261,8 +278,106 @@ async function readJsonUrl(url) {
   try { return await httpGet(url + (url.includes('?') ? '&' : '?') + 't=' + Date.now()); } catch { return null; }
 }
 
+// Remove a token's entries before `beforeDate` from price + ratio month-files.
+// Used to clean up fabricated pre-launch entries after fixing the launch floor.
+// Only touches the target token (merge-safe: other tokens untouched).
+async function purgeBefore(sym, beforeDate) {
+  const beforeMs = Date.parse(beforeDate);
+  console.log(`  purge: removing ${sym} entries before ${beforeDate}...`);
+  let removed = 0;
+  for (const prefix of ['price-history', 'price-history/ratios']) {
+    // walk months from genesis up to min(beforeDate, now) — never beyond real data
+    const start = new Date(Date.parse(BACKFILL_FROM + 'T00:00:00Z'));
+    const end = new Date(Math.min(beforeMs, Date.now()));
+    for (let y = start.getUTCFullYear(); y <= end.getUTCFullYear(); y++) {
+      for (let m = 1; m <= 12; m++) {
+        const ym = `${y}/${String(m).padStart(2, '0')}`;
+        const filepath = `${prefix}/${ym}.json`;
+        const doc = await readJson(filepath);
+        if (!doc || !doc.days) continue;
+        let changed = false;
+        for (const day of Object.keys(doc.days)) {
+          if (Date.parse(day) < beforeMs && doc.days[day] && doc.days[day][sym]) {
+            delete doc.days[day][sym];
+            removed++; changed = true;
+            if (Object.keys(doc.days[day]).length === 0) delete doc.days[day];
+          }
+        }
+        if (changed) {
+          doc.meta = { ...(doc.meta || {}), updated_at: new Date().toISOString() };
+          await writeJson(filepath, doc, `price-history: purge ${sym} pre-${beforeDate} ${ym}`);
+          await sleep(300);
+        }
+      }
+    }
+  }
+  console.log(`  purge done: removed ${removed} ${sym} entries before ${beforeDate}`);
+  return removed;
+}
+
+// Backfill every token in dependency order. Bases (LUNA, CAPA) before their
+// derivatives (ampLUNA/arbLUNA/bLUNA, ampCAPA). For LSTs, the launch-floor logic
+// in backfillLst prevents new pre-launch fabrication; we also purge any stale
+// pre-launch entries left by earlier (pre-fix) runs so the result is fully clean.
+async function runAll() {
+  console.log(`${VERSION} — RUN_ALL: backfilling all ${Object.keys(TOKENS).length} tokens`);
+  // dependency order: bases first, then LSTs
+  const order = [
+    // liquid majors (bases + independents)
+    'LUNA', 'CAPA', 'ATOM', 'INJ', 'wBTC', 'ETH', 'USDC', 'USDT', 'PAXG', 'EURe', 'ASTRO', 'SOLID', 'ROAR',
+    // LSTs (depend on a base being present)
+    'ampLUNA', 'arbLUNA', 'bLUNA', 'ampCAPA',
+  ];
+  const results = [];
+  for (const sym of order) {
+    if (!TOKENS[sym]) continue;
+    const cfg = TOKENS[sym];
+    try {
+      let r;
+      if (cfg.class === 'major') {
+        r = await backfillMajor(sym);
+      } else {
+        // LST: first purge any stale pre-launch entries from earlier runs, then
+        // backfill with the honest launch floor. purge boundary = genesis..a wide
+        // pre-launch window; backfillLst then writes only from real launch forward.
+        // We purge everything before 2025-01-01 as a safe LST pre-launch sweep,
+        // BUT only remove entries the new floor wouldn't re-create. Simplest robust
+        // approach: purge the token entirely, then re-backfill clean.
+        await purgeBefore(sym, '2099-01-01'); // remove ALL existing entries for this token
+        r = await backfillLst(sym);
+      }
+      results.push(r);
+      await sleep(500);
+    } catch (e) {
+      console.error(`  ✗ ${sym}: ${e.message}`);
+      results.push({ sym, error: e.message });
+    }
+  }
+  await writeJson('price-history/heartbeat.json', {
+    version: VERSION, generated_at: new Date().toISOString(),
+    last_token: 'ALL', last_result: { op: 'run_all', tokens: results.length, results },
+  }, 'price-history: run_all heartbeat');
+  console.log(`RUN_ALL done: ${results.length} tokens`);
+}
+
 async function main() {
+  // RUN_ALL mode: backfill every token in dependency order (bases first), and
+  // self-clean LST pre-launch fabrication as we go. One run = full clean foundation.
+  if ((process.env.RUN_ALL || '').toLowerCase() === 'true') {
+    return runAll();
+  }
   const target = (process.env.TOKEN || 'LUNA').trim();
+  const purgeBeforeDate = process.env.PURGE_BEFORE || null;
+  if (purgeBeforeDate) {
+    console.log(`${VERSION} — PURGE mode: ${target} before ${purgeBeforeDate}`);
+    const removed = await purgeBefore(target, purgeBeforeDate);
+    await writeJson('price-history/heartbeat.json', {
+      version: VERSION, generated_at: new Date().toISOString(),
+      last_token: target, last_result: { op: 'purge', before: purgeBeforeDate, removed },
+    }, `price-history: purge heartbeat (${target})`);
+    console.log(`purge complete: ${removed} entries removed`);
+    return;
+  }
   console.log(`${VERSION} — backfill token: ${target} (from ${BACKFILL_FROM})`);
   if (!TOKENS[target]) { console.error(`unknown token '${target}'. Known: ${Object.keys(TOKENS).join(', ')}`); process.exit(1); }
   const cfg = TOKENS[target];
