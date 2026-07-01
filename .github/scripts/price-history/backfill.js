@@ -65,6 +65,10 @@ const GITHUB_TOKEN  = process.env.GITHUB_TOKEN;
 const GITHUB_REPO   = process.env.GITHUB_REPO || 'thealliancedao/tla-core';
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const CG_API_KEY    = process.env.COINGECKO_API_KEY || null;
+// 'pro' (paid Analyst+, pro-api.coingecko.com) unlocks full history back to 2013.
+// 'demo' (free, api.coingecko.com) caps at ~365 days. Default: pro if a key is
+// set (the deep backfill needs paid history), else demo/public.
+const CG_PLAN = (process.env.COINGECKO_PLAN || (CG_API_KEY ? 'pro' : 'demo')).toLowerCase();
 
 const VERSION = 'price-backfill-1.0.0';
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -87,9 +91,12 @@ function httpGet(url, headers = {}) {
 // For multi-year ranges CG returns daily granularity (one point/day).
 async function cgDailyPrices(cgId, fromMs, toMs) {
   const from = Math.floor(fromMs / 1000), to = Math.ceil(toMs / 1000);
-  const base = 'https://api.coingecko.com/api/v3';
+  const base = CG_PLAN === 'pro'
+    ? 'https://pro-api.coingecko.com/api/v3'
+    : 'https://api.coingecko.com/api/v3';
   const url = `${base}/coins/${cgId}/market_chart/range?vs_currency=usd&from=${from}&to=${to}`;
-  const headers = CG_API_KEY ? { 'x-cg-demo-api-key': CG_API_KEY } : {};
+  const headers = {};
+  if (CG_API_KEY) headers[CG_PLAN === 'pro' ? 'x-cg-pro-api-key' : 'x-cg-demo-api-key'] = CG_API_KEY;
   let data, tries = 0;
   while (true) {
     try { data = await httpGet(url, headers); break; }
