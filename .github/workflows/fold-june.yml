@@ -1,0 +1,26 @@
+name: Fold June Dailies (one-time)
+
+# One-time transition step: overlays token-catalog's 5 captured daily snapshots
+# (June 26-30 2026) into price-history/2026/06.json as RICH days. Run once after
+# the backfill; safe to re-run (idempotent). Can delete this workflow after use.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  fold:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fold June dailies
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: thealliancedao/tla-core
+        run: node .github/scripts/price-history/fold-june-dailies.js
