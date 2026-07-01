@@ -6,8 +6,13 @@ name: Price Backfill
 on:
   workflow_dispatch:
     inputs:
+      run_all:
+        description: 'Run ALL tokens (ignores the token picker below). Bases first, LSTs self-cleaned.'
+        required: false
+        type: boolean
+        default: false
       token:
-        description: 'Token to backfill'
+        description: 'Token to backfill (used only if Run ALL is unchecked)'
         required: true
         type: choice
         options:
@@ -32,6 +37,10 @@ on:
         description: 'Backfill from date (YYYY-MM-DD). Default = TLA genesis.'
         required: false
         default: '2022-10-31'
+      purge_before:
+        description: 'PURGE mode: remove this token entries BEFORE this date (YYYY-MM-DD). Leave blank for normal backfill.'
+        required: false
+        default: ''
 
 jobs:
   backfill:
@@ -53,4 +62,6 @@ jobs:
           GITHUB_REPO: thealliancedao/tla-core
           COINGECKO_API_KEY: ${{ secrets.COINGECKO_API_KEY }}
           COINGECKO_PLAN: pro
+          PURGE_BEFORE: ${{ github.event.inputs.purge_before }}
+          RUN_ALL: ${{ github.event.inputs.run_all }}
         run: node .github/scripts/price-history/backfill.js
