@@ -1,0 +1,33 @@
+name: NFT Flows Backfill
+
+# One-time slim backfill: seeds flows/YYYY/MM.json month-files from existing
+# sales-enriched + floor-history, so forward capture stacks on slim past data.
+# Run once from the Actions tab. Idempotent (re-runnable).
+
+on:
+  workflow_dispatch:
+    inputs:
+      forward_cutoff:
+        description: 'Do not seed on/after this date (forward capture owns it)'
+        required: false
+        type: string
+        default: '2026-07-01'
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run flows backfill
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: thealliancedao/tla-core
+          FORWARD_CUTOFF: ${{ github.event.inputs.forward_cutoff }}
+        run: node .github/scripts/nft-flows/backfill-flows.js
