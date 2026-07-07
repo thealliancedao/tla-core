@@ -4,6 +4,11 @@
 // {bribe.amount/info, for_info=pool, distribution.func=epoch range}; funds =
 // anti-spam fee. Target-contract filter (no cw20-approval junk). Reward verbs
 // classified from BOTH gauge + incentive sweeps via one helper (union, deduped).
+// v3.2 — LEGACY BOOTSTRAP (public nodes pruned tx index to ~1wk, found 2026-07-07:
+// org priors empty → import frozen personal-repo votes/locks) + KNOWN-GAPS honesty
+// (coverage-resume-precise gap boundaries, carried forward; archive target).
+// v3.3 — bootstrap trigger fixed: fires on horizon-sentinel (org run-1 data no
+// longer suppresses it) and MERGES legacy with org prior instead of replacing.
 // Lives in: tla-core/.github/scripts/tla-history/   (org seed Action)
 // Spec:     tla-core/docs/pending-changes/SPEC-tla-history.md
 // =============================================================================
@@ -72,6 +77,16 @@ const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const OUT_DIR       = 'history/events'; // module/product (spec §4)
 
 const EPOCH_DATES_URL = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/docs/epoch_1-300_date.json`;
+
+// LEGACY BOOTSTRAP (one-time): public nodes pruned their tx index to ~1 week
+// (discovered 2026-07-07 — the Aug-2024 reach of the 6/15 seed is GONE from
+// public infra). When the org repo has no prior events, seed prior state from
+// the frozen personal-repo capture so history "looks like the cron ran all
+// along". Bribes/rewards have no legacy equivalent — their horizon is honestly
+// the current node floor. Disable with LEGACY_BOOTSTRAP=0.
+const LEGACY_BOOTSTRAP  = (process.env.LEGACY_BOOTSTRAP ?? '1') !== '0';
+const LEGACY_VOTES_URL  = 'https://raw.githubusercontent.com/defipatriot/tla-history-data_2026/main/2026/data/vote-events.json';
+const LEGACY_LOCKS_URL  = 'https://raw.githubusercontent.com/defipatriot/tla-history-data_2026/main/2026/data/lock-events.json';
 
 const RUN_MODE       = (process.env.RUN_MODE || 'sample').toLowerCase();
 const PROBE_ONLY     = RUN_MODE === 'sample';
@@ -638,6 +653,7 @@ async function publishHeartbeat(h) {
         capturedAt: h.startedAt.toISOString(), runId: `tla-history-${h.startedAt.getTime().toString(36)}`,
         runMode: h.runMode, status: h.status, note: h.note || undefined,
         counts: h.counts || {}, last_heights: h.lastHeights || {}, horizons: h.horizons || {},
+        known_gaps: h.gaps && Object.keys(h.gaps).length ? h.gaps : undefined,
         archive_lcd_used: ARCHIVE_LCD ? true : undefined,
         discovered_actions: h.discovered,
         next_expected_run_at: new Date(h.startedAt.getTime() + FORWARD_CADENCE_HOURS * 3600 * 1000).toISOString(),
@@ -679,6 +695,48 @@ async function run() {
         bribes: priorBribes?.horizonHeight ?? null,
         rewards: priorRewards?.horizonHeight ?? null,
     };
+    // prior scan frontiers + already-known gaps (carried forward; archive runs clear them manually)
+    const priorLast = {
+        votes:  priorVotes?.lastScannedHeight  ?? null,
+        locks:  priorLocks?.lastScannedHeight  ?? null,
+        bribes: priorBribes?.lastScannedHeight ?? null,
+        rewards: priorRewards?.lastScannedHeight ?? null,
+    };
+    const priorGaps = {
+        votes:  priorVotes?.known_gaps  || [],
+        locks:  priorLocks?.known_gaps  || [],
+        bribes: priorBribes?.known_gaps || [],
+        rewards: priorRewards?.known_gaps || [],
+    };
+
+    // one-time legacy bootstrap (see constant note — public nodes pruned to ~1wk).
+    // Trigger: the org stream doesn't yet reach the legacy era (horizon above the
+    // sentinel). Self-disables once the legacy horizon (~11.77M/11.56M) is
+    // committed. MERGES with any org prior (never replaces — run-1 shallow data
+    // is kept; dedup handles overlap).
+    const LEGACY_ERA_SENTINEL = 12000000;
+    const needsLegacy = (hz) => hz == null || hz > LEGACY_ERA_SENTINEL;
+    if (LEGACY_BOOTSTRAP && (needsLegacy(priorHorizons.votes) || needsLegacy(priorHorizons.locks))) {
+        console.log('   🧬 legacy bootstrap: org streams do not reach the legacy era — importing frozen personal-repo capture…');
+        const [lv, ll] = await Promise.all([
+            needsLegacy(priorHorizons.votes) ? tryGetJson(LEGACY_VOTES_URL, 'legacy vote-events') : null,
+            needsLegacy(priorHorizons.locks) ? tryGetJson(LEGACY_LOCKS_URL, 'legacy lock-events') : null,
+        ]);
+        if (lv?.events?.length) {
+            prior.votes = mergeEvents(lv.events, prior.votes).merged;
+            priorHorizons.votes = priorHorizons.votes == null ? (lv.horizonHeight ?? null) : Math.min(priorHorizons.votes, lv.horizonHeight ?? priorHorizons.votes);
+            priorLast.votes = lv.lastScannedHeight ?? priorLast.votes; // gap detection anchors at the legacy frontier
+            console.log(`      votes: +${lv.events.length} legacy → ${prior.votes.length} prior (horizon ${priorHorizons.votes}, legacy frontier ${lv.lastScannedHeight})`);
+        }
+        if (ll?.events?.length) {
+            prior.locks = mergeEvents(ll.events, prior.locks).merged;
+            priorHorizons.locks = priorHorizons.locks == null ? (ll.horizonHeight ?? null) : Math.min(priorHorizons.locks, ll.horizonHeight ?? priorHorizons.locks);
+            priorLast.locks = ll.lastScannedHeight ?? priorLast.locks;
+            console.log(`      locks: +${ll.events.length} legacy → ${prior.locks.length} prior (horizon ${priorHorizons.locks}, legacy frontier ${ll.lastScannedHeight})`);
+        }
+        if (!lv?.events?.length && !ll?.events?.length) console.warn('      ⚠ legacy fetch returned nothing — proceeding without bootstrap');
+    }
+
     const runMode = (prior.votes.length + prior.locks.length + prior.bribes.length + prior.rewards.length) === 0 ? 'seed' : 'forward';
     console.log(`   mode: ${runMode}  (prior: votes=${prior.votes.length} locks=${prior.locks.length} bribes=${prior.bribes.length} rewards=${prior.rewards.length})\n`);
 
@@ -727,20 +785,51 @@ async function run() {
         rewards: horizon(priorHorizons.rewards, gauge.txs.length || escrow.txs.length ? [ ...(gauge.txs.length ? [gauge.txs[0]] : []), ...(escrow.txs.length ? [escrow.txs[0]] : []) ].sort((a, b) => Number(a.height) - Number(b.height)) : []),
     };
 
-    const streamFile = (contract, txsRes, complete, hz, merged) => ({
+    // GAP HONESTY (doctrine): the node's tx index retains ~1 week. If coverage
+    // above a stream's prior frontier doesn't resume until some higher height,
+    // the window between is unknowable from public nodes — record it, never
+    // pretend continuity. The gap's END is the first height we actually have
+    // (an event in the merged set, else this scan's floor) — precise even as
+    // the node's retention window slides. Gaps carry forward until an archive
+    // run fills them (then removed by hand).
+    const detectGap = (last, mergedEvts, txs) => {
+        if (last == null) return null;
+        let resume = null;
+        for (const ev of mergedEvts) { const h = Number(ev.height); if (h > last && (resume == null || h < resume)) resume = h; }
+        const floor = earliest(txs);
+        if (resume == null) resume = floor;
+        if (resume == null || resume <= last + 1) return null;
+        return { from_height: last + 1, to_height: resume - 1, detected_at: startedAt.toISOString(), reason: 'public-node tx-index prune: coverage resumes above prior frontier; events in this window unknowable without an archive node' };
+    };
+    const mergeGaps = (priorList, g) => {
+        const all = [...priorList]; if (g && !all.find(x => x.from_height === g.from_height && x.to_height === g.to_height)) all.push(g);
+        return all.sort((a, b) => a.from_height - b.from_height);
+    };
+    const knownGaps = {
+        votes:  mergeGaps(priorGaps.votes,  detectGap(priorLast.votes,  vm.merged, gauge.txs)),
+        locks:  mergeGaps(priorGaps.locks,  detectGap(priorLast.locks,  lm.merged, escrow.txs)),
+        bribes: mergeGaps(priorGaps.bribes, detectGap(priorLast.bribes, bm.merged, incentive.txs)),
+        rewards: mergeGaps(priorGaps.rewards, null), // spans multiple contracts; per-stream gaps above are the honest signal
+    };
+    for (const [k, gs] of Object.entries(knownGaps)) if (gs.length) console.warn(`   ⚠ ${k}: ${gs.length} known gap(s) — ${gs.map(g => `${g.from_height}→${g.to_height}`).join(', ')}`);
+
+    const streamFile = (contract, txsRes, complete, hz, merged, gaps) => ({
         schemaVersion: SCHEMA_VERSION, builtAt: startedAt.toISOString(), contract,
         lastScannedHeight: txsRes.globalMax || 0, horizonHeight: hz,
-        scan_complete: complete, scan_stop: txsRes.stop, count: merged.length, events: merged,
+        scan_complete: complete, scan_stop: txsRes.stop, count: merged.length,
+        known_gaps: gaps && gaps.length ? gaps : undefined, events: merged,
     });
     const gComplete = done(gauge), eComplete = done(escrow), iComplete = done(incentive);
-    const voteFile   = streamFile(TLA_GAUGE_CONTROLLER,  gauge,     gComplete, horizons.votes,  vm.merged);
-    const lockFile   = streamFile(TLA_VOTING_ESCROW,     escrow,    eComplete, horizons.locks,  lm.merged);
-    const bribeFile  = streamFile(TLA_INCENTIVE_MANAGER, incentive, iComplete, horizons.bribes, bm.merged);
+    const voteFile   = streamFile(TLA_GAUGE_CONTROLLER,  gauge,     gComplete, horizons.votes,  vm.merged, knownGaps.votes);
+    const lockFile   = streamFile(TLA_VOTING_ESCROW,     escrow,    eComplete, horizons.locks,  lm.merged, knownGaps.locks);
+    const bribeFile  = streamFile(TLA_INCENTIVE_MANAGER, incentive, iComplete, horizons.bribes, bm.merged, knownGaps.bribes);
     const rewardFile = { schemaVersion: SCHEMA_VERSION, builtAt: startedAt.toISOString(),
-        contracts: { gauge: TLA_GAUGE_CONTROLLER, escrow: TLA_VOTING_ESCROW },
-        lastScannedHeight: Math.max(gauge.globalMax || 0, escrow.globalMax || 0),
-        horizonHeight: horizons.rewards, scan_complete: gComplete && eComplete,
-        scan_stop: `gauge:${gauge.stop};escrow:${escrow.stop}`, count: rm.merged.length, events: rm.merged };
+        contracts: { gauge: TLA_GAUGE_CONTROLLER, escrow: TLA_VOTING_ESCROW, incentive: TLA_INCENTIVE_MANAGER },
+        lastScannedHeight: Math.max(gauge.globalMax || 0, escrow.globalMax || 0, incentive.globalMax || 0),
+        horizonHeight: horizons.rewards, scan_complete: gComplete && eComplete && iComplete,
+        scan_stop: `gauge:${gauge.stop};escrow:${escrow.stop};incentive:${incentive.stop}`,
+        known_gaps: knownGaps.rewards.length ? knownGaps.rewards : undefined,
+        count: rm.merged.length, events: rm.merged };
 
     const rollups = buildRollups(vm.merged, lm.merged, bm.merged, rm.merged, epochOf);
 
@@ -766,6 +855,8 @@ async function run() {
             'cursor.json':        { note: 'org-tla-history (Render) forward-maintains from here' },
             'heartbeat.json':     {},
         },
+        known_gap_count: Object.values(knownGaps).reduce((n, g) => n + g.length, 0) || undefined,
+        note_gaps: Object.values(knownGaps).some(g => g.length) ? 'public-node prune gaps recorded in each stream file (known_gaps) — archive-node targets' : undefined,
     };
 
     await publishFile(`${OUT_DIR}/vote-events.json`,   voteFile,   `tla-history ${runMode}: votes ${vm.merged.length} (+${vm.added})`);
@@ -780,7 +871,7 @@ async function run() {
     await publishHeartbeat({ startedAt, runMode, status: allComplete ? 'ok' : 'partial', errors, discovered,
         counts: { votes: vm.merged.length, locks: lm.merged.length, bribes: bm.merged.length, rewards: rm.merged.length, wallets: rollups.wallet_count },
         lastHeights: { gauge: gauge.globalMax || 0, escrow: escrow.globalMax || 0, incentive: incentive.globalMax || 0 },
-        horizons });
+        horizons, gaps: Object.fromEntries(Object.entries(knownGaps).filter(([, v]) => v.length)) });
 
     console.log(`\n✅ done — votes ${vm.merged.length}, locks ${lm.merged.length}, bribes ${bm.merged.length}, rewards ${rm.merged.length}, wallets ${rollups.wallet_count}, status ${allComplete ? 'ok' : 'PARTIAL'}`);
     if (Object.keys(discovered).length) console.log(`   discovered_actions: ${JSON.stringify(discovered)}`);
