@@ -1,5 +1,9 @@
 // =============================================================================
 // tla-history-seed.js — governance EVENT capture: votes, locks, bribes, rewards
+// v3.1 — incentive-manager map CHAIN-CONFIRMED (probe 2026-07-07): add_bribe
+// {bribe.amount/info, for_info=pool, distribution.func=epoch range}; funds =
+// anti-spam fee. Target-contract filter (no cw20-approval junk). Reward verbs
+// classified from BOTH gauge + incentive sweeps via one helper (union, deduped).
 // Lives in: tla-core/.github/scripts/tla-history/   (org seed Action)
 // Spec:     tla-core/docs/pending-changes/SPEC-tla-history.md
 // =============================================================================
@@ -307,6 +311,21 @@ function coinsMovedInTx(tr) {
 }
 
 // ----------------------------------------------------------------------------- classify: votes + rewards (one unfiltered gauge pass)
+// Reward events are built by ONE helper used by BOTH the gauge and incentive
+// sweeps: distribute-txs touch multiple contracts, so each sweep may see the
+// same tx. Identical objects from either sweep dedup to one (union coverage,
+// zero double-count) — the helper must stay deterministic on the tx alone.
+function rewardEventFromMsg(key, m, mi, tr, meta) {
+    const rtype = REWARD_GAUGE_KEYS[key];
+    if (!rtype) return null;
+    const a = m.msg[key] || {};
+    if (PROTOCOL_REWARD_TYPES.has(rtype)) {
+        // gross coin movement across the tx — an upper-bound view of the pot
+        // (multi-hop transfers count each hop); honest basis flagged on-event.
+        return { type: rtype, kind: 'protocol_distribution', wallet: null, executor: m.sender || null, msg_index: mi, ...meta, gauge: a.gauge ?? null, coins: coinsMovedInTx(tr), coins_basis: 'gross_coin_received', args: a };
+    }
+    return { type: rtype, kind: 'wallet_claim', wallet: m.sender, msg_index: mi, ...meta, gauge: a.gauge ?? null, coins: coinsReceivedBy(tr, m.sender), args: a };
+}
 function classifyGaugeTxs(txResponses, discovered) {
     const voteEvents = [], rewardEvents = [];
     for (const tr of txResponses) {
@@ -320,14 +339,8 @@ function classifyGaugeTxs(txResponses, discovered) {
                 voteEvents.push({ type: 'vote', wallet: m.sender, msg_index: mi, ...meta, gauge: a.gauge ?? null, votes: extractVotes(a), raw_msg: extractVotes(a) ? undefined : a });
                 return;
             }
-            const rtype = REWARD_GAUGE_KEYS[key];
-            if (rtype) {
-                if (PROTOCOL_REWARD_TYPES.has(rtype)) {
-                    rewardEvents.push({ type: rtype, kind: 'protocol_distribution', wallet: null, executor: m.sender || null, msg_index: mi, ...meta, gauge: a.gauge ?? null, coins: coinsMovedInTx(tr), args: a });
-                } else {
-                    rewardEvents.push({ type: rtype, kind: 'wallet_claim', wallet: m.sender, msg_index: mi, ...meta, gauge: a.gauge ?? null, coins: coinsReceivedBy(tr, m.sender), args: a });
-                }
-            }
+            const re = rewardEventFromMsg(key, m, mi, tr, meta);
+            if (re) rewardEvents.push(re);
         });
     }
     return { voteEvents, rewardEvents };
@@ -394,45 +407,81 @@ function classifyEscrowTxs(txResponses, discovered) {
     return { lockEvents, rewardEvents };
 }
 
-// ----------------------------------------------------------------------------- classify: bribes (incentive manager — provisional map + lossless fallback)
-function classifyBribeTxs(txResponses, discovered) {
-    const events = [];
+// ----------------------------------------------------------------------------- classify: bribes (incentive manager)
+// add_bribe shape CHAIN-CONFIRMED (probe 2026-07-07):
+//   { bribe: { amount, info:{cw20|native} },          ← the actual bribe coins
+//     for_info: {cw20|native},                        ← the TARGET pool asset
+//     distribution: { func: { start, end, func_type } } ← native EPOCH RANGE }
+//   + msg funds = [10000000 uluna]                    ← anti-spam FEE, not the bribe
+// Rules learned from the probe:
+//   • tx_search returns any tx TOUCHING the contract — only messages ADDRESSED
+//     to the incentive manager (m.contract, or send-hook targeting it) are
+//     classified here; other messages in the tx are counted-only (no thin junk
+//     from cw20 increase_allowance approvals, compounder legs, etc.).
+//   • Reward verbs (distribute_*, claim_bribes) also execute against this
+//     contract — classified via the SAME rewardEventFromMsg helper as the
+//     gauge sweep, so overlapping txs dedup to one reward event (union
+//     coverage across sweeps).
+function bribeEventFrom(type, sender, args, mi, meta, sendHook) {
+    // Coin precedence: the msg's own bribe field (authoritative) > cw20 hook
+    // amount > native funds. Funds are demoted to fee_funds whenever the bribe
+    // field was parsed (probe proved funds = 10-LUNA anti-spam fee there).
+    const bribeCoins = args?.bribe?.amount != null && args?.bribe?.info
+        ? [{ amount: String(args.bribe.amount), denom: normalizeAssetId(args.bribe.info) }]
+        : null;
+    const hookCoins = sendHook?.contract && sendHook.amount != null
+        ? [{ amount: String(sendHook.amount), denom: `cw20:${sendHook.contract}` }]
+        : null;
+    const fundCoins = Array.isArray(args?._funds) && args._funds.length
+        ? args._funds.map(f => ({ amount: String(f.amount), denom: `native:${f.denom}` }))
+        : null;
+    const dist = args?.distribution?.func || null;
+    return { type, briber: sender, msg_index: mi, ...meta,
+        pool: args?.for_info ? normalizeAssetId(args.for_info)
+            : (args?.asset ? normalizeAssetId(args.asset) : (args?.pool ? normalizeAssetId(args.pool) : (args?.lp ? normalizeAssetId(args.lp) : null))),
+        gauge: args?.gauge ?? null,
+        coins: bribeCoins || hookCoins || fundCoins || null,
+        fee_funds: (bribeCoins || hookCoins) && fundCoins ? fundCoins : undefined,
+        epoch_start: dist?.start ?? null, epoch_end: dist?.end ?? null, dist_func: dist?.func_type ?? null,
+        args: (({ _funds, ...rest }) => rest)(args || {}) };
+}
+function classifyIncentiveTxs(txResponses, discovered) {
+    const bribeEvents = [], rewardEvents = [];
     for (const tr of txResponses) {
         const meta = { height: Number(tr.height), timestamp: tr.timestamp, tx_hash: tr.txhash };
         (tr?.tx?.body?.messages || []).forEach((m, mi) => {
             const msg = m?.msg; if (!msg || typeof msg !== 'object') return;
             const key = Object.keys(msg)[0]; if (!key) return;
-            const a = msg[key] || {};
 
-            // cw20 send-hook bribe funding (bribe paid in a cw20 like CAPA/ROAR)
+            // cw20 send-hook bribe funding (bribe paid via cw20 `send` to the mgr)
             if (key === 'send' && msg.send?.contract === TLA_INCENTIVE_MANAGER) {
                 const inner = decodeMaybeB64(msg.send.msg);
                 const innerKey = inner ? Object.keys(inner)[0] : null;
                 discovered[`incentive_hook:${innerKey || 'undecodable'}`] = (discovered[`incentive_hook:${innerKey || 'undecodable'}`] || 0) + 1;
-                const ia = inner?.[innerKey] || {};
+                const ia = { ...(inner?.[innerKey] || {}) };
                 const type = (innerKey && BRIBE_ACTION_KEYS[innerKey]) || `event:incentive_hook/${innerKey || 'undecodable'}`;
-                events.push({ type, briber: m.sender, msg_index: mi, ...meta,
-                    pool: ia.asset ? normalizeAssetId(ia.asset) : (ia.pool ? normalizeAssetId(ia.pool) : (ia.lp ? normalizeAssetId(ia.lp) : null)),
-                    gauge: ia.gauge ?? null,
-                    coins: m.contract && msg.send.amount != null ? [{ amount: String(msg.send.amount), denom: `cw20:${m.contract}` }] : null,
-                    args: ia });
+                bribeEvents.push(bribeEventFrom(type, m.sender, ia, mi, meta, { contract: m.contract, amount: msg.send.amount }));
+                return;
+            }
+
+            // messages NOT addressed to the incentive manager: counted-only context
+            if (m.contract !== TLA_INCENTIVE_MANAGER) {
+                discovered[`incentive_ctx:${key}`] = (discovered[`incentive_ctx:${key}`] || 0) + 1;
                 return;
             }
             discovered[`incentive:${key}`] = (discovered[`incentive:${key}`] || 0) + 1;
-            const mapped = BRIBE_ACTION_KEYS[key];
-            const type = mapped || `event:incentive/${key}`;
-            // native-funded bribes carry coins on the message `funds`
-            const funds = Array.isArray(m.funds) && m.funds.length
-                ? m.funds.map(f => ({ amount: String(f.amount), denom: `native:${f.denom}` }))
-                : coinsReceivedBy(tr, TLA_INCENTIVE_MANAGER);
-            events.push({ type, briber: m.sender, msg_index: mi, ...meta,
-                pool: a.asset ? normalizeAssetId(a.asset) : (a.pool ? normalizeAssetId(a.pool) : (a.lp ? normalizeAssetId(a.lp) : null)),
-                gauge: a.gauge ?? null,
-                coins: funds,
-                args: a });
+
+            // reward verbs on this contract → shared helper (dedups with gauge sweep)
+            const re = rewardEventFromMsg(key, m, mi, tr, meta);
+            if (re) { rewardEvents.push(re); return; }
+
+            const a = { ...(msg[key] || {}) };
+            if (Array.isArray(m.funds) && m.funds.length) a._funds = m.funds; // fee or native bribe funding
+            const type = BRIBE_ACTION_KEYS[key] || `event:incentive/${key}`;
+            bribeEvents.push(bribeEventFrom(type, m.sender, a, mi, meta, null));
         });
     }
-    return events;
+    return { bribeEvents, rewardEvents };
 }
 
 // ----------------------------------------------------------------------------- merge / dedup (F3 support)
@@ -493,7 +542,12 @@ function buildRollups(voteEvents, lockEvents, bribeEvents, rewardEvents, epochOf
         if (!e.briber || e.type.startsWith('event:')) { /* thin events still counted below */ }
         const b = (bribers[e.briber || 'unknown'] ||= { briber: e.briber || null, event_count: 0, by_epoch: {} });
         b.event_count++;
-        const ep = epochOf(e.timestamp) ?? 'unknown';
+        // add_bribe carries its NATIVE epoch range (distribution.func start/end)
+        // — attribute to the range key ("193-200") when present, else to the
+        // timestamp's epoch. Lossless: no fake per-epoch division of raw amounts.
+        const ep = (e.epoch_start != null)
+            ? (e.epoch_end != null && e.epoch_end !== e.epoch_start ? `${e.epoch_start}-${e.epoch_end}` : String(e.epoch_start))
+            : (epochOf(e.timestamp) ?? 'unknown');
         const slot = (b.by_epoch[ep] ||= { pools: {}, coins: {} });
         if (e.pool) slot.pools[e.pool] = (slot.pools[e.pool] || 0) + 1;
         for (const c of e.coins || []) slot.coins[c.denom] = (BigInt(slot.coins[c.denom] || 0) + BigInt(c.amount)).toString();
@@ -643,8 +697,10 @@ async function run() {
     // classify
     const g = classifyGaugeTxs(gauge.txs, discovered);
     const e = classifyEscrowTxs(escrow.txs, discovered);
-    const freshBribes = classifyBribeTxs(incentive.txs, discovered);
-    const freshRewards = [...g.rewardEvents, ...e.rewardEvents];
+    const i = classifyIncentiveTxs(incentive.txs, discovered);
+    const freshBribes = i.bribeEvents;
+    // reward union across sweeps — identical objects from overlapping txs dedup in merge
+    const freshRewards = [...g.rewardEvents, ...e.rewardEvents, ...i.rewardEvents];
 
     // merge + dedup per stream
     const vm = mergeEvents(prior.votes, g.voteEvents);
@@ -734,4 +790,4 @@ if (require.main === module) {
     run().catch(err => { console.error('FATAL:', err.message); process.exit(1); });
 }
 
-module.exports = { classifyGaugeTxs, classifyEscrowTxs, classifyBribeTxs, mergeEvents, buildRollups, extractVotes, normalizeAssetId, makeEpochResolver, isCanonicalLock, parseCoinString, coinsReceivedBy, coinsMovedInTx, eventKey };
+module.exports = { classifyGaugeTxs, classifyEscrowTxs, classifyIncentiveTxs, rewardEventFromMsg, bribeEventFrom, mergeEvents, buildRollups, extractVotes, normalizeAssetId, makeEpochResolver, isCanonicalLock, parseCoinString, coinsReceivedBy, coinsMovedInTx, eventKey };
