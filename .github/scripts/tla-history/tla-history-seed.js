@@ -1,1 +1,737 @@
-place
+// =============================================================================
+// tla-history-seed.js — governance EVENT capture: votes, locks, bribes, rewards
+// Lives in: tla-core/.github/scripts/tla-history/   (org seed Action)
+// Spec:     tla-core/docs/pending-changes/SPEC-tla-history.md
+// =============================================================================
+//
+// Ported from the chain-proven defipatriot/tla-history-data_2026 engine
+// (seed 2026-06-15: 5,858 votes / 11,520 locks, clean-end). Changes vs v2:
+//   • THREE contracts: gauge + escrow + INCENTIVE MANAGER (bribes — new stream).
+//   • Gauge is swept UNFILTERED so one pass yields votes + distributions +
+//     bribe-claims (~19k txs ≈ 190 pages; proven reachable on 6/15).
+//   • NEW reward-events stream: wallet claims (claim_rebase, claim_bribes,
+//     compound) WITH AMOUNTS parsed from tx coin-transfer events, plus
+//     protocol distributions (take_rate / rebase / bribes) as per-epoch pots.
+//   • Output → tla-core `history/events/` (module/product layout): the four
+//     event streams + rollups + cursor + heartbeat + index. Built "as if the
+//     Render cron ran all along" — org-tla-history forward-maintains from
+//     cursor.json.
+//   • Archive hooks (Batch 5): set ARCHIVE_LCD to scan a deeper node; events
+//     below the recorded horizon APPEND (dedup by hash), horizons only ever
+//     move DOWN (min of prior + new). Same script, no code change.
+//
+// Reliability (doctrine F-classes):
+//   F1 publicnode ignores pagination.offset → resilient ASC pager (verbatim
+//      from the proven engine), hard page ceiling.
+//   F2 null ≠ [] — failed page retries both LCDs; incomplete scan = partial.
+//   F3 never-shrink per stream — merged < committed aborts publish. Growth
+//      below horizon (archive deepening) is legitimate and passes naturally
+//      (append-only merge); shrink within covered range aborts.
+//   F7 heartbeat honesty — partial/error on any incomplete scan; cursor
+//      advances ONLY on a complete scan of that contract.
+//   F8 honest horizon — per-stream horizonHeight ("history from height H").
+//
+// Lossless doctrine: unrecognized actions become thin `event:<ns>/<key>`
+// entries with raw args kept + tallied in discovered_actions. Unknown ≠
+// dropped. Promoting them later = classifier update + rollup recompute, never
+// a re-backfill.
+//
+// RUN_MODE=sample (default): scans recent txs on ALL THREE contracts, prints
+// every distinct action key + one sample each + a decoded reward-amount
+// extraction example. WRITES NOTHING. The incentive manager has never been
+// scanned — review its printed map before the first full seed.
+// RUN_MODE=full: full-history sweep, classify, merge, publish.
+//
+// Env: GITHUB_TOKEN, GITHUB_REPO (default thealliancedao/tla-core),
+//      GITHUB_BRANCH (main), RUN_MODE (sample|full),
+//      LCD_PRIMARY / LCD_FALLBACK, ARCHIVE_LCD (optional — overrides primary
+//      for deep runs), SEED_MAX_PAGES (600), PAGER_* knobs.
+// =============================================================================
+
+'use strict';
+
+const https = require('https');
+
+// ----------------------------------------------------------------------------- constants
+const ARCHIVE_LCD        = process.env.ARCHIVE_LCD || null; // Batch-5 deepening: overrides primary
+const TERRA_LCD_PRIMARY  = ARCHIVE_LCD || process.env.LCD_PRIMARY  || 'https://terra-lcd.publicnode.com';
+const TERRA_LCD_FALLBACK = process.env.LCD_FALLBACK || 'https://terra-rest.publicnode.com';
+
+// One-contract-one-owner: these three belong to tla-history (spec §1).
+const TLA_GAUGE_CONTROLLER   = 'terra1hfksrhchkmsj4qdq33wkksrslnfles6y2l77fmmzeep0xmq24l2smsd3lj';
+const TLA_VOTING_ESCROW      = 'terra1uqhj8agyeaz8fu6mdggfuwr3lp32jlrx5hqag4jxexde92rzkamq3l62zg';
+const TLA_INCENTIVE_MANAGER  = 'terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh';
+
+const GITHUB_TOKEN  = process.env.GITHUB_TOKEN;
+const GITHUB_REPO   = process.env.GITHUB_REPO   || 'thealliancedao/tla-core';
+const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
+const OUT_DIR       = 'history/events'; // module/product (spec §4)
+
+const EPOCH_DATES_URL = `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/docs/epoch_1-300_date.json`;
+
+const RUN_MODE       = (process.env.RUN_MODE || 'sample').toLowerCase();
+const PROBE_ONLY     = RUN_MODE === 'sample';
+const SEED_MAX_PAGES = Number(process.env.SEED_MAX_PAGES || 600);
+const PAGE_LIMIT     = 100;
+const SCHEMA_VERSION = 3; // v3: org layout; +bribe-events +reward-events; amounts as {amount,denom} raw strings; msg_index in dedup key
+const FORWARD_CADENCE_HOURS = 6;
+
+// ----------------------------------------------------------------------------- action maps
+// CHAIN-CONFIRMED (probe 2026-06-15) — gauge + escrow. Incentive manager map is
+// PROVISIONAL until the first sample run confirms it (spec §3, bribe-events).
+const VOTE_ACTION_KEYS = { vote: 'vote' };
+
+const LOCK_ACTION_KEYS = {
+    create_lock: 'lock_create',
+    extend_lock_amount: 'lock_extend_amount',
+    extend_lock_time: 'lock_extend_time',
+    merge_lock: 'merge',
+    split_lock: 'split',
+    migrate_lock: 'migrate',
+    lock_permanent: 'lock_permanent',
+    unlock_permanent: 'unlock_permanent',
+    withdraw: 'withdraw', unlock: 'withdraw',
+    transfer_nft: 'lock_transfer',
+    deposit_for: 'lock_deposit_for',
+};
+const LOCK_HOOK_KEYS = { create_lock: 'lock_create', extend_lock_amount: 'lock_extend_amount', deposit_for: 'lock_deposit_for' };
+
+// Reward-class verbs (spec §3 reward-events). Wallet claims + protocol distributions.
+// Counts from the 6/15 unfiltered sweep prove these exist at volume.
+const REWARD_GAUGE_KEYS = {           // on the gauge controller
+    claim_bribes: 'claim_bribes',                     // voter claims bribes
+    claim_rewards: 'claim_rewards',
+    distribute_take_rate: 'distribute_take_rate',     // protocol pots (per-epoch)
+    distribute_rebase: 'distribute_rebase',
+    distribute_bribes: 'distribute_bribes',
+};
+const REWARD_ESCROW_KEYS = {          // on the voting escrow
+    claim_rebase: 'claim_rebase',                     // locker claims rebase
+    compound: 'compound',                             // Votion-side compounding
+};
+const PROTOCOL_REWARD_TYPES = new Set(['distribute_take_rate', 'distribute_rebase', 'distribute_bribes']);
+
+// PROVISIONAL bribe verbs (incentive manager) — sample run confirms/extends.
+// Anything not listed still lands losslessly as `event:incentive/<key>`.
+const BRIBE_ACTION_KEYS = {
+    add_bribe: 'bribe_add', bribe: 'bribe_add', deposit_bribe: 'bribe_add', incentivize: 'bribe_add',
+    withdraw_bribe: 'bribe_withdraw', remove_bribe: 'bribe_withdraw',
+};
+
+// ----------------------------------------------------------------------------- http (proven transport)
+const KEEPALIVE_AGENT = new https.Agent({ keepAlive: true, maxSockets: 1, keepAliveMsecs: 30000 });
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+function httpGet(url, t = 20000) {
+    return new Promise((res, rej) => {
+        const r = https.get(url, { agent: KEEPALIVE_AGENT, headers: { Accept: 'application/json', Connection: 'keep-alive', 'User-Agent': 'tla-history-seed/3.0' } }, (x) => {
+            let b = ''; x.on('data', c => b += c); x.on('end', () => {
+                if (x.statusCode >= 200 && x.statusCode < 300) { try { res(JSON.parse(b)); } catch { rej(new Error('bad JSON')); } }
+                else rej(new Error(`HTTP ${x.statusCode} ${b.slice(0, 120)}`)); });
+        });
+        r.on('error', rej); r.setTimeout(t, () => r.destroy(new Error('timeout')));
+    });
+}
+async function lcdGet(p, label) { try { return await httpGet(TERRA_LCD_PRIMARY + p); } catch (e) { try { return await httpGet(TERRA_LCD_FALLBACK + p); } catch (e2) { throw new Error(`${label}: both LCDs failed (${e2.message})`); } } }
+async function tryGetJson(url, label) { try { return await httpGet(url); } catch (e) { console.warn(`  ⚠ ${label} fetch failed (non-fatal): ${e.message}`); return null; } }
+
+// ----------------------------------------------------------------------------- tx_search (resilient ASC pager — verbatim from proven engine; F1)
+async function fetchAllTxs(conds, label) {
+    const RETRIES = +(process.env.PAGER_RETRIES || 40), ROUNDS = +(process.env.PAGER_ROUNDS || 2);
+    const ERR_BACKOFF = +(process.env.PAGER_ERR_BACKOFF || 250), PROBE_DELAY = +(process.env.PAGER_PROBE_DELAY || 40);
+    const CONTIG_DELTA = 250000, P1_STABLE = 12;
+    const txPath = (page) => `/cosmos/tx/v1beta1/txs?query=${encodeURIComponent(conds.join(' AND '))}&order_by=ORDER_BY_ASC&page=${page}&limit=${PAGE_LIMIT}`;
+    const out = [], seen = new Set();
+    const stats = { calls: 0, pages: 0, regress: 0, far: 0, dup: 0, empty: 0, error: 0, reprobe: 0 };
+    let frontier = 0, globalMax = 0, stop = 'complete';
+    const scan = (batch) => { let freshMin = Infinity, fresh = 0; for (const tx of batch) { const h = Number(tx.height); if (h > globalMax) globalMax = h; if (!seen.has(tx.txhash)) { fresh++; if (h < freshMin) freshMin = h; } } return { fresh, freshMin }; };
+    const commit = (batch) => { let added = 0; for (const tx of batch) { const h = Number(tx.height); if (h > frontier) frontier = h; if (!seen.has(tx.txhash)) { seen.add(tx.txhash); out.push(tx); added++; } } stats.pages++; return added; };
+
+    let best1 = null, noImprove = 0, nonEmpty = 0;
+    for (let a = 0; a < RETRIES; a++) {
+        stats.calls++;
+        let resp; try { resp = await lcdGet(txPath(1), `${label} p1.${a}`); } catch { stats.error++; await sleep(ERR_BACKOFF); continue; }
+        const batch = resp?.tx_responses || [];
+        if (!batch.length) { stats.empty++; await sleep(ERR_BACKOFF); continue; }
+        scan(batch); nonEmpty++;
+        const minH = Math.min(...batch.map(t => Number(t.height)));
+        if (!best1 || minH < best1.minH) { best1 = { batch, minH }; noImprove = 0; } else { noImprove++; }
+        if (a % 8 === 7) console.log(`  ${label}: probing page 1… best start-height=${best1 ? best1.minH : 'n/a'} (${a + 1} probes)`);
+        if (nonEmpty >= 3 && noImprove >= P1_STABLE) break;
+        await sleep(PROBE_DELAY);
+    }
+    if (!best1) { console.warn(`  ⚠ ${label}: page 1 unreachable after ${RETRIES} tries (treating as empty)`); return { txs: [], stop: 'p1-unreachable', globalMax: 0 }; }
+    commit(best1.batch);
+    console.log(`  ${label}: page1 start-height=${best1.minH} (${out.length} txs, frontier=${frontier})`);
+
+    for (let page = 2; page < SEED_MAX_PAGES; page++) {
+        const avg = out.length > 1 ? Math.max(1, (frontier - Number(out[0].height)) / (out.length - 1)) : 1;
+        const TIGHT = Math.max(2000, 3 * avg), LOOSE = Math.max(50000, 10 * avg);
+        let bestCand = null, rounds = 0;
+        do {
+            if (rounds > 0) stats.reprobe++;
+            for (let a = 0; a < RETRIES; a++) {
+                stats.calls++;
+                let resp; try { resp = await lcdGet(txPath(page), `${label} p${page}.${a}`); } catch { stats.error++; await sleep(ERR_BACKOFF); continue; }
+                const batch = resp?.tx_responses || [];
+                if (!batch.length) { stats.empty++; await sleep(ERR_BACKOFF); continue; }
+                const { fresh, freshMin } = scan(batch);
+                if (fresh === 0) { stats.dup++; await sleep(PROBE_DELAY); continue; }
+                if (freshMin < frontier) { stats.regress++; await sleep(PROBE_DELAY); continue; }
+                if (freshMin - frontier > CONTIG_DELTA) { stats.far++; await sleep(PROBE_DELAY); continue; }
+                if (!bestCand || freshMin < bestCand.freshMin) bestCand = { batch, freshMin };
+                if (bestCand.freshMin - frontier <= TIGHT) break;
+                await sleep(PROBE_DELAY);
+            }
+            rounds++;
+        } while (frontier < globalMax && rounds < ROUNDS && (!bestCand || bestCand.freshMin - frontier > LOOSE));
+
+        if (bestCand) {
+            const added = commit(bestCand.batch);
+            if (page % 10 === 0 || added === 0) console.log(`  ${label}: ${out.length} txs (page ${page}, frontier=${frontier}, +${added})`);
+            if (page === SEED_MAX_PAGES - 1) { stop = 'page-cap'; console.warn(`  ⚠ ${label} hit page cap (${SEED_MAX_PAGES})`); }
+            continue;
+        }
+        if (frontier >= globalMax) { stop = 'clean-end'; break; }
+        stop = `stuck@page${page}`;
+        console.warn(`  ⚠ ${label}: STUCK at page ${page} — frontier ${frontier} < globalMax ${globalMax}`);
+        break;
+    }
+    out.sort((a, b) => Number(a.height) - Number(b.height) || (a.txhash < b.txhash ? -1 : 1));
+    console.log(`  ${label}: DONE — ${out.length} txs | stop=${stop} | pages=${stats.pages} calls=${stats.calls} reprobe=${stats.reprobe} regress=${stats.regress} far=${stats.far} dup=${stats.dup} empty=${stats.empty} error=${stats.error}`);
+    return { txs: out, stop, globalMax };
+}
+
+// =============================================================================
+// SHARED CLASSIFIER — this section must stay BYTE-IDENTICAL with the copy in
+// platform-crons/history/ (the Render forward cron). Any drift must show in a
+// plain diff. Marker: <<CLASSIFIER v3>>
+// =============================================================================
+
+// ----------------------------------------------------------------------------- msg decoding
+function decodeMaybeB64(v) {
+    if (v == null) return null;
+    if (typeof v === 'object') return v;
+    if (typeof v === 'string') { try { return JSON.parse(Buffer.from(v, 'base64').toString('utf8')); } catch { return null; } }
+    return null;
+}
+function wasmActions(tr) {
+    const acts = new Set();
+    for (const ev of tr?.events || []) {
+        if (ev.type !== 'wasm') continue;
+        for (const kv of ev.attributes || []) if (kv.key === 'action' && kv.value) acts.add(kv.value);
+    }
+    return acts;
+}
+function normalizeAssetId(asset) {
+    if (asset == null) return null;
+    if (typeof asset === 'string') return asset;
+    if (asset.cw20) return `cw20:${asset.cw20}`;
+    if (asset.native) return `native:${asset.native}`;
+    if (asset.token?.contract_addr) return `cw20:${asset.token.contract_addr}`;
+    if (asset.native_token?.denom) return `native:${asset.native_token.denom}`;
+    return JSON.stringify(asset);
+}
+function extractVotes(voteArgs) {
+    const arr = voteArgs?.votes || voteArgs?.weights || voteArgs?.allocations || voteArgs?.gauge_votes;
+    if (!Array.isArray(arr)) return null;
+    const out = [];
+    for (const v of arr) {
+        if (Array.isArray(v) && v.length >= 2) out.push([normalizeAssetId(v[0]), Number(v[1])]);
+        else if (v && typeof v === 'object') {
+            const asset = v.asset ?? v.pool ?? v.gauge ?? v.id;
+            const bps = v.bps ?? v.weight ?? v.amount ?? v.power;
+            if (asset != null && bps != null) out.push([normalizeAssetId(asset), Number(bps)]);
+        }
+    }
+    return out.length ? out : null;
+}
+
+// ----------------------------------------------------------------------------- amount extraction (spec §3 hard rule: amounts + denoms on everything)
+// Coins as raw strings — pricing is downstream (price-history join). Two sources:
+//   1. cosmos coin_received events filtered to a receiver (wallet claims)
+//   2. cw20 wasm `transfer/mint` events filtered to a recipient
+// Returns [{amount, denom}] (denom canonical native:/ibc-as-native:/cw20:), or
+// null when nothing extractable — callers keep raw attrs so nothing is lost.
+function parseCoinString(s) {
+    // "12345uluna" | "67ibc/ABCD..." | comma-joined multi-coin
+    const out = [];
+    for (const part of String(s).split(',')) {
+        const m = part.trim().match(/^(\d+)([a-zA-Z/][a-zA-Z0-9/._-]*)$/);
+        if (m) out.push({ amount: m[1], denom: `native:${m[2]}` });
+    }
+    return out;
+}
+function coinsReceivedBy(tr, addr) {
+    if (!addr) return null;
+    const coins = [];
+    for (const ev of tr?.events || []) {
+        if (ev.type === 'coin_received') {
+            let recv = null, amt = null;
+            for (const kv of ev.attributes || []) {
+                if (kv.key === 'receiver') recv = kv.value;
+                if (kv.key === 'amount') amt = kv.value;
+            }
+            if (recv === addr && amt) coins.push(...parseCoinString(amt));
+        } else if (ev.type === 'wasm') {
+            // cw20 transfer/mint to the wallet: attributes action/to|recipient/amount + _contract_address
+            let action = null, to = null, amt = null, contract = null;
+            for (const kv of ev.attributes || []) {
+                if (kv.key === 'action') action = kv.value;
+                if (kv.key === 'to' || kv.key === 'recipient') to = kv.value;
+                if (kv.key === 'amount') amt = kv.value;
+                if (kv.key === '_contract_address') contract = kv.value;
+            }
+            if ((action === 'transfer' || action === 'mint') && to === addr && amt && /^\d+$/.test(amt) && contract) {
+                coins.push({ amount: amt, denom: `cw20:${contract}` });
+            }
+        }
+    }
+    if (!coins.length) return null;
+    // merge same-denom legs
+    const byDenom = new Map();
+    for (const c of coins) byDenom.set(c.denom, (BigInt(byDenom.get(c.denom) || 0) + BigInt(c.amount)).toString());
+    return [...byDenom.entries()].map(([denom, amount]) => ({ amount, denom }));
+}
+// All coins moved in a tx (for protocol distributions, where there's no single
+// wallet recipient): sum coin_received across the tx by denom.
+function coinsMovedInTx(tr) {
+    const byDenom = new Map();
+    for (const ev of tr?.events || []) {
+        if (ev.type !== 'coin_received') continue;
+        let amt = null;
+        for (const kv of ev.attributes || []) if (kv.key === 'amount') amt = kv.value;
+        if (amt) for (const c of parseCoinString(amt)) byDenom.set(c.denom, (BigInt(byDenom.get(c.denom) || 0) + BigInt(c.amount)).toString());
+    }
+    if (!byDenom.size) return null;
+    return [...byDenom.entries()].map(([denom, amount]) => ({ amount, denom }));
+}
+
+// ----------------------------------------------------------------------------- classify: votes + rewards (one unfiltered gauge pass)
+function classifyGaugeTxs(txResponses, discovered) {
+    const voteEvents = [], rewardEvents = [];
+    for (const tr of txResponses) {
+        const meta = { height: Number(tr.height), timestamp: tr.timestamp, tx_hash: tr.txhash };
+        (tr?.tx?.body?.messages || []).forEach((m, mi) => {
+            const msg = m?.msg; if (!msg || typeof msg !== 'object') return;
+            const key = Object.keys(msg)[0]; if (!key) return;
+            discovered[`gauge:${key}`] = (discovered[`gauge:${key}`] || 0) + 1;
+            const a = msg[key] || {};
+            if (VOTE_ACTION_KEYS[key] === 'vote') {
+                voteEvents.push({ type: 'vote', wallet: m.sender, msg_index: mi, ...meta, gauge: a.gauge ?? null, votes: extractVotes(a), raw_msg: extractVotes(a) ? undefined : a });
+                return;
+            }
+            const rtype = REWARD_GAUGE_KEYS[key];
+            if (rtype) {
+                if (PROTOCOL_REWARD_TYPES.has(rtype)) {
+                    rewardEvents.push({ type: rtype, kind: 'protocol_distribution', wallet: null, executor: m.sender || null, msg_index: mi, ...meta, gauge: a.gauge ?? null, coins: coinsMovedInTx(tr), args: a });
+                } else {
+                    rewardEvents.push({ type: rtype, kind: 'wallet_claim', wallet: m.sender, msg_index: mi, ...meta, gauge: a.gauge ?? null, coins: coinsReceivedBy(tr, m.sender), args: a });
+                }
+            }
+        });
+    }
+    return { voteEvents, rewardEvents };
+}
+
+// ----------------------------------------------------------------------------- classify: locks + escrow rewards (one escrow pass)
+function isCanonicalLock(type) {
+    if (!type.startsWith('event:')) return true;
+    return type.startsWith('event:ve/');
+}
+function classifyEscrowTxs(txResponses, discovered) {
+    const lockEvents = [], rewardEvents = [];
+    for (const tr of txResponses) {
+        const meta = { height: Number(tr.height), timestamp: tr.timestamp, tx_hash: tr.txhash };
+        const acts = wasmActions(tr);
+        let matchedThisTx = false;
+        (tr?.tx?.body?.messages || []).forEach((m, mi) => {
+            const msg = m?.msg; if (!msg || typeof msg !== 'object') return;
+            const key = Object.keys(msg)[0]; if (!key) return;
+
+            if (key === 'send' && msg.send?.contract === TLA_VOTING_ESCROW) {
+                const inner = decodeMaybeB64(msg.send.msg);
+                const innerKey = inner ? Object.keys(inner)[0] : null;
+                discovered[`escrow_hook:${innerKey || 'undecodable'}`] = (discovered[`escrow_hook:${innerKey || 'undecodable'}`] || 0) + 1;
+                const type = innerKey && LOCK_HOOK_KEYS[innerKey];
+                if (type) { const ia = inner[innerKey] || {}; lockEvents.push({ type, canonical: isCanonicalLock(type), wallet: m.sender, msg_index: mi, ...meta,
+                    token_id: ia.token_id != null ? String(ia.token_id) : null,
+                    asset: m.contract ? `cw20:${m.contract}` : null,
+                    amount: msg.send.amount != null ? String(msg.send.amount) : null,
+                    lock_seconds: ia.time != null ? Number(ia.time) : null,
+                    funded_by_cw20: true, args: ia }); matchedThisTx = true; }
+                return;
+            }
+            discovered[`escrow:${key}`] = (discovered[`escrow:${key}`] || 0) + 1;
+            const a = msg[key] || {};
+            const rtype = REWARD_ESCROW_KEYS[key];
+            if (rtype) {
+                rewardEvents.push({ type: rtype, kind: 'wallet_claim', wallet: m.sender, msg_index: mi, ...meta, token_id: a.token_id != null ? String(a.token_id) : null, coins: coinsReceivedBy(tr, m.sender), args: a });
+                matchedThisTx = true;
+                return;
+            }
+            const type = LOCK_ACTION_KEYS[key];
+            if (!type) return;
+            lockEvents.push({ type, canonical: isCanonicalLock(type), wallet: m.sender, msg_index: mi, ...meta,
+                token_id: a.token_id != null ? String(a.token_id) : (a.lock_id != null ? String(a.lock_id) : null),
+                token_id_add: a.token_id_add != null ? String(a.token_id_add) : null,
+                asset: a.asset ? normalizeAssetId(a.asset) : null,
+                into_asset: a.into ? normalizeAssetId(a.into) : null,
+                amount: a.amount != null ? String(a.amount) : null,
+                lock_seconds: a.time != null ? Number(a.time) : null,
+                recipient: a.recipient || null,
+                args: a });
+            matchedThisTx = true;
+        });
+        if (!matchedThisTx) {
+            for (const act of acts) {
+                if (/lock|deposit|withdraw|relock|merge|extend/i.test(act)) {
+                    discovered[`escrow_event:${act}`] = (discovered[`escrow_event:${act}`] || 0) + 1;
+                    lockEvents.push({ type: `event:${act}`, canonical: isCanonicalLock(`event:${act}`), wallet: tr?.tx?.body?.messages?.[0]?.sender || null, msg_index: 0, ...meta, via: 'wasm_event', args_unknown: true });
+                }
+            }
+        }
+    }
+    return { lockEvents, rewardEvents };
+}
+
+// ----------------------------------------------------------------------------- classify: bribes (incentive manager — provisional map + lossless fallback)
+function classifyBribeTxs(txResponses, discovered) {
+    const events = [];
+    for (const tr of txResponses) {
+        const meta = { height: Number(tr.height), timestamp: tr.timestamp, tx_hash: tr.txhash };
+        (tr?.tx?.body?.messages || []).forEach((m, mi) => {
+            const msg = m?.msg; if (!msg || typeof msg !== 'object') return;
+            const key = Object.keys(msg)[0]; if (!key) return;
+            const a = msg[key] || {};
+
+            // cw20 send-hook bribe funding (bribe paid in a cw20 like CAPA/ROAR)
+            if (key === 'send' && msg.send?.contract === TLA_INCENTIVE_MANAGER) {
+                const inner = decodeMaybeB64(msg.send.msg);
+                const innerKey = inner ? Object.keys(inner)[0] : null;
+                discovered[`incentive_hook:${innerKey || 'undecodable'}`] = (discovered[`incentive_hook:${innerKey || 'undecodable'}`] || 0) + 1;
+                const ia = inner?.[innerKey] || {};
+                const type = (innerKey && BRIBE_ACTION_KEYS[innerKey]) || `event:incentive_hook/${innerKey || 'undecodable'}`;
+                events.push({ type, briber: m.sender, msg_index: mi, ...meta,
+                    pool: ia.asset ? normalizeAssetId(ia.asset) : (ia.pool ? normalizeAssetId(ia.pool) : (ia.lp ? normalizeAssetId(ia.lp) : null)),
+                    gauge: ia.gauge ?? null,
+                    coins: m.contract && msg.send.amount != null ? [{ amount: String(msg.send.amount), denom: `cw20:${m.contract}` }] : null,
+                    args: ia });
+                return;
+            }
+            discovered[`incentive:${key}`] = (discovered[`incentive:${key}`] || 0) + 1;
+            const mapped = BRIBE_ACTION_KEYS[key];
+            const type = mapped || `event:incentive/${key}`;
+            // native-funded bribes carry coins on the message `funds`
+            const funds = Array.isArray(m.funds) && m.funds.length
+                ? m.funds.map(f => ({ amount: String(f.amount), denom: `native:${f.denom}` }))
+                : coinsReceivedBy(tr, TLA_INCENTIVE_MANAGER);
+            events.push({ type, briber: m.sender, msg_index: mi, ...meta,
+                pool: a.asset ? normalizeAssetId(a.asset) : (a.pool ? normalizeAssetId(a.pool) : (a.lp ? normalizeAssetId(a.lp) : null)),
+                gauge: a.gauge ?? null,
+                coins: funds,
+                args: a });
+        });
+    }
+    return events;
+}
+
+// ----------------------------------------------------------------------------- merge / dedup (F3 support)
+// v3 dedup key includes msg_index (multi-message txs: distributions, multicalls).
+function eventKey(e) { return `${e.tx_hash}|${e.type}|${e.wallet ?? e.briber ?? ''}|${e.msg_index ?? ''}`; }
+function mergeEvents(prior, fresh) {
+    const byKey = new Map();
+    for (const e of prior) byKey.set(eventKey(e), e);
+    let added = 0;
+    for (const e of fresh) { const k = eventKey(e); if (!byKey.has(k)) { byKey.set(k, e); added++; } }
+    const merged = [...byKey.values()].sort((a, b) => (a.height - b.height) || String(a.tx_hash).localeCompare(String(b.tx_hash)) || ((a.msg_index ?? 0) - (b.msg_index ?? 0)));
+    return { merged, added };
+}
+
+// ----------------------------------------------------------------------------- epoch mapping (1-indexed canonical)
+function makeEpochResolver(epochDates) {
+    if (!Array.isArray(epochDates) || !epochDates.length) return () => null;
+    const rows = epochDates.map(r => ({ epoch: r.epoch, start: Date.parse(r.start_time), end: Date.parse(r.end_time) })).filter(r => Number.isFinite(r.start));
+    return (iso) => { const t = Date.parse(iso); if (!Number.isFinite(t)) return null; for (const r of rows) if (t >= r.start && t < r.end) return r.epoch; const last = rows[rows.length - 1]; return (t >= last.end) ? last.epoch + Math.floor((t - last.end) / (7 * 864e5)) + 1 : null; };
+}
+
+// ----------------------------------------------------------------------------- rollups (layer 3 — recomputable; spec §3)
+function buildRollups(voteEvents, lockEvents, bribeEvents, rewardEvents, epochOf) {
+    const wallets = {};
+    const w = (addr) => (wallets[addr] ||= { wallet: addr, vote_count: 0, first_vote_epoch: null, last_vote_epoch: null, pools_voted: {}, vote_changes: 0, locks: [], first_lock_ts: null, claimed: {} });
+    let prevByWalletGauge = {};
+    for (const e of voteEvents) {
+        if (!e.wallet) continue;
+        const r = w(e.wallet); r.vote_count++;
+        const ep = epochOf(e.timestamp);
+        if (ep != null) { if (r.first_vote_epoch == null || ep < r.first_vote_epoch) r.first_vote_epoch = ep; if (r.last_vote_epoch == null || ep > r.last_vote_epoch) r.last_vote_epoch = ep; }
+        const gkey = `${e.wallet}|${e.gauge ?? ''}`;
+        const sig = JSON.stringify((e.votes || []).slice().sort());
+        if (prevByWalletGauge[gkey] != null && prevByWalletGauge[gkey] !== sig) r.vote_changes++;
+        prevByWalletGauge[gkey] = sig;
+        for (const [asset] of (e.votes || [])) if (asset) r.pools_voted[asset] = (r.pools_voted[asset] || 0) + 1;
+    }
+    for (const e of lockEvents) {
+        if (!e.wallet) continue;
+        const r = w(e.wallet);
+        r.locks.push({ type: e.type, canonical: e.canonical !== false, token_id: e.token_id ?? null, asset: e.asset ?? null, amount: e.amount ?? null, timestamp: e.timestamp, epoch: epochOf(e.timestamp), tx_hash: e.tx_hash });
+        if (r.first_lock_ts == null || Date.parse(e.timestamp) < Date.parse(r.first_lock_ts)) r.first_lock_ts = e.timestamp;
+    }
+    // claimed totals per wallet per denom (income line of P&L; raw integer strings)
+    for (const e of rewardEvents) {
+        if (e.kind !== 'wallet_claim' || !e.wallet || !Array.isArray(e.coins)) continue;
+        const r = w(e.wallet);
+        for (const c of e.coins) r.claimed[c.denom] = (BigInt(r.claimed[c.denom] || 0) + BigInt(c.amount)).toString();
+    }
+    for (const r of Object.values(wallets)) {
+        r.vote_churn_rate = r.vote_count > 1 ? +(r.vote_changes / (r.vote_count - 1)).toFixed(4) : 0;
+        r.pools_voted = Object.entries(r.pools_voted).sort((a, b) => b[1] - a[1]).map(([asset, n]) => ({ asset, times: n }));
+        r.locks.sort((a, b) => Date.parse(a.timestamp) - Date.parse(b.timestamp));
+    }
+    // per-briber per-epoch totals (raw denoms; attribution joins address-catalog downstream)
+    const bribers = {};
+    for (const e of bribeEvents) {
+        if (!e.briber || e.type.startsWith('event:')) { /* thin events still counted below */ }
+        const b = (bribers[e.briber || 'unknown'] ||= { briber: e.briber || null, event_count: 0, by_epoch: {} });
+        b.event_count++;
+        const ep = epochOf(e.timestamp) ?? 'unknown';
+        const slot = (b.by_epoch[ep] ||= { pools: {}, coins: {} });
+        if (e.pool) slot.pools[e.pool] = (slot.pools[e.pool] || 0) + 1;
+        for (const c of e.coins || []) slot.coins[c.denom] = (BigInt(slot.coins[c.denom] || 0) + BigInt(c.amount)).toString();
+    }
+    // per-epoch protocol pots (earned-vs-claimed foundation)
+    const pots = {};
+    for (const e of rewardEvents) {
+        if (e.kind !== 'protocol_distribution') continue;
+        const ep = epochOf(e.timestamp) ?? 'unknown';
+        const slot = (pots[ep] ||= {});
+        const t = (slot[e.type] ||= {});
+        for (const c of e.coins || []) t[c.denom] = (BigInt(t[c.denom] || 0) + BigInt(c.amount)).toString();
+    }
+    return {
+        schemaVersion: SCHEMA_VERSION, builtAt: new Date().toISOString(),
+        wallet_count: Object.keys(wallets).length,
+        wallets: Object.values(wallets).sort((a, b) => b.vote_count - a.vote_count),
+        bribers: Object.values(bribers).sort((a, b) => b.event_count - a.event_count),
+        protocol_pots_by_epoch: pots,
+    };
+}
+// <<CLASSIFIER v3 END>>
+// =============================================================================
+
+// ----------------------------------------------------------------------------- github publish
+function githubApiRequest(method, apiPath, body) {
+    return new Promise((resolve, reject) => {
+        const opts = { hostname: 'api.github.com', path: apiPath, method, headers: { 'User-Agent': 'tla-history-seed', 'Authorization': `Bearer ${GITHUB_TOKEN}`, 'Accept': 'application/vnd.github+json' } };
+        if (body) opts.headers['Content-Type'] = 'application/json';
+        const req = https.request(opts, res => { let data = ''; res.on('data', c => data += c); res.on('end', () => { if (res.statusCode >= 200 && res.statusCode < 300) { try { resolve(JSON.parse(data)); } catch { resolve(data); } } else reject(new Error(`GitHub ${method} ${apiPath}: ${res.statusCode} ${data.slice(0, 200)}`)); }); });
+        req.on('error', reject); if (body) req.write(JSON.stringify(body)); req.end();
+    });
+}
+async function publishFile(filePath, contentObj, message) {
+    const content = typeof contentObj === 'string' ? contentObj : JSON.stringify(contentObj, null, 2);
+    const apiPath = `/repos/${GITHUB_REPO}/contents/${filePath}`;
+    let sha = null;
+    try { sha = (await githubApiRequest('GET', apiPath + `?ref=${GITHUB_BRANCH}`)).sha; } catch { /* new file */ }
+    const body = { message, content: Buffer.from(content).toString('base64'), branch: GITHUB_BRANCH };
+    if (sha) body.sha = sha;
+    return githubApiRequest('PUT', apiPath, body);
+}
+const RAW = (file) => `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/${OUT_DIR}/${file}?t=${Date.now()}`;
+
+// ----------------------------------------------------------------------------- probe mode (sample — writes nothing)
+async function runProbe() {
+    console.log('🔬 sample/probe — recent txs on ALL THREE contracts; writing NOTHING.');
+    console.log('   Focus: the INCENTIVE MANAGER map is unconfirmed — review it below.\n');
+    const targets = [
+        ['gauge controller', TLA_GAUGE_CONTROLLER],
+        ['voting escrow', TLA_VOTING_ESCROW],
+        ['incentive manager (NEW — bribes)', TLA_INCENTIVE_MANAGER],
+    ];
+    for (const [name, addr] of targets) {
+        console.log(`── ${name}  (${addr})`);
+        const path = `/cosmos/tx/v1beta1/txs?query=${encodeURIComponent(`wasm._contract_address='${addr}'`)}&order_by=ORDER_BY_DESC&page=1&limit=${PAGE_LIMIT}`;
+        let res = null; try { res = await lcdGet(path, `probe ${name}`); } catch (e) { console.log(`   ✗ both LCDs failed: ${e.message}\n`); continue; }
+        const txs = res?.tx_responses || [];
+        console.log(`   total txs (LCD reports): ${res?.total ?? 'n/a'};  sampling ${txs.length}`);
+        const seen = {};
+        let rewardSampleShown = false;
+        for (const tr of txs) {
+            for (const m of tr?.tx?.body?.messages || []) {
+                const msg = m?.msg; if (!msg || typeof msg !== 'object') continue;
+                const key = Object.keys(msg)[0]; if (!key) continue;
+                if (!seen[key]) { seen[key] = 1; console.log(`   action "${key}"  e.g. ${JSON.stringify(msg[key]).slice(0, 220)}`); if (Array.isArray(m.funds) && m.funds.length) console.log(`     ↳ funds: ${JSON.stringify(m.funds)}`); }
+                else seen[key]++;
+                if (key === 'send' && msg.send?.contract === addr) { const inner = decodeMaybeB64(msg.send.msg); console.log(`     ↳ send-hook inner: ${inner ? JSON.stringify(inner).slice(0, 220) : 'undecodable'}`); }
+                // show one live reward-amount extraction so the coins parser is verified against real data before seeding
+                if (!rewardSampleShown && (REWARD_GAUGE_KEYS[key] || REWARD_ESCROW_KEYS[key])) {
+                    const coins = PROTOCOL_REWARD_TYPES.has(REWARD_GAUGE_KEYS[key]) ? coinsMovedInTx(tr) : coinsReceivedBy(tr, m.sender);
+                    console.log(`     ↳ REWARD EXTRACTION TEST [${key}] tx=${tr.txhash.slice(0, 12)}… → coins=${JSON.stringify(coins)}`);
+                    rewardSampleShown = true;
+                }
+            }
+        }
+        console.log(`   counts: ${JSON.stringify(seen)}\n`);
+    }
+    console.log('Gauge + escrow maps were chain-confirmed 2026-06-15. If the incentive-');
+    console.log('manager keys above match/extend BRIBE_ACTION_KEYS and the reward');
+    console.log('extraction shows real coins, run RUN_MODE=full to seed.');
+}
+
+// ----------------------------------------------------------------------------- heartbeat (tla-core standard)
+async function publishHeartbeat(h) {
+    const hb = {
+        schemaVersion: SCHEMA_VERSION, cron: 'tla-history', product: 'events',
+        capturedAt: h.startedAt.toISOString(), runId: `tla-history-${h.startedAt.getTime().toString(36)}`,
+        runMode: h.runMode, status: h.status, note: h.note || undefined,
+        counts: h.counts || {}, last_heights: h.lastHeights || {}, horizons: h.horizons || {},
+        archive_lcd_used: ARCHIVE_LCD ? true : undefined,
+        discovered_actions: h.discovered,
+        next_expected_run_at: new Date(h.startedAt.getTime() + FORWARD_CADENCE_HOURS * 3600 * 1000).toISOString(),
+        error_count: h.errors.length, recent_errors: h.errors,
+    };
+    try { await publishFile(`${OUT_DIR}/heartbeat.json`, hb, `tla-history heartbeat ${h.status}`); }
+    catch (e) { console.warn(`  ⚠ heartbeat publish failed: ${e.message}`); }
+}
+
+// ----------------------------------------------------------------------------- main
+async function run() {
+    const startedAt = new Date();
+    const errors = [];
+    const addErr = (step, e) => errors.push({ step, message: String(e && e.message || e) });
+    const discovered = {};
+    console.log(`\n📜 tla-history-seed — ${startedAt.toISOString()}${ARCHIVE_LCD ? `  [ARCHIVE MODE: ${ARCHIVE_LCD}]` : ''}\n`);
+
+    if (PROBE_ONLY) { await runProbe(); return; }
+    if (!GITHUB_TOKEN) throw new Error('GITHUB_TOKEN missing — refusing to run (no publish target).');
+
+    // prior committed state + epoch dates
+    const [priorVotes, priorLocks, priorBribes, priorRewards, epochDates] = await Promise.all([
+        tryGetJson(RAW('vote-events.json'), 'prior vote-events'),
+        tryGetJson(RAW('lock-events.json'), 'prior lock-events'),
+        tryGetJson(RAW('bribe-events.json'), 'prior bribe-events'),
+        tryGetJson(RAW('reward-events.json'), 'prior reward-events'),
+        tryGetJson(EPOCH_DATES_URL, 'epoch dates'),
+    ]);
+    const epochOf = makeEpochResolver(epochDates);
+    const prior = {
+        votes:   priorVotes?.events   || [],
+        locks:   priorLocks?.events   || [],
+        bribes:  priorBribes?.events  || [],
+        rewards: priorRewards?.events || [],
+    };
+    const priorHorizons = {
+        votes:  priorVotes?.horizonHeight  ?? null,
+        locks:  priorLocks?.horizonHeight  ?? null,
+        bribes: priorBribes?.horizonHeight ?? null,
+        rewards: priorRewards?.horizonHeight ?? null,
+    };
+    const runMode = (prior.votes.length + prior.locks.length + prior.bribes.length + prior.rewards.length) === 0 ? 'seed' : 'forward';
+    console.log(`   mode: ${runMode}  (prior: votes=${prior.votes.length} locks=${prior.locks.length} bribes=${prior.bribes.length} rewards=${prior.rewards.length})\n`);
+
+    // full-history sweeps (ASC resilient pager). Gauge UNFILTERED — one pass
+    // yields votes + distributions + claim_bribes (spec §3).
+    console.log('🗳  scanning gauge (unfiltered: votes + rewards)…');
+    const gauge = await fetchAllTxs([`wasm._contract_address='${TLA_GAUGE_CONTROLLER}'`], 'gauge-all');
+    console.log('\n🔒 scanning escrow (locks + claim_rebase/compound)…');
+    const escrow = await fetchAllTxs([`wasm._contract_address='${TLA_VOTING_ESCROW}'`], 'escrow-all');
+    console.log('\n💰 scanning incentive manager (bribes — NEW)…');
+    const incentive = await fetchAllTxs([`wasm._contract_address='${TLA_INCENTIVE_MANAGER}'`], 'incentive-all');
+
+    const done = (r) => r.stop === 'complete' || r.stop === 'clean-end';
+    console.log(`\n   gauge: ${gauge.txs.length} (${gauge.stop}) | escrow: ${escrow.txs.length} (${escrow.stop}) | incentive: ${incentive.txs.length} (${incentive.stop})`);
+
+    // classify
+    const g = classifyGaugeTxs(gauge.txs, discovered);
+    const e = classifyEscrowTxs(escrow.txs, discovered);
+    const freshBribes = classifyBribeTxs(incentive.txs, discovered);
+    const freshRewards = [...g.rewardEvents, ...e.rewardEvents];
+
+    // merge + dedup per stream
+    const vm = mergeEvents(prior.votes, g.voteEvents);
+    const lm = mergeEvents(prior.locks, e.lockEvents);
+    const bm = mergeEvents(prior.bribes, freshBribes);
+    const rm = mergeEvents(prior.rewards, freshRewards);
+    console.log(`   votes ${prior.votes.length}→${vm.merged.length} (+${vm.added}) | locks ${prior.locks.length}→${lm.merged.length} (+${lm.added}) | bribes ${prior.bribes.length}→${bm.merged.length} (+${bm.added}) | rewards ${prior.rewards.length}→${rm.merged.length} (+${rm.added})`);
+
+    // F3 never-shrink per stream (growth below horizon — archive deepening — passes naturally: merge is append-only)
+    const shrunk = vm.merged.length < prior.votes.length || lm.merged.length < prior.locks.length || bm.merged.length < prior.bribes.length || rm.merged.length < prior.rewards.length;
+    if (shrunk) {
+        addErr('shrink-guard', new Error('merged event count < committed — aborting publish'));
+        await publishHeartbeat({ startedAt, runMode, status: 'error', errors, discovered, counts: { votes: prior.votes.length, locks: prior.locks.length, bribes: prior.bribes.length, rewards: prior.rewards.length }, note: 'F3 shrink guard tripped; nothing published' });
+        throw new Error('F3 shrink guard: refusing to overwrite history with fewer events.');
+    }
+
+    // horizons only ever move DOWN (min of prior + this scan) — archive-safe (F8, spec §6)
+    const earliest = (txs) => txs.length ? Number(txs[0].height) : null;
+    const horizon = (p, txs) => { const eh = earliest(txs); if (eh == null) return p; if (p == null) return eh; return Math.min(p, eh); };
+    const horizons = {
+        votes: horizon(priorHorizons.votes, gauge.txs),
+        locks: horizon(priorHorizons.locks, escrow.txs),
+        bribes: horizon(priorHorizons.bribes, incentive.txs),
+        rewards: horizon(priorHorizons.rewards, gauge.txs.length || escrow.txs.length ? [ ...(gauge.txs.length ? [gauge.txs[0]] : []), ...(escrow.txs.length ? [escrow.txs[0]] : []) ].sort((a, b) => Number(a.height) - Number(b.height)) : []),
+    };
+
+    const streamFile = (contract, txsRes, complete, hz, merged) => ({
+        schemaVersion: SCHEMA_VERSION, builtAt: startedAt.toISOString(), contract,
+        lastScannedHeight: txsRes.globalMax || 0, horizonHeight: hz,
+        scan_complete: complete, scan_stop: txsRes.stop, count: merged.length, events: merged,
+    });
+    const gComplete = done(gauge), eComplete = done(escrow), iComplete = done(incentive);
+    const voteFile   = streamFile(TLA_GAUGE_CONTROLLER,  gauge,     gComplete, horizons.votes,  vm.merged);
+    const lockFile   = streamFile(TLA_VOTING_ESCROW,     escrow,    eComplete, horizons.locks,  lm.merged);
+    const bribeFile  = streamFile(TLA_INCENTIVE_MANAGER, incentive, iComplete, horizons.bribes, bm.merged);
+    const rewardFile = { schemaVersion: SCHEMA_VERSION, builtAt: startedAt.toISOString(),
+        contracts: { gauge: TLA_GAUGE_CONTROLLER, escrow: TLA_VOTING_ESCROW },
+        lastScannedHeight: Math.max(gauge.globalMax || 0, escrow.globalMax || 0),
+        horizonHeight: horizons.rewards, scan_complete: gComplete && eComplete,
+        scan_stop: `gauge:${gauge.stop};escrow:${escrow.stop}`, count: rm.merged.length, events: rm.merged };
+
+    const rollups = buildRollups(vm.merged, lm.merged, bm.merged, rm.merged, epochOf);
+
+    // cursor — the Render cron's pickup point. Advance ONLY complete scans (F7).
+    const cursor = {
+        schemaVersion: SCHEMA_VERSION, updatedAt: startedAt.toISOString(),
+        contracts: {
+            [TLA_GAUGE_CONTROLLER]:  { lastScannedHeight: gComplete ? (gauge.globalMax || 0)     : null, complete: gComplete },
+            [TLA_VOTING_ESCROW]:     { lastScannedHeight: eComplete ? (escrow.globalMax || 0)    : null, complete: eComplete },
+            [TLA_INCENTIVE_MANAGER]: { lastScannedHeight: iComplete ? (incentive.globalMax || 0) : null, complete: iComplete },
+        },
+    };
+
+    const index = {
+        module: 'history', product: 'events', schemaVersion: SCHEMA_VERSION, updatedAt: startedAt.toISOString(),
+        spec: 'docs/pending-changes/SPEC-tla-history.md',
+        files: {
+            'vote-events.json':   { contract: TLA_GAUGE_CONTROLLER,  count: vm.merged.length, horizonHeight: horizons.votes },
+            'lock-events.json':   { contract: TLA_VOTING_ESCROW,     count: lm.merged.length, horizonHeight: horizons.locks, note: 'sum canonical===true for VP/lock-delta math' },
+            'bribe-events.json':  { contract: TLA_INCENTIVE_MANAGER, count: bm.merged.length, horizonHeight: horizons.bribes },
+            'reward-events.json': { count: rm.merged.length, horizonHeight: horizons.rewards, note: 'wallet_claim + protocol_distribution; coins are raw {amount,denom}' },
+            'rollups.json':       { wallets: rollups.wallet_count },
+            'cursor.json':        { note: 'org-tla-history (Render) forward-maintains from here' },
+            'heartbeat.json':     {},
+        },
+    };
+
+    await publishFile(`${OUT_DIR}/vote-events.json`,   voteFile,   `tla-history ${runMode}: votes ${vm.merged.length} (+${vm.added})`);
+    await publishFile(`${OUT_DIR}/lock-events.json`,   lockFile,   `tla-history ${runMode}: locks ${lm.merged.length} (+${lm.added})`);
+    await publishFile(`${OUT_DIR}/bribe-events.json`,  bribeFile,  `tla-history ${runMode}: bribes ${bm.merged.length} (+${bm.added})`);
+    await publishFile(`${OUT_DIR}/reward-events.json`, rewardFile, `tla-history ${runMode}: rewards ${rm.merged.length} (+${rm.added})`);
+    await publishFile(`${OUT_DIR}/rollups.json`,       rollups,    `tla-history rollups: ${rollups.wallet_count} wallets`);
+    await publishFile(`${OUT_DIR}/cursor.json`,        cursor,     `tla-history cursor`);
+    await publishFile(`${OUT_DIR}/index.json`,         index,      `tla-history index`);
+
+    const allComplete = gComplete && eComplete && iComplete;
+    await publishHeartbeat({ startedAt, runMode, status: allComplete ? 'ok' : 'partial', errors, discovered,
+        counts: { votes: vm.merged.length, locks: lm.merged.length, bribes: bm.merged.length, rewards: rm.merged.length, wallets: rollups.wallet_count },
+        lastHeights: { gauge: gauge.globalMax || 0, escrow: escrow.globalMax || 0, incentive: incentive.globalMax || 0 },
+        horizons });
+
+    console.log(`\n✅ done — votes ${vm.merged.length}, locks ${lm.merged.length}, bribes ${bm.merged.length}, rewards ${rm.merged.length}, wallets ${rollups.wallet_count}, status ${allComplete ? 'ok' : 'PARTIAL'}`);
+    if (Object.keys(discovered).length) console.log(`   discovered_actions: ${JSON.stringify(discovered)}`);
+}
+
+if (require.main === module) {
+    run().catch(err => { console.error('FATAL:', err.message); process.exit(1); });
+}
+
+module.exports = { classifyGaugeTxs, classifyEscrowTxs, classifyBribeTxs, mergeEvents, buildRollups, extractVotes, normalizeAssetId, makeEpochResolver, isCanonicalLock, parseCoinString, coinsReceivedBy, coinsMovedInTx, eventKey };
