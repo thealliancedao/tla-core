@@ -127,13 +127,26 @@ function gh(method, apiPath, body) {
     });
 }
 async function publishFile(filePath, contentObj, message) {
+    // 409-retry is mandatory here: this harvester commits every ~minute, and
+    // GitHub's contents API intermittently races its own replication on rapid
+    // sequential PUTs to one branch. On 409: re-fetch sha, back off, retry.
     const content = typeof contentObj === 'string' ? contentObj : JSON.stringify(contentObj);
     const apiPath = `/repos/${GITHUB_REPO}/contents/${filePath}`;
-    let sha = null;
-    try { sha = (await gh('GET', apiPath + `?ref=${GITHUB_BRANCH}`)).sha; } catch { /* new */ }
-    const body = { message, content: Buffer.from(content).toString('base64'), branch: GITHUB_BRANCH };
-    if (sha) body.sha = sha;
-    return gh('PUT', apiPath, body);
+    let lastErr;
+    for (let a = 0; a < 6; a++) {
+        let sha = null;
+        try { sha = (await gh('GET', apiPath + `?ref=${GITHUB_BRANCH}`)).sha; } catch { /* new file */ }
+        const body = { message, content: Buffer.from(content).toString('base64'), branch: GITHUB_BRANCH };
+        if (sha) body.sha = sha;
+        try { return await gh('PUT', apiPath, body); }
+        catch (e) {
+            lastErr = e;
+            if (/409/.test(e.message)) { console.warn(`   ↻ 409 on ${filePath} — re-fetching sha, retry ${a + 1}`); await sleep(2000 + a * 1500); }
+            else if (a < 2) { await sleep(1500); }
+            else throw e;
+        }
+    }
+    throw new Error(`publish failed after 409 retries: ${filePath} — ${lastErr.message}`);
 }
 async function tryGetJson(url) { try { return await httpGet(url); } catch { return null; } }
 const RAW = (f) => `https://raw.githubusercontent.com/${GITHUB_REPO}/${GITHUB_BRANCH}/${OUT_DIR}/${f}?t=${Date.now()}`;
@@ -161,11 +174,15 @@ async function run() {
     let abortReason = null;
 
     const flush = async (final) => {
+        // publish-then-consume: if the publish throws, the buffer and part
+        // counter are untouched, so a paused run never records an offset past
+        // unstored txs.
         while (buffer.length >= CHUNK_SIZE || (final && buffer.length > 0)) {
-            const chunk = buffer.splice(0, CHUNK_SIZE);
-            state.parts_done += 1;
-            const name = `part-${String(state.parts_done).padStart(5, '0')}.json`;
+            const chunk = buffer.slice(0, CHUNK_SIZE);
+            const name = `part-${String(state.parts_done + 1).padStart(5, '0')}.json`;
             await publishFile(`${OUT_DIR}/${name}`, { label: LABEL, account: ACCOUNT, count: chunk.length, height_range: [Math.min(...chunk.map(t => t.height)), Math.max(...chunk.map(t => t.height))], txs: chunk }, `fcd-harvest ${LABEL}: ${name} (${chunk.length} txs)`);
+            buffer.splice(0, CHUNK_SIZE);
+            state.parts_done += 1;
             console.log(`   💾 ${name} (${chunk.length} txs, heights ${Math.min(...chunk.map(t => t.height))}–${Math.max(...chunk.map(t => t.height))})`);
         }
     };
@@ -179,7 +196,7 @@ async function run() {
             console.warn(`   ⏸ pausing run: ${e.message}`);
             break;
         }
-        const txs = page?.txs || [];
+        try {
         if (!txs.length) { terminal = true; break; }
         for (const t of txs) {
             const tt = trimTx(t);
@@ -201,9 +218,22 @@ async function run() {
             state.stop_reason = 'in-progress checkpoint';
             await publishFile(`${OUT_DIR}/state.json`, state, `fcd-harvest ${LABEL}: checkpoint p${state.pages_done}`);
         }
+        } catch (e) {
+            // publish-path failure (post-retries): pause, don't FATAL — state
+            // save below preserves resumability from the last flushed offset.
+            abortReason = e.message;
+            console.warn(`   ⏸ pausing run (publish path): ${e.message}`);
+            break;
+        }
         await sleep(PAGE_DELAY_MS);
     }
-    await flush(true);
+    try { await flush(true); } catch (e) { console.warn(`   ⚠ final flush failed (${e.message}) — unflushed txs will be re-fetched on resume`); }
+    if (buffer.length > 0) {
+        // unstored txs remain: saving state now would advance the offset past
+        // them. Leave the last checkpoint as the resume point instead.
+        console.warn(`   ⏸ PAUSED with ${buffer.length} unstored txs — state NOT saved; resume continues from the last checkpoint`);
+        return;
+    }
 
     state.complete = terminal;
     state.updated_at = new Date().toISOString();
