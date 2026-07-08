@@ -1,20 +1,20 @@
-# cron-voting — changelog
+# cron-tla-voting — changelog
 
 Voting event capture: votes, locks, bribes, rewards.
-Seed: `tla-core/.github/scripts/voting/` (Action) · Forward: `platform-crons/voting/` (Render `org-voting`)
-Spec: `docs/pending-changes/SPEC-voting.md`
+Seed: `tla-core/.github/scripts/tla-voting/` (Action) · Forward: `platform-crons/tla-voting/` (Render `org-tla-voting`)
+Spec: `docs/pending-changes/SPEC-tla-voting.md`
 
 ---
 
-# Rev 1.1 — 2026-07-08 — module renamed history → voting (pre-deploy)
+# Rev 1.1 — 2026-07-08 — module renamed history → tla-voting (pre-deploy)
 
-Name wasn't descriptive. Data path `tla-core/voting/events/`, seed
-`.github/scripts/voting/voting-seed.js` + `voting-backfill.yml`, forward cron
-`platform-crons/voting/` (Render `org-voting`). Seed gained a one-time
-prior-read fallback from `history/events` so the rename is lossless (retention
+Name wasn't descriptive. Data path `tla-core/tla-voting/events/`, seed
+`.github/scripts/tla-voting/tla-voting-seed.js` + `tla-voting-backfill.yml`,
+forward cron `platform-crons/tla-voting/` (Render `org-tla-voting`). Seed gained a one-time
+prior-read fallback from the old paths (`voting/events`, `history/events`) so the rename is lossless (retention
 floor slides daily; a from-scratch re-scan would have dropped the earliest
-reward/bribe events). After the seed publishes `voting/events`, delete the old
-`tla-core/history/` folder.
+reward/bribe events). After the seed publishes `tla-voting/events`, delete the old
+`tla-core/history/` folder (and `voting/` if present).
 
 # Rev 1 — 2026-07-08 — seed complete, forward cron shipped
 
@@ -49,8 +49,8 @@ bribes 1 · rewards 398 · 250 wallet rollups · status ok.
 msgs carries the same tx-gross coins on each. Never sum pots across
 distribution types. Per-msg splitting = refinement candidate.
 
-**Forward cron (org-voting 1.0.0):** self-contained
-`platform-crons/voting/`, classifier byte-identical with seed (md5-verified),
+**Forward cron (org-tla-voting 1.0.0):** self-contained
+`platform-crons/tla-voting/`, classifier byte-identical with seed (md5-verified),
 never seeds (aborts if priors unreachable), cursor/frontier advance only on
 complete scans, change-only stream publishing. Schedule `0 */6 * * *`.
 
