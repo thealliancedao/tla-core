@@ -16,6 +16,11 @@ name: FCD Harvest
 #   3. tla-escrow       terra1uqhj8agyeaz8fu6mdggfuwr3lp32jlrx5hqag4jxexde92rzkamq3l62zg
 #   4. tla-gauge        terra1hfksrhchkmsj4qdq33wkksrslnfles6y2l77fmmzeep0xmq24l2smsd3lj
 #   5. tla-incentive    terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh
+#
+# LP custody contracts (tla-flows domain — deposit/withdraw/claim history):
+#   lp-batch harvests all five sequentially in one job (overnight-friendly:
+#   each label is independently resumable; if the job dies or pauses, re-run
+#   lp-batch and completed labels are skipped automatically).
 
 on:
   workflow_dispatch:
@@ -24,7 +29,7 @@ on:
         description: "Preset target (or choose custom and fill account+label)"
         type: choice
         default: adao-minter
-        options: [adao-minter, adao-collection, tla-escrow, tla-gauge, tla-incentive, custom]
+        options: [adao-minter, adao-collection, tla-escrow, tla-gauge, tla-incentive, lp-batch, lp-compounder, lp-stable, lp-project, lp-bluechip, lp-single, custom]
       account:
         description: "CUSTOM only: contract/wallet address to harvest"
         type: string
@@ -75,10 +80,17 @@ jobs:
             tla-escrow)      echo "account=terra1uqhj8agyeaz8fu6mdggfuwr3lp32jlrx5hqag4jxexde92rzkamq3l62zg" >> $GITHUB_OUTPUT; echo "label=tla-escrow" >> $GITHUB_OUTPUT ;;
             tla-gauge)       echo "account=terra1hfksrhchkmsj4qdq33wkksrslnfles6y2l77fmmzeep0xmq24l2smsd3lj" >> $GITHUB_OUTPUT; echo "label=tla-gauge" >> $GITHUB_OUTPUT ;;
             tla-incentive)   echo "account=terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh" >> $GITHUB_OUTPUT; echo "label=tla-incentive" >> $GITHUB_OUTPUT ;;
+            lp-compounder)   echo "account=terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx" >> $GITHUB_OUTPUT; echo "label=lp-compounder" >> $GITHUB_OUTPUT ;;
+            lp-stable)       echo "account=terra1v399cx9drllm70wxfsgvfe694tdsd9x96p9ha36w7muffe4znlusqswspq" >> $GITHUB_OUTPUT; echo "label=lp-stable" >> $GITHUB_OUTPUT ;;
+            lp-project)      echo "account=terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa" >> $GITHUB_OUTPUT; echo "label=lp-project" >> $GITHUB_OUTPUT ;;
+            lp-bluechip)     echo "account=terra14mmvqn0kthw6sre75vku263lafn5655mkjdejqjedjga4cw0qx2qlf4arv" >> $GITHUB_OUTPUT; echo "label=lp-bluechip" >> $GITHUB_OUTPUT ;;
+            lp-single)       echo "account=terra1qdz5qgafx88kp5mf6m2tah8742g4u5g2cek0m3jrgssexexk7g4qw6e23k" >> $GITHUB_OUTPUT; echo "label=lp-single" >> $GITHUB_OUTPUT ;;
+            lp-batch)        echo "account=batch" >> $GITHUB_OUTPUT; echo "label=lp-batch" >> $GITHUB_OUTPUT ;;
             custom)          echo "account=${{ inputs.account }}" >> $GITHUB_OUTPUT; echo "label=${{ inputs.label }}" >> $GITHUB_OUTPUT ;;
           esac
 
       - name: Run FCD harvest
+        if: inputs.preset != 'lp-batch'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPO: ${{ github.repository }}
@@ -89,3 +101,28 @@ jobs:
           CHUNK_SIZE: ${{ inputs.chunk_size }}
           PAGE_DELAY_MS: ${{ inputs.page_delay_ms }}
         run: node .github/scripts/fcd-harvest/fcd-harvest.js
+
+      - name: Run LP batch (all five custody contracts, sequential)
+        if: inputs.preset == 'lp-batch'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_BRANCH: ${{ github.ref_name }}
+          MAX_PAGES: ${{ inputs.max_pages }}
+          CHUNK_SIZE: ${{ inputs.chunk_size }}
+          PAGE_DELAY_MS: ${{ inputs.page_delay_ms }}
+        run: |
+          set -e
+          declare -A targets=(
+            [lp-compounder]=terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx
+            [lp-stable]=terra1v399cx9drllm70wxfsgvfe694tdsd9x96p9ha36w7muffe4znlusqswspq
+            [lp-project]=terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa
+            [lp-bluechip]=terra14mmvqn0kthw6sre75vku263lafn5655mkjdejqjedjga4cw0qx2qlf4arv
+            [lp-single]=terra1qdz5qgafx88kp5mf6m2tah8742g4u5g2cek0m3jrgssexexk7g4qw6e23k
+          )
+          for label in lp-compounder lp-stable lp-project lp-bluechip lp-single; do
+            echo "════════ $label ════════"
+            ACCOUNT="${targets[$label]}" LABEL="$label" node .github/scripts/fcd-harvest/fcd-harvest.js
+            echo "cooling 90s between contracts…"
+            sleep 90
+          done
