@@ -1,0 +1,91 @@
+name: FCD Harvest
+
+# Deep-history tx capture from Terra's FCD indexer (phoenix-fcd.terra.dev) —
+# a FROZEN ARCHIVE covering chain genesis → ~2025-01-07. Public LCDs prune to
+# ~1 week; FCD reaches the aDAO mint era (Dec 2023) and deep governance
+# history. Discovered 2026-07-08.
+#
+# Pages one account newest→oldest and stores trimmed raw txs under
+# archive/fcd/<label>/ (part-NNNNN.json + state.json). RESUMABLE: re-run the
+# same label to continue from the saved offset until state.complete=true.
+# Harvest first, derive after — classification is a separate step.
+#
+# Suggested harvest order (smallest/most valuable first):
+#   1. adao-minter      terra1m3ye6dl6s25el4xd8adg9lnquz88az9lur2ujztj9pfmzdyfz3xsm699r3
+#   2. adao-collection  terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9
+#   3. tla-escrow       terra1uqhj8agyeaz8fu6mdggfuwr3lp32jlrx5hqag4jxexde92rzkamq3l62zg
+#   4. tla-gauge        terra1hfksrhchkmsj4qdq33wkksrslnfles6y2l77fmmzeep0xmq24l2smsd3lj
+#   5. tla-incentive    terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh
+
+on:
+  workflow_dispatch:
+    inputs:
+      preset:
+        description: "Preset target (or choose custom and fill account+label)"
+        type: choice
+        default: adao-minter
+        options: [adao-minter, adao-collection, tla-escrow, tla-gauge, tla-incentive, custom]
+      account:
+        description: "CUSTOM only: contract/wallet address to harvest"
+        type: string
+        default: ""
+      label:
+        description: "CUSTOM only: folder label (a-z0-9-_)"
+        type: string
+        default: ""
+      max_pages:
+        description: "Pages this run (100 txs/page). Re-run to continue if paused."
+        type: string
+        default: "2500"
+      chunk_size:
+        description: "Trimmed txs per stored part file"
+        type: string
+        default: "500"
+      page_delay_ms:
+        description: "Delay between FCD pages (be polite — FCD is a gift)"
+        type: string
+        default: "200"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: fcd-harvest-${{ inputs.preset }}-${{ inputs.label }}
+  cancel-in-progress: false
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Resolve target
+        id: target
+        run: |
+          case "${{ inputs.preset }}" in
+            adao-minter)     echo "account=terra1m3ye6dl6s25el4xd8adg9lnquz88az9lur2ujztj9pfmzdyfz3xsm699r3" >> $GITHUB_OUTPUT; echo "label=adao-minter" >> $GITHUB_OUTPUT ;;
+            adao-collection) echo "account=terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9" >> $GITHUB_OUTPUT; echo "label=adao-collection" >> $GITHUB_OUTPUT ;;
+            tla-escrow)      echo "account=terra1uqhj8agyeaz8fu6mdggfuwr3lp32jlrx5hqag4jxexde92rzkamq3l62zg" >> $GITHUB_OUTPUT; echo "label=tla-escrow" >> $GITHUB_OUTPUT ;;
+            tla-gauge)       echo "account=terra1hfksrhchkmsj4qdq33wkksrslnfles6y2l77fmmzeep0xmq24l2smsd3lj" >> $GITHUB_OUTPUT; echo "label=tla-gauge" >> $GITHUB_OUTPUT ;;
+            tla-incentive)   echo "account=terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh" >> $GITHUB_OUTPUT; echo "label=tla-incentive" >> $GITHUB_OUTPUT ;;
+            custom)          echo "account=${{ inputs.account }}" >> $GITHUB_OUTPUT; echo "label=${{ inputs.label }}" >> $GITHUB_OUTPUT ;;
+          esac
+
+      - name: Run FCD harvest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_BRANCH: ${{ github.ref_name }}
+          ACCOUNT: ${{ steps.target.outputs.account }}
+          LABEL: ${{ steps.target.outputs.label }}
+          MAX_PAGES: ${{ inputs.max_pages }}
+          CHUNK_SIZE: ${{ inputs.chunk_size }}
+          PAGE_DELAY_MS: ${{ inputs.page_delay_ms }}
+        run: node .github/scripts/fcd-harvest/fcd-harvest.js
