@@ -38,15 +38,41 @@ a token_id = the mint**; everything after = secondary.
   `wasm._contract_address='<minter>'` = every mint tx; or `transfer_nft` on
   the collection contract for full provenance.
 
-## ⚠ OPEN — verify before building the harvester
+## ⚠ RESOLVED (2026-07-08): this tx is GALACTIC MINING CLUB, not aDAO
 
-The `transfer_nft` in this tx fires on
-`terra1q2hjgq5sm7w04saj70gv0ur5tlz7r20854dfmsk8uv5u8cqnkuzskk7shc`,
-which is **NOT** the ADAO NFT contract in config
-(`terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9`).
+Confirmed by Camron: collection contract
+`terra1q2hjgq5sm7w04saj70gv0ur5tlz7r20854dfmsk8uv5u8cqnkuzskk7shc` =
+**Galactic Mining Club**, and
+`terra1qskkhq526l8e89r6xfyjrr3h7v8jng094zgewyy20fhk8ux27caq39py4c` is the
+**GMC minter** — not aDAO's.
 
-Either (a) this mint was a different collection, or (b) the collection lived on
-a predecessor contract. Resolve on ChainScope: open `terra1q2hjgq5…skk7shc`
-(which collection?), and/or query the ADAO NFT contract's `minter` to get the
-true aDAO minter address. The harvester targets whichever minter the aDAO
-collection confirms — do not assume this one.
+The TEMPLATE above (launchpad `{mint:{}}` + LUNA funds, `wasm action=mint id`,
+`transfer_nft` minter→wallet) is still the expected BBL-launchpad pattern and
+the parse-target design stands. But **T1 still needs the aDAO-specific minter
+address**. Two ways to get it:
+1. Query the ADAO NFT contract's cw721 `minter`:
+   `https://terra-lcd.publicnode.com/cosmwasm/wasm/v1/contract/terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9/smart/eyJtaW50ZXIiOnt9fQ==`
+   (note: if minting was launchpad-mediated, `minter` may return the launchpad
+   contract — exactly what we want; if it returns an admin wallet, fall back
+   to option 2)
+2. Find one of Camron's own aDAO mint txs on ChainScope (same era, Feb–Jun
+   2024) and read the minter contract from it, as done here for GMC.
+
+## ✅ aDAO MINTER — CONFIRMED (2026-07-08)
+
+cw721 `minter` query on the ADAO NFT contract returned:
+
+```
+terra1m3ye6dl6s25el4xd8adg9lnquz88az9lur2ujztj9pfmzdyfz3xsm699r3
+```
+
+Long-form = a contract (the aDAO launchpad minter), not an admin wallet.
+**T1 harvest query is now defined**: on the archive node,
+`wasm._contract_address='terra1m3ye6dl6s25el4xd8adg9lnquz88az9lur2ujztj9pfmzdyfz3xsm699r3'`
+= every aDAO mint tx; cross-checkable against `transfer_nft` on the ADAO NFT
+contract (`terra1phr9fn…`).
+
+Remaining before harvest (nice-to-have, not blocking): pull ONE real aDAO mint
+tx (ChainScope, Feb–Jun 2024 era, e.g. from Camron's wallet) to confirm the
+msg shape matches the GMC template below and record the aDAO mint price
+(GMC's was 50 LUNA — aDAO's may differ, and may have tiers).
