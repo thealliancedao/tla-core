@@ -445,15 +445,15 @@ const sorted = tokenIds.map(Number).sort((a, b) => a - b);
 assert(sorted[0] >= 1 && sorted[sorted.length - 1] <= 10000, 'token id out of 1..10000 range');
 const files = [];
 for (let p = 0; p < 10; p++) {
-  const lines = [];
+  const arr = [];
   for (let id = p * 1000 + 1; id <= (p + 1) * 1000; id++) {
     const l = ledgers.get(String(id));
     assert(l, `missing token ${id}`);
-    lines.push(stableStringify({ ...l.derived, events: l.events }));
+    arr.push({ ...l.derived, events: l.events });
   }
-  const name = `tokens/part-${String(p).padStart(2, '0')}.jsonl`;
-  fs.writeFileSync(path.join(OUT, name), lines.join('\n') + '\n');
-  files.push({ file: name, tokens: `${p * 1000 + 1}-${(p + 1) * 1000}`, lines: lines.length });
+  const name = `tokens/part-${String(p).padStart(2, '0')}.json`;
+  fs.writeFileSync(path.join(OUT, name), JSON.stringify(arr) + '\n');
+  files.push({ file: name, tokens: `${p * 1000 + 1}-${(p + 1) * 1000}`, records: arr.length });
 }
 fs.writeFileSync(path.join(OUT, 'wallets', 'cost-basis.json'), stableStringify({
   schema_rev: SCHEMA_REV, wallet_count: Object.keys(costBasis).length, wallets: costBasis }) + '\n');

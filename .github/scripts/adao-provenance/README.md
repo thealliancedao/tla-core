@@ -20,6 +20,12 @@ ownership — live state lives in `nfts/adao/snapshots` (nft-inventory).
 
 ## Recent changes
 
+# Rev 2 — 2026-07-08
+- Token shards converted `.jsonl` → `part-NN.json` (plain JSON arrays), per the
+  corrected org storage convention (no `.jsonl` in tla-core). Same data,
+  invariants re-verified, deterministic. **Delete the 10 old `part-NN.jsonl`
+  files when committing** — uploads don't remove them.
+
 # Rev 1 — 2026-07-08
 - Initial build. Verified end-to-end on the real archives: 10,000 tokens ·
   1,191 free GoA · 8,809 treasury mints · 1,952 paid (phases exact by
