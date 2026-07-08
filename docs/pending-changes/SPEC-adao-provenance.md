@@ -12,9 +12,11 @@ end-to-end, before delivery. Re-runnable and idempotent; deterministic output.
 
 ## 0. Defaults locked for this build (veto before build, not after)
 
-- D1 — Token ledgers ship as sharded JSONL: `tokens/part-NN.jsonl`, 1,000
-  tokens per part by numeric token_id (part-00 = ids 1–1000 … part-09), one
-  ledger object per line. No per-token files (10,000 tiny files is repo abuse).
+- D1 — Token ledgers ship as sharded JSON arrays: `tokens/part-NN.json`,
+  1,000 tokens per part by numeric token_id (part-00 = ids 1–1000 … part-09).
+  No per-token files (10,000 tiny files is repo abuse). *(Amended 2026-07-08:
+  originally `.jsonl`; converted to plain JSON arrays per the settled
+  org-wide convention — no `.jsonl` anywhere in tla-core.)*
 - D2 — Wallet cost basis is a single `wallets/cost-basis.json` (1,631 distinct
   wallet parties in the archive window — fits comfortably).
 - D3 — Marketplace events (create_auction / place_bid / settle / cancel) and
@@ -111,7 +113,7 @@ nfts/adao/provenance/
   index.json          # product manifest: files, counts, coverage, schema rev
   heartbeat.json      # derive-run metadata (ran_at, input digests, counts)
   summary.json        # mint story + verification + anomalies + known_gaps
-  tokens/part-00.jsonl … part-09.jsonl
+  tokens/part-00.json … part-09.json
   wallets/cost-basis.json
 ```
 
@@ -172,3 +174,7 @@ Also produced for the address-catalog rider:
 that aren't in the known custody/owner map, largest = `terra1vvwcx…` × 22) and
 the mint-era DAO treasury address `terra1g0mfr…` (recipient of all 8,809
 treasury mints — predates the current aDAO Core address).
+
+*(§6 addendum note, 2026-07-08 later same day: token shards re-derived as
+`part-NN.json` JSON arrays per the corrected storage convention — see
+TLA-CORE-STORAGE-DESIGN.md Deviation Register. Data content identical.)*
