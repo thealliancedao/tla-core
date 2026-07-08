@@ -197,6 +197,7 @@ async function run() {
             break;
         }
         try {
+        const txs = page?.txs || [];
         if (!txs.length) { terminal = true; break; }
         for (const t of txs) {
             const tt = trimTx(t);
