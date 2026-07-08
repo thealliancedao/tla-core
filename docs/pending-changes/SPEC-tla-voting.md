@@ -241,3 +241,26 @@ state = member-data. The seed carries a one-time prior-read fallback from the
 old paths (`voting/events`, `history/events`) so the rename was lossless;
 delete `tla-core/history/` (and `voting/` if present) after
 `tla-voting/events` is published.
+
+---
+
+## 10. FCD archive fill — EXECUTED (2026-07-08)
+
+The §6 archive-deepening hooks were exercised 18 months early: Terra's FCD
+indexer (`phoenix-fcd.terra.dev`) turned out to be a frozen archive covering
+chain genesis → ~2025-01-07. The `fcd-harvest` Action captured the three
+governance contracts into `archive/fcd/`, and `fcd-fill.js` (same folder as the
+seed; consumes the seed's exported classifier) merged them under the standing
+laws (dedup, never-shrink, horizons-min, gap honesty).
+
+Result: all four streams now start at **true contract genesis** (the three
+contracts deployed 2024-08-27 within ~160 blocks — heights 11,558,887 /
+11,558,979 / 11,559,045). No pre-launch governance era exists.
+
+**Residual archive-node targets (final):** votes/locks 2026-06-15→22 (post-FCD
+retention hole) and bribes/rewards Jan-2025→Jun-2026 (FCD freeze → org capture
+start; recorded in `known_gaps`). The `ARCHIVE_LCD` workflow input remains the
+mechanism for filling both when a true archive node materializes.
+
+Details, counts, and the harvester's operational knowledge: changelog Rev 2
+(`docs/changelogs/cron-tla-voting-log.md`).
