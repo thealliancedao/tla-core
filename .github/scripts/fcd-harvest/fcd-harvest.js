@@ -36,7 +36,7 @@
 //      ACCOUNT (contract/wallet to harvest), LABEL (folder name),
 //      MAX_PAGES (default 2500), CHUNK_SIZE (default 500),
 //      FCD_BASE (default https://phoenix-fcd.terra.dev),
-//      PAGE_DELAY_MS (default 200 — be polite, FCD is a gift).
+//      PAGE_DELAY_MS (default 1100 — FCD sits behind Cloudflare; 200ms tripped 429/1015 after ~25 pages).
 // =============================================================================
 
 'use strict';
@@ -51,7 +51,7 @@ const GITHUB_REPO   = process.env.GITHUB_REPO   || 'thealliancedao/tla-core';
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const MAX_PAGES     = Number(process.env.MAX_PAGES || 2500);
 const CHUNK_SIZE    = Number(process.env.CHUNK_SIZE || 500);
-const PAGE_DELAY_MS = Number(process.env.PAGE_DELAY_MS || 200);
+const PAGE_DELAY_MS = Number(process.env.PAGE_DELAY_MS || 1100);
 const OUT_DIR       = `archive/fcd/${LABEL}`;
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
@@ -67,11 +67,23 @@ function httpGet(url, t = 30000) {
         r.on('error', rej); r.setTimeout(t, () => r.destroy(new Error('timeout')));
     });
 }
+const COOLDOWNS_MS = [65000, 65000, 120000, 120000, 300000]; // Cloudflare 429 windows
 async function fcdPage(offset) {
     const url = `${FCD_BASE}/v1/txs?account=${ACCOUNT}&limit=100${offset ? `&offset=${offset}` : ''}`;
-    let lastErr;
-    for (let a = 0; a < 8; a++) {
-        try { return await httpGet(url); } catch (e) { lastErr = e; await sleep(500 * (a + 1)); }
+    let lastErr, rl = 0;
+    for (let a = 0; a < 20; a++) {
+        try { return await httpGet(url); }
+        catch (e) {
+            lastErr = e;
+            const rateLimited = /429|1015/.test(e.message);
+            if (rateLimited) {
+                const wait = COOLDOWNS_MS[Math.min(rl++, COOLDOWNS_MS.length - 1)];
+                console.warn(`   🧊 rate-limited (attempt ${a + 1}) — cooling down ${wait / 1000}s…`);
+                await sleep(wait);
+            } else {
+                await sleep(800 * (a + 1));
+            }
+        }
     }
     throw new Error(`FCD page failed after retries (offset=${offset}): ${lastErr.message}`);
 }
@@ -146,6 +158,7 @@ async function run() {
     let buffer = [];
     let pagesThisRun = 0;
     let terminal = false;
+    let abortReason = null;
 
     const flush = async (final) => {
         while (buffer.length >= CHUNK_SIZE || (final && buffer.length > 0)) {
@@ -158,7 +171,14 @@ async function run() {
     };
 
     while (pagesThisRun < MAX_PAGES && !terminal) {
-        const page = await fcdPage(state.next_offset);
+        let page;
+        try { page = await fcdPage(state.next_offset); }
+        catch (e) {
+            // survive: keep everything fetched so far, persist the cursor, pause.
+            abortReason = e.message;
+            console.warn(`   ⏸ pausing run: ${e.message}`);
+            break;
+        }
         const txs = page?.txs || [];
         if (!txs.length) { terminal = true; break; }
         for (const t of txs) {
@@ -175,16 +195,26 @@ async function run() {
         state.next_offset = next;
         if (pagesThisRun % 10 === 0) console.log(`   … ${state.txs_done} txs (page ${state.pages_done}, oldest so far ${state.oldest_height})`);
         await flush(false);
+        // periodic resumability: persist cursor at clean flush boundaries
+        if (buffer.length === 0 && state.pages_done % 25 === 0) {
+            state.updated_at = new Date().toISOString();
+            state.stop_reason = 'in-progress checkpoint';
+            await publishFile(`${OUT_DIR}/state.json`, state, `fcd-harvest ${LABEL}: checkpoint p${state.pages_done}`);
+        }
         await sleep(PAGE_DELAY_MS);
     }
     await flush(true);
 
     state.complete = terminal;
     state.updated_at = new Date().toISOString();
-    state.stop_reason = terminal ? 'fcd-end (index bottom reached)' : `page-cap (${MAX_PAGES} this run) — re-run to continue`;
+    state.stop_reason = terminal ? 'fcd-end (index bottom reached)'
+        : abortReason ? `paused on error (${abortReason.slice(0, 120)}) — re-run to continue`
+        : `page-cap (${MAX_PAGES} this run) — re-run to continue`;
     await publishFile(`${OUT_DIR}/state.json`, state, `fcd-harvest ${LABEL}: state (${state.txs_done} txs, complete=${state.complete})`);
 
     console.log(`\n${state.complete ? '✅ COMPLETE' : '⏸ PAUSED (re-run to continue)'} — ${state.txs_done} txs, ${state.parts_done} parts, heights ${state.oldest_height}–${state.newest_height}`);
+    // a rate-limit pause is a normal outcome, not a failure — exit 0 so the
+    // workflow shows the true state (state.json carries the reason).
 }
 
 if (require.main === module) {
