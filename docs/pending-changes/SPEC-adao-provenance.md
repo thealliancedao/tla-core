@@ -139,3 +139,36 @@ a bounded derive, not a stream.
   Jan-2025→capture-start marketplace gap needs the archive-node list.
 - address-catalog rider: candy-machine + proceeds-wallet identities feed the
   WHO registry.
+
+## 6. As-built addendum (2026-07-08) — deviations discovered during verification
+
+The derive was run end-to-end on the real committed archives (all §4
+invariants pass; deterministic across runs). Three chain realities the
+original §1 didn't model, now built in:
+
+1. **Candy machines are custodial with a full stock lifecycle.** Treasury
+   loaded 352 / 1,000 / 1,300 NFTs into the three machines; unsold stock was
+   `eject`ed back (225 / 473 / 0) and 2 NFTs moved out of the 75-machine by
+   governance proposals. `loaded = sold + ejected + other_out` holds exactly
+   per machine and is enforced as a hard invariant. New ledger event types:
+   `stock_load`, `stock_return`. Treasury remains beneficial owner during
+   candy custody.
+2. **Two staking venues, not one.** Enterprise staking (3,176 stake events)
+   AND the ADAO voting contract `terra1c57ur…` (1,180 governance stakes).
+   Both are custodial; stake/unstake events carry a `venue` field. At the
+   FCD freeze: 1,180 governance-staked, 552 Enterprise-staked, 39 in
+   Necropolis escrow.
+3. **The §1 anomaly clause resolved to two non-anomalies** (recorded in
+   `summary.anomalies` as resolved investigations): the "10,001st mint" is
+   the ampLUNA CW20 minting to the collection (the proceeds bond — initial
+   128,854.67 ampLUNA on 2024-06-15, then daily reward-compounding mints;
+   378,608.81 ampLUNA total inflow in-window, 202 events, recorded in
+   `summary.notable.ampluna_backing`); and `remove_token('placeholderAddress')`
+   on 2023-12-11 removed a pre-launch placeholder config entry, not an NFT.
+   Exactly 10,000 cw721 mints exist.
+
+Also produced for the address-catalog rider:
+`summary.notable.unmapped_contract_destinations` (8 contracts receiving NFTs
+that aren't in the known custody/owner map, largest = `terra1vvwcx…` × 22) and
+the mint-era DAO treasury address `terra1g0mfr…` (recipient of all 8,809
+treasury mints — predates the current aDAO Core address).
