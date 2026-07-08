@@ -1,0 +1,43 @@
+name: TLA Voting FCD Fill
+
+# One-time(ish) derive step: completes the tla-voting backfill from the FCD
+# archive harvests (archive/fcd/tla-gauge|tla-escrow|tla-incentive).
+# Runs the SAME classifier as the seed (require'd from tla-voting-seed.js),
+# merges into tla-voting/events/ under never-shrink/dedup/horizon-min laws,
+# records the FCD-freeze gap honestly for bribes/rewards, and cross-checks
+# FCD↔legacy consistency on the votes/locks overlap (Aug 2024→Jan 2025).
+#
+# PRECONDITION: run only after the governance fcd-harvest presets show
+# state.complete=true. Labels with no harvest are skipped (streams can be
+# filled in separate passes); an INCOMPLETE harvest aborts the run.
+# Safe to re-run: merge is idempotent (dedup by hash|type|wallet|msg_index).
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tla-voting-fcd-fill
+  cancel-in-progress: false
+
+jobs:
+  fill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Run FCD fill
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPO: ${{ github.repository }}
+          GITHUB_BRANCH: ${{ github.ref_name }}
+        run: node .github/scripts/tla-voting/fcd-fill.js
