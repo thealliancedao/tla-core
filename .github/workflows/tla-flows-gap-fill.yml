@@ -1,6 +1,11 @@
 name: tla-flows-gap-fill (retained-window harvest — time-sensitive)
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      deepen:
+        description: 'After DONE: probe below the achieved floor and harvest deeper retention'
+        type: boolean
+        default: false
   schedule:
     - cron: '15 */4 * * *'   # every 4h until done; post-done runs exit in seconds
 permissions:
@@ -16,4 +21,5 @@ jobs:
       - name: Walk one budget slice of the retained window
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GAPFILL_DEEPEN: ${{ inputs.deepen && '1' || '0' }}
         run: node .github/scripts/tla-flows/retained-gap-fill.js
