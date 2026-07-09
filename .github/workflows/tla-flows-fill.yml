@@ -1,0 +1,17 @@
+name: tla-flows-fill (one-shot archive backfill)
+on:
+  workflow_dispatch: {}   # manual trigger only — run once, re-runs are no-ops (txhash dedupe)
+permissions:
+  contents: write
+jobs:
+  fill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Run flows-fill (publishes via API with merge + never-shrink)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node .github/scripts/tla-flows/flows-fill.js
