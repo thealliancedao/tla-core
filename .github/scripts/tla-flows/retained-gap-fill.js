@@ -168,19 +168,52 @@ async function putJson(p,obj,msg,pretty){ const content=(pretty?JSON.stringify(o
 function mergeMonth(existing, incoming){ const m=new Map(); for(const r of existing) m.set(r.txhash,r); let added=0; for(const r of incoming) if(!m.has(r.txhash)){ m.set(r.txhash,r); added++; } return { merged:[...m.values()].sort((a,b)=>a.height-b.height||(a.txhash<b.txhash?-1:1)), added }; }
 const monthKey=(ts)=>{ const [Y,M]=String(ts).slice(0,7).split('-'); return `${Y}/${M}`; };
 
+// Find the true lowest available block. Probes downward exponentially from
+// an available anchor (the original calibration only searched upward — it
+// stopped at the first available probe and missed deeper fallback-node
+// retention, observed live 2026-07-09 when polkachu went 20k+ blocks below
+// publicnode's advertised floor).
+async function findFloor(seed, ceiling) {
+  let anchor;
+  if ((await getBlock(seed)) === PRUNED) {
+    let lo = seed + 1, hi = ceiling, floor = ceiling;          // upward binary search
+    while (lo <= hi) { const mid = Math.floor((lo + hi) / 2);
+      if ((await getBlock(mid)) === PRUNED) lo = mid + 1; else { floor = mid; hi = mid - 1; } }
+    return floor;
+  }
+  anchor = seed;
+  let step = 20000;
+  while (anchor - step >= 1) {                                  // exponential descent
+    if ((await getBlock(anchor - step)) === PRUNED) {
+      let lo = anchor - step + 1, hi = anchor, floor = anchor;  // binary search the edge
+      while (lo <= hi) { const mid = Math.floor((lo + hi) / 2);
+        if ((await getBlock(mid)) === PRUNED) lo = mid + 1; else { floor = mid; hi = mid - 1; } }
+      return floor;
+    }
+    anchor -= step; step *= 2;
+  }
+  return 1;
+}
+
 async function main() {
   assert(GITHUB_TOKEN, 'GITHUB_TOKEN missing');
   // ---- state
   let { data: st } = await getJson(STATE_PATH);
-  if (st && st.done) { console.log(`gap-fill already DONE (floor achieved: ${st.target_from}) — nothing to do`); return; }
+  if (st && st.done) {
+    if (process.env.GAPFILL_DEEPEN !== '1') { console.log(`gap-fill DONE (floor achieved: ${st.target_from}) — nothing to do (dispatch with deepen=true to probe for deeper retention)`); return; }
+    console.log(`DEEPEN: probing below achieved floor ${st.target_from}…`);
+    const deeper = await findFloor(st.target_from - 1, st.target_from);
+    if (deeper >= st.target_from) { console.log('no deeper history available — floors match, nothing to deepen'); return; }
+    console.log(`deeper retention found: ${deeper} (${st.target_from - deeper} more blocks ≈ ${Math.round((st.target_from - deeper)/14400*10)/10} days)`);
+    st = { target_from: deeper, target_to: st.target_from - 1, next: deeper, done: false,
+           started_at: new Date().toISOString(), runs: 0, events_total: 0,
+           deepen_of: st.target_from, prior_events_total: st.events_total };
+    await putJson(STATE_PATH, st, `gapfill: DEEPEN extension [${deeper} → ${st.target_to}]`, true);
+  }
   if (!st) {
     // first run: calibrate the CURRENT floor by binary search seeded at the probe
-    console.log('first run: calibrating current retention floor…');
-    let lo = PROBED_FLOOR_HINT - 20000, hi = TARGET_TO_DEFAULT, floor = hi;
-    if ((await getBlock(lo)) !== PRUNED) { floor = lo; } else {
-      while (lo <= hi) { const mid = Math.floor((lo+hi)/2);
-        if ((await getBlock(mid)) === PRUNED) lo = mid+1; else { floor = mid; hi = mid-1; } }
-    }
+    console.log('first run: calibrating current retention floor (bidirectional)…');
+    const floor = await findFloor(PROBED_FLOOR_HINT - 20000, TARGET_TO_DEFAULT);
     st = { target_from: floor, target_to: TARGET_TO_DEFAULT, next: floor, done: false, started_at: new Date().toISOString(), runs: 0, events_total: 0 };
     console.log(`calibrated: floor=${floor} (~${Math.round((TARGET_TO_DEFAULT-floor)/14400)} days recoverable) → target [${floor} → ${TARGET_TO_DEFAULT}]`);
     await putJson(STATE_PATH, st, `gapfill: calibrated floor ${floor}`, true);
