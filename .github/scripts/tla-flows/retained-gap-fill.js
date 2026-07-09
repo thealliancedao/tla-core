@@ -153,17 +153,21 @@ function flowsExtractCost(wasm) {
 // ============================================================== <<FLOWS CLASSIFIER v1>> END
 
 // ---------------------------------------------------------------- GitHub plumbing (same as flows-fill)
-function realGhReq(method, apiPath, body) {
+function realGhReq(method, apiPath, body, accept) {
   return new Promise((resolve, reject) => {
-    const opts = { hostname:'api.github.com', path:apiPath, method, headers:{ 'User-Agent':'tla-flows-gapfill', 'Authorization':`Bearer ${GITHUB_TOKEN}`, 'Accept':'application/vnd.github+json' } };
+    const opts = { hostname:'api.github.com', path:apiPath, method, headers:{ 'User-Agent':'tla-flows-gapfill', 'Authorization':`Bearer ${GITHUB_TOKEN}`, 'Accept': accept||'application/vnd.github+json' } };
     if (body) opts.headers['Content-Type']='application/json';
     const req = https.request(opts, res=>{ let d=''; res.on('data',c=>d+=c); res.on('end',()=>{ if(res.statusCode>=200&&res.statusCode<300){ try{resolve(JSON.parse(d));}catch{resolve(d);} } else { const e=new Error(`GitHub ${method} ${apiPath}: ${res.statusCode} ${d.slice(0,160)}`); e.statusCode=res.statusCode; reject(e);} }); });
     req.on('error',reject); if(body) req.write(JSON.stringify(body)); req.end();
   });
 }
-async function getJson(p){ try{ const r=await T.ghReq('GET',`/repos/${GITHUB_REPO}/contents/${p}?ref=${GITHUB_BRANCH}`); return { sha:r.sha, data: JSON.parse(Buffer.from(r.content,'base64').toString('utf8')) }; } catch(e){ if(e.statusCode===404) return {sha:null,data:null}; throw e; } }
+// READS use the raw media type — the Contents API returns EMPTY content for
+// files >1MB (hit live 2026-07-09 when 2026/06.json crossed it). Raw has no
+// size limit. Writes fetch sha via plain GET and never parse content.
+async function getJson(p){ try{ const d=await T.ghReq('GET',`/repos/${GITHUB_REPO}/contents/${p}?ref=${GITHUB_BRANCH}`,null,'application/vnd.github.raw'); return { data: typeof d==='string'? JSON.parse(d) : d }; } catch(e){ if(e.statusCode===404) return {data:null}; throw e; } }
+async function getSha(p){ try{ const r=await T.ghReq('GET',`/repos/${GITHUB_REPO}/contents/${p}?ref=${GITHUB_BRANCH}`); return r.sha||null; } catch(e){ if(e.statusCode===404) return null; throw e; } }
 async function putJson(p,obj,msg,pretty){ const content=(pretty?JSON.stringify(obj,null,2):JSON.stringify(obj))+'\n';
-  for(let a=1;a<=4;a++){ const {sha}=await getJson(p).catch(()=>({sha:null})); const body={message:msg,content:Buffer.from(content).toString('base64'),branch:GITHUB_BRANCH}; if(sha) body.sha=sha;
+  for(let a=1;a<=4;a++){ const sha=await getSha(p).catch(()=>null); const body={message:msg,content:Buffer.from(content).toString('base64'),branch:GITHUB_BRANCH}; if(sha) body.sha=sha;
     try{ return await T.ghReq('PUT',`/repos/${GITHUB_REPO}/contents/${p}`,body); }catch(e){ if(e.statusCode===409&&a<4){ await sleep(500*a); continue; } throw e; } } }
 function mergeMonth(existing, incoming){ const m=new Map(); for(const r of existing) m.set(r.txhash,r); let added=0; for(const r of incoming) if(!m.has(r.txhash)){ m.set(r.txhash,r); added++; } return { merged:[...m.values()].sort((a,b)=>a.height-b.height||(a.txhash<b.txhash?-1:1)), added }; }
 const monthKey=(ts)=>{ const [Y,M]=String(ts).slice(0,7).split('-'); return `${Y}/${M}`; };

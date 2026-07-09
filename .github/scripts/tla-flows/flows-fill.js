@@ -132,24 +132,25 @@ const months = Object.keys(byMonth).sort();
 console.log(`months: ${months[0]} … ${months[months.length - 1]} (${months.length} files)`);
 
 // ---------------------------------------------------------------- publish plumbing (Action) / dry-run
-function ghReq(method, apiPath, body) {
+function ghReq(method, apiPath, body, accept) {
   return new Promise((resolve, reject) => {
-    const opts = { hostname: 'api.github.com', path: apiPath, method, headers: { 'User-Agent': 'tla-flows-fill', 'Authorization': `Bearer ${GITHUB_TOKEN}`, 'Accept': 'application/vnd.github+json' } };
+    const opts = { hostname: 'api.github.com', path: apiPath, method, headers: { 'User-Agent': 'tla-flows-fill', 'Authorization': `Bearer ${GITHUB_TOKEN}`, 'Accept': accept || 'application/vnd.github+json' } };
     if (body) opts.headers['Content-Type'] = 'application/json';
     const req = https.request(opts, res => { let d = ''; res.on('data', c => d += c); res.on('end', () => { if (res.statusCode >= 200 && res.statusCode < 300) { try { resolve(JSON.parse(d)); } catch { resolve(d); } } else { const e = new Error(`GitHub ${method} ${apiPath}: ${res.statusCode} ${d.slice(0, 160)}`); e.statusCode = res.statusCode; reject(e); } }); });
     req.on('error', reject); if (body) req.write(JSON.stringify(body)); req.end();
   });
 }
-async function getJson(repoPath) {
+async function getJson(repoPath) { // raw media type — Contents API blanks content >1MB
   try {
-    const r = await ghReq('GET', `/repos/${GITHUB_REPO}/contents/${repoPath}?ref=${GITHUB_BRANCH}`);
-    return { sha: r.sha, data: JSON.parse(Buffer.from(r.content, 'base64').toString('utf8')) };
-  } catch (e) { if (e.statusCode === 404) return { sha: null, data: null }; throw e; }
+    const d = await ghReq('GET', `/repos/${GITHUB_REPO}/contents/${repoPath}?ref=${GITHUB_BRANCH}`, null, 'application/vnd.github.raw');
+    return { data: typeof d === 'string' ? JSON.parse(d) : d };
+  } catch (e) { if (e.statusCode === 404) return { data: null }; throw e; }
 }
+async function getSha(repoPath) { try { const r = await ghReq('GET', `/repos/${GITHUB_REPO}/contents/${repoPath}?ref=${GITHUB_BRANCH}`); return r.sha || null; } catch (e) { if (e.statusCode === 404) return null; throw e; } }
 async function putJson(repoPath, obj, msg, pretty) {
   const content = pretty ? JSON.stringify(obj, null, 2) : JSON.stringify(obj);
   for (let attempt = 1; attempt <= 4; attempt++) {
-    const { sha } = await getJson(repoPath).catch(() => ({ sha: null }));
+    const sha = await getSha(repoPath).catch(() => null);
     const body = { message: msg, content: Buffer.from(content + '\n').toString('base64'), branch: GITHUB_BRANCH };
     if (sha) body.sha = sha;
     try { return await ghReq('PUT', `/repos/${GITHUB_REPO}/contents/${repoPath}`, body); }
