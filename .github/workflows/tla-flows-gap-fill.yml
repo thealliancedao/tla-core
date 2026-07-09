@@ -1,0 +1,19 @@
+name: tla-flows-gap-fill (retained-window harvest — time-sensitive)
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: '15 */4 * * *'   # every 4h until done; post-done runs exit in seconds
+permissions:
+  contents: write
+jobs:
+  gapfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - name: Walk one budget slice of the retained window
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node .github/scripts/tla-flows/retained-gap-fill.js
