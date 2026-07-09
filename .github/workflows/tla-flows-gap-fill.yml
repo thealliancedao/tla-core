@@ -10,6 +10,9 @@ on:
     - cron: '15 */4 * * *'   # every 4h until done; post-done runs exit in seconds
 permissions:
   contents: write
+concurrency:
+  group: tla-flows-gap-fill
+  cancel-in-progress: false   # queue runs, never overlap — two walkers on one slice is safe but wasteful/confusing
 jobs:
   gapfill:
     runs-on: ubuntu-latest
