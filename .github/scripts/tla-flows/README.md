@@ -21,6 +21,21 @@ finishes it in ~24h, post-done runs no-op. Same classifier discipline applies.
 
 ## Recent changes
 
+# Rev 3 — 2026-07-13 — campaign closed; hardening rollup
+- **Gap harvest COMPLETE + deepen certificate (2026-07-09):** 1,705 events
+  recovered (1,157 + 548 deepen) to the deepest surviving public block
+  **21,481,531 (~Jun-16)**; verdict "no deeper history available — floors
+  match". tla-flows coverage: 2024-08-27→2025-01-07 (freeze 13,737,810) +
+  2026-06-16→head; ONE exact-bounded gap in index.known_gaps (archive-node
+  territory, ask deliberately deferred post-launch).
+- 1MB fix: flows-fill + retained-gap-fill read via raw media type (Contents
+  API blanks content >1MB — hit live on 2026/06.json).
+- `rebuild-index.js` + workflow added (one-off): reconstructs index.json from
+  month files after the 2026-07-09 walker CDN-429 incident.
+- Gap-fill workflow: concurrency group (schedule+manual runs queue, never
+  overlap). Post-done runs no-op; schedule lines deletable at leisure.
+
+
 # Rev 2.1 — 2026-07-09 — bidirectional calibration + deepen mode
 - Live run revealed the fallback RPC (polkachu) retains DEEPER than
   publicnode advertises; the original calibration stopped at its first
