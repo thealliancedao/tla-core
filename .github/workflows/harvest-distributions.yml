@@ -1,0 +1,42 @@
+# =============================================================================
+# ONE-OFF: distributions history harvest (SPEC-distributions-capture §2)
+# LIVES IN: thealliancedao/tla-core (the org's one-off-Action home — same
+# pattern as tla-flows-rebuild-index). Checks out the CODE from platform-crons,
+# publishes the RESULTS here, to this repo, using the workflow's own token —
+# no secrets required.
+#
+# Dispatch manually from the Actions tab. Idempotent — re-running over
+# complete history is a no-op; re-running after a partial run heals gaps.
+# Delete this workflow at leisure once the floor certificate is committed.
+# =============================================================================
+name: harvest-distributions (one-off)
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "1 = walk + report only, publish nothing"
+        required: false
+        default: "0"
+
+permissions:
+  contents: write   # lets the built-in token publish to this repo (tla-core)
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout platform-crons (the code lives there)
+        uses: actions/checkout@v4
+        with:
+          repository: thealliancedao/platform-crons
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run harvest → publishes into tla-core
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPO: thealliancedao/tla-core
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: node tla-voting/harvest-distributions.js
