@@ -1,0 +1,36 @@
+# =============================================================================
+# ONE-OFF: tla-voting reconciliation diagnostic (SPEC-tla-voting-reconcile)
+# tla-core convention: workflow here, script in .github/scripts/tla-voting/.
+# Reads committed event streams from THIS checkout, queries the chain,
+# publishes tla-voting/events/reconciliation.json with the workflow's own
+# token — no secrets. Re-runnable at any time (report overwrites).
+# The verdict gates the build order: CLEAN → monthly restructure → rollup
+# rebuilds · LOSSES → walker/capture-registry fix rises first (spec §6).
+# =============================================================================
+name: tla-voting reconcile (diagnostic)
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "1 = report to log only, publish nothing"
+        required: false
+        default: "0"
+
+permissions:
+  contents: write
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run reconciliation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPO: ${{ github.repository }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: node .github/scripts/tla-voting/reconcile.js
