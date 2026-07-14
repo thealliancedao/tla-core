@@ -1,0 +1,33 @@
+# =============================================================================
+# ONE-OFF: gauge distributions history harvest (SPEC-distributions-capture §2)
+# tla-core convention: workflow here, script in .github/scripts/tla-voting/.
+# Publishes into THIS repo with the workflow's own token — no secrets.
+# Idempotent: re-run over complete history = no-op; re-run after partial = heal.
+# Delete at leisure once the floor certificate is committed (gap-fill pattern).
+# =============================================================================
+name: tla-voting distributions harvest (one-off)
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "1 = walk + report only, publish nothing"
+        required: false
+        default: "0"
+
+permissions:
+  contents: write
+
+jobs:
+  harvest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run harvest
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+        run: node .github/scripts/tla-voting/harvest-distributions.js
