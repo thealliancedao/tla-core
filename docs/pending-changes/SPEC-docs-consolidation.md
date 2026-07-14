@@ -1,10 +1,22 @@
 # SPEC — Docs consolidation: absorb website-adao-core into tla-core/docs
 
-**Status:** mapped 2026-07-14 (Camron's process, codified below) — EXECUTION IS
-ITS OWN DEDICATED SESSION, not started. **This is a content merge, not a file
-move.** A blind copy was packaged and withdrawn on 2026-07-14 after Camron
-caught it; the skim then proved him right (three would-be contradictions
-listed in §4).
+**Status:** ✅ **EXECUTED 2026-07-14** (dedicated session, per the rules below).
+Every disposition in §3 was carried out as a content merge: 5 straight MOVEs
+(CHANGES_PENDING updated to the 2026-07-14 state; STORAGE-DESIGN §7
+distributions row flipped to DECIDED; both shipped SPECs' statuses updated),
+queries.md moved to `docs/` + updated with the 2026-07-13/14 query knowledge
+(distributions / gauge_infos / user_info / lock_info / total_vamp; §18
+connector-alliance rescued from CRON-FIXES-BRIEF), PRICING-DOCTRINE merged into
+`ecosystem-knowledge/` (arbLUNA note's lesson folded in), VP-mechanics merged
+into `eris-protocol.md` + `.facts.json` (`vamp.*` facts), and both MINE passes
+completed — survivors ported to CHANGES_PENDING §"Mined from retired docs",
+everything superseded retired (git history keeps it). Deletion checklist for
+website-adao-core delivered with the commit package; PK placement map +
+CLAUDE_PROJECT_INSTRUCTIONS repointed to the new homes.
+Originally mapped 2026-07-14 (Camron's process, codified below). **This was a
+content merge, not a file move.** A blind copy was packaged and withdrawn on
+2026-07-14 after Camron caught it; the skim then proved him right (three
+would-be contradictions listed in §4).
 
 ## 1. The rules (Camron, 2026-07-14 — binding)
 
