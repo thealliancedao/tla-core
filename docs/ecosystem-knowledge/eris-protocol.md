@@ -130,12 +130,57 @@ Source: https://docs.erisprotocol.com/products/amp-compounder/#fees
 
 ---
 
+## vAMP (Amp Governance) — voting-power mechanics
+
+**Source:** https://docs.erisprotocol.com/products/amp-governance/ · contract source
+https://github.com/erisprotocol/contracts-ve3 · chain-verified 2026-07-13/14
+(4 LCD probes + a full 433-lock scan; SPEC-vp-definition-fix holds the evidence)
+
+vAMP is the vote-escrow behind TLA: lock an accepted LST (ampLUNA, bLUNA,
+arbLUNA, LUNA, stLUNA), receive a lock NFT whose voting power steers the gauges.
+The mechanics below are what our capture layer is built on — every claim is
+chain-verified, not assumed.
+
+**VP definition — the law** `[vamp.vp_definition]`: a lock's actual voting power
+is **`vp = fixed_amount + voting_power`** — a fixed component (underlying × 1)
+plus a boost component (underlying × coefficient). The contract's own
+`total_vamp` query defines it this way, the TLA UI displays it this way, and the
+gauge's `distributions` payout record — where the money actually flows — carries
+fixed+boost totals. Summing the boost alone undercounts ~11% (worse for short
+locks); that was the platform-wide defect fixed 2026-07-14.
+
+**The multiplier curve** `[vamp.multiplier_curve]`: total multiplier =
+**`1 + 9 × (lock_weeks / 104)`**. 104 weeks (or auto-max) = 10×, 52 weeks =
+5.5×, 26 weeks = 3.25×, 1 week ≈ 1.087×. The `coefficient` field in `lock_info`
+is the boost part (9 × wk/104); the +1 is the fixed component. Derived from and
+verified against five non-max member locks decoding exactly on the curve.
+
+**Two lock flavors** `[vamp.automax_vs_fixed_term]`: **auto-max** (coefficient 9,
+`slope` 0, end `"permanent"`) holds 10× forever; **fixed-term** starts at its
+curve multiplier and the boost bleeds linearly each week via `slope` toward 1×
+at expiry — the fixed ×1 part stays until withdrawal.
+
+**Stamping and the stale-VP gap** `[vamp.stamping_mechanism]`: `underlying_amount`
+is frozen at the LST ratio in effect when the lock is created, extended, or
+merged — and any touch restamps BOTH components at today's ratio. Because LST
+ratios only rise, an untouched lock drifts below its true value; the unrealized
+upside per lock is a live measurement (`[vamp.stale_vp_gap]` — never hardcoded),
+computed as `amount × current_ratio × (coefficient + 1)` vs the frozen
+components. Restamp events are queryable in the tla-voting lock-events stream.
+
+**Dormant locks** `[vamp.dormant_locks]`: expired-but-never-withdrawn locks sit
+at 1× indefinitely — real dormant capital observed on-chain (one lock expired
+~16 months before the scan). A free "wake up your VP" nudge for the site.
+
+---
+
 ## Other Eris products (context, not yet pricing-relevant)
 
 - **Amp Extractor** — splits yield from principal; lets holders donate yield. Not
   currently in our pricing path. Source: https://docs.erisprotocol.com/products/amp-extractor/
-- **Amp Governance / vAMP** — vote-escrowed ampLUNA for governance (this is the
-  VOTING_ESCROW / vAMP minter in our contracts). Source: https://docs.erisprotocol.com/products/amp-governance/
+- **Amp Governance / vAMP** — vote-escrowed governance (the VOTING_ESCROW / vAMP
+  minter in our contracts). Full mechanics: see the "vAMP (Amp Governance)"
+  section above. Source: https://docs.erisprotocol.com/products/amp-governance/
 - **Alliance Liquidity Hub** — the TLA primitive itself. Source: https://docs.erisprotocol.com/products/liquidity-hub/
 
 ---

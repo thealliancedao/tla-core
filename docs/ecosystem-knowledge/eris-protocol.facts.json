@@ -200,6 +200,78 @@
       "live_ref": null
     },
     {
+      "id": "vamp.vp_definition",
+      "claim": "A vAMP lock's actual voting power is vp = fixed_amount + voting_power: the fixed component (underlying-at-lock \u00d7 1) plus the boost component (underlying-at-lock \u00d7 coefficient). The money follows vp \u2014 the gauge's distributions payout record carries fixed+boost totals.",
+      "kind": "static_sourced",
+      "source_url": "https://docs.erisprotocol.com/products/amp-governance/",
+      "source_section": "Amp Governance (definition confirmed on-chain via the escrow's own total_vamp query)",
+      "source_type": "chain",
+      "verified_at": "2026-07-14",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Chain-confirmed 2026-07-13: total_vamp returned {fixed: 3007423707566, voting_power: 24956216696464, vp: 27963640404030} \u2014 vp = fixed + voting_power by the contract's own definition, matching the TLA UI header (27.96M). Predictive test: 9/9 pools boost+fixed = UI incl. LUNA-stLUNA to 5 sig figs. Summing voting_power alone is ~11% low (worse for short locks) \u2014 the platform-wide defect fixed 2026-07-14 (SPEC-vp-definition-fix). Canonical Total TLA VP = total_vamp.vp; the old max-bucket convention is retired."
+    },
+    {
+      "id": "vamp.multiplier_curve",
+      "claim": "A lock's total VP multiplier follows multiplier = 1 + 9 \u00d7 (lock_weeks / 104): 104 weeks (or auto-max) = 10\u00d7, 52 weeks = 5.5\u00d7, 26 weeks = 3.25\u00d7, 1 week \u2248 1.087\u00d7. The lock_info coefficient field is the boost part: coefficient = 9 \u00d7 (lock_weeks / 104).",
+      "kind": "static_sourced",
+      "source_url": "https://github.com/erisprotocol/contracts-ve3",
+      "source_section": "voting-escrow (curve derived from live lock data, verified against 5 non-max member locks)",
+      "source_type": "self",
+      "verified_at": "2026-07-14",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Our derivation from chain data, 2026-07-14: a 1-week lock decodes coefficient 0.0865 = 9\u00d7(1/104); 16-week 1.3846 = 9\u00d7(16/104); 62-week 5.365 = 9\u00d7(62/104); auto-max coefficient 9 exactly. Total multiplier = coefficient + 1 (the +1 is the fixed component)."
+    },
+    {
+      "id": "vamp.automax_vs_fixed_term",
+      "claim": "Two lock flavors: auto-max locks (coefficient 9, slope 0, end = \"permanent\") hold 10\u00d7 forever; fixed-term locks start at their curve multiplier and the boost decays linearly each week via the slope field toward 1\u00d7 at expiry \u2014 the fixed \u00d71 component persists until withdrawal.",
+      "kind": "static_sourced",
+      "source_url": "https://github.com/erisprotocol/contracts-ve3",
+      "source_section": "voting-escrow lock_info (end/slope semantics, verified on live locks)",
+      "source_type": "chain",
+      "verified_at": "2026-07-14",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Detection: end==\"permanent\" && slope==0 = auto-max ON; end=={period:N} && slope>0 = decaying, N = unlock period. slope is the exact VP decay per week \u2014 no inference needed."
+    },
+    {
+      "id": "vamp.stamping_mechanism",
+      "claim": "A lock's underlying_amount is stamped (frozen) at the LST ratio in effect at create/extend/merge time. Any touch \u2014 extend_lock_amount, extend_lock_time, merge \u2014 restamps BOTH the fixed and boost components at today's LST ratio. Until touched, a lock whose LST ratio has risen carries less VP than its holdings are worth (the stale-VP gap).",
+      "kind": "static_sourced",
+      "source_url": "https://github.com/erisprotocol/contracts-ve3",
+      "source_section": "voting-escrow (underlying_amount stamping, verified on live locks)",
+      "source_type": "chain",
+      "verified_at": "2026-07-14",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "VP-if-restamped-today = amount \u00d7 current_ratio \u00d7 (coefficient + 1) \u2014 both components restamp together (the adjusted-projection math corrected in the 2026-07-14 VP fix). Restamp events are queryable in the tla-voting lock-events stream (13,610 events to genesis)."
+    },
+    {
+      "id": "vamp.stale_vp_gap",
+      "claim": "The current per-lock unrealized VP upside from stale stamping, as measured by our capture layer.",
+      "kind": "live_binding",
+      "value": null,
+      "source_url": "https://github.com/thealliancedao/tla-core",
+      "source_type": "self",
+      "verified_at": "2026-07-14",
+      "source_status": "ok",
+      "live_ref": "member-data:locks[].projection.potential_vp_gain_pct",
+      "notes": "Changes with every LST ratio move and every lock touch \u2014 never hardcode. System-wide the gap has run in the millions of VP (\u224813% of all VP at the 2026-06-13 tla-locks first run); per-lock values resolve live."
+    },
+    {
+      "id": "vamp.dormant_locks",
+      "claim": "Expired-but-never-withdrawn locks exist: a fixed-term lock whose end period has passed sits at 1\u00d7 (fixed component only) indefinitely until the holder withdraws or re-locks \u2014 dormant capital and a natural 'wake up your VP' user nudge.",
+      "kind": "static_sourced",
+      "source_url": "https://github.com/erisprotocol/contracts-ve3",
+      "source_section": "voting-escrow (observed in live lock scan)",
+      "source_type": "chain",
+      "verified_at": "2026-07-14",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "Observed 2026-07-14: several member locks expired-but-unwithdrawn, one ended at period 123 (~16 months prior). Detectable per lock: end.period < current period."
+    },
+    {
       "id": "eris.liquidity_hub",
       "claim": "The Alliance Liquidity Hub is the TLA primitive itself — Eris-operated infrastructure that turns staking rewards into liquidity incentives via community voting.",
       "kind": "static_sourced",
