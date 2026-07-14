@@ -57,6 +57,17 @@ Every line below verified against chain or production output that day.
 - **[ ] Distributions product README** — `tla-core/tla-voting/distributions/`
   needs its product README per storage doctrine (layout: single history.json,
   DECIDED; document the floor certificate + forward self-heal).
+- **[ ] Credia ecosystem-knowledge pair** — the 6-byte stray placeholder file
+  `docs/ecosystem-knowledge/credia` was deleted 2026-07-14; write the real
+  `credia.md` + `credia.facts.json` pair (Eris-built money market; mints
+  wBTC.creda.a — directly relevant to defect #3, the missing 2.69M-VP pool).
+- **[ ] Spec retirement pass after the 2026-07-19 epoch flip** — once the
+  period-194 forward append + the SPEC-vp §4 second check (distribution
+  fractions × bucket rewards ≈ reward deltas) both pass and the distributions
+  README exists: SPEC-vp-definition-fix + SPEC-distributions-capture become
+  retirable (durable content → ecosystem-knowledge + queries.md + the product
+  README, already done); SPEC-tla-flows-gap-fill retirable now (complete,
+  facts live in known_gaps). Completed one-shots retire; git history keeps them.
 
 ### ▶ Next up (per the approved 2026-07-13 build order)
 Rollup rebuilds (pool-status-history, vp-attribution) from corrected sources +

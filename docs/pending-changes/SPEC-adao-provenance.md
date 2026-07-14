@@ -1,6 +1,12 @@
 # SPEC — adao-provenance derive (one-shot, re-runnable)
 
-**Status:** DRAFT — awaiting approval (2026-07-08)
+**Status:** ✅ EXECUTED (drafted 2026-07-08; derive approved + run — the full
+product is committed at `nfts/adao/provenance/`: 10,000 per-token ledgers
+sharded `tokens/part-NN.json`, per-wallet cost-basis files, `summary.json`,
+heartbeat + index. Chain-exact corrections it settled — break count 1,010,
+1b/2a split 127@50 + 525@75 LUNA, 1,952 paid mints, Phase 2b 156,205 LUNA —
+are recorded in PROJECT_KNOWLEDGE's FCD section + MINT-TEMPLATE.md. Kept as
+the derive's manual: DERIVE products are re-runnable and this spec is how.)
 **Script:** `.github/scripts/adao-provenance/derive.js`
 **Output:** `thealliancedao/tla-core/nfts/adao/provenance/`
 **Inputs:** `archive/fcd/adao-minter/` (1,644 txs) + `archive/fcd/adao-collection/`

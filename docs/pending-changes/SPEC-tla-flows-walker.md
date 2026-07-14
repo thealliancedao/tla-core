@@ -1,7 +1,10 @@
 # SPEC — tla-flows block-walker (Rev C) — forward capture done as forward capture
 
-**Status:** APPROVED + BUILT 2026-07-08 (mock suite passed; see §4 results in
-`platform-crons/tla-flows/README.md` Rev C entry)
+**Status:** ✅ DEPLOYED & LIVE (approved + built 2026-07-08, mock suite passed —
+see §4 results in `platform-crons/tla-flows/README.md` Rev C entry; running in
+production as `org-tla-flows-2.1.1`, forward runs `status: ok` as of
+2026-07-14. This spec remains the module's live design contract — §0 doctrine
+and the locked defaults govern any change.)
 **Replaces:** the tx_search scan engine inside `platform-crons/tla-flows/index.js`
 (Rev B.1.2). Classifier, storage, publishing, heartbeat, Render job: unchanged.
 
