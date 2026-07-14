@@ -69,23 +69,49 @@ Every line below verified against chain or production output that day.
   README, already done); SPEC-tla-flows-gap-fill retirable now (complete,
   facts live in known_gaps). Completed one-shots retire; git history keeps them.
 
-### ▶ Next up (per the approved 2026-07-13 build order — REVISED 2026-07-14 evening)
-**FIRST: reconciliation diagnostic — ✅ BUILT + MOCK-VERIFIED 2026-07-14,
-DISPATCH PENDING (Camron: Actions → "tla-voting reconcile (diagnostic)" →
-Run; dry_run=1 first if preferred).** Spec: `SPEC-tla-voting-reconcile.md`
-(this folder). Trigger: the events heartbeat carries **13 open vote gaps +
-10 lock gaps** accrued July 8–14 in normal forward operation (~66k blocks of
-unconfirmed vote coverage that week). The published
-`tla-voting/events/reconciliation.json` verdict decides whether events were
-actually lost and gates the order — CLEAN → events monthly restructure then
-rollup rebuilds; LOSSES → the walker/capture-registry fix for tla-voting
-rises first (don't build rollups on a leaking stream). Also found: all 1,306
-lock_create events carry token_id null → classifier refinement queued
-(capture minted id from tx wasm events). Then tribute capture rework (#2,
-outline in the defect register below).
-✅ Watch item 1 PASSED 2026-07-14: heartbeat shows org-tla-voting-1.1.0,
-distributions_head 193, status ok. Remaining: the Sunday 2026-07-19 flip
-(period 194 self-append).
+### ▶ Next up (order RESET by the reconciliation verdict, 2026-07-14 late)
+**Reconciliation diagnostic: ✅ EXECUTED 2026-07-14 22:20 UTC — verdict
+LOSSES, triple-verified.** Full story: changelog Rev 4; raw report:
+`tla-voting/events/reconciliation.json`. Decomposition: (1) declared-gap
+losses real but small (~7 key-swap re-votes, period ~190, June window —
+honest); (2) ≥1 PROVEN SILENT loss in a claimed-covered window (a new
+~5.97M-VP whale's project vote, period 191 — the pager cannot be trusted
+even where it records no gap); (3) systematic blindness to contract-path
+votes — 7 voting contracts identified: VOTION vote-aggregator vaults
+(arbLUNA-MAX = BIGGEST TLA lock holder, ampLUNA-MAX = 2nd, + arbLUNA-1wk),
+3 DAO DAO DAOs (one CONFIRMED on chain as aDAO itself, terra1sffd4… — the
+council's prop-39 re-vote, 4× gauge/vote @ 841,486.80 VP, 2026-07-07, is
+among the invisible; aDAO locks = token_id 600 + 711), 1 Polytone proxy
+(ROAR/WHALE Osmosis entity voting cross-chain).
+VP invariant PERFECT (Σ locks = total_vamp = 27,975,687.10, Δ 0.0000%).
+
+**New build order (§6 routing applied):**
+1. **tla-voting capture fix** (spec next). DESIGN FACT (prop-39 tx dump):
+   the gauge/vote wasm event emits ONLY {action, vp} — no user, no
+   allocation — so wrapped votes CANNOT be attributed from events; the fix's
+   completeness+attribution layer must be a per-period STATE HARVEST
+   (enumerate owners → user_info → period-stamp identifies who voted that
+   period; ~250 queries/week; catches Votion vaults, DAO DAO, Polytone,
+   silent misses). Events stay the fine-grained tx layer for direct votes
+   (walker transport, no tx_search trust). Heal the ~9 missed votes the
+   same way (NO archive node). Lock token_id capture confirmed feasible via
+   ve/deposit_for + wasm-metadata_changed pairing. Events monthly
+   restructure rides this same touch ({YYYY}/{MM}.json, Deviation Register
+   row). Votion has 6 live vaults (MAX tiers dominate: 216,898 arbLUNA /
+   53,445 ampLUNA; vaults answer {state:{}}) — capture the whole
+   code_id-3677 family.
+2. Rollup rebuilds (pool-status-history, vp-attribution org-side) — ONLY
+   after 1; the current stream mis-attributes exactly the actors these
+   products measure.
+3. Tribute capture rework (#2) — shares the wasm-event attribution core
+   from 1.
+Also queued from findings: the 7 voter contracts are ALREADY in
+curated/known_contracts.json — queue item is to surface them as a VOTER
+class in analytics (whole code_id-3677 Votion family) once attribution
+lands; lock_create token_id classifier refinement (all 1,306 creates carry
+null).
+✅ Watch item 1 PASSED (org-tla-voting-1.1.0, distributions_head 193).
+Remaining: the Sunday 2026-07-19 flip (period 194 self-append).
 
 ---
 
