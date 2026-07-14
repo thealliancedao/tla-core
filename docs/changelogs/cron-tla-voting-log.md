@@ -6,6 +6,86 @@ Spec: `docs/pending-changes/SPEC-tla-voting.md`
 
 ---
 
+# Rev 4 — 2026-07-14 (late) — reconciliation verdict: losses confirmed, capture engine indicted, actors identified
+
+**The diagnostic ran clean** (status ok, 0 query errors, 238-wallet universe,
+767 slots judged): MATCH 727 · MISMATCH 8 · CHAIN_ONLY 28 · EVENTS_ONLY 4 →
+match_rate 94.78%. Report: `tla-voting/events/reconciliation.json`. The VP
+invariant is PERFECT: Σ(lock vp+fixed) over all 433 locks = `total_vamp.vp`
+= 27,975,687.10 exactly (Δ 0.0000%). Money math is sound; the who-voted-what
+ledger is not. Every claim below was then verified from independent angles
+(committed data + retained chain state + browser probes) before acceptance.
+
+**Finding 1 — declared-gap losses (real, honest, small).** 7 of 8 mismatches
+are single-leg key-swaps (same bps, old pool key → new pool key). Verified
+NOT a gauge-side remap: the old keys are still live on chain in up to 134
+MATCHED slots — allocations only move via vote txs, so these were user
+re-votes we missed. Chain self-timestamping (the gauge stamps each
+gauge_votes entry with its vote PERIOD — discovered via probes, now doctrine)
+pins them to period ~190, the declared June 15–22 prune window. Camera off,
+and it said so.
+
+**Finding 2 — SILENT loss in a claimed-covered window (proven, material).**
+Wallet `terra1xn7dl78…` voted stable AND project in period 191 (chain-stamped).
+We captured its stable vote (h 21,672,945, Jun 28) — inside a window where
+the pager captured 42 events and claimed coverage — and never captured its
+project vote. No gap recorded. The pager loses events even where it claims
+coverage. Materiality: this wallet went 0 → **~5.97M VP** (5.375M boost +
+0.597M fixed) between periods 189→191 — a brand-new ~21%-of-system whale,
+and the silently-dropped vote governs its entire project-bucket allocation.
+
+**Finding 3 — systematic blindness to contract-path votes (the big one).**
+7 voting CONTRACTS hold live gauge allocations; 4 have zero footprint in
+8,315 captured events (truly invisible), 3 appear mis-attributed to the
+triggering signer (fingerprint-proven: e.g. wallet terra1alqg9… carries
+allocations identical at 4/4 gauges to contract terra13aae4…). Identified
+via contract_info probes:
+- **VOTION vote-aggregator vaults** (code 3677; on-chain labels arbluna-max
+  / arbluna-1wk / ampluna-max name the Eris LSTs they hold, but the vaults
+  are Votion's — already in curated/known_contracts.json): **arbLUNA-MAX is
+  the single BIGGEST TLA lock holder (lock_id 748) and ampLUNA-MAX the
+  second-biggest.** The two largest voters in the system are invisible.
+- **DAO DAO DAOs** (×3): treasury locks voted via governance proposal
+  execution — one CONFIRMED ON CHAIN as aDAO ITSELF (`terra1sffd4…`; the
+  `dao` attribute in props 38 & 39 executed 2026-07-07 from Camron's wallet,
+  txs E0F3F7C9…ADD20 block 21,804,659 and 52497512…FA2BE block 21,804,790).
+  Prop 39 = the council's re-vote: 4× `gauge/vote` @ **841,486.80 VP** per
+  gauge. Prop 38 revealed aDAO's locks (token_id 600 = 733,084 VP boost +
+  81,454 fixed; token_id 711) and a periods-186–192 bribe sweep (13,446
+  ASTRO + 2,491 LUNA + 5,387 CAPA + 10.75M ROAR + 137.8 ampLUNA rebase) —
+  all contract-path, all invisible to current capture. aDAO's own treasury
+  vote is missing from aDAO's own analytics. First-party confirmation.
+- **A Polytone proxy** (cataloged: "ROAR/WHALE IBC bridge"): an
+  Osmosis-side Lion DAO / White Whale ecosystem entity voting TLA gauges
+  cross-chain via IBC.
+Same defect family as tribute blindness (defect #2): the classifier reads
+top-level msgs/signers, not wasm-event actors. These are exactly the
+aggregation/DAO/cross-chain actors the attribution products exist to measure.
+
+**Verdict routing (SPEC-tla-voting-reconcile §6): LOSSES → the capture fix
+rises above the rollup rebuilds.** DECISIVE design fact from the prop-39 tx
+dump: the gauge's `gauge/vote` wasm event carries ONLY {action, vp} — **no
+user, no allocation**. Wrapped votes therefore CANNOT be attributed from
+events at all; the information is not emitted. Fix architecture (to be
+specced): (a) events stay the fine-grained tx layer for direct votes
+(heights/hashes); (b) the COMPLETENESS + ATTRIBUTION layer is a per-period
+STATE HARVEST — enumerate lock owners → `user_info` → any gauge entry
+stamped with period P voted in P (the period-stamp discovery). ~250
+queries/week, catches contracts, wrapped paths, and silent misses, perfect
+attribution, no archive node. The ~9 missed votes heal the same way.
+Bonus confirmed feasible: `ve/deposit_for` pairs with
+`wasm-metadata_changed{token_id}` → the lock classifier CAN extract token
+ids (fixes the 1,306-null-create defect).
+
+**Addresses:** all 7 already cataloged in `docs/curated/known_contracts.json`
+(Votion arbLUNA-MAX `terra13aae4…`, arbLUNA-1wk `terra16xzky…`, ampLUNA-MAX
+`terra1v7aw9…`, Polytone/ROAR-WHALE `terra1nmnrcr…`, DAO DAO ×3). Full forms
+in reconciliation.json. Registry also lists sibling Votion vaults (3mo/1wk
+tiers) — the fix's attribution layer should treat the whole code_id-3677
+family as one voter class.
+
+---
+
 # Rev 3 — 2026-07-13/14 — distributions product born (payout ledger to genesis) + 1.1.0 forward capture
 
 **🔍 Context: the VP-definition audit** (2026-07-13, LUNA-SOLID investigation →
