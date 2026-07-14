@@ -69,10 +69,23 @@ Every line below verified against chain or production output that day.
   README, already done); SPEC-tla-flows-gap-fill retirable now (complete,
   facts live in known_gaps). Completed one-shots retire; git history keeps them.
 
-### ▶ Next up (per the approved 2026-07-13 build order)
-Rollup rebuilds (pool-status-history, vp-attribution) from corrected sources +
-the boundary-ordering fix (#7) → then tribute capture rework (#2, outline in
-the defect register below).
+### ▶ Next up (per the approved 2026-07-13 build order — REVISED 2026-07-14 evening)
+**FIRST: reconciliation diagnostic — ✅ BUILT + MOCK-VERIFIED 2026-07-14,
+DISPATCH PENDING (Camron: Actions → "tla-voting reconcile (diagnostic)" →
+Run; dry_run=1 first if preferred).** Spec: `SPEC-tla-voting-reconcile.md`
+(this folder). Trigger: the events heartbeat carries **13 open vote gaps +
+10 lock gaps** accrued July 8–14 in normal forward operation (~66k blocks of
+unconfirmed vote coverage that week). The published
+`tla-voting/events/reconciliation.json` verdict decides whether events were
+actually lost and gates the order — CLEAN → events monthly restructure then
+rollup rebuilds; LOSSES → the walker/capture-registry fix for tla-voting
+rises first (don't build rollups on a leaking stream). Also found: all 1,306
+lock_create events carry token_id null → classifier refinement queued
+(capture minted id from tx wasm events). Then tribute capture rework (#2,
+outline in the defect register below).
+✅ Watch item 1 PASSED 2026-07-14: heartbeat shows org-tla-voting-1.1.0,
+distributions_head 193, status ok. Remaining: the Sunday 2026-07-19 flip
+(period 194 self-append).
 
 ---
 
