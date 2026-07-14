@@ -6,6 +6,55 @@ Spec: `docs/pending-changes/SPEC-tla-voting.md`
 
 ---
 
+# Rev 3 — 2026-07-13/14 — distributions product born (payout ledger to genesis) + 1.1.0 forward capture
+
+**🔍 Context: the VP-definition audit** (2026-07-13, LUNA-SOLID investigation →
+full capture-layer audit; SPEC-vp-definition-fix). While proving the
+`vp = fixed + voting_power` law against the TLA UI, probes confirmed **the
+gauge controller retains full per-period distribution history in queryable
+contract state** — period 120, deep inside the events dead zone, answered
+instantly from a public LCD. No block scanning, no archive node: ~1 query per
+period. SPEC-distributions-capture written + approved same day.
+
+**One-shot harvest EXECUTED 2026-07-14**
+(`tla-core/.github/scripts/tla-voting/harvest-distributions.js` +
+`tla-voting-distributions.yml`): walked `distributions{time:{period:P}}`
+downward with findFloor — **floor certificate period 96** (period 95 = empty
+pre-genesis state, matching the 2024-08-27 launch). Committed
+`tla-voting/distributions/history.json`: **98 periods (96→193), zero gaps,
+zero invariant violations** (fractions per gauge sum to 1.0 ± 1e-9, hard
+invariant). Verbatim contract shape + capturedAt per entry; deterministic,
+idempotent, retry-with-backoff across both LCDs, failures → `known_gaps`
+never written empty.
+
+**Storage layout DECIDED: single `history.json`** (period-keyed contract
+state, ~4 gauge entries/week, <2 MB over years — not tx events).
+Registered as an accepted deviation: TLA-CORE-STORAGE-DESIGN §7 row flipped
+PENDING → DECIDED. Product README still owed (queued in CHANGES_PENDING).
+
+**Forward capture shipped — cron 1.1.0** (`platform-crons/tla-voting/`):
+- New `lib/distributions.js` carrying the **`<<DISTRIBUTIONS CORE v1>>`**
+  marked block, byte-identical with the harvester script (diff-verified
+  2026-07-14; re-verify after ANY change — the flows-classifier rule).
+- After each epoch boundary, queries the just-finalized period, appends if
+  absent. **Self-healing:** every run verifies `last_captured_period ==
+  current_period − 1`; if behind, backfills the miss (state is retained —
+  lateness is free). Mid-week runs log `distributions: skipped (up to date)`.
+- Heartbeat gains `distributions_head` (193 at ship).
+- **Rode along: the 40s hard-deadline `httpGet` port** — closes the latent
+  idle-timeout-only tarpit hang shared with tla-flows Rev B.
+
+**Verify (watch items):** next Render run logs 1.1.0 + a `distributions:`
+line, heartbeat `distributions_head: 193`; the Sunday 2026-07-19 flip is the
+first live append (period 194).
+
+**Unblocked:** exact per-pool pct/VP history from genesis for the rollup
+rebuilds (replaces the boost-only skewed history); whitelist truth /
+wasted-VP metric; cross-validation ground truth for the event streams
+(Σ vote-events + lock state ≟ distributions per epoch).
+
+---
+
 # Rev 2 — 2026-07-08 — FCD archive discovered; backfill completed to contract genesis
 
 **🏛 Discovery: `phoenix-fcd.terra.dev` is a FROZEN ARCHIVE** — tx index covers
