@@ -1,0 +1,49 @@
+name: tla-voting-restructure
+
+# One-shot: split the four tla-voting event monoliths into per-stream monthly
+# partitions (SPEC-tla-voting-capture-fix §6). Own-repo checkout; the script
+# transforms the working tree; this workflow commits the result ATOMICALLY
+# (new month files + updated index.json + monolith deletions in one commit).
+#
+# ⚠ OPERATIONAL SEQUENCING (from the spec): dispatch this only when
+# org-tla-voting 2.0.0 is ready to deploy right after. Between this commit
+# and the 2.0.0 deploy, the 1.1.0 cron cannot find its prior files — its
+# never-seed guard makes it ABORT SAFELY (status error, no data damage), but
+# the heartbeat will be red until 2.0.0 lands. Prefer: suspend the Render
+# job → dispatch this → deploy 2.0.0 → resume.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "1 = verify + print plan only, commit nothing"
+        required: false
+        default: "1"
+
+permissions:
+  contents: write
+
+jobs:
+  restructure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Run restructure (verification aborts before any write)
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: node .github/scripts/tla-voting/restructure-events.js
+
+      - name: Commit atomically
+        if: ${{ inputs.dry_run != '1' }}
+        run: |
+          git config user.name "tla-voting-restructure"
+          git config user.email "actions@github.com"
+          git add -A tla-voting/events
+          git status --short
+          git commit -m "tla-voting: events restructured to per-stream monthly partitions (SPEC-tla-voting-capture-fix §6)"
+          git push
