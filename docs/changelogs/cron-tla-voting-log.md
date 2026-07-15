@@ -6,7 +6,23 @@ Spec: `docs/pending-changes/SPEC-tla-voting.md`
 
 ---
 
-# Rev 6 — 2026-07-15 — 2.1.0 built + mock-passed: rollups schema 4 + classifier v5 (deploy = one commit)
+# Rev 6 — 2026-07-15 — 2.1.0 SHIPPED: rollups schema 4 + classifier v5 — DEPLOYED + VERIFIED same day
+
+**LIVE VERIFICATION (2026-07-15T16:11, FORCE_ROLLUPS first build):** 262
+voters (203 state + 59 event-only historical — the union working), 14
+bribers, built on period 193. Committed rollups.json verified: **Votion
+arbLUNA-MAX ranked #1 (6.47M VP, visibility none)** — a wallet schema 3
+couldn't see; whale #2 (6.18M, full); a third contract-path voter #3
+(2.28M, none); aDAO rank 7 with 4 stamped gauges. Three-number model live:
+top claimer shows $3,541.14 usd_at_claim vs $250.80 at-build (60,797 ASTRO:
+$2,196 when claimed → $17 today) — the sold-vs-held story no other surface
+can tell. Zero-claim honesty platform-wide: 1,816 claim txs, 1,082 paid.
+1,177 unpriced entries (early-era CAPA/ROAR claims before price-history
+coverage) tracked in `unpriced[]` — NOT counted as $0 income; they price
+themselves when the price backfill extends (rider queued). FORCE_ROLLUPS
+env removed post-verify; harvest runs own the rebuild. Sunday 2026-07-19 is
+now a TRIPLE self-heal test: distributions appends 194 → vote-state
+harvests 194 → rollups rebuilds on both.
 
 **Build #2 (SPEC-tla-voting-rollups, approved same day) is BUILT and
 mock-gated — 63/63 on real fixtures.** Deploy is trivial: commit the 2.1.0
