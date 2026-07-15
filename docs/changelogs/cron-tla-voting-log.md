@@ -6,7 +6,28 @@ Spec: `docs/pending-changes/SPEC-tla-voting.md`
 
 ---
 
-# Rev 5 — 2026-07-15 — 2.0.0 built + mock-passed: walker transport, vote-state harvest, classifier v4 (deploy pending)
+# Rev 5 — 2026-07-15 — 2.0.0 SHIPPED: walker transport, vote-state harvest, classifier v4 — DEPLOYED + HEAL VERIFIED same day
+
+**LIVE VERIFICATION (2026-07-15, first run on the hourly schedule):** cursor
+migrated from the 1.x min-frontier (21,905,081); walker re-covered old gauge
+ground and the dedup absorbed it (1 gated tx → 8 reward events → zero added —
+crash-rewind idempotence proven on real chain data); distributions up to date;
+**first harvest = the heal: period 193 — 433 locks, 203 owners, 203 wallets,
+19 voted, 0 pending.** Committed `vote-state/2026/07.json` verified: aDAO
+(terra1sffd4…) 841,486.80 VP × 4 gauges stamped 193 (the prop-39 re-vote,
+matching the Rev 4 tx dump exactly); the 5.97M-VP whale's silently-dropped
+project vote BACK-ATTRIBUTED stamped 191; Votion arbLUNA-MAX 6.47M VP (the
+single largest voter in TLA) + ampLUNA-MAX 1.18M VP, full 4-gauge allocations.
+vote_capture {MATCH 625, MISMATCH 8, CHAIN_ONLY 28, EVENTS_ONLY 0}, match_rate
+94.55% — MISMATCH/CHAIN_ONLY identical to the Rev 4 reconciliation.
+Σ vp.total 28.03M vs system ~27.98M (measurement drift; VP law holds).
+**Period-stamp field PINNED: it is `period`** (raw entries `{gauge, period,
+votes}`) — recorded in queries.md; the pre-deploy probe became unnecessary.
+**Interpretation law: CHAIN_ONLY ≈ 28 is the permanent healthy baseline**
+(contract-path voters never have events); the alarm is growth beyond the
+known contract-voter set. Watches: catch-up clears over ~5 hourly runs;
+Sunday 2026-07-19 flip must self-append period 194 to BOTH distributions and
+vote-state (double self-heal test).
 
 **The capture fix (SPEC-tla-voting-capture-fix, approved same day) is BUILT and
 mock-gated — 44/44 assertions on REAL fixtures.** Deploy rides the one-sitting
