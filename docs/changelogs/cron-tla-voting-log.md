@@ -6,6 +6,60 @@ Spec: `docs/pending-changes/SPEC-tla-voting.md`
 
 ---
 
+# Rev 6 — 2026-07-15 — 2.1.0 built + mock-passed: rollups schema 4 + classifier v5 (deploy = one commit)
+
+**Build #2 (SPEC-tla-voting-rollups, approved same day) is BUILT and
+mock-gated — 63/63 on real fixtures.** Deploy is trivial: commit the 2.1.0
+folder (no restructure, no schedule change); first rollup build via
+`FORCE_ROLLUPS=1` env + trigger run (then remove the env), or wait for the
+Sunday-flip harvest.
+
+**What 2.1.0 is:**
+- **rollups.json schema 4** (`lib/rollups.js`, rebuilt on harvest runs): the
+  HONEST MERGE — voters from vote-state ∪ events, state wins,
+  `events_visibility: full|none` flags contract-path voters (the Votion
+  vaults finally rank; arbLUNA-MAX is #1 by VP). Per voter: stamped state,
+  event vote detail, canonical-only lock net-by-denom, and the
+  **three-number claims model** (Camron, D4): raw amount / `usd_at_claim`
+  ("if sold when claimed", priced per-claim from price-history) /
+  `usd_at_build` (fallback; the site computes live today-value as amount ×
+  current price). Pending recipe pinned: live earned = claims.totals +
+  `user_claimable` + `user_pending_rebase` (display-side).
+- **Honesty ledger IN the file:** `claim_coverage` declares the
+  2025-01-08→2026-06-14 reward-capture hole (archive backfill queued);
+  `bribers_coverage_note` declares the ~97% tribute blind spot (build #3);
+  `claim_tx_count` vs `paid_claim_count` splits real zero-claims (chain
+  fact: 99% of FCD-era claim_rebase txs paid nothing); unjoinable denoms →
+  `unpriced[]`, never dropped. Pots RETIRED to distributions/history.json —
+  one truth per fact.
+- **`<<CLASSIFIER v5>>`** = v4 + the rebase-income promotion (fidelity
+  machine-verified: banner + one rewritten push only). The gauge's own
+  `gauge/claim_rebase` wasm event carries `rebase_amount` + `user` — proven
+  by a LIVE probe (tx 9B2DD008…, Votion vault compound, 13,966,383 ampLUNA;
+  trimmed real fixture ships at `fixtures/compound_probe.json`). compound
+  events get coins at the GAUGE boundary (pre-swap, pre-wrapper-fee);
+  claim_rebase gets the same backstop; true zero-claims stay null.
+  Forward-only; historical compound fill queued (non-gating).
+- **Discoveries banked along the way:** vote events carry no epoch field in
+  the monthly era (rollup derives it from timestamps via the epoch resolver);
+  lock events carry `asset` (denom string) + `amount` (number) separately;
+  withdraws carry amount only — denom is the escrow underlying (ampLUNA,
+  system constant).
+
+**Mock gate (63/63):** all 2.0.0 tests (T1–T13) still green + R5 classifier
+v5 on the REAL probe tx (13,966,383 filled, `coins_source: gauge_event`; v4
+token_id 748 regression clean; zero-claim stays null) + R1–R4/R6/R7 rollups
+on the REAL committed vote-state month (Votion #1 with visibility none, aDAO
+4-gauge state present, three-number math exact, hole declared,
+canonical-only sums, pots retired, briber label present).
+
+**Post-deploy verify (spec §5):** FORCE_ROLLUPS build → 205+ voters (union >
+state-only), Votion arbLUNA-MAX #1; spot a wallet's claimed totals vs an
+independent sum over committed streams; then confirm the Sunday harvest run
+rebuilds naturally.
+
+---
+
 # Rev 5 — 2026-07-15 — 2.0.0 SHIPPED: walker transport, vote-state harvest, classifier v4 — DEPLOYED + HEAL VERIFIED same day
 
 **LIVE VERIFICATION (2026-07-15, first run on the hourly schedule):** cursor
