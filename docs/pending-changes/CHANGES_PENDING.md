@@ -156,6 +156,27 @@ VP invariant PERFECT (Σ locks = total_vamp = 27,975,687.10, Δ 0.0000%).
    approval) — locked defaults D1–D9, in-cron budgeted genesis walk,
    verbatim record retention, mock gate R8–R12. Next session: approve →
    build 2.2.0.**
+   **Analytics riders (banked 2026-07-15 evening, ride 2.2.0 or later):**
+   - Lock-state retention (FREE — fold into 2.2.0): the vote-state harvest
+     already calls lock_info for all ~433 locks weekly and keeps only the
+     owner. Retain lock_end + underlying amount per token → avg lock
+     duration, permanent-vs-timed split, per-lock sizes, LST composition of
+     total VP. Five-line rider on lib/vote-state.js.
+   - Emissions curve (Layer-3 chart, data COMPLETE today): rebase pot per
+     period from distributions/history.json in RAW ampLUNA — answers
+     whether the two-year emissions ramp has flattened, immune to USD
+     noise. Companion: take-rate + bribe pots per period per denom.
+   - Total-locked curve (Layer-3, data COMPLETE to genesis): cumulative
+     canonical lock ins minus withdraws from the lock stream = total locked
+     ampLUNA over the entire life of TLA; big inflow/outflow events visible.
+   - PROBE: gauge_infos historical projection — does the gauge answer
+     gauge_infos with time:{period:N} like its sibling queries? If yes:
+     per-pool VP-weight history walk → the ATOM-LUNA / INJ-LUNA APR decline
+     decomposes fully into emissions vs vote-weights vs depositor dilution
+     (LP flows already committed since Aug 2024). If no: forward-only via
+     vote-state.
+   - Known thin spot (accepted): TVL/APR snapshots (dex-data) reach back
+     only to late June 2026; accumulates daily forward, no backfill exists.
    Queue riders from the build: FCD re-derive with classifier v4 for
    genesis→Jan-2025 lock token_ids (monthly-aware fill — lift v4 FROM THE
    CRON; non-gating) · seed modernization to monthly layout on archive-node
