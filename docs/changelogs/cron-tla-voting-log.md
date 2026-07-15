@@ -6,6 +6,112 @@ Spec: `docs/pending-changes/SPEC-tla-voting.md`
 
 ---
 
+# Rev 7 — 2026-07-15 — 2.2.0 BUILT: bribe-state harvest + classifier v6 + lock-state rider — mock-gated 96/96, DEPLOY PENDING
+
+**Build #3 (SPEC-tla-voting-bribe-state, approved 2026-07-15) is BUILT and
+mock-gated — 96/96 on real fixtures.** Deploy is trivial: commit the 2.2.0
+folder (no restructure, no schedule change, no new env required —
+`BRIBE_WALK_BUDGET` defaults to 30). The walk-down self-starts on the first
+hourly run and reaches the floor in ~4 runs; the Sunday 2026-07-19 flip
+becomes a QUADRUPLE self-heal test: distributions appends 194 → vote-state
+harvests 194 (now retaining lock state) → rollups rebuilds → bribe-state
+forward-harvests 194 with its first bribe_capture.
+
+**Why (the one paragraph):** the committed bribe stream holds 173 events; the
+manager's own books hold thousands — the take-rate tribute flow (four bucket
+contracts calling add_bribe internally) is invisible to message-level
+classification BY CONSTRUCTION (FCD census: 2,793 add_bribe events vs 173
+captured; 751 FCD-era txs contract-initiated), and the 2025-01→2026-06
+capture hole swallowed everything else. The manager retains its complete
+per-period, per-pool, per-denom ledger — retention PROVEN to period 100 —
+so ~100 queries recover the entire tribute history of TLA, hole included.
+The capture-fix playbook, third run: state for completeness, events for
+attribution, state wins.
+
+**What 2.2.0 is:**
+- **`bribe-state/` product** (`lib/bribe-state.js`, vote-state's structure —
+  injected publishFile/apiGetJson, CH-stubbed chain access, PACE 150ms):
+  - **D1 query (CHAIN-PINNED):** `{bribes:{period:{period:N}}}` — the ve3
+    Time enum, NEVER a bare number (queries.md Q-IncentiveManager-Bribes).
+  - **D2 walk-down:** budgeted in-cron genesis capture (`BRIBE_WALK_BUDGET`
+    30/run, hourly) from the current period until the floor CERTIFIES —
+    FLOOR_CONFIRM=3 consecutive floor-shaped responses (the distributions
+    register rule; transient failures never masquerade as the floor;
+    same-run confirm probes, no cross-run counter state). Cursor:
+    `walked_down_to` + `last_harvested_period`; floor recorded as the chain
+    says it, never presumed (expect ≈96).
+  - **D3 forward:** one harvest per period on the distributions-head
+    trigger, self-healing across missed flips (retained state = lateness
+    free).
+  - **D4 storage:** monthly `{YYYY}/{MM}.json` keyed by the PERIOD'S EPOCH
+    END DATE (docs/epoch_1-300_date.json) — history lands in its historical
+    months (deliberate, documented deviation from vote-state's
+    capturedAt-month, which has no backfill). Dedup on period; never-shrink;
+    corrupt months refused, cursor fields HELD.
+  - **D5 record:** `{schemaVersion, period, harvested_at, source, buckets:
+    <chain VERBATIM>}` — machine-verified in the gate (R12: byte-equal
+    buckets, EXACTLY the five fields, zero derived).
+  - **D7 bribe_capture:** event-derived per-period sums (linear apportion
+    across each event's native epoch range — the coverage metric ONLY;
+    streams/rollups never divide raw amounts) vs state buckets → per-denom
+    coverage % + mean, in both heartbeats. A COVERAGE metric, not an alarm.
+- **`<<CLASSIFIER v6>>`** = v5 + the contract-bribe promotion (fidelity
+  machine-verified: banner + extractors + one bracketed hook only). When a
+  manager-touching tx produced NO bribe event from top-level msgs, the
+  manager's own `bribe/add_bribe` wasm events are promoted (`via:
+  'wasm_event'`, coins from `added`, epoch range from start/end). **Briber
+  resolved via each event's OWN msg_index → that message's target**
+  (msg_index is a property on FCD-trimmed events, an attribute on live LCD
+  events; first-msg-target fallback) — one precision refinement inside D6's
+  "initiating contract" intent, forced by the fixture itself: tx
+  `69D072693314…` carries TWO add_bribe events from TWO different tribute
+  contracts (msg 1 → terra1v399…, msg 3 → terra1awq…); a flat first-msg
+  attribution would have been factually wrong for the second (attribution
+  law: strictly factual). `briber_source:'msg_target'` either way. Pool
+  pairing from same-tx `track_bribes_callback` only on a single unambiguous
+  denom+amount match — the add is bucket-aggregated, ambiguity stays null
+  (the real fixture pairs nothing: 226225967/447102559 vs callback
+  82285371/176842225 — aggregates ≠ per-pool legs; state has the truth).
+  Direct bribes never reach the hook — v3–v5 behavior unchanged (T1 parity
+  + explicit regression both green).
+- **Lock-state retention rider** (CHANGES_PENDING item 3, folded in free):
+  vote-state's enumeration already pays for `lock_info` on all ~433 locks
+  weekly — 2.2.0 retains the analytic fields as ONE record per period in
+  `vote-state/locks/{YYYY}/{MM}.json` (per lock: end VERBATIM
+  permanent|{period}, underlying_amount, asset, amount, start, coefficient,
+  slope, voting_power, fixed_amount). Unlocks: avg lock duration,
+  permanent-vs-timed split, per-lock sizes, LST composition of total VP.
+  Soft-fail (surfaces as heartbeat `partial`, never blocks the harvest);
+  full harvests only. The gate caught a real ordering bug here pre-delivery
+  (snapshot built before the enumeration-abort check — T13 flagged it,
+  fixed, re-gated).
+- **Harness fix:** mock-run's committed-fixture reader now reads the MONTHLY
+  stream layout (the old monolith `vote-events.json` reader predated the
+  2.0.0 restructure and could no longer run against the live repo).
+
+**Mock gate (96/96):** all 2.0.0/2.1.0 tests (T1–T13, R1–R7) still green +
+R8 walk-down budget/floor-confirm/cursor across 4 runs + R9 forward
+self-heal/dedup/epoch-END-month routing (period 195→2026/07, 196-197→
+2026/08; period-100 spot-check against the real epoch table → 2024/09) +
+corrupt-month refusal with cursor HELD + R10 classifier v6 on the REAL FCD
+take-rate tx (two promoted events, exact amounts, per-event tribute-contract
+bribers, pool null; crafted pairing + ambiguity cases; direct-bribe
+regression zero-promoted) + R11 coverage math exact (80% / 0% blind-spot /
+events-only listed / mean 40%) + R12 verbatim retention + T10 lock-rider
+asserts (verbatim end shapes, dedup, index/heartbeat surfacing).
+
+**Post-deploy verify (spec §3):** walk-down completes across ~4 hourly runs
+→ `floor_period` recorded (expect 96 — but trust the certificate); spot the
+period-100 record against today's probe paste (deep-equal buckets); Sunday
+flip appends period 194 forward with a first bribe_capture; a known
+take-rate tx's v6 event carries the tribute contract as briber; then build
+#3.5 (rollups `bribers` consumes bribe-state) retires the
+`bribers_coverage_note` blind-spot label. Queued riders (D8, non-gating):
+FCD re-derive with v6 for the 751 genesis→Jan-2025 contract-initiated txs
+(attribution-only — state already has their totals).
+
+---
+
 # Rev 6 — 2026-07-15 — 2.1.0 SHIPPED: rollups schema 4 + classifier v5 — DEPLOYED + VERIFIED same day
 
 **LIVE VERIFICATION (2026-07-15T16:11, FORCE_ROLLUPS first build):** 262
