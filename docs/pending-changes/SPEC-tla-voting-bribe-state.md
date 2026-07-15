@@ -1,7 +1,10 @@
 # SPEC — tla-voting bribe-state (build #3): tribute capture rework
 
 **Status:** APPROVED 2026-07-15 · BUILT same day (org-tla-voting 2.2.0,
-mock-gated 96/96 on real fixtures — changelog Rev 7) · deploy pending.
+mock-gated 96/96 — changelog Rev 7; DEPLOYED, first run clean 22:49Z) ·
+D8's #3.5 rider BUILT same evening (2.3.0, rollups schema 5 bribe_ledger,
+108/108 — changelog Rev 8, deploy pending). Remaining rider: the FCD
+re-derive (751 txs, attribution-only, queued).
 Every chain fact below was probe- or FCD-verified 2026-07-15 — see
 CHANGES_PENDING item 3 and queries.md Q-IncentiveManager-Bribes.
 Build note: D6's briber resolves via each add_bribe event's OWN msg_index →

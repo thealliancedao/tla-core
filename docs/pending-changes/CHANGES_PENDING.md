@@ -138,10 +138,12 @@ VP invariant PERFECT (Σ locks = total_vamp = 27,975,687.10, Δ 0.0000%).
    {YYYY}/{MM}.json — one per-period record, end/underlying/asset/VP per
    lock). Post-deploy: verify floor certificate (expect 96, trust the
    chain), spot period 100 vs the probe paste, Sunday flip = QUADRUPLE
-   self-heal (distributions + vote-state + rollups + bribe-state), then
-   build #3.5 (rollups bribers ← bribe-state) retires the blind-spot
-   label; D8 rider queued: FCD re-derive with v6 for the 751
-   contract-initiated txs (attribution-only).**
+   self-heal (distributions + vote-state + rollups + bribe-state), ✅ build #3.5 BUILT same evening (2.3.0, rollups schema 5
+   bribe_ledger — mock-gated 108/108, changelog Rev 8, deploy pending):
+   blind-spot label RETIRED, unattributed remainder now MEASURED per
+   period/denom. Sole remaining rider (D8, queued, non-gating): FCD
+   re-derive with v6 for the 751 contract-initiated txs — attribution-only;
+   when it lands, historical remainders shrink on the next rollup rebuild.**
    Original evidence (all probe/FCD-verified 2026-07-15):
    - The incentive manager's `{bribes:{period}}` query is THE authoritative
      per-period tribute ledger (queries.md Q-IncentiveManager-Bribes,
