@@ -1,6 +1,7 @@
 # SPEC — tla-voting rollups rebuild (build #2): rollups schema 4 + classifier v5
 
-**Status:** specified 2026-07-15, pending approval.
+**Status:** APPROVED + BUILT + MOCK-PASSED (63/63) 2026-07-15. Deploy = one
+commit + FORCE_ROLLUPS first build (checklist: CHANGES_PENDING item 2).
 **Depends on:** SPEC-tla-voting-capture-fix (DEPLOYED + HEALED 2026-07-15) —
 vote-state is live; rollups.json has been FROZEN at schema 3 since 2.0.0.
 **Ships as:** org-tla-voting **2.1.0** (one rev: rollup builder + classifier

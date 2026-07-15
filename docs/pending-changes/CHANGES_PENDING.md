@@ -115,6 +115,17 @@ VP invariant PERFECT (Σ locks = total_vamp = 27,975,687.10, Δ 0.0000%).
    **Watches (passive):** catch-up clears over ~5 hourly runs (self-noted in
    heartbeat) · Sunday 2026-07-19 flip = double self-heal test — period 194
    must self-append to BOTH distributions AND vote-state.
+2. ✅ **rollup rebuilds (build #2) — SPEC'D + BUILT + MOCK-PASSED 2026-07-15**
+   (SPEC-tla-voting-rollups; changelog Rev 6; mock gate 63/63 incl. the live
+   compound-probe fixture). **DEPLOY = one commit** (no restructure, no
+   schedule change): commit platform-crons `tla-voting/` 2.1.0 → set
+   `FORCE_ROLLUPS=1` on Render + trigger one run for the first schema-4 build
+   → verify → REMOVE the env (harvest runs rebuild it weekly thereafter).
+   Ships: rollups schema 4 (honest merge, three-number claims, coverage
+   ledger, pots retired to distributions) + `<<CLASSIFIER v5>>` rebase-income
+   promotion. Queue riders: historical compound-amount fill (pre-2.1.0
+   events, non-gating) · site feature: claims dashboard on the three-number
+   model + live pending recipe (rollups.pending_recipe).
    Queue riders from the build: FCD re-derive with classifier v4 for
    genesis→Jan-2025 lock token_ids (monthly-aware fill — lift v4 FROM THE
    CRON; non-gating) · seed modernization to monthly layout on archive-node
