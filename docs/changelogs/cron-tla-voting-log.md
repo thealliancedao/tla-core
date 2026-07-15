@@ -6,6 +6,62 @@ Spec: `docs/pending-changes/SPEC-tla-voting.md`
 
 ---
 
+# Rev 8 — 2026-07-15 — 2.3.0 BUILT: rollups schema 5 (build #3.5) — the blind spot becomes a number. Mock-gated 108/108, DEPLOY PENDING
+
+**Build #3.5 lands the same evening as build #3** (2.2.0's first live run
+confirmed clean at 22:49Z — forward grabbed period 193, walk banked 30 down
+to 163). Deploy: commit the 2.3.0 folder over 2.2.0 — code-only, no
+restructure, no schedule/env change. Rollups rebuild after harvests, so
+schema 5 first materializes on Sunday's flip — by then the walk-down will
+have certified the floor, so the ledger self-activates with full history
+behind it (grace path covers the gap if not: a declared `awaiting` status,
+never a failure).
+
+**What schema 5 is — `bribe_ledger` joins the two sources by what each can
+know:**
+- **state** — the manager's verbatim per-period, per-denom totals from
+  bribe-state (complete back to the floor). Canonicalized locally
+  (canonicalOfInfo — a 6-line mirror of normalizeAssetId; duplicated to
+  avoid a circular require, rollups is required BY index.js).
+- **attributed** — event-derived amounts (direct bribes + v6 promoted).
+  Events remain the ONLY per-briber source: the chain ledger knows pools
+  and amounts, not who paid.
+- **unattributed** — state − attributed per period per denom, clamped ≥ 0
+  with any surplus DECLARED (`event_surplus`), never negated away.
+- **THE NO-DIVISION LAW (Rev 7, now load-bearing):** an event spanning
+  multiple epochs counts in FULL toward `lifetime` sums only — never split
+  across per-period rows (bribe_capture's linear split stays a heartbeat
+  coverage metric, not ledger math). Single-period events for periods the
+  harvest hasn't reached (ahead of head or below floor) land in
+  `events_outside_state` — declared, never skewing a remainder.
+- **`bribers[]` gains `via` counts** (msg vs wasm_event) — the direct/
+  promoted split visible per briber.
+- **`bribers_coverage_note` RETIRED** — the "~97% blind" label is replaced
+  by measured remainders that shrink as v6 captures forward. Schema bumped
+  4→5 because a field left the file; nothing consumes rollups yet, so the
+  bump is free today and honest forever.
+- `sources` gains `bribe_state_through_period` + `bribe_state_floor`.
+
+**Mock gate 108/108:** R7 rewritten for schema 5 (note gone, via counts) +
+R13a inside the full real-fixture build (period-194 state 200M / attributed
+180M / unattributed 20M measured; state-only denom fully unattributed —
+canonicalOfInfo token branch; spanning event in lifetime FULL, absent from
+per-period rows; ahead-of-head event → events_outside_state) + R13 edges
+(absent index → awaiting grace; duplicate period record ignored; surplus
+clamped to 0 with event_surplus 50 declared, lifetime mirrors). All 96 prior
+assertions green.
+
+**Post-deploy verify:** Sunday's flip rebuilds rollups → rollups.json shows
+schemaVersion 5, bribe_ledger.floor_period matches the certificate,
+period-193/194 rows carry state totals with the week's direct bribes
+attributed. The v6-promoted take-rate events should surface as
+`via.wasm_event` counts under the four tribute contracts. Queued (D8,
+unchanged): FCD re-derive for the 751 historical contract-initiated txs —
+when it lands, historical unattributed remainders shrink retroactively on
+the next rollup rebuild; nothing else to touch.
+
+---
+
 # Rev 7 — 2026-07-15 — 2.2.0 BUILT: bribe-state harvest + classifier v6 + lock-state rider — mock-gated 96/96, DEPLOY PENDING
 
 **Build #3 (SPEC-tla-voting-bribe-state, approved 2026-07-15) is BUILT and
