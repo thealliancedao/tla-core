@@ -1,7 +1,9 @@
 # SPEC — tla-voting capture fix (state harvest + walker transport + monthly restructure)
 
-**Status:** specified + APPROVED 2026-07-15 (defaults §0 stand as locked).
-Build step 2 (restructure one-shot) built + mock-passed the same day.
+**Status:** APPROVED + BUILT 2026-07-15. Steps 2 (restructure one-shot,
+committed) and 3 (org-tla-voting 2.0.0) built + mock-passed (44/44 on real
+fixtures) the same day. DEPLOY PENDING — the one-sitting cutover checklist
+lives in CHANGES_PENDING item 1. Defaults §0 stand as locked and shipped.
 **Trigger:** the 2026-07-14 reconciliation verdict — **LOSSES, triple-verified**
 (changelog Rev 4; report `tla-voting/events/reconciliation.json`: MATCH 727 ·
 MISMATCH 8 · CHAIN_ONLY 28 · EVENTS_ONLY 4, match_rate 94.78%). Routing per

@@ -86,7 +86,30 @@ among the invisible; aDAO locks = token_id 600 + 711), 1 Polytone proxy
 VP invariant PERFECT (Σ locks = total_vamp = 27,975,687.10, Δ 0.0000%).
 
 **New build order (§6 routing applied):**
-1. **tla-voting capture fix** (spec next). DESIGN FACT (prop-39 tx dump):
+1. ✅ **tla-voting capture fix — SPEC'D + BUILT + MOCK-PASSED 2026-07-15**
+   (SPEC-tla-voting-capture-fix, approved same day; changelog Rev 5; mock gate
+   44/44 on real fixtures incl. token_id 89/89 on committed-null creates).
+   **DEPLOY PENDING — the one-sitting cutover:**
+   - [ ] suspend `org-tla-voting` on Render
+   - [ ] dispatch `tla-voting-restructure` (dry_run=1 first, then real)
+   - [ ] push platform-crons `tla-voting/` 2.0.0 (index.js, lib/vote-state.js,
+         mock-run.js, package.json, README) — Render redeploys
+   - [ ] change the Render schedule `0 */6 * * *` → `0 * * * *` (D6)
+   - [ ] resume; verify banner 2.0.0, cursor migrates (min-frontier), first
+         walk ok
+   - [ ] FIRST HARVEST = THE HEAL: vote-state month file lands with the 7
+         contract voters (aDAO terra1sffd4… @ ~841k VP × 4 gauges; the
+         5.97M-VP whale's project vote stamped 191); heartbeat `vote_capture`
+         explains the prior CHAIN_ONLY slots
+   - [ ] **probe: pin the period-stamp field name** — one browser `user_info`
+         paste (parser is tolerant + raw_gauge_votes retained verbatim, but
+         stamp-derived fields shouldn't be consumed until pinned)
+   - [ ] system-health MONITORED entry for `tla-voting/vote-state/heartbeat.json`
+   Queue riders from the build: FCD re-derive with classifier v4 for
+   genesis→Jan-2025 lock token_ids (monthly-aware fill — lift v4 FROM THE
+   CRON; non-gating) · seed modernization to monthly layout on archive-node
+   day (both seed + fcd-fill are layout-guarded off meanwhile).
+   Original design brief (for the record): DESIGN FACT (prop-39 tx dump):
    the gauge/vote wasm event emits ONLY {action, vp} — no user, no
    allocation — so wrapped votes CANNOT be attributed from events; the fix's
    completeness+attribution layer must be a per-period STATE HARVEST
