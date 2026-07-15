@@ -170,7 +170,8 @@ done/pending, not this one.**
 
 | Where | Deviation | Status |
 |---|---|---|
-| `tla-voting/events/` | per-stream single JSON files (`vote-events.json` … `reward-events.json`, 4–17 MB and growing), no year/month partitions | **QUEUED — restructure to `{YYYY}/{MM}.json` before Batch-3 site wiring** (zero consumers today = cheapest moment). Owner: org-tla-voting cron + seed + fcd-fill (shared classifier block). Tracked in CHANGES_PENDING. |
+| `tla-voting/events/` | per-stream single JSON files (`vote-events.json` … `reward-events.json`, 4–17 MB and growing), no year/month partitions | ✅ **RESTRUCTURED per SPEC-tla-voting-capture-fix §6 (approved 2026-07-15)** — one-shot `restructure-events.js` splits to per-stream monthly partitions with byte-identity verification (mock-passed against the real monoliths same day); seed + fcd-fill carry monthly-layout guards. Dispatch rides the 2.0.0 deploy sequencing (workflow header). |
+| `tla-voting/events/{stream}/{YYYY}/{MM}.json` | stream SUBFOLDERS within one event product (vs the plain `{YYYY}/{MM}.json` convention) | ✅ **DECIDED — registered 2026-07-15** (SPEC-tla-voting-capture-fix §6, D7). Rationale: four streams with independent horizons/known_gaps/contracts share one product; container metadata lives in index.json `streams` section + heartbeat. An accepted deviation, not drift. |
 | `price-history/`, `nfts/adao/flows/`, `nfts/adao/snapshots/`, `dex-data/*/snapshots/` | missing `index.json` | QUEUED — one conformance sweep; each cron adds its own. Tracked in CHANGES_PENDING. |
 | `nfts/adao/provenance/tokens/` | shipped as `.jsonl` on 2026-07-08 | ✅ FIXED same day — re-derived as `part-NN.json` JSON arrays. |
 | `archive/fcd/` | raw parts, no index | Not a deviation — ARCHIVE class (§2), documented. |
