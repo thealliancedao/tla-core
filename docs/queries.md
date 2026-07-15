@@ -587,9 +587,12 @@ For non-cw20 tokens — LUNA itself, IBC bridged tokens, factory denoms (Eris's 
 - **Powers:** "How much in pending bribes do I have?" tile; member-bribe summaries.
 - **Notes:** Returns `{ start, end, buckets }` — NOT an array. Iterating directly throws (see `Schema gotchas` in PROJECT_KNOWLEDGE.md).
 
-#### Q-IncentiveManager-EpochBribes
-- **Human label:** "What bribes were paid into this specific epoch (across all pools)?"
-- **Input shape:** `{ "epoch_bribes": { "period": <epoch> } }` (verify exact shape against bribes-history cron)
+#### Q-IncentiveManager-Bribes ⭐ per-period bribe ledger (CHAIN-VERIFIED 2026-07-15)
+- **Human label:** "What bribes were paid into this specific period (across all pools)?"
+- **Input shape (CHAIN-PINNED via the contract's own error chain, 2026-07-15):** `{ "bribes": { "period": <Time> } }` where **`period` is the ve3 Time enum**: `"current" | "next" | "last" | { "time": <unix> } | { "period": <N> }`. Historical: `{ "bribes": { "period": { "period": 100 } } }` ✓ verified. `{ "bribes": {} }` = current period ✓ verified. A BARE NUMBER (`"period": 100`) FAILS with the serde-json-wasm fallback error ("Expected true/false/null") — the enum can't parse it; this cost four probes to diagnose, don't repeat it. Full QueryMsg set (enumerated by its own errors): `config`, `next_claim_period`, `bribes`, `user_claimable`.
+- **Output shape:** `{ buckets: [ { gauge: "<bucket>", asset: {cw20|native: <pool>}, assets: [ { info: {cw20|native: <denom>}, amount: "<raw>" }, … ] }, … ] }` — verified on the current period (20 pool entries) AND period 100 (12 pool entries, Sept-2024 era): per-gauge, per-pool, per-denom totals.
+- **Powers:** THE authoritative tribute ledger — complete per-period bribes regardless of initiator (take-rate tribute contracts, Votion, direct). **Deep retention PROVEN (period 100 returns full buckets)** — the build #3 bribe-state walk (~100–193 queries) recovers the complete tribute history INCLUDING the 2025-01→2026-06 event-capture hole. What it does NOT carry: the briber — attribution stays event-side (classifier v6 over `bribe/add_bribe` wasm events + direct msgs; the take-rate anatomy is in CHANGES_PENDING item 3).
+- **Note:** the old `epoch_bribes` guess was wrong — this block supersedes it.
 - **Powers:** Bribe history per epoch — fuels the Global Epoch Bribes tile.
 
 ---
