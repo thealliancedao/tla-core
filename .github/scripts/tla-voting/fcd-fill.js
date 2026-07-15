@@ -121,6 +121,18 @@ async function run() {
     if (!GITHUB_TOKEN) throw new Error('GITHUB_TOKEN missing.');
     console.log(`\n🏺 tla-voting fcd-fill — ${startedAt.toISOString()}\n`);
 
+    // ⛔ MONTHLY-LAYOUT GUARD (SPEC-tla-voting-capture-fix §6, added 2026-07-15):
+    // this derive predates the per-stream monthly restructure and reads/writes
+    // the retired monolith files. (It would already fail on the unreachable
+    // monoliths below — this guard just makes the reason explicit.) The
+    // token_id FCD re-derive needs a monthly-aware version (queued).
+    const layoutIdx = await tryGetJson(RAWROOT(`${OUT_DIR}/index.json`));
+    if (layoutIdx && Number(layoutIdx.schemaVersion) >= 4) {
+        throw new Error('tla-voting/events is on the monthly layout (index schemaVersion ' +
+            layoutIdx.schemaVersion + ') — fcd-fill predates the restructure and MUST NOT run. ' +
+            'See SPEC-tla-voting-capture-fix §6.');
+    }
+
     // committed streams (never-shrink baselines + prior gaps/horizons)
     const [pv, pl, pb, pr, epochDates] = await Promise.all([
         tryGetJson(RAWROOT(`${OUT_DIR}/vote-events.json`)),

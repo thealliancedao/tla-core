@@ -691,6 +691,18 @@ async function run() {
     if (PROBE_ONLY) { await runProbe(); return; }
     if (!GITHUB_TOKEN) throw new Error('GITHUB_TOKEN missing — refusing to run (no publish target).');
 
+    // ⛔ MONTHLY-LAYOUT GUARD (SPEC-tla-voting-capture-fix §6, added 2026-07-15):
+    // this script predates the per-stream monthly restructure and writes the
+    // retired monolith files. Running it against a restructured product would
+    // resurrect monoliths beside the monthly tree. Archive-node day needs a
+    // monthly-aware seed rewrite first (queued in CHANGES_PENDING).
+    const layoutIdx = await tryGetJson(RAW('index.json'), 'events index (layout guard)');
+    if (layoutIdx && Number(layoutIdx.schemaVersion) >= 4) {
+        throw new Error('tla-voting/events is on the monthly layout (index schemaVersion ' +
+            layoutIdx.schemaVersion + ') — this seed predates the restructure and MUST NOT run. ' +
+            'See SPEC-tla-voting-capture-fix §6.');
+    }
+
     // prior committed state + epoch dates
     const [priorVotes, priorLocks, priorBribes, priorRewards, epochDates] = await Promise.all([
         getPrior('vote-events.json', 'vote-events'),
