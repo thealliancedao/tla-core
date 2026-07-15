@@ -86,25 +86,35 @@ among the invisible; aDAO locks = token_id 600 + 711), 1 Polytone proxy
 VP invariant PERFECT (Σ locks = total_vamp = 27,975,687.10, Δ 0.0000%).
 
 **New build order (§6 routing applied):**
-1. ✅ **tla-voting capture fix — SPEC'D + BUILT + MOCK-PASSED 2026-07-15**
-   (SPEC-tla-voting-capture-fix, approved same day; changelog Rev 5; mock gate
-   44/44 on real fixtures incl. token_id 89/89 on committed-null creates).
-   **DEPLOY PENDING — the one-sitting cutover:**
-   - [ ] suspend `org-tla-voting` on Render
-   - [ ] dispatch `tla-voting-restructure` (dry_run=1 first, then real)
-   - [ ] push platform-crons `tla-voting/` 2.0.0 (index.js, lib/vote-state.js,
-         mock-run.js, package.json, README) — Render redeploys
-   - [ ] change the Render schedule `0 */6 * * *` → `0 * * * *` (D6)
-   - [ ] resume; verify banner 2.0.0, cursor migrates (min-frontier), first
-         walk ok
-   - [ ] FIRST HARVEST = THE HEAL: vote-state month file lands with the 7
-         contract voters (aDAO terra1sffd4… @ ~841k VP × 4 gauges; the
-         5.97M-VP whale's project vote stamped 191); heartbeat `vote_capture`
-         explains the prior CHAIN_ONLY slots
-   - [ ] **probe: pin the period-stamp field name** — one browser `user_info`
-         paste (parser is tolerant + raw_gauge_votes retained verbatim, but
-         stamp-derived fields shouldn't be consumed until pinned)
+1. ✅✅ **tla-voting capture fix — DEPLOYED + HEAL VERIFIED 2026-07-15**
+   (spec'd, built, mock-gated 44/44, restructured, deployed, and healed in
+   ONE DAY. Changelog Rev 5 carries the full story + live verification.)
+   Cutover executed:
+   - [x] suspend `org-tla-voting` on Render
+   - [x] dispatch `tla-voting-restructure` (dry_run clean, then real —
+         commit 4b9823c, 62 month files, identity verified, byte-checked
+         post-commit)
+   - [x] push platform-crons `tla-voting/` 2.0.0 (byte-verified post-commit)
+   - [x] schedule `0 */6 * * *` → `0 * * * *` (D6)
+   - [x] first run: banner 2.0.0, cursor migrated from min-frontier
+         21,905,081, walker + live dedup proof (1 gated tx → 8 rewards →
+         zero added), status ok, catch-up in progress
+   - [x] FIRST HARVEST = THE HEAL: period 193, 203 wallets, 19 voted, 0
+         pending. aDAO 841,486.80 VP × 4 stamped 193; whale's project vote
+         back-attributed stamped 191; Votion arbLUNA-MAX 6.47M VP (largest
+         voter in TLA) + ampLUNA-MAX 1.18M captured. vote_capture
+         {625/8/28/0} — matches the reconciliation exactly.
+   - [x] ~~probe: pin the period-stamp field~~ **RESOLVED BY THE HARVEST
+         ITSELF** — the field is `period` (recorded in queries.md
+         Q-AssetGauge-UserInfo; no probe needed)
    - [ ] system-health MONITORED entry for `tla-voting/vote-state/heartbeat.json`
+         (only unticked item — do with the next system-health touch)
+   **Interpretation law (encode in build #2 analytics): CHAIN_ONLY ≈ 28 is
+   the PERMANENT HEALTHY BASELINE** — contract-path voters never have
+   events; the alarm is GROWTH beyond the known contract-voter set.
+   **Watches (passive):** catch-up clears over ~5 hourly runs (self-noted in
+   heartbeat) · Sunday 2026-07-19 flip = double self-heal test — period 194
+   must self-append to BOTH distributions AND vote-state.
    Queue riders from the build: FCD re-derive with classifier v4 for
    genesis→Jan-2025 lock token_ids (monthly-aware fill — lift v4 FROM THE
    CRON; non-gating) · seed modernization to monthly layout on archive-node

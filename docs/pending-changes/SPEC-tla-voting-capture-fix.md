@@ -1,9 +1,23 @@
 # SPEC — tla-voting capture fix (state harvest + walker transport + monthly restructure)
 
-**Status:** APPROVED + BUILT 2026-07-15. Steps 2 (restructure one-shot,
-committed) and 3 (org-tla-voting 2.0.0) built + mock-passed (44/44 on real
-fixtures) the same day. DEPLOY PENDING — the one-sitting cutover checklist
-lives in CHANGES_PENDING item 1. Defaults §0 stand as locked and shipped.
+**Status:** DEPLOYED + HEAL VERIFIED 2026-07-15 (same day as approval).
+Restructure executed live (commit 4b9823c: 62 month files, byte-identity all
+four streams, monoliths deleted, index → schemaVersion 4). org-tla-voting
+2.0.0 live on the hourly schedule; first run: cursor migrated from the 1.x
+min-frontier (21,905,081), walker + dedup proven on real chain ground, and
+the FIRST HARVEST HEALED the Rev 4 misses — period 193, 203 wallets, 0
+pending: aDAO's prop-39 re-vote (841,486.80 VP × 4 gauges, stamped 193), the
+5.97M-VP whale's dropped project vote back-attributed (stamped 191), both
+Votion vaults on the books (arbLUNA-MAX 6.47M VP — the largest voter in TLA).
+vote_capture {MATCH 625, MISMATCH 8, CHAIN_ONLY 28, EVENTS_ONLY 0} — the
+MISMATCH/CHAIN_ONLY sets match the reconciliation exactly. The period-stamp
+field is PINNED: it is `period` (queries.md Q-AssetGauge-UserInfo).
+**Interpretation law: CHAIN_ONLY ≈ 28 is the PERMANENT HEALTHY BASELINE** —
+contract-path voters never have events (that's why vote-state exists); the
+alarm signal is GROWTH beyond the known contract-voter set, not nonzero.
+Remaining watches: catch-up backlog clears over ~5 hourly runs; Sunday
+2026-07-19 flip should self-append period 194 to BOTH distributions and
+vote-state. Defaults §0 stand as locked and shipped.
 **Trigger:** the 2026-07-14 reconciliation verdict — **LOSSES, triple-verified**
 (changelog Rev 4; report `tla-voting/events/reconciliation.json`: MATCH 727 ·
 MISMATCH 8 · CHAIN_ONLY 28 · EVENTS_ONLY 4, match_rate 94.78%). Routing per
