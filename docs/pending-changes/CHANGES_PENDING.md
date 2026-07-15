@@ -260,9 +260,12 @@ SHIPPED 2026-07-14), `SPEC-distributions-capture.md` (✅ SHIPPED 2026-07-14).
    filters); retained-window partial recovery; 2025→Jun-2026 joins known_gaps.
    **Block-scale work GATED on the Phase-2 capture registry** (one pass,
    everything: tributes + flows pool-identity + whatever else the hunt finds).
-3. **wBTC.creda.a missing entirely** from tla-snapshot (2.69M VP, 10.2% of
-   single) — Creda dex absent from pool discovery (platform-crons dex-data
-   has `credia.js`; wire into snapshot discovery).
+3. **wBTC.creda.a — REFRAMED 2026-07-15:** org discovery was never broken —
+   the pool IS captured (token-catalog, 2.675M VP, gauge_status active),
+   just identity-unresolved because the Credia adapter is a placeholder.
+   Probe list written (PROBES-credia.md): it + the other 2 unresolved
+   singles + Credia adapter sources. Camron runs probes → curated identity
+   overrides + dexes/credia.js build (dex-data 1.2.0).
 4. **Ghost/stray gauge votes** in bucket denominators (wstETH-SS,
    wBTC.osmo-*, cross-bucket USDC-USDT strays; ~3M VP earns nothing).
    Distributions = the whitelist; pct math moves to it; expose "wasted VP".
@@ -277,14 +280,23 @@ SHIPPED 2026-07-14), `SPEC-distributions-capture.md` (✅ SHIPPED 2026-07-14).
 7. **vp-attribution ordering hazard** — boundary rollup consumes member votes
    up to ~23h stale (Camron's 1.18M vote binned as other_vp at e193). Fix:
    fresh positions read at boundary, or attribution runs post-positions.
-8. **dex-data bucket label** — LUNA-SOLID tagged `stable`, gauge says
-   `project`.
+8. ✅ **dex-data bucket labels — FIXED 2026-07-15 evening (dex-data 1.1.0,
+   mock-gated 31/31, deploy pending).** Cross-check vs token-catalog gauge
+   truth found THREE Astroport mislabels (LUNA-SOLID stable→project,
+   USDC-USDT bluechip→single, LUNA-WHALE null→project) + SkeletonSwap
+   labeling nothing (27 gauge pools bucket:null). Root cause: buckets from
+   `total_staked_balances` MEMBERSHIP, not gauge classification. Fix:
+   lib/bucket-truth.js — `whitelisted_asset_details` on the 4 bucket
+   contracts + LP-minter pair resolution, shared by both adapters;
+   ambiguity/dewhitelisted flags declared; truth failure → null + errors,
+   never a staked-membership guess. dex-data CHANGELOG 1.1.0 carries it.
 9. **tla-flows records lack pool identity** (bucket inferable only via
    raw_actions/zap legs — bit us in this analysis) — classifier enrichment;
    rides the capture-registry block pass for history.
-10. **Invariant monitors → system-health**: Σ bucket tallies vs total_vamp
-    (like-for-like periods only), staked ≤ depth, distribution fractions sum
-    to 1, active-tribute count vs bribe stream.
+10. **Invariant monitors → system-health**: SPEC WRITTEN 2026-07-15
+    (SPEC-system-health.md — 7 invariants incl. the bucket-label agreement
+    check that found tonight's 3 dex-data mislabels, chain-free Layer 3,
+    own cron `org-system-health`). Pending approval → build.
 
 ### 🔥 Build order (approved 2026-07-13; spec → approval → build → mock, one at a time)
 1. ✅ VP definition fix (SPEC-vp-definition-fix) — **SHIPPED 2026-07-14**,
