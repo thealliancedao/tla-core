@@ -182,13 +182,14 @@ GET /cosmos/bank/v1beta1/balances/{address}/by_denom?denom={url-encoded}
 - **Output shape:** Array per-gauge: `{ asset, period, user_vp, total_vp }`
 - **Powers:** Live percentage influence in each pool per member.
 
-#### Q-AssetGauge-UserInfo ⭐ per-wallet VP (verified 2026-07-13)
+#### Q-AssetGauge-UserInfo ⭐ per-wallet VP (verified 2026-07-13; gauge_votes shape pinned 2026-07-15)
 - **Human label:** "What's this wallet's total voting power right now?"
-- **Used by:** VP-definition-fix evidence (probe P3); capture layer.
-- **Input shape:** `{ "user_info": { "user": "terra1..." } }`
-- **Inputs:** `user` (wallet)
+- **Used by:** VP-definition-fix evidence (probe P3); **org-tla-voting vote-state harvest** (the per-period completeness + attribution layer — SPEC-tla-voting-capture-fix §3).
+- **Input shape:** `{ "user_info": { "user": "terra1...", "time": "next" } }`
+- **Inputs:** `user` (wallet), `time` (`"next"` = current live tally)
 - **Output shape:** `{ voting_power, fixed_amount, slope, gauge_votes, ... }`
-- **Powers:** Wallet-level VP = `voting_power + fixed_amount` — verified: 1,179,504.21 + 131,056.04 = 1,310,560.25 = the UI's "1.31M VP" exactly. `gauge_votes` = the wallet's current vote allocations (feeds voter-churn / votes-on-dead-LPs metrics).
+- **`gauge_votes` entry shape (CHAIN-PINNED 2026-07-15, first live vote-state harvest — 203 wallets):** `{ gauge, period, votes: [[asset, bps], …] }` — **the stamp field is `period`** = the vote period in which that gauge allocation was last set. Any entry stamped P means that actor voted in P — this is what makes wrapped/contract-path votes (Votion vaults, DAO DAO, Polytone) attributable from state when events cannot see them. Stamps carry only the LAST vote per gauge (older history is never emitted by the chain). Live proof: the 5.97M-VP whale's silently-dropped project vote came back stamped `191`; 19 wallets stamped `193` matched the finalized period exactly.
+- **Powers:** Wallet-level VP = `voting_power + fixed_amount` — verified: 1,179,504.21 + 131,056.04 = 1,310,560.25 = the UI's "1.31M VP" exactly. `gauge_votes` = the wallet's current vote allocations WITH period stamps (feeds vote-state records, voter-churn, votes-on-dead-LPs metrics).
 - **Notes:** summing `voting_power` alone was the platform-wide ~11% undercount fixed 2026-07-14 (SPEC-vp-definition-fix).
 
 #### Q-AssetGauge-UserPendingRebase
