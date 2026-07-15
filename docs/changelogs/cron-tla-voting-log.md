@@ -6,6 +6,65 @@ Spec: `docs/pending-changes/SPEC-tla-voting.md`
 
 ---
 
+# Rev 5 — 2026-07-15 — 2.0.0 built + mock-passed: walker transport, vote-state harvest, classifier v4 (deploy pending)
+
+**The capture fix (SPEC-tla-voting-capture-fix, approved same day) is BUILT and
+mock-gated — 44/44 assertions on REAL fixtures.** Deploy rides the one-sitting
+cutover: suspend Render → dispatch tla-voting-restructure (committed 2026-07-15,
+mock-passed against the real monoliths: 62 month files, byte-identity all four
+streams) → push platform-crons 2.0.0 → schedule `0 */6 * * *` → `0 * * * *` →
+resume.
+
+**What 2.0.0 is:**
+- **Walker transport** (Rev C lift from tla-flows): walk blocks → gate on the
+  3 governance contracts → fetch gated txs DECODED BY HASH from the LCD (hours
+  old at most, provably existing) → the classifiers' input shape unchanged.
+  Cursor schema 4 (`last_block`; 1.x per-contract cursor auto-migrates via
+  min-frontier). Pruned ranges → exact-bounds `known_gaps_walker`. The tx_search
+  pager is deleted from the cron (backfill tooling only, per walker doctrine).
+- **Monthly per-stream writes** — the cron REFUSES the monolith layout (index
+  schemaVersion ≥ 4 required), making the deploy sequencing self-enforcing.
+- **vote-state harvest** (`lib/vote-state.js`, product
+  `tla-voting/vote-state/`): once per period, enumerate lock owners fresh ∪
+  wallets_seen → `user_info` each → records with period stamps,
+  `voted_this_period`, `post_flip_change`, `vp.total = fixed + boost`, and
+  `raw_gauge_votes` VERBATIM (stamp-field insurance — the stamp's exact field
+  name still needs one browser probe to pin; parser is tolerant meanwhile).
+  Completion mode: failed wallets → `pending_wallets`, period advances only
+  when clean. Enumeration failure aborts the harvest whole. **The first live
+  harvest IS the heal** of the Rev 4 misses (whale vote period 191, aDAO's
+  prop-39 re-vote, the Votion vaults, Polytone — all captured with stamps).
+- **`<<CLASSIFIER v4>>`** = v3 verbatim + lock token_id promotion (fidelity
+  machine-verified: only banner/marker lines differ). Fills null token_ids from
+  the escrow's own wasm events — CW721 `mint` on creates (a BETTER source than
+  the Rev 4 metadata_changed note; chain-proven on FCD tx 09A186D9… →
+  token_id 542), metadata events on deposit_for/extends; owner-matched,
+  ambiguity stays null. **Mock result on the real FCD sample: all 89
+  committed-null creates fill, field parity 89/89 otherwise.** v4's sole live
+  home is the cron (seed/fcd-fill layout-guarded, keep v3).
+- **`vote_capture` invariant** in the heartbeat (the reconcile §4 fold-in):
+  events replay vs the same user_info results → 4-class counts + match_rate,
+  every harvest. CHAIN_ONLY/EVENTS_ONLY trending nonzero = capture regression
+  alarm.
+- **rollups.json FROZEN** — mis-attributed by exactly the contract-path actors;
+  build #2 (rollup rebuilds) recomputes on events + vote-state.
+
+**Mock gate (binding, passed 2026-07-15):** T1 classifier parity 25/25 votes +
+10/10 bribes vs committed events · T2 token_id 89/89 · T3 walker e2e incl.
+crash-rewind idempotence · T4 budget split, nothing lost · T5 decode-fail holds
+cursor then heals · T6 pruned exact-bounds · T7 corrupt month refused · T8 1.x
+cursor migration · T9 monolith-layout refusal · T10–T13 vote-state harvest /
+pending completion / vote_capture classes / enumeration abort.
+
+**Post-deploy verify (spec §9):** first walk advances the migrated cursor;
+first harvest lands `vote-state/{YYYY}/{MM}.json` with the 7 contract voters
+present (aDAO terra1sffd4… @ ~841k VP × 4 gauges, the 5.97M-VP whale's project
+vote stamped 191); heartbeat `vote_capture` explains all prior CHAIN_ONLY
+slots; probe pins the period-stamp field name (queue item); Sunday flip
+self-appends period 194 to BOTH distributions and vote-state.
+
+---
+
 # Rev 4 — 2026-07-14 (late) — reconciliation verdict: losses confirmed, capture engine indicted, actors identified
 
 **The diagnostic ran clean** (status ok, 0 query errors, 238-wallet universe,
