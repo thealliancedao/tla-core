@@ -1,8 +1,14 @@
 # SPEC — tla-voting bribe-state (build #3): tribute capture rework
 
-**Status:** specified 2026-07-15 (same-day as the evidence probes), pending
-approval. Every chain fact below was probe- or FCD-verified today — see
+**Status:** APPROVED 2026-07-15 · BUILT same day (org-tla-voting 2.2.0,
+mock-gated 96/96 on real fixtures — changelog Rev 7) · deploy pending.
+Every chain fact below was probe- or FCD-verified 2026-07-15 — see
 CHANGES_PENDING item 3 and queries.md Q-IncentiveManager-Bribes.
+Build note: D6's briber resolves via each add_bribe event's OWN msg_index →
+that message's target (first-msg fallback) — the fixture tx itself carries
+two events from two DIFFERENT tribute contracts, so a flat first-msg read
+would mis-attribute the second (attribution law). briber_source stays
+'msg_target'.
 **Ships as:** org-tla-voting **2.2.0** (one rev: bribe-state harvest +
 classifier v6 + bribe_capture invariant). NO new crons, NO new Actions.
 **Playbook:** the capture fix, third run — state layer for completeness,

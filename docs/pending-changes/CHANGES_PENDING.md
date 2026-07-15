@@ -129,8 +129,20 @@ VP invariant PERFECT (Σ locks = total_vamp = 27,975,687.10, Δ 0.0000%).
    rollup rebuild once the price series extends) · site feature: claims
    dashboard on the three-number model + live pending recipe
    (rollups.pending_recipe).
-3. **tribute/bribe capture rework (build #3) — EVIDENCE BANKED 2026-07-15,
-   spec next.** Chain facts (all probe/FCD-verified today):
+3. ✅ **tribute/bribe capture rework (build #3) — SPEC APPROVED + BUILT
+   2026-07-15 evening (org-tla-voting 2.2.0), mock-gated 96/96 on real
+   fixtures incl. the take-rate tx 69D072693314 — DEPLOY PENDING (commit
+   the 2.2.0 folder; no restructure, no schedule/env change; walk-down
+   self-starts, floor in ~4 hourly runs). Changelog Rev 7 carries the full
+   story. The lock-state retention rider RODE ALONG (vote-state/locks/
+   {YYYY}/{MM}.json — one per-period record, end/underlying/asset/VP per
+   lock). Post-deploy: verify floor certificate (expect 96, trust the
+   chain), spot period 100 vs the probe paste, Sunday flip = QUADRUPLE
+   self-heal (distributions + vote-state + rollups + bribe-state), then
+   build #3.5 (rollups bribers ← bribe-state) retires the blind-spot
+   label; D8 rider queued: FCD re-derive with v6 for the 751
+   contract-initiated txs (attribution-only).**
+   Original evidence (all probe/FCD-verified 2026-07-15):
    - The incentive manager's `{bribes:{period}}` query is THE authoritative
      per-period tribute ledger (queries.md Q-IncentiveManager-Bribes,
      CHAIN-PINNED: `{bribes:{period:{period:N}}}` — the field is the ve3
@@ -152,16 +164,15 @@ VP invariant PERFECT (Σ locks = total_vamp = 27,975,687.10, Δ 0.0000%).
    - Design shape (the capture-fix playbook): bribe-state product (period
      walk + weekly forward) + classifier v6 event promotion; events remain
      the who-paid layer, state the what/where/when truth.
-   **SPEC WRITTEN: SPEC-tla-voting-bribe-state.md (2026-07-15, pending
-   approval) — locked defaults D1–D9, in-cron budgeted genesis walk,
-   verbatim record retention, mock gate R8–R12. Next session: approve →
-   build 2.2.0.**
+   **SPEC-tla-voting-bribe-state.md: approved + BUILT (see the ✅ header
+   above) — locked defaults D1–D9 all honored; mock gate R8–R12 green.**
    **Analytics riders (banked 2026-07-15 evening, ride 2.2.0 or later):**
-   - Lock-state retention (FREE — fold into 2.2.0): the vote-state harvest
-     already calls lock_info for all ~433 locks weekly and keeps only the
-     owner. Retain lock_end + underlying amount per token → avg lock
-     duration, permanent-vs-timed split, per-lock sizes, LST composition of
-     total VP. Five-line rider on lib/vote-state.js.
+   - ✅ Lock-state retention — SHIPPED in 2.2.0 (rode along as planned):
+     per-period record in vote-state/locks/{YYYY}/{MM}.json retaining end
+     (verbatim permanent|{period}), underlying_amount, asset, amount,
+     start, coefficient, slope, voting_power, fixed_amount per lock.
+     Avg-duration / permanent-split / sizes / LST-composition analytics
+     are now pure Layer-3 reads.
    - Emissions curve (Layer-3 chart, data COMPLETE today): rebase pot per
      period from distributions/history.json in RAW ampLUNA — answers
      whether the two-year emissions ramp has flattened, immune to USD
