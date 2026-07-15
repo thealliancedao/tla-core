@@ -152,6 +152,10 @@ VP invariant PERFECT (Σ locks = total_vamp = 27,975,687.10, Δ 0.0000%).
    - Design shape (the capture-fix playbook): bribe-state product (period
      walk + weekly forward) + classifier v6 event promotion; events remain
      the who-paid layer, state the what/where/when truth.
+   **SPEC WRITTEN: SPEC-tla-voting-bribe-state.md (2026-07-15, pending
+   approval) — locked defaults D1–D9, in-cron budgeted genesis walk,
+   verbatim record retention, mock gate R8–R12. Next session: approve →
+   build 2.2.0.**
    Queue riders from the build: FCD re-derive with classifier v4 for
    genesis→Jan-2025 lock token_ids (monthly-aware fill — lift v4 FROM THE
    CRON; non-gating) · seed modernization to monthly layout on archive-node
