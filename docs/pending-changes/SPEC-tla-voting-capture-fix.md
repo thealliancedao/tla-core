@@ -317,7 +317,7 @@ File-based mock runs, stubbed network + publish (main-loop-change law):
 
 ## 9. Build order & verification
 
-1. **Approve this spec** (Camron). Register the §6 deviation row same day.
+1. **Approve this spec** (DeFi Patriot). Register the §6 deviation row same day.
 2. **Restructure one-shot** — mock 3 → dispatch → verify tree + index; seed +
    fcd-fill write paths updated in the same delivery.
 3. **org-tla-voting 2.0.0** — walker transport + monthly writes + vote-state

@@ -10,7 +10,7 @@ voter injected → **10/10 assertions**: counts exactly
 {MATCH 731, MISMATCH 1, CHAIN_ONLY 1, EVENTS_ONLY 4}, match_rate 99.19%
 computed correctly, status `partial`, the injected diff surfaced in detail,
 verdict routed LOSSES. Clean run (no faults): 739/739 MATCH, 100%, status
-ok, verdict CLEAN. **Next: Camron dispatches the Action**
+ok, verdict CLEAN. **Next: DeFi Patriot dispatches the Action**
 (`tla-voting-reconcile.yml`, dry_run=1 first if preferred) — the verdict
 gates §6.
 **Owner:** tla-voting module · one-shot Action first, core designed to fold

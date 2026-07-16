@@ -211,7 +211,7 @@ undeployed; full P&L eventually needs both siblings live).
 
 1. **Sample probe** — Action `mode=sample`, all three contracts, writes
    nothing. Confirms the incentive-manager action map + re-confirms
-   votes/locks. Camron reviews the printed map.
+   votes/locks. DeFi Patriot reviews the printed map.
 2. **Full seed** — writes `history/events/`. Verify vs old repo: votes
    ≥ 5,858, locks ≥ 11,520, identical on overlap; bribe + reward streams
    sanity-checked against known txs (e.g. a recent PD bribe, a known

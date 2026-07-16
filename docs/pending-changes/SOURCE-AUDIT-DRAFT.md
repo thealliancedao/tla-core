@@ -69,7 +69,7 @@ capture layer built this week already feeds the whole redesign.
 5. tla-voting monthly restructure (already queued, pre-wiring).
 6. Aggregates derive (leaderboards/P&L) → then site build begins.
 
-## D. Retirement census methodology (Camron, 2026-07-09 — the rule for every legacy repo)
+## D. Retirement census methodology (DeFi Patriot, 2026-07-09 — the rule for every legacy repo)
 
 No legacy repo is deleted at the repo level. Each gets a **file-level census**
 with five columns, and only a fully-dispositioned repo reaches the retire
@@ -93,7 +93,7 @@ The junk-drawer trap this kills: a repo with one unique file among nine
 duplicated ones is UNDELETABLE until that one file is dispositioned — so the
 census makes the one file visible instead of holding the whole drawer hostage.
 
-**Priority order (Camron's call, supersedes §C ordering where they differ):**
+**Priority order (DeFi Patriot's call, supersedes §C ordering where they differ):**
 1. **All crons built & functioning in org repos** — tla-snapshot rebuild,
    votion, network-stats home, the 🟡 parity flips. Censuses happen as each
    cron's migration touches its legacy repo (not as a separate mega-project).
@@ -104,7 +104,7 @@ census makes the one file visible instead of holding the whole drawer hostage.
   page migration is its own later item. (Planets-Empty deletion stays BLOCKED
   until its 59 refs migrate.)
 
-## E. tla-snapshot: REPLACE-CHECK before rebuild (Camron, 2026-07-09)
+## E. tla-snapshot: REPLACE-CHECK before rebuild (DeFi Patriot, 2026-07-09)
 
 The biggest 🔴 may not need an org rebuild at all — most of its content now
 has other homes (live gauge/bucket queries per live-first doctrine · VP

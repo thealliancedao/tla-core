@@ -49,6 +49,17 @@ system, not an audit calendar.
   invariant + the all-ok pass + like-for-like skip + missing-input honesty
   (absent product = skipped + declared, never a crash).
 
+## Addendum (2026-07-15 audit, pre-approval)
+- INV-1 like-for-like = same DAY, not just same epoch (member-data vs
+  catalog ran 21.6h apart within epoch 194; intra-week VP drift confounds).
+- INV-6 freshness uses product-appropriate signals: price-history = latest
+  day key in the current month file (its heartbeat belongs to the one-off
+  backfill); one-off products (nfts provenance) carry a kind marker and are
+  exempt; skip-runs that don't stamp (distributions) get cadence-aware
+  expectations via a per-product cadence + timestamp-field map.
+- INV-5 is already proven live: dex-data 1.1.0's resolver caught the
+  token-catalog SS LUNA-SOLID stale-bucket entry the same night it shipped.
+
 ## Non-goals (v1)
 No paging/alerting integration (the committed file IS the alert surface).
 No chain queries. No auto-filing of CHANGES_PENDING rows.

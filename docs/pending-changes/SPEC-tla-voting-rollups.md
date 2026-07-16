@@ -23,7 +23,7 @@ v5 + mock additions). No new crons, no new Actions, no restructures.
 - **D3 — output:** single `tla-voting/events/rollups.json`, schemaVersion 4.
   No consumers exist today (site grep 2026-07-15: zero references) — the
   schema is free and this spec is its contract.
-- **D4 — the three-number claims model (Camron, 2026-07-15):** per wallet per
+- **D4 — the three-number claims model (DeFi Patriot, 2026-07-15):** per wallet per
   token: raw `amount` (+ decimals-adjusted `amount_display`), **`usd_at_claim`**
   (Σ per-claim amount × price on the claim date — "if sold when claimed",
   immutable), **`usd_at_build`** (amount × price at rollup build — the

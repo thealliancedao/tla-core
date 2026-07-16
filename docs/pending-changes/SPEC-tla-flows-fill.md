@@ -5,7 +5,7 @@ Action ran clean: **+32,615 events** = 15,727 deposits + 4,499 withdraws +
 12,389 claims, exactly matching the chain-derived invariant; month files
 2024/08→2025/01 committed under the live stream; `known_gaps` gained the
 `fcd-freeze-to-forward-capture` record. Re-runs add nothing — idempotent.
-Retirable once Camron is done with it; kept for now because its invariants +
+Retirable once DeFi Patriot is done with it; kept for now because its invariants +
 gap-key methodology are the template for the archive-node Batch-5 pass.)
 **Script:** `.github/scripts/tla-flows/flows-fill.js` · **Workflow:**
 `.github/workflows/tla-flows-fill.yml` (manual dispatch, Actions' built-in

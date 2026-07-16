@@ -40,7 +40,7 @@ canonical "Total TLA VP ≈ 24M (max bucket)" is wrong — canonical total is
   — rewrite it citing this spec. `display_voting_power_human` (fixed×10) is
   only coincidentally correct for coeff-9 locks — **retire the field**.
 
-## 3. Changes — ORG ONLY (scope amended 2026-07-13, Camron's call)
+## 3. Changes — ORG ONLY (scope amended 2026-07-13, DeFi Patriot's call)
 
 Personal repos (`cron-scripts` tla-snapshot / tla-locks / capture-engine) are
 **NOT patched** — they are retiring and "the old one doesn't matter." The org

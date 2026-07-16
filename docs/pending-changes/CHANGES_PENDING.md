@@ -243,7 +243,7 @@ SHIPPED 2026-07-14), `SPEC-distributions-capture.md` (✅ SHIPPED 2026-07-14).
   public LCD. Payout ledger back to gauge genesis = ~100 cheap queries, **no
   block scanning**. Epoch mechanics locked: gauge_infos(next) = live tally →
   freezes to distributions(period N) at flip → pays during N+1.
-- **Camron's LUNA-SOLID bribe captured byte-perfect** (203.2 SOLID linear
+- **DeFi Patriot's LUNA-SOLID bribe captured byte-perfect** (203.2 SOLID linear
   193→200 = 25.4/epoch ✓ UI $25.83). Vote events match UI per-wallet exactly.
 
 ### 🐞 Defect register (owning cron → fix vehicle)
@@ -253,7 +253,7 @@ SHIPPED 2026-07-14), `SPEC-distributions-capture.md` (✅ SHIPPED 2026-07-14).
    / tla-locks) NOT patched — retiring; the live site shows boost-only VP until
    the tla-snapshot REPLACE-CHECK lands (its priority rose accordingly).
 2. **Tribute capture ~97% blind** — ~$925/epoch of live incentives on ~19
-   pools vs 1 captured event (Camron's). Cause: recurring tributes are
+   pools vs 1 captured event (DeFi Patriot's). Cause: recurring tributes are
    contract-initiated `add_bribe` (asset take-rate callbacks), invisible to
    top-level-msg parsing in org-tla-voting. Fix = wasm **event**-level parse
    keyed on the manager address. History: pre-2025 via FCD re-harvest (event
@@ -264,7 +264,7 @@ SHIPPED 2026-07-14), `SPEC-distributions-capture.md` (✅ SHIPPED 2026-07-14).
    the pool IS captured (token-catalog, 2.675M VP, gauge_status active),
    just identity-unresolved because the Credia adapter is a placeholder.
    Probe list written (PROBES-credia.md): it + the other 2 unresolved
-   singles + Credia adapter sources. Camron runs probes → curated identity
+   singles + Credia adapter sources. DeFi Patriot runs probes → curated identity
    overrides + dexes/credia.js build (dex-data 1.2.0).
 4. **Ghost/stray gauge votes** in bucket denominators (wstETH-SS,
    wBTC.osmo-*, cross-bucket USDC-USDT strays; ~3M VP earns nothing).
@@ -277,9 +277,13 @@ SHIPPED 2026-07-14), `SPEC-distributions-capture.md` (✅ SHIPPED 2026-07-14).
    one snapshot (impossible); several pools ±20-35% vs UI; singles depth=0
    (UI shows staked-asset depth). One source, one timestamp, invariant
    `staked ≤ depth` added to run self-checks.
-7. **vp-attribution ordering hazard** — boundary rollup consumes member votes
-   up to ~23h stale (Camron's 1.18M vote binned as other_vp at e193). Fix:
-   fresh positions read at boundary, or attribution runs post-positions.
+7. **vp-attribution ordering hazard — REFRAMED 2026-07-15 (audit):** the
+   defect lives in the RETIRING personal-repo cron (vp-attribution is not an
+   org module). The org layer already supersedes it: tla-voting vote-state
+   harvests per-wallet votes AT the flip from retained chain state (no
+   staleness window), and rollups schema 5 voters consume that. Dies with
+   the personal-repo retirement — no org build needed. (Original evidence:
+   DeFi Patriot's 1.18M vote binned as other_vp at e193.)
 8. ✅ **dex-data bucket labels — FIXED 2026-07-15 evening (dex-data 1.1.0,
    mock-gated 31/31, deploy pending).** Cross-check vs token-catalog gauge
    truth found THREE Astroport mislabels (LUNA-SOLID stable→project,
@@ -350,7 +354,7 @@ knowledge that would otherwise die (ve3-connector-alliance) was rescued into
   (foundation data before its consumers).
 - **[ ] Retire-or-keep decision: old admin pages** `tla_tool.html` /
   `tla-tool_ext.html` (the deprecated manual-capture flow, replaced by crons).
-  Camron's call; if kept, label clearly as legacy.
+  DeFi Patriot's call; if kept, label clearly as legacy.
 
 ### Feature seeds (still valid, data now exists or is queued)
 - **[ ] APR breakdown — "gross − 10% take − 8% compound fee = realized", all
@@ -387,10 +391,59 @@ knowledge that would otherwise die (ve3-connector-alliance) was rescued into
   bribes (added 4 epochs at once, graded at add-time — show the gap as a
   re-optimize nudge). Data: tla-voting bribe stream × Votion allocations.
   Attribution law applies (personal wallets = the individual, never aDAO).
-- DAO-arb bot (Camron's intent: treasury-funded arb supporting TLA pairs) —
+- DAO-arb bot (DeFi Patriot's intent: treasury-funded arb supporting TLA pairs) —
   recorded verdict stands: a SEPARATE, later, governance-approved project with
   realistic edge analysis first; the dashboard ships the informational versions
   (slippage, zap-impact, alerts) which are already in the restructure spec.
+
+
+## Audit findings — 2026-07-15 late-night deep dive (post 1.1.0/2.3.0 deploys)
+
+**Verified clean:** dex-data 1.1.0 live output — Astroport 37/37 gauge pools
+labeled, ZERO mismatches vs token-catalog truth, all three former mislabels
+corrected in committed data, ambiguity + dewhitelisted flags flowing; SS 27
+gauge pools now labeled. tla-voting bribe-state — 61 CONTIGUOUS periods
+(133→193), zero D5 field violations, epoch-end month routing landing history
+in its 2025 months (the bribe capture hole is filling from state as the walk
+descends); floor certification expected within ~2 hourly runs. Distribution
+fractions sum to exactly 1.0 in all four buckets (INV-3 passes live).
+
+**New defects found (filed, in priority order):**
+
+A. **token-catalog: no multi-bucket handling in gauge discovery.** The chain
+   can list one asset under MULTIPLE bucket contracts' whitelisted_asset_
+   details (live example: the SS LUNA-SOLID factory LP is whitelisted:true
+   under PROJECT and dewhitelisted under STABLE tonight). The catalog carries
+   only a single stale entry (bucket stable, dewhitelisted) — dex-data 1.1.0's
+   resolver caught the disagreement (bucket_label_agreement in action, before
+   the monitor even exists). Fix: port dex-data's resolveBucket semantics
+   (whitelisted wins, canonical order, ambiguity DECLARED) into token-catalog
+   discovery. Small; rides the next token-catalog rev.
+
+B. **member-data vp_voting_per_bucket includes ghost/stray votes.** Epoch-194
+   like-for-like: bluechip member-data 27.67M vs sum of ACTIVE catalog pools
+   23.88M — ≈3.79M ghost VP in the bucket figure (single shows ≈1.76M). This
+   is defect #4's surface inside member-data: bucket denominators must come
+   from the distributions whitelist, with the remainder EXPOSED as wasted_vp,
+   not blended in. (Timing caveat: member-data ran 21.6h before the catalog;
+   magnitudes are approximate, direction is not.) Rides defect #4's build.
+
+C. **price-history heartbeat is a fossil.** heartbeat.json (356h stale)
+   belongs to the one-off backfill tool; the DATA is current — token-catalog
+   appends daily rows (2026-07-15 present). Fix: system-health reads the
+   latest day key as the freshness signal for this product; optionally
+   token-catalog stamps the heartbeat on append.
+
+D. **Heartbeat conventions are inconsistent** across products: mixed
+   timestamp fields (updatedAt / capturedAt / ran_at / generated_at) and
+   skip-runs that don't stamp (distributions reads 30.4h old after an
+   'up to date' skip; address-catalog 46.6h on its own cadence). Not data
+   defects — but SPEC-system-health D2.6 needs a per-product cadence + field
+   map, and one-off products (provenance) need a kind marker exempting them.
+
+**Spec addendum queued for SPEC-system-health (pre-approval):** INV-1
+like-for-like must be same-DAY not just same-epoch (the 21.6h skew above);
+INV-6 freshness uses product-appropriate signals per finding C/D.
 
 ### Riders on already-queued builds
 - Discovery/naming build (#5): also tag migrated-away pool corpses
@@ -453,7 +506,7 @@ Rev C block-walker built + mock-verified same night.
 - **[ ] 17-day retained-history catch-up** — one-shot tx_search harvest
   (fcd-harvest style, slow is fine) of the ~17 days public nodes retain,
   merged under the same tla-flows month files. Pairs with flows-fill.
-- **[ ] Phase-2: platform capture layer (Camron's design)** — promote the
+- **[ ] Phase-2: platform capture layer (DeFi Patriot's design)** — promote the
   walker to the single chain-reader: a registry file (addresses + message
   patterns → destination bucket, config/contracts.js-style) routing matched
   txs into per-domain captures; nft-flows and eventually tla-voting become
@@ -467,7 +520,7 @@ Rev C block-walker built + mock-verified same night.
 ### 🧭 Storage-conformance queue (added 2026-07-08 — from the settled-convention audit)
 Canonical convention + full Deviation Register: `TLA-CORE-STORAGE-DESIGN.md`
 (corrected 2026-07-08: events = monthly `{YYYY}/{MM}.json` JSON arrays; the
-daily-jsonl plan is superseded). Ratified in-session with Camron.
+daily-jsonl plan is superseded). Ratified in-session with DeFi Patriot.
 - ✅ DONE 2026-07-08: `nfts/adao/provenance/tokens/` re-derived `.jsonl` →
   `part-NN.json` JSON arrays (delete the 10 old `.jsonl` files on commit).
 - **[ ] tla-voting events restructure** — per-stream single files
@@ -542,7 +595,7 @@ heartbeat schema. Update `system-health.js` MONITORED paths to match. Low-risk, 
 ### 🔥 P1 — Build the self-contained domain crons (lift code, don't repoint)
 The goal is to DELETE old crons + repos, not feed off them. Build, run parallel
 with the old, prove identical, then retire. One at a time. **Sandbox can't reach
-Terra RPC — lift the proven functions, Camron verifies on Render.**
+Terra RPC — lift the proven functions, DeFi Patriot verifies on Render.**
 - **[ ] `token-catalog`** (rename of price-cron) — absorb network-and-prices
   (pricing + ratios, Pricing-Doctrine intact) + tla-registry token identity
   (logos 1/token + 2/pair, decimals, categories). Retire network-and-prices repo.
@@ -644,7 +697,7 @@ Once the capture above accumulates: **Portfolio Tracker**, **LP Performance & He
 
 **Recommended approach (lowest risk):** rewrite `fetchTlaData()` as an **adapter** that fetches the 3 new sources and assembles an object matching the old `tlaData` contract, so the **12 consumer call sites stay unchanged** (lines 7159, 8272, 8546, 9330, 9836, 10065, 10307, 10483, 11134, 11229, 11297, 11385). Field mapping lives in one place.
 
-**Hard requirements (per Camron, 2026-06-09):**
+**Hard requirements (per DeFi Patriot, 2026-06-09):**
 - **Remove the old fallback entirely** — delete the `tla_json_storage` epoch walk, the `tla-ext_json_storage` reads (`fetchTlaExtData`, ~line 9883), and the `epoch_1-300_date.json` ref (~line 9807).
 - **Work-as-intended-or-error:** if a new source is unavailable, the tile shows an **error state** — never a stale snapshot or a silent default.
 - Also retire the v3-format fallback block (~line 5020-5024).

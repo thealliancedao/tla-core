@@ -55,7 +55,7 @@ tla-voting/distributions/heartbeat.json
 Single-file rationale: ~100 periods × 4 gauges ≈ small (<2 MB for years);
 weekly cadence; not tx events — this is period-keyed contract state
 (DERIVE-of-state), so monthly event partitions don't apply. **Decision:
-single-file accepted (Camron, 2026-07-14) and registered in
+single-file accepted (DeFi Patriot, 2026-07-14) and registered in
 TLA-CORE-STORAGE-DESIGN §7.** The harvester's monthly-conformance flag remains
 in the code, unused.
 
