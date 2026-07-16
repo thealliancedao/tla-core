@@ -412,7 +412,13 @@ All PROBES-credia items answered (probe file marked ANSWERED; results live in
    (terra1y6hfmr3lxxj6srduhlfz96x7sga2984pr757a0nrfuqxa9rqxapqcjv4zz). The
    `dexes/credia.js` adapter models lending MARKETS normalized to the common
    pool shape (`pool_type: "lending_market"`, tvl = supplied USD, lending
-   truth under `raw`). SPEC + build = next dex-data item (1.2.0).
+   truth under `raw`). BUILT 2026-07-16 — dex-data 1.2.0, mock gate 39/39
+   (changelogs/cron-dex-data-log.md Rev 1). Deploys with the next org-dex-data
+   run (no Render changes needed — adapter registry already listed credia).
+   FOLLOW-UPS: (a) add dex-data/credia to system-health FRESHNESS_MAP on the
+   next system-health touch; (b) system-health INV2/INV5 iterate all enabled
+   dexes and will pick credia up automatically — INV2 skips it (no
+   staked_liquidity_usd field), INV5 joins any gauge-labeled markets.
 2. **Take-rate tribute lead (for the tribute/bribe rework):** the three TLA
    ampLP collateral markets (gauge pools 32/46/52) carry `take_rate {fixed:
    0.02}` — the only Credia markets that do (~$150K ampLP posted). HYPOTHESIS,
