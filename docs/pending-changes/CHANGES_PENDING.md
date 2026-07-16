@@ -107,8 +107,9 @@ VP invariant PERFECT (Σ locks = total_vamp = 27,975,687.10, Δ 0.0000%).
    - [x] ~~probe: pin the period-stamp field~~ **RESOLVED BY THE HARVEST
          ITSELF** — the field is `period` (recorded in queries.md
          Q-AssetGauge-UserInfo; no probe needed)
-   - [ ] system-health MONITORED entry for `tla-voting/vote-state/heartbeat.json`
-         (only unticked item — do with the next system-health touch)
+   - [x] system-health MONITORED entry for `tla-voting/vote-state/heartbeat.json`
+         (done 2026-07-16: FRESHNESS_MAP covers vote-state, bribe-state,
+         distributions at 216h weekly cadence)
    **Interpretation law (encode in build #2 analytics): CHAIN_ONLY ≈ 28 is
    the PERMANENT HEALTHY BASELINE** — contract-path voters never have
    events; the alarm is GROWTH beyond the known contract-voter set.
@@ -297,10 +298,13 @@ SHIPPED 2026-07-14), `SPEC-distributions-capture.md` (✅ SHIPPED 2026-07-14).
 9. **tla-flows records lack pool identity** (bucket inferable only via
    raw_actions/zap legs — bit us in this analysis) — classifier enrichment;
    rides the capture-registry block pass for history.
-10. **Invariant monitors → system-health**: SPEC WRITTEN 2026-07-15
-    (SPEC-system-health.md — 7 invariants incl. the bucket-label agreement
-    check that found tonight's 3 dex-data mislabels, chain-free Layer 3,
-    own cron `org-system-health`). Pending approval → build.
+10. **Invariant monitors → system-health**: BUILT 2026-07-16 — 1.0.0,
+    mock-gated 33/33 + real-data dry run (see
+    changelogs/cron-system-health-log.md Rev 1). DEPLOY PENDING: new Render
+    cron `org-system-health` (hourly, env GITHUB_TOKEN rw tla-core). Day-one
+    dry run already flags #4 (13.71% bluechip VP drift) and finding A (SS
+    LUNA-SOLID label) — the monitors work. INV-4 baseline arrives with the
+    first post-flip run.
 
 ### 🔥 Build order (approved 2026-07-13; spec → approval → build → mock, one at a time)
 1. ✅ VP definition fix (SPEC-vp-definition-fix) — **SHIPPED 2026-07-14**,

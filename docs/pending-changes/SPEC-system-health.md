@@ -1,6 +1,6 @@
 # SPEC-system-health — invariant monitors (defect register #10)
 
-**Status:** specified 2026-07-15, pending approval.
+**Status:** BUILT 2026-07-16 (1.0.0, mock-gated 33/33 + real-data dry run — cron-system-health-log.md Rev 1). Deploy pending: Render job org-system-health.
 **Owner:** NEW cron `platform-crons/system-health/` (own domain, own folder —
 the org convention). **Layer 3, chain-free:** reads ONLY committed tla-core
 files via the raw API; a bug here costs a recompute, never touches capture.
