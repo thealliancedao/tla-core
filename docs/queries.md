@@ -1071,7 +1071,7 @@ Q-Boost-Launches
                      "name": "",                              // optional label
                      "cancelled": false,                      // true = seller cancelled
                      "done": false,                           // true = sold
-                     "owner": "terra1hr8zsf...",              // ✅ real owner (resolved!)
+                     "owner": "terra1...",                    // ✅ real owner (resolved!)
                      "from": {
                        "contract": "terra1phr9fngj...w3apw9", // collection address
                        "token_id": "8803"
