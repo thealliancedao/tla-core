@@ -1,5 +1,17 @@
 # PROBES-credia — Credia adapter + unresolved-identity probe list (2026-07-15)
 
+**STATUS: ALL ANSWERED 2026-07-16.** Results are folded into
+`ecosystem-knowledge/credia.facts.json` (+ `credia.md`) and
+`curated/token_overrides.json` — cite those, not this file. Answer key:
+A1 = vcawbtc (Credia wBTC receipt = gauge wBTC.creda.a, decimals 8);
+A2 = not a token — the drained ampROAR-ROAR Astroport xyk PAIR contract;
+A3 = xASTRO from Neutron via channel-229;
+B4 = market data is one smart query {"metrics":{}} on the Portfolio contract
+     (GraphQL is referrals/points + indexer history only);
+B5 = vault/receipt model confirmed — Credia is a LENDING protocol, not a dex.
+Bonus probes resolved arbLUNA, PAXG, wstETH. This file is kept only as the
+probe-method record; retire it with the next pending-changes sweep.
+
 Run each URL in a browser and paste the JSON back. Everything below feeds two
 queued items: the Credia dex-data adapter (placeholder -> real) and
 token-catalog identity for the 3 unresolved singles.

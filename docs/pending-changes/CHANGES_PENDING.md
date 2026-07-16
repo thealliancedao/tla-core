@@ -401,6 +401,38 @@ knowledge that would otherwise die (ve3-connector-alliance) was rescued into
   (slippage, zap-impact, alerts) which are already in the restructure spec.
 
 
+## 🔎 Credia deep dive — probes answered, knowledge base + identities landed (2026-07-16)
+
+All PROBES-credia items answered (probe file marked ANSWERED; results live in
+`ecosystem-knowledge/credia.facts.json` + `credia.md` and
+`curated/token_overrides.json`). Findings that create or touch work items:
+
+1. **Credia is a lending protocol, not a dex.** Whole market state = one smart
+   query `{"metrics":{}}` on the Portfolio contract
+   (terra1y6hfmr3lxxj6srduhlfz96x7sga2984pr757a0nrfuqxa9rqxapqcjv4zz). The
+   `dexes/credia.js` adapter models lending MARKETS normalized to the common
+   pool shape (`pool_type: "lending_market"`, tvl = supplied USD, lending
+   truth under `raw`). SPEC + build = next dex-data item (1.2.0).
+2. **Take-rate tribute lead (for the tribute/bribe rework):** the three TLA
+   ampLP collateral markets (gauge pools 32/46/52) carry `take_rate {fixed:
+   0.02}` — the only Credia markets that do (~$150K ampLP posted). HYPOTHESIS,
+   explicitly unconfirmed: this feeds the contract-initiated add_bribe
+   tributes. Test mechanically against bribe_capture sender addresses once
+   post-flip data accumulates (first capture 2026-07-19). If confirmed, Credia
+   becomes a named briber for bribe-source attribution.
+3. **Identities closed (5):** vcawbtc = gauge wBTC.creda.a (the 2.69M-VP
+   single), xASTRO, arbLUNA, PAXG, wstETH — all chain-verified, now in
+   token_overrides.json. PAXG/wstETH decimals left null pending voucher-level
+   verification — do NOT guess before pricing math.
+4. **ampROAR-ROAR resolution:** the dewhitelisted gauge mystery entry is the
+   DRAINED Astroport xyk pair contract (reserves + total_share = 0), not a
+   token. Catalog must handle gauge assets registered by pair address — fold
+   into the token-catalog stale-bucket/multi-bucket fix (finding A) touch.
+5. **wBTC.creda.a depth/pricing note:** vcawbtc is a receipt token — its value
+   derives from supplied wBTC in the Credia market, not from any swap pool.
+   Depth/slippage semantics differ from LP pools; flag for the depth
+   unification work (#6).
+
 ## Audit findings — 2026-07-15 late-night deep dive (post 1.1.0/2.3.0 deploys)
 
 **Verified clean:** dex-data 1.1.0 live output — Astroport 37/37 gauge pools
