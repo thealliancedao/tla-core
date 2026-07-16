@@ -401,6 +401,18 @@ knowledge that would otherwise die (ve3-connector-alliance) was rescued into
   (slippage, zap-impact, alerts) which are already in the restructure spec.
 
 
+## 🗳 votion module — G2 BUILT 2026-07-16 (org-votion 1.0.0, mock 28/28)
+
+UI-DATA-READINESS G2 (the data-loss clock). Branches A+B built per
+SPEC-votion-capture; Branch C (Eris optimizer NEXT) = v1.1, old votion cron
+covers Sundays meanwhile. Probes ANSWERED 2026-07-16 — user_info
+shape corrected (parser rewritten to the real
+gauge_votes[{gauge,period,votes:[[id,bps]]}] shape), re-gated 30/30.
+DEPLOY-READY: Render cron org-votion, hourly :20, env GITHUB_TOKEN. After
+first live runs: parallel-run vs old votion-positions output, then retire
+old cron + votion-positions-data_2026. Pools-tab "Votion Now" re-points to
+votion/snapshots/vaults.json votion_vp_now_per_pool during Batch-3.
+
 ## 🔎 Credia deep dive — probes answered, knowledge base + identities landed (2026-07-16)
 
 All PROBES-credia items answered (probe file marked ANSWERED; results live in
@@ -415,10 +427,11 @@ All PROBES-credia items answered (probe file marked ANSWERED; results live in
    truth under `raw`). BUILT 2026-07-16 — dex-data 1.2.0, mock gate 39/39
    (changelogs/cron-dex-data-log.md Rev 1). Deploys with the next org-dex-data
    run (no Render changes needed — adapter registry already listed credia).
-   FOLLOW-UPS: (a) add dex-data/credia to system-health FRESHNESS_MAP on the
-   next system-health touch; (b) system-health INV2/INV5 iterate all enabled
-   dexes and will pick credia up automatically — INV2 skips it (no
-   staked_liquidity_usd field), INV5 joins any gauge-labeled markets.
+   FOLLOW-UPS: (a) DONE 2026-07-16 — system-health 1.0.1 FRESHNESS_MAP
+   covers dex-credia + votion (vaults 6h / positions 30h); (b) system-health
+   INV2/INV5 iterate all enabled dexes and pick credia up automatically —
+   INV2 skips it (no staked_liquidity_usd field), INV5 joins any
+   gauge-labeled markets.
 2. **Take-rate tribute lead (for the tribute/bribe rework):** the three TLA
    ampLP collateral markets (gauge pools 32/46/52) carry `take_rate {fixed:
    0.02}` — the only Credia markets that do (~$150K ampLP posted). HYPOTHESIS,
