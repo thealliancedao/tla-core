@@ -401,6 +401,26 @@ knowledge that would otherwise die (ve3-connector-alliance) was rescued into
   (slippage, zap-impact, alerts) which are already in the restructure spec.
 
 
+## 📜 Backfill audit — pass two DONE 2026-07-16 (BACKFILL-AUDIT.md)
+
+Full history inventory + anomaly hunt + per-chart merge design committed as
+docs/pending-changes/BACKFILL-AUDIT.md. Headlines: price-history is pristine
+(1,355 gapless days); the bribes/rewards/flows event streams share a
+16-17-month pruned-window hole (2025-02→2026-05) that is STRUCTURAL (post-FCD,
+pre-org-cron) and fully covered at period granularity by bribe-state +
+distributions (both complete 96→193) — chart rule recorded; epoch-series
+history floors at ~epoch 184 by construction. New small work item:
+**price pre-history import** — old luna-usd-daily (+ bLUNA sibling) reaches
+back to phoenix genesis 2022-05-28, five months before org price-history
+starts; one-time import (src:'coingecko-import', single-source confidence)
+before the old repo retires — GitHub-Action one-off per the placement map
+(script in tla-core/.github/scripts/). The flip-review checklist gains
+BACKFILL-AUDIT §5 (rollups overlap-diff vs old 184→193 epoch files, period
+194 in all three state products, first tribute events, INV-4 armed, votion
+rate monotonicity). Token identity: PAXG + wstETH voucher decimals RESOLVED
+= 18 (solved from Credia supply math with wBTC/LUNA as controls; overrides
+updated — that item retires).
+
 ## 🗳 votion module — G2 BUILT 2026-07-16 (org-votion 1.0.0, mock 28/28)
 
 UI-DATA-READINESS G2 (the data-loss clock). Branches A+B built per
