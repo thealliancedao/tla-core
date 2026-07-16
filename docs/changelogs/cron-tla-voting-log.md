@@ -198,7 +198,7 @@ Sunday-flip harvest.
   `events_visibility: full|none` flags contract-path voters (the Votion
   vaults finally rank; arbLUNA-MAX is #1 by VP). Per voter: stamped state,
   event vote detail, canonical-only lock net-by-denom, and the
-  **three-number claims model** (Camron, D4): raw amount / `usd_at_claim`
+  **three-number claims model** (DeFi Patriot, D4): raw amount / `usd_at_claim`
   ("if sold when claimed", priced per-claim from price-history) /
   `usd_at_build` (fallback; the site computes live today-value as amount ×
   current price). Pending recipe pinned: live earned = claims.totals +
@@ -359,7 +359,7 @@ via contract_info probes:
   second-biggest.** The two largest voters in the system are invisible.
 - **DAO DAO DAOs** (×3): treasury locks voted via governance proposal
   execution — one CONFIRMED ON CHAIN as aDAO ITSELF (`terra1sffd4…`; the
-  `dao` attribute in props 38 & 39 executed 2026-07-07 from Camron's wallet,
+  `dao` attribute in props 38 & 39 executed 2026-07-07 by a council member,
   txs E0F3F7C9…ADD20 block 21,804,659 and 52497512…FA2BE block 21,804,790).
   Prop 39 = the council's re-vote: 4× `gauge/vote` @ **841,486.80 VP** per
   gauge. Prop 38 revealed aDAO's locks (token_id 600 = 733,084 VP boost +
