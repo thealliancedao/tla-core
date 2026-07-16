@@ -2,8 +2,8 @@
 
 The real mint transaction the archive-harvest campaign (T1) was parked on.
 Source: tx `91F7E938D7DD49A18E473684FB2099E1AABD068C2D7189E9683DDBA432ADBCA6`,
-block **8,846,532**, 2024-02-01 21:53:16Z, sender = Camron's wallet
-(`terra1hr8zsfpch47qygc96c8e6rzkd2t7mafqx77ulw`). ChainScope is back online.
+block **8,846,532**, 2024-02-01 21:53:16Z, sender = a known early-minter
+wallet (probe run with MINT_WALLET set). ChainScope is back online.
 
 ## The template
 
@@ -40,7 +40,7 @@ a token_id = the mint**; everything after = secondary.
 
 ## ⚠ RESOLVED (2026-07-08): this tx is GALACTIC MINING CLUB, not aDAO
 
-Confirmed by Camron: collection contract
+Confirmed by the maintainer: collection contract
 `terra1q2hjgq5sm7w04saj70gv0ur5tlz7r20854dfmsk8uv5u8cqnkuzskk7shc` =
 **Galactic Mining Club**, and
 `terra1qskkhq526l8e89r6xfyjrr3h7v8jng094zgewyy20fhk8ux27caq39py4c` is the
@@ -55,7 +55,7 @@ address**. Two ways to get it:
    (note: if minting was launchpad-mediated, `minter` may return the launchpad
    contract — exactly what we want; if it returns an admin wallet, fall back
    to option 2)
-2. Find one of Camron's own aDAO mint txs on ChainScope (same era, Feb–Jun
+2. Find any early aDAO mint tx on ChainScope (same era, Feb–Jun
    2024) and read the minter contract from it, as done here for GMC.
 
 ## ✅ aDAO MINTER — CONFIRMED (2026-07-08)
@@ -73,6 +73,6 @@ Long-form = a contract (the aDAO launchpad minter), not an admin wallet.
 contract (`terra1phr9fn…`).
 
 Remaining before harvest (nice-to-have, not blocking): pull ONE real aDAO mint
-tx (ChainScope, Feb–Jun 2024 era, e.g. from Camron's wallet) to confirm the
+tx (ChainScope, Feb–Jun 2024 era, any early-minter wallet) to confirm the
 msg shape matches the GMC template below and record the aDAO mint price
 (GMC's was 50 LUNA — aDAO's may differ, and may have tiers).

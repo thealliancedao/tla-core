@@ -1,11 +1,12 @@
 // ── Mint probe v7 — fixed paging + correct window + honest depth report ───────
 // v6 had TWO bugs: (1) paging broke after ~1 page ("scanned 9"), (2) window
 // heights were too high (11-15M) — the real Feb–Jun 2024 mints are ~9-10.6M.
-// v7: page properly through ALL of Camron's txs, report the TRUE earliest height
+// v7: page properly through ALL of the probe wallet's txs, report the TRUE earliest height
 // reached, and dump any txs in the corrected mint window (8.5M–11M) touching
 // LUNA or an NFT contract.
 
-const WALLET = process.env.MINT_WALLET || 'terra1hr8zsfpch47qygc96c8e6rzkd2t7mafqx77ulw';
+const WALLET = process.env.MINT_WALLET;  // any known early-minter wallet — REQUIRED, no default
+if (!WALLET) { console.error('MINT_WALLET env var required (any known early-minter wallet)'); process.exit(1); }
 const NFT_CONTRACT = 'terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9';
 const RPC = process.env.RPC || 'https://terra-rpc.stakely.io';
 
