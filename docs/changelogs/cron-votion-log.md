@@ -56,3 +56,27 @@ pools across 4 buckets (per the probe's live votes).
 **system-health 1.0.1 (same commit):** FRESHNESS_MAP gains dex-credia (6h),
 votion-vaults (6h via vaults_at), votion-positions (30h via positions_at) —
 closing the queued credia follow-up. Gate 33/33.
+
+# Rev 2 — 2026-07-16 — 1.0.0 first live run + the pruned-window truth (honesty patch)
+
+First live run (17:26Z): Branch A perfect — 6 vaults, labels from vdenom,
+VP with fixed component (ampLUNA-MAX 1.186M), 18-pool NOW rollup; one
+transient lock_info failure absorbed by the user_info VP fallback. Branch B
+surfaced a REAL finding: tx_search returned only 5-6 deposits per active
+vault. Diagnosis chain (all probed live): public LCDs prune tx indexes, so
+deposit-event reconstruction can only see the retention window — the OLD
+cron had the identical ceiling all along (its data shows the same 2
+holders); ~90% of vdenom supply is held by never-discovered pre-retention
+wallets. Escape routes probed and closed: bank denom_owners = "not
+implemented" on publicnode + phoenix-lcd; the vault's QueryMsg surface is
+only config/state/exchange_rates/simulate_* (no holder enumeration).
+
+Patch (same 1.0.0, re-gated 33/33): (1) meta.discovery_basis on positions
+output declaring exactly what the holder set is and is not —
+holder_discovery_complete now documented as paging-complete, NOT
+full-history; (2) NEW `votion/curated-holders.json` — hand-maintained
+candidate addresses (e.g. the aDAO multisig) the cron ALWAYS
+balance-checks; wrong guesses show zero and drop out, nothing assumed;
+(3) lock_info error now names lock_id + vault. Redeploy = commit only (same
+Render job). Registry remains grow-only: every depositor from now on is
+kept forever.
