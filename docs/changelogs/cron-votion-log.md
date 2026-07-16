@@ -80,3 +80,13 @@ balance-checks; wrong guesses show zero and drop out, nothing assumed;
 (3) lock_info error now names lock_id + vault. Redeploy = commit only (same
 Render job). Registry remains grow-only: every depositor from now on is
 kept forever.
+
+# Rev 3 — 2026-07-16 — empty-lock vault is a state, not an error
+
+Live runs flagged partial on 12/varbluna (arbLUNA-3mo): its config carries
+lock_id="" — the vault has never received a deposit, so no lock exists.
+The user_info fallback was already producing the correct VP (0); the fix
+treats blank lock_id as the normal no_lock_yet state (VP 0, source tagged,
+zero errors) instead of a failed escrow read. Gate 34/34. Live-verified
+labels bonus: vdenom paths read max/12/1 (weeks) per LST — e.g.
+12/vampluna = ampLUNA-3mo.
