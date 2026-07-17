@@ -12,6 +12,39 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## ✅ 2026-07-17 — briber board data layer LIVE · override layer wired in · denom identity 100%
+
+Every line verified against production output or the committed rollup that day.
+
+- **Briber leaderboard — rollups schema 6: SHIPPED & LIVE.** org-tla-voting
+  (lib/rollups.js) first build 23:03Z: `schemaVersion: 6`, 16 bribers,
+  Σ 173 bribe events / 18 withdraws, `bribers_order` present, DeFi_Patriot
+  SOLID row $262.82 at placement = mock exactly. Spec:
+  `SPEC-tla-voting-briber-board.md` (this folder — rev 2, schema 6).
+  Labels join `docs/curated/wallets.json`; DGN display from PROBES record.
+  Known stale log string: index.js line ~1089 still prints "schema 5" —
+  cosmetic, fix with next tla-voting commit.
+- **token-catalog 1.5.0 — curated override layer APPLIED (was write-only).**
+  Stage 2b reads `docs/curated/token_overrides.json` per the stage-2
+  per-field model: `discovered` untouched, `override` + `effective` added.
+  First run: 23 applied, 20 previously unnamed tokens identified. Also fixes
+  the silent claims-pricing gap (rollups buildTokenMap now reads `effective`).
+- **Denom identity: 17/17 IBC traces run, 14/14 matched existing overrides**
+  (chain-exact reconciliation of the curated layer). INJ + stATOM entries
+  added (trace-verified); decimals added to 16 entries (convention-derived,
+  noted). DGN (`udgn`, channel-582) = the only bribe-only token; named via
+  `PROBES-denom-traces.md`, honestly unpriced.
+- **price-history: RUN_ALL backfill complete (17 tokens).** CAPA reaches only
+  ~2025-03 (CG listing start) — pre-listing CAPA bribes stay unpriced.
+  DECIDED: no ampWHALE/bWHALE backfill — White Whale deprecated, tokens
+  worthless; their 91 bribe events stay named + unpriced-at-placement by
+  design, usd_at_build reads ~zero (true).
+- **Site (aDAO-links-site): Atrium links fixed (3 places), DAO custody wallets
+  pinned on Holder Leaderboard (broken sum = 1,000 = Props 64–69 exactly),
+  rewards-tile sparklines restored (+ Vote added), fetchAllSnapshots
+  promise-memoized + per-source date floors, tla-ext walkback cached,
+  DAO Members chart icon removed (no daily source — honest gap).
+
 ## ✅ 2026-07-14 — VP fix LIVE · distributions ledger COMPLETE · docs consolidated
 
 Every line below verified against chain or production output that day.

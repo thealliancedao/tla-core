@@ -1,24 +1,39 @@
-# SPEC — tla-voting briber board (rollups schema 5)
+# SPEC — tla-voting briber board (rollups schema 6)
 
-**Status:** DRAFT 2026-07-17 — pending approval. No code exists.
-**Depends on:** SPEC-tla-voting-rollups (schema 4, DEPLOYED 2026-07-15);
-price-history (deployed, 2022→now); token-catalog stage-2 override for two
-unnamed bribe denoms (NON-GATING — unnamed denoms flow to `unpriced[]`).
-**Ships as:** org-tla-voting **2.2.0** — rollup builder enrichment only. No
-new crons, no new Actions, no new output files.
+**Status:** DRAFT 2026-07-17 rev 2 — pending approval. No board code exists.
+Rev 2 aligns with what main already implements: `lib/rollups.js` is at
+**ROLLUPS_SCHEMA = 5** with the `bribe_ledger` (#3.5 rider), which measures
+state-vs-events completeness and retires the "~97% blind" coverage note.
+This spec is therefore **schema 6**, building on that machinery.
+**Depends on:**
+1. **GATING — override merge:** the token-catalog cron never reads
+   `docs/curated/token_overrides.json` (verified 2026-07-17: no fetch in
+   `platform-crons/token-catalog/token-catalog.js`), so the curated identity
+   layer is write-only and `buildTokenMap` (rollups.js) cannot name the 16
+   override-identified IBC denoms — including bWHALE (72 bribe events) and
+   ampWHALE (19). This ALSO leaves any claims paid in those denoms unpriced
+   in the deployed schema-5 rollup today. Fix belongs catalog-side per
+   one-truth-per-fact: apply override blocks at build time into the
+   published snapshot (per the stage-2 per-field model), consumers keep
+   reading the catalog. Own change, own verify, ships first.
+2. SPEC-tla-voting-rollups schema 4/5 (deployed); price-history (2022→now);
+   PROBES-denom-traces (COMPLETE — all 17 denoms identified, 14/14 override
+   match).
+**Ships as:** token-catalog override-merge rev first, then org-tla-voting
+**2.2.0** — rollup builder enrichment only. No new crons, no new output files.
 
 ---
 
 ## 0. Locked defaults
 
-- **D1 — universe: direct bribes, stated plainly.** Source = `events/bribes/`
-  `bribe_add` records only (173 at spec date; genesis-complete 2024-08-28 →
-  now; 16 bribers; zero records missing `briber`). Contract-initiated
-  take-rate tributes stay EXCLUDED until build #3 — the existing
-  `bribers_coverage_note` is retained verbatim and the site board must render
-  a universe banner ("direct incentives only — automated take-rate tributes
-  not yet included"). Once build #3 lands, tribute flow enters as separate
-  labeled entities; it never silently merges into direct-briber totals.
+- **D1 — universe: direct bribes, measured not disclaimed.** Source =
+  `events/bribes/` `bribe_add` records (173 at spec date; genesis-complete
+  2024-08-28 → now; 16 bribers; zero records missing `briber`). The board's
+  universe banner sources its numbers from the schema-5 `bribe_ledger`
+  (state totals vs event attribution) — e.g. "attributable direct bribes
+  cover X% of total bribe value; the remainder is contract-initiated flow
+  the state ledger sees but no event attributes." Measured share, no static
+  note. Unattributed flow never silently merges into per-briber totals.
 - **D2 — gross placed, from the add tx (DeFi Patriot, 2026-07-17).** Bribe
   value = `coins[]` on the `bribe_add` event. `fee_funds` (the 10-LUNA add
   fee) is never counted as bribe value. `withdraw_bribes` events surface as
@@ -31,21 +46,24 @@ new crons, no new Actions, no new output files.
   immutable), **`usd_at_build`** (amount × price at rollup build — fallback).
   Live today-value stays DISPLAY-side (site × current price). No third USD
   number is stored.
-- **D4 — price join = schema-4 D5 verbatim.** `price-history/{YYYY}/{MM}.json`
-  `days[date][SYMBOL].usd`, nearest prior day within 7, else nearest after
-  within 7, else unpriced. Denom→symbol+decimals from token-catalog
-  `current.json`; denoms the catalog can't name land in `unpriced[]` with raw
-  amounts — never dropped, never guessed. Same-token-multiple-denoms (e.g. a
-  second ASTRO IBC path, if the probes confirm one) merge at symbol level via
-  the catalog's `variation_of` mechanism — the rollup never hardcodes merges.
+- **D4 — price join: reuse the deployed machinery.** `makePriceLookup`
+  (priceOn / latestPrice, 7-day nearest) and `buildTokenMap` from
+  `lib/rollups.js` — no new join code. Requires dependency #1 so the token
+  map carries override-identified symbols. Denoms the merged catalog still
+  can't name land in `unpriced[]` with raw amounts — never dropped, never
+  guessed. `unpriced[]` entries MAY carry a `display` field when a committed
+  trace record exists in PROBES-denom-traces (DGN: 7 events, named,
+  unpriced — no price series, no ratio path). Same-token-multiple-denoms
+  merge at symbol level via the catalog's `variation_of` — the rollup never
+  hardcodes merges.
 - **D5 — labels are the WHO layer's job.** Briber display names come from
   address-catalog; the rollup stores `briber` (address) + `label` (nullable
   join). Missing label → site shows short address. Per the public-output
   framing: labels are descriptive protocol/treasury names only — no motive,
   no politics, nothing attributive in committed files.
-- **D6 — output: rollups.json schemaVersion 5, merged (DeFi Patriot,
-  2026-07-17 — no new artifact).** The existing `bribers[]` entries are
-  enriched in place:
+- **D6 — output: rollups.json schemaVersion 6, merged (DeFi Patriot,
+  2026-07-17 — no new artifact).** The existing `bribers[]` entries (today:
+  event_count, via, by_epoch) are enriched in place:
 
   ```json
   "bribers": [ {
@@ -61,11 +79,13 @@ new crons, no new Actions, no new output files.
     "by_pool": { "<pool-key>": { "bribe_count": 0, "by_token": { … } } },
     "by_epoch": { … }   // retained from schema 4, unchanged
   } ],
-  "bribers_order": [ "terra1…" ],   // usd_at_placement desc; all-unpriced
+  "bribers_order": [ "terra1…" ]    // usd_at_placement desc; all-unpriced
                                     // bribers ranked last by bribe_count,
                                     // flagged — never ranked by invented USD
-  "bribers_coverage_note": "…"      // retained until build #3 closes it
   ```
+
+  (`via` counts are retained from schema 5; `bribe_ledger` continues to carry
+  the measured attribution share — no coverage note anywhere.)
 
 - **D7 — cadence & recompute:** unchanged from schema-4 D2 — full recompute
   on harvest runs, Layer 3, no incremental state.
@@ -80,19 +100,13 @@ a rankable, priced, labeled ledger — and doubles as the centralization-health
 surface (one address is 98 of 173 direct bribes at spec date; the board shows
 that without a word of commentary).
 
-## 2. Probes (browser, paste results back — feed token-catalog overrides)
+## 2. Probes — DONE (see PROBES-denom-traces.md, 2026-07-17)
 
-Two bribe denoms (and one minor) have `no_discovered_symbol` in the catalog.
-LCD denom-trace on any public node:
-
-```
-/ibc/apps/transfer/v1/denom_traces/517E13F14A1245D4DE8CF467ADD4DA0058974CDCC880FA6AE536DBCA1D16D84E   (72 of 173 bribes)
-/ibc/apps/transfer/v1/denom_traces/B3F639855EE7478750CC8F82072307ED6E131A8EFF20345E1D136B50C4E5EC36   (19 bribes)
-/ibc/apps/transfer/v1/denom_traces/B2AA4C3CD19954859C3B537EC07057B7D2DE64BE0FBA7B2CA4F8D1067BCC63FE   (7 bribes; not in catalog — also feed discovery)
-```
-
-Results (base denom + channel path) go into the token-catalog override layer,
-not into this rollup. Until then those amounts ride in `unpriced[]` honestly.
+All 17 IBC denoms traced. 14/14 matched existing overrides (chain-exact
+reconciliation of the curated layer); INJ + stATOM entries added same day;
+DGN identified (`udgn`, channel-582) as the only bribe-only, unpriceable
+token. With dependency #1 shipped, expected pricing coverage: 166 of 173
+events fully priceable, 7 DGN events named-but-unpriced.
 
 ## 3. Site surfacing (separate ship, not this rev)
 
@@ -111,6 +125,9 @@ would silently understate earnings for anyone active in that window.
 
 ## 5. Verify (parallel-run before any consumer)
 
+0. Dependency #1 first, own verify: rebuilt catalog snapshot names all 16
+   override-identified denoms; a mock `buildTokenMap` over it resolves
+   bWHALE/ampWHALE/FUEL; existing consumers unaffected.
 1. Σ `bribers[].bribe_count` = events index bribe count (173 at spec date);
    Σ withdraw flags = 18.
 2. Spot-check DeFi Patriot's 5 bribes — the 2026-07-14 SOLID add must show
