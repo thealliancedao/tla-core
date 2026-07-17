@@ -70,7 +70,7 @@ const CG_API_KEY    = process.env.COINGECKO_API_KEY || null;
 // set (the deep backfill needs paid history), else demo/public.
 const CG_PLAN = (process.env.COINGECKO_PLAN || (CG_API_KEY ? 'pro' : 'demo')).toLowerCase();
 
-const VERSION = 'price-backfill-1.0.0';
+const VERSION = 'price-backfill-1.0.1';
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 // ---- http ----
@@ -180,7 +180,17 @@ async function mergeIntoMonthFiles(prefix, daySymValues, valueLabel, message) {
     const existing = (await readJson(filepath)) || { meta: { module: "price-history", format_version: 1, note: valueLabel }, days: {} };
     existing.days = existing.days || {};
     for (const [day, symVal] of Object.entries(days)) {
-      existing.days[day] = { ...(existing.days[day] || {}), ...symVal }; // merge per-token
+      // merge per-token, and NEVER downgrade a rich entry: if the existing
+      // token record carries multi-source/confidence data (written by the
+      // daily cron), the backfill's single-source value must not replace it
+      // (lesson: 2026-07-16 genesis run flattened 21 live-era LUNA days).
+      const cur = existing.days[day] || {};
+      const guarded = {};
+      for (const [tk, tv] of Object.entries(symVal)) {
+        const prev = cur[tk];
+        guarded[tk] = (prev && typeof prev === 'object' && ('sources' in prev || 'confidence' in prev)) ? prev : tv;
+      }
+      existing.days[day] = { ...cur, ...guarded };
     }
     existing.meta = { module: "price-history", format_version: 1, ...(existing.meta || {}), updated_at: new Date().toISOString(), note: valueLabel };
     await writeJson(filepath, existing, `${message} ${ym}`);
