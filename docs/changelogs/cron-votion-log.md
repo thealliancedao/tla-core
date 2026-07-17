@@ -90,3 +90,33 @@ treats blank lock_id as the normal no_lock_yet state (VP 0, source tagged,
 zero errors) instead of a failed escrow read. Gate 34/34. Live-verified
 labels bonus: vdenom paths read max/12/1 (weeks) per LST — e.g.
 12/vampluna = ampLUNA-3mo.
+
+# Rev 4 — 2026-07-17 — 1.1.0: MEMBER SWEEP — dynamic per-member Votion positions for the portfolio layer
+
+Requirement (from DeFi Patriot): registered wallets' Votion lockup positions
+must be capturable for portfolio tracking (TLA + Votion + Solid + NFTs +
+eventually Credia in one place), and candidate lists must be DYNAMIC —
+calculated, never hardcoded; broken = declared, never faked.
+
+Design: the portfolio layer never needed GLOBAL holder enumeration (which
+pruned chain history makes impossible) — it needs KNOWN wallets' positions.
+member-data already maintains the live list of all TLA participants, so
+Branch B now sweeps every member-data wallet with ONE full-balances query
+(all six vdenoms read per wallet in a single call); any v-token balance
+found makes that wallet a holder with full valuation + implied VP. The
+candidate set self-updates as member-data does. Sweep finds persist to the
+grow-only registry; rows carry found_via; output declares member_sweep
+{wallets_swept, failures, complete}; any sweep failure → run partial.
+Pre-retention member depositors — invisible to tx_search forever — are now
+captured the moment they are TLA members.
+
+aDAO clarification recorded: the council holds two DIRECT TLA locks (Max
+ampLUNA + Max arbLUNA, captured as the treasury entity in member-data) and
+NO Votion vault positions — the curated-holders council seed was therefore
+NOT committed; curated-holders stays empty, mechanism retained for genuine
+future candidates.
+
+Gate 39/39 (new: sweep find valued + found_via tagged, sweep coverage
+declared, sweep persistence to registry, sweep failure → partial with vault
+rows intact, dual-source failure semantics). Deploy = commit only (same
+Render job); ~200 extra LCD queries per daily run at concurrency 5.
