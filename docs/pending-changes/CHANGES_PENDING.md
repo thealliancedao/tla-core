@@ -409,12 +409,22 @@ docs/pending-changes/BACKFILL-AUDIT.md. Headlines: price-history is pristine
 16-17-month pruned-window hole (2025-02→2026-05) that is STRUCTURAL (post-FCD,
 pre-org-cron) and fully covered at period granularity by bribe-state +
 distributions (both complete 96→193) — chart rule recorded; epoch-series
-history floors at ~epoch 184 by construction. New small work item:
-**price pre-history import** — old luna-usd-daily (+ bLUNA sibling) reaches
-back to phoenix genesis 2022-05-28, five months before org price-history
-starts; one-time import (src:'coingecko-import', single-source confidence)
-before the old repo retires — GitHub-Action one-off per the placement map
-(script in tla-core/.github/scripts/). The flip-review checklist gains
+history floors at ~epoch 184 by construction. Work item RESOLVED 2026-07-16 the provenance-clean way:
+**price pre-history via the PAID pipeline.** An import from old
+luna-usd-daily was prepared, then rejected on provenance grounds before
+commit — correctly — even though values proved identical to 8 decimals on
+61 overlap days (same CoinGecko series). Instead the committed Price
+Backfill Action ran with backfill_from=2022-05-28: series now 1,512 gapless
+days from phoenix genesis, one pipeline, one provenance. Post-run
+verification caught a REAL regression: the backfill's per-DAY merge replaced
+21 live-era LUNA entries (2026-06-26→07-16) carrying the daily cron's
+multi-source/confidence records — value drift vs CG daily-avg mean 2.2%,
+max 8.8%. Fixed same day: (1) corrected 2026/06+07 month files restoring
+the rich entries (genesis additions preserved); (2) backfill.js 1.0.1 —
+merge guard that NEVER downgrades a rich multi-source token record to a
+single-source value; (3) the daily cron self-healed forward on its own
+(2026-07-17 already rich). luna-usd-daily/bluna-usd-daily site fetches
+re-point at Batch-3 (G13), then the old files retire. The flip-review checklist gains
 BACKFILL-AUDIT §5 (rollups overlap-diff vs old 184→193 epoch files, period
 194 in all three state products, first tribute events, INV-4 armed, votion
 rate monotonicity). Token identity: PAXG + wstETH voucher decimals RESOLVED
