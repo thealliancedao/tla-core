@@ -46,19 +46,47 @@ jobs:
           node-version: '24'
 
       - name: Run re-derive
+        if: ${{ inputs.dry_run }}
         env:
           TLA_CORE_DIR: tla-core
           PLATFORM_CRONS_DIR: platform-crons
-          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+          DRY_RUN: '1'
         run: node tla-core/.github/scripts/tla-voting/fcd-rederive-bribes.js
 
-      - name: Commit recovered events
+      - name: Derive + commit (race-proof retry)
         if: ${{ !inputs.dry_run }}
-        working-directory: tla-core
+        env:
+          TLA_CORE_DIR: tla-core
+          PLATFORM_CRONS_DIR: platform-crons
+        # The hourly Render cron also commits to tla-core, so a push can lose a
+        # race started before the cron's commit landed (observed on the first
+        # run). The script is idempotent and takes ~3s, so the robust pattern
+        # is: hard-sync to the CURRENT remote tip, re-derive against it,
+        # commit, push — and on rejection, do the whole cycle again. No
+        # rebase/merge is ever attempted (index.json is written by both the
+        # cron and this script; a textual merge of it would be meaningless).
         run: |
+          set -e
+          cd tla-core
           git config user.name "tla-fcd-rederive"
           git config user.email "actions@users.noreply.github.com"
-          git add tla-voting/events/bribes tla-voting/events/index.json
-          git diff --cached --quiet && echo "nothing recovered — no commit" && exit 0
-          git commit -m "tla-voting: FCD-era bribes re-derived with classifier v6.1 (D8 — contract-initiated recovery)"
-          git push
+          for attempt in 1 2 3 4 5; do
+            echo "── attempt ${attempt}: sync to remote tip and derive"
+            git fetch origin main
+            git reset --hard origin/main
+            (cd .. && node tla-core/.github/scripts/tla-voting/fcd-rederive-bribes.js)
+            git add tla-voting/events/bribes tla-voting/events/index.json
+            if git diff --cached --quiet; then
+              echo "nothing recovered on the current tip — no commit needed"
+              exit 0
+            fi
+            git commit -m "tla-voting: FCD-era bribes re-derived with classifier v6.1 (D8 — contract-initiated recovery)"
+            if git push; then
+              echo "pushed on attempt ${attempt}"
+              exit 0
+            fi
+            echo "push rejected (concurrent cron commit) — retrying"
+            sleep 10
+          done
+          echo "gave up after 5 attempts — re-run the workflow" >&2
+          exit 1
