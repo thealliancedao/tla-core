@@ -12,6 +12,73 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## ✅ 2026-07-18 — v6.1 BUILT & GATED: governance-executed bribes captured · FCD re-derive READY
+
+Every line verified against real chainscope pastes or a full local run this session.
+
+- **v6.1 (org-tla-voting 2.3.1) — BUILT, mock gate 116/116, DEPLOY PENDING
+  (commit the tla-voting folder; no schedule/env change).** The PD fixture
+  exposed a REAL silent-drop bug in deployed v6: all ten `add_bribe` events
+  in a governance-executed tx share `msg_index 0` → identical dedup keys →
+  **9/10 bribes silently collapsed** (26,284 of 34,763 LUNA lost from the
+  fixture alone). Fix: collision-aware promoted msg_index — unique keys ONLY
+  when 2+ promoted bribes share an index; single-add take-rate events keep
+  byte-identical keys (parity proven old-vs-new; no historical dupes on
+  re-walk). Gate additions: R10b (8 assertions on the verbatim fixture) +
+  stale schema-5 assertion reconciled to schema 6 (briber board) + the
+  cosmetic "schema 5" log string fixed.
+- **Attribution rule SETTLED (dynamic by construction — DeFi_Patriot's
+  requirement):** promoted bribes attribute to the wasm `dao` attribute's
+  DAO core when EXACTLY ONE distinct dao appears in the tx
+  (`briber_source: 'dao_attr'` — the DAO's own funds pay, coin_spent proves
+  it); zero or 2+ → msg_target fallback, unlabeled. A new DAO bribing
+  through a shared proposal-module pattern surfaces as its OWN unknown
+  address — it can never be absorbed into another protocol's total.
+  PD therefore attributes to the DAO core `terra1k8ug6dk…4lppjg`, NOT the
+  proposal module `terra1660g9…ehqnup`.
+- **Fixture corrections (chain-exact, supersede the 07-17 note):** tx
+  `402AE7B1…AAAA7` net added = **34,763.534826 LUNA** (not 33,517; gross
+  34,863.53 minus ten 10-LUNA fees). SECOND confirmed governance fixture:
+  proposal 247, tx `1CA243A3…AF1E` (2026-06-13), ten bribes,
+  **37,912.492 LUNA net**, epochs 189–192. Combined: **72,676 LUNA of PD
+  bribes** that deployed v6 would have recorded as 18,764.
+- **FCD re-derive (D8) — SCRIPT + WORKFLOW DELIVERED, run pending:**
+  `.github/scripts/tla-voting/fcd-rederive-bribes.js` +
+  `tla-voting-fcd-rederive.yml`. Dual-checkout design: require()s the LIVE
+  platform-crons classifier (no third copy) and SELF-GATES on the PD
+  fixture (aborts on any pre-2.3.1 checkout → run AFTER the 2.3.1 deploy).
+  Local run against real production data: **2,640 contract-initiated bribes
+  recovered** (2024-09: +428 · 2024-10: +701 · 2024-11: +812 ·
+  2024-12: +622 · 2025-01: +77), all 191 prior events byte-preserved,
+  second run adds 0 (idempotent). Top recovered bribers = the four gauge
+  tribute contracts + Lion DAO (23) + Solid `…dd7s3t` (11). Bribes-stream
+  event history then reaches TLA genesis for the FCD era; rollups absorb on
+  next rebuild.
+- **Astroport-candidate contracts RESOLVED (07-17 open item):**
+  `…qswspq` / `…gw3lpa` (+ `…lf4arv`, `…w6e23k`) are the four gauge
+  tribute contracts — `distribute_take_rate` sweeps fees to the PD DAO,
+  `distribute_bribes` recycles accumulated ASTRO into the manager. The
+  "pool:null arg shape" was this class; NOT an Astroport team wallet.
+- **Solid Protocol = TWO wallets (both entered in wallets.json):**
+  `…dd7s3t` — FCD-era direct briber (e.g. 61,350 CAPA → ampCAPA,
+  2025-01-02) AND the CAPA token contract's feeshare withdraw address
+  (deployer-tied evidence); `…s0yhw0` — current wallet, three 1M-CAPA
+  bribes across all three buckets 2026-06-21 (chainscope-verified), sitting
+  in the events hole so absent from committed events until the registry
+  pass. The two txs' feeshare events paying `…dd7s3t` link the wallets.
+- **Backfill doctrine REAFFIRMED for the 2025-01→2026-06 hole:** per-period
+  TOTALS are already state-side (bribe-state walk); per-briber attribution
+  in the hole stays gated on the Phase-2 capture-registry one-pass (bundle
+  everything, walk once). Fuel: still zero direct bribes found — stays
+  honestly blank.
+- **Deploy checklist:** (1) commit platform-crons tla-voting 2.3.1 →
+  Render picks up hourly; (2) run the fcd-rederive workflow (dry-run flag
+  available); (3) next rollups rebuild extends the briber board to genesis
+  for the FCD era; (4) board banner broadening ("contract-initiated
+  bribes") rides the board-page commit — still pending the Rev 4 files.
+
+---
+
 ## ✅ 2026-07-17 — briber board data layer LIVE · override layer wired in · denom identity 100%
 
 Every line verified against production output or the committed rollup that day.
