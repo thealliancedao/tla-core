@@ -39,6 +39,33 @@ Every line verified against production output or the committed rollup that day.
   DECIDED: no ampWHALE/bWHALE backfill — White Whale deprecated, tokens
   worthless; their 91 bribe events stay named + unpriced-at-placement by
   design, usd_at_build reads ~zero (true).
+- **Board surfaces SHIPPED (evening).** test.html Community card = "Top
+  Bribers" (all-time, schema-6, registry-first names, Earners view kept behind
+  toggle); tla-stats.html Epoch Bribes modal gained the sortable deep-dive
+  board (optional commit — re-homes into the restructure later). Details:
+  website-adao-core `tla-log.md` Rev 4.
+- **PD BRIBES ARE CONTRACT-INITIATED — build #3 fixture captured.** Chainscope
+  tx `402AE7B14451C9C46612DBD5342FC722A8562B2900AB35973081082B66FAAAA7`
+  (2026-07-09): executor `terra14p3mc04s7jcaxvvetlzehvhx9gdx6w4nm3zzw3` runs
+  proposal 250; DAO treasury
+  `terra1k8ug6dkzntczfzn76wsh24tdjmx944yj6mk063wum7n20cwd7lxq4lppjg` makes TEN
+  add_bribe calls in one tx — 33,517 LUNA, epochs 193–196, ten pools,
+  10-LUNA fee each. NONE appear in the direct events stream (no top-level
+  briber). Confirms the governance-execution bribe pattern alongside take-rate
+  tributes; Phoenix Directive is therefore ABSENT from the current board by
+  capture limitation, not by fact. Board banners state the direct-only
+  universe. Resolution path: build #3 parses wasm add_bribe events + execute
+  chain for attribution; this tx is the acceptance fixture.
+- **Briber identity status:** Lion DAO `terra1ksk66l…z8ru04` CONFIRMED
+  (DeFi_Patriot) → wallets.json entry added. Solid Protocol candidate
+  `terra1t380w5…dd7s3t` strongly corroborated (bulk-CAPA multi-pool pattern
+  matches DeFi_Patriot's description exactly) — awaiting explicit
+  confirmation before labeling. The two single-pool LUNA wallets
+  (`…szrpnz`, `…ecsx24`) are NOT PD (see above) — unidentified individuals.
+  Two new Astroport-candidate CONTRACTS began ASTRO bribes 07-16/17
+  (`terra1v399cx…qswspq`, `terra1awq6t7…gw3lpa`, pool:null arg shape —
+  classifier quirk to check in build #3) — unconfirmed. Fuel DAO: zero
+  direct bribes exist; any Fuel incentives flow via non-direct routes.
 - **Site (aDAO-links-site): Atrium links fixed (3 places), DAO custody wallets
   pinned on Holder Leaderboard (broken sum = 1,000 = Props 64–69 exactly),
   rewards-tile sparklines restored (+ Vote added), fetchAllSnapshots
