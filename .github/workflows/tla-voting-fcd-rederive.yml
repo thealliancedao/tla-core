@@ -1,0 +1,64 @@
+name: TLA Voting FCD Re-Derive (bribes, v6.1)
+
+# D8 rider (CHANGES_PENDING — tribute/bribe capture rework): re-derive the
+# FCD-era incentive-manager archive with the LIVE classifier (v6.1) to
+# recover the contract-initiated bribes (take-rate tributes + any
+# governance-executed bribes) that top-level-msg parsing was blind to.
+# Checks out platform-crons alongside so the script require()s the
+# production classifier verbatim — no third copy. The script self-gates on
+# the PD fixture (402AE7B1…AAAA7) and aborts on any pre-2.3.1 checkout.
+# Idempotent: a second run adds zero events.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (print plan, write nothing)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tla-voting-fcd-rederive
+  cancel-in-progress: false
+
+jobs:
+  rederive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout tla-core
+        uses: actions/checkout@v4
+        with:
+          path: tla-core
+
+      - name: Checkout platform-crons (live classifier)
+        uses: actions/checkout@v4
+        with:
+          repository: thealliancedao/platform-crons
+          path: platform-crons
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Run re-derive
+        env:
+          TLA_CORE_DIR: tla-core
+          PLATFORM_CRONS_DIR: platform-crons
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+        run: node tla-core/.github/scripts/tla-voting/fcd-rederive-bribes.js
+
+      - name: Commit recovered events
+        if: ${{ !inputs.dry_run }}
+        working-directory: tla-core
+        run: |
+          git config user.name "tla-fcd-rederive"
+          git config user.email "actions@users.noreply.github.com"
+          git add tla-voting/events/bribes tla-voting/events/index.json
+          git diff --cached --quiet && echo "nothing recovered — no commit" && exit 0
+          git commit -m "tla-voting: FCD-era bribes re-derived with classifier v6.1 (D8 — contract-initiated recovery)"
+          git push
