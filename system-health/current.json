@@ -1,41 +1,16 @@
 {
   "meta": {
     "version": "org-system-health-1.0.1",
-    "generated_at": "2026-07-19T23:10:18.993Z",
+    "generated_at": "2026-07-20T01:10:19.092Z",
     "status": "violation"
   },
   "invariants": {
     "bucket_vp_consistency": {
-      "status": "violation",
-      "detail": "bucket VP drift up to 13.77% — known contributors: ghost/stray gauge votes + member/catalog tally scope differences (CHANGES_PENDING #4)",
-      "measured": [
-        {
-          "bucket": "stable",
-          "member_vp": 27985802.88,
-          "catalog_active_sum_vp": 28796294.7,
-          "diff_pct": 2.9
-        },
-        {
-          "bucket": "project",
-          "member_vp": 27690981.9,
-          "catalog_active_sum_vp": 27710995.67,
-          "diff_pct": 0.07
-        },
-        {
-          "bucket": "bluechip",
-          "member_vp": 27690998.96,
-          "catalog_active_sum_vp": 23877572.05,
-          "diff_pct": 13.77
-        },
-        {
-          "bucket": "single",
-          "member_vp": 27961471.26,
-          "catalog_active_sum_vp": 26175828,
-          "diff_pct": 6.39
-        }
-      ],
-      "expected": "<= 0.5% per bucket",
-      "as_of": "2026-07-19T23:10:18.993Z"
+      "status": "skipped",
+      "detail": "stamps differ (member 2026-07-19 vs catalog 2026-07-20) — like-for-like requires same day",
+      "measured": null,
+      "expected": null,
+      "as_of": "2026-07-20T01:10:19.092Z"
     },
     "staked_le_depth": {
       "status": "ok",
@@ -44,42 +19,61 @@
         "pools_checked": 275
       },
       "expected": "staked_liquidity_usd <= tvl_usd",
-      "as_of": "2026-07-19T23:10:18.993Z"
+      "as_of": "2026-07-20T01:10:19.092Z"
     },
     "distribution_fractions_sum": {
-      "status": "ok",
-      "detail": "all buckets sum to 1.0",
-      "measured": {
-        "stable": 1,
-        "project": 1,
-        "bluechip": 1,
-        "single": 1
-      },
-      "expected": "1.0 ± 0.001 per bucket",
-      "as_of": "2026-07-19T23:10:18.993Z"
+      "status": "skipped",
+      "detail": "no active pools in catalog",
+      "measured": null,
+      "expected": null,
+      "as_of": "2026-07-20T01:10:19.092Z"
     },
     "tribute_stream_coverage": {
       "status": "skipped",
       "detail": "bribe_capture not yet published by tla-voting (first epoch flip pending)",
       "measured": null,
       "expected": null,
-      "as_of": "2026-07-19T23:10:18.993Z"
+      "as_of": "2026-07-20T01:10:19.092Z"
     },
     "bucket_label_agreement": {
       "status": "violation",
-      "detail": "1 bucket label disagreement(s) — dex-data 1.1.0 resolves from chain; catalog entry likely stale (finding A)",
+      "detail": "4 bucket label disagreement(s) — dex-data 1.1.0 resolves from chain; catalog entry likely stale (finding A)",
       "measured": [
+        {
+          "dex": "astroport",
+          "pool": "USDC-USDT",
+          "dex_bucket": "single",
+          "catalog_bucket": "bluechip",
+          "dex_as_of": "2026-07-20T00:01:06.737Z",
+          "catalog_as_of": "2026-07-20T00:00:56.937Z"
+        },
+        {
+          "dex": "astroport",
+          "pool": "LUNA-SOLID",
+          "dex_bucket": "project",
+          "catalog_bucket": "stable",
+          "dex_as_of": "2026-07-20T00:01:06.737Z",
+          "catalog_as_of": "2026-07-20T00:00:56.937Z"
+        },
         {
           "dex": "skeletonswap",
           "pool": "LUNA-SOLID",
           "dex_bucket": "project",
           "catalog_bucket": "stable",
           "dex_as_of": "2026-07-19T23:01:01.097Z",
-          "catalog_as_of": "2026-07-19T18:00:39.353Z"
+          "catalog_as_of": "2026-07-20T00:00:56.937Z"
+        },
+        {
+          "dex": "skeletonswap",
+          "pool": "USDC-USDt",
+          "dex_bucket": "single",
+          "catalog_bucket": "bluechip",
+          "dex_as_of": "2026-07-19T23:01:01.097Z",
+          "catalog_as_of": "2026-07-20T00:00:56.937Z"
         }
       ],
       "expected": "dex bucket == catalog bucket per pair",
-      "as_of": "2026-07-19T23:10:18.993Z"
+      "as_of": "2026-07-20T01:10:19.092Z"
     },
     "heartbeat_freshness": {
       "status": "ok",
@@ -89,69 +83,69 @@
           "product": "member-data",
           "status": "fresh",
           "last": "2026-07-19T02:00:40.457Z",
-          "age_h": 21.2,
+          "age_h": 23.2,
           "max_age_h": 30
         },
         {
           "product": "token-catalog",
           "status": "fresh",
-          "last": "2026-07-19T18:00:39.353Z",
-          "age_h": 5.2,
+          "last": "2026-07-20T00:00:56.937Z",
+          "age_h": 1.2,
           "max_age_h": 6
         },
         {
           "product": "dex-astroport",
           "status": "fresh",
-          "last": "2026-07-19T23:00:55.998Z",
-          "age_h": 0.2,
+          "last": "2026-07-20T00:01:06.737Z",
+          "age_h": 1.2,
           "max_age_h": 6
         },
         {
           "product": "dex-skeletonswap",
           "status": "fresh",
           "last": "2026-07-19T23:01:01.097Z",
-          "age_h": 0.2,
+          "age_h": 2.2,
           "max_age_h": 6
         },
         {
           "product": "tla-voting",
           "status": "fresh",
           "last": "2026-07-19T23:00:46.312Z",
-          "age_h": 0.2,
+          "age_h": 2.2,
           "max_age_h": 6
         },
         {
           "product": "tla-voting-votestate",
           "status": "fresh",
           "last": "2026-07-15T03:34:47.168Z",
-          "age_h": 115.6,
+          "age_h": 117.6,
           "max_age_h": 216
         },
         {
           "product": "tla-voting-bribestate",
           "status": "fresh",
           "last": "2026-07-16T01:03:11.793Z",
-          "age_h": 94.1,
+          "age_h": 96.1,
           "max_age_h": 216
         },
         {
           "product": "tla-distributions",
           "status": "fresh",
-          "last": "2026-07-14T17:17:45.285Z",
-          "age_h": 125.9,
+          "last": "2026-07-20T01:06:29.580Z",
+          "age_h": 0.1,
           "max_age_h": 216
         },
         {
           "product": "nfts-snapshots",
           "status": "fresh",
-          "last": "2026-07-19T23:00:24.816Z",
+          "last": "2026-07-20T01:00:16.191Z",
           "age_h": 0.2,
           "max_age_h": 6
         },
         {
           "product": "nfts-flows",
           "status": "fresh",
-          "last": "2026-07-19T23:00:16.609Z",
+          "last": "2026-07-20T01:00:29.755Z",
           "age_h": 0.2,
           "max_age_h": 6
         },
@@ -159,39 +153,39 @@
           "product": "nfts-provenance",
           "status": "exempt (one-off)",
           "last": "2026-07-08T21:02:04.763Z",
-          "age_h": 266.1
+          "age_h": 268.1
         },
         {
           "product": "dex-credia",
           "status": "fresh",
           "last": "2026-07-19T23:01:04.479Z",
-          "age_h": 0.2,
+          "age_h": 2.2,
           "max_age_h": 6
         },
         {
           "product": "votion-vaults",
           "status": "fresh",
-          "last": "2026-07-19T22:20:23.709Z",
-          "age_h": 0.8,
+          "last": "2026-07-19T23:20:24.067Z",
+          "age_h": 1.8,
           "max_age_h": 6
         },
         {
           "product": "votion-positions",
           "status": "fresh",
           "last": "2026-07-19T07:20:24.467Z",
-          "age_h": 15.8,
+          "age_h": 17.8,
           "max_age_h": 30
         },
         {
           "product": "price-history",
           "status": "fresh",
           "last": "2026-07-19T00:00:00Z",
-          "age_h": 23.2,
+          "age_h": 25.2,
           "max_age_h": 50
         }
       ],
       "expected": "age <= per-product max_age_h",
-      "as_of": "2026-07-19T23:10:18.993Z"
+      "as_of": "2026-07-20T01:10:19.092Z"
     },
     "identity_resolution": {
       "status": "ok",
@@ -203,12 +197,12 @@
         "sample": [
           "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
           "ibc/792AAE6279F4709F66068E29A79E6F16BBC0A9B93561A91FC040606793E62D6B",
-          "ibc/88386AC48152D48B34B082648DF836F975506F0B57DBBFC10A54213B1BF484CB",
           "ibc/05D299885B07905B6886F554B39346EA6761246076A1120B1950049B92B922DD",
+          "ibc/88386AC48152D48B34B082648DF836F975506F0B57DBBFC10A54213B1BF484CB",
           "ibc/CF57A83CED6CEC7D706631B5DC53ABC21B7EDA7DF7490732B4361E6D5DD19C73",
           "ibc/08095CEDEA29977C9DD0CE9A48329FDA622C183359D5F90CF04CC4FF80CBE431",
-          "ibc/25BC59386BB65725F735EFC0C369BB717AA8B5DAD846EAF9CBF5D0F18F207211",
-          "terra1xc7ynquupyfcn43sye5pfmnlzjcw2ck9keh0l2w2a4rhjnkp64uq4pr388"
+          "terra1xc7ynquupyfcn43sye5pfmnlzjcw2ck9keh0l2w2a4rhjnkp64uq4pr388",
+          "ibc/25BC59386BB65725F735EFC0C369BB717AA8B5DAD846EAF9CBF5D0F18F207211"
         ],
         "catalog_identity_stats": {
           "symbols_resolved": 16,
@@ -216,7 +210,7 @@
         }
       },
       "expected": "informational — trend toward zero",
-      "as_of": "2026-07-19T23:10:18.993Z"
+      "as_of": "2026-07-20T01:10:19.092Z"
     }
   }
 }
