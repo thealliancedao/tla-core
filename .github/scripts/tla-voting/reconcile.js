@@ -240,11 +240,33 @@ async function mapLimit(items, limit, fn) {
 
 // ---- events: read from the LOCAL checkout (container shape verified
 // 2026-07-14: {schemaVersion, …, events:[…]}, height-sorted ascending)
+// ---- events: read from the LOCAL checkout. Post-restructure the streams live
+// as monthly files ({stream}/YYYY/MM.json); the legacy consolidated
+// {stream}-events.json is read if present (pre-restructure checkouts), else
+// months are concatenated in-process, height-sorted — same order contract.
 function readEvents(name) {
     const p = path.join(EVENTS_DIR, name);
-    const d = JSON.parse(fs.readFileSync(p, 'utf8'));
-    const events = Array.isArray(d) ? d : d.events;
-    if (!Array.isArray(events)) throw new Error(`${name}: no events array`);
+    if (fs.existsSync(p)) {
+        const d = JSON.parse(fs.readFileSync(p, 'utf8'));
+        const events = Array.isArray(d) ? d : d.events;
+        if (!Array.isArray(events)) throw new Error(`${name}: no events array`);
+        return events;
+    }
+    const stream = name.replace('-events.json', 's');   // vote→votes, lock→locks, bribe→bribes
+    const dir = path.join(EVENTS_DIR, stream);
+    if (!fs.existsSync(dir)) throw new Error(`${name}: neither legacy file nor ${stream}/ monthly layout found under ${EVENTS_DIR}`);
+    const events = [];
+    for (const y of fs.readdirSync(dir).filter(d => /^\d{4}$/.test(d)).sort()) {
+        for (const f of fs.readdirSync(path.join(dir, y)).filter(f => /^\d{2}\.json$/.test(f)).sort()) {
+            const d = JSON.parse(fs.readFileSync(path.join(dir, y, f), 'utf8'));
+            const evs = Array.isArray(d) ? d : d.events;
+            if (!Array.isArray(evs)) throw new Error(`${stream}/${y}/${f}: no events array`);
+            events.push(...evs);
+        }
+    }
+    if (!events.length) throw new Error(`${name}: monthly layout ${stream}/ contained no events`);
+    events.sort((a, b) => (a.height - b.height) || ((a.msg_index || 0) - (b.msg_index || 0)));
+    console.log(`  ${name}: consolidated ${events.length} events from ${stream}/ monthly layout`);
     return events;
 }
 
