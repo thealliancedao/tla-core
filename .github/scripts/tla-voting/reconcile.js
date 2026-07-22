@@ -156,6 +156,71 @@ const chain = {
     },
 };
 
+// ---- POT_WITHOUT_PLACEMENT watchdog helpers (SPEC-capture-registry-backfill §6)
+// Chain-shape-tolerant: the incentive manager's bribes response nests pots in
+// buckets/pools whose exact wrapper has shifted before — we care only about
+// which denoms hold live amounts, so scan recursively for coin-like objects.
+function canonOfInfo(info) {
+    if (!info || typeof info !== 'object') return null;
+    if (typeof info.native === 'string') return `native:${info.native}`;
+    if (typeof info.cw20 === 'string') return `cw20:${info.cw20}`;
+    if (typeof info.token === 'string') return `cw20:${info.token}`;
+    return null;
+}
+function scanActivePotDenoms(node, out) {
+    if (Array.isArray(node)) { for (const v of node) scanActivePotDenoms(v, out); return out; }
+    if (!node || typeof node !== 'object') return out;
+    const amt = node.amount;
+    if (amt != null && /^\d+$/.test(String(amt)) && BigInt(String(amt)) > 0n) {
+        const den = canonOfInfo(node.info) || canonOfInfo(node)
+            || (typeof node.denom === 'string'
+                ? (node.denom.includes(':') ? node.denom : `native:${node.denom}`) : null);
+        if (den) out.set(den, (out.get(den) || 0n) + BigInt(String(amt)));
+    }
+    for (const v of Object.values(node)) if (v && typeof v === 'object') scanActivePotDenoms(v, out);
+    return out;
+}
+function buildPotWatchdog(bribesChain, bribeEvents) {
+    if (!bribesChain || bribesChain._unavailable) {
+        return { status: 'skipped — bribes probe unavailable', alerts: [] };
+    }
+    const active = scanActivePotDenoms(bribesChain, new Map());
+    // assumed current epoch = the furthest epoch any captured event references;
+    // declared in the report so the assumption is auditable, never silent.
+    let assumedCur = null;
+    const byDenom = new Map();   // denom -> { adds, max_span_end }
+    for (const ev of bribeEvents) {
+        if (ev.type !== 'bribe_add') continue;
+        const end = ev.epoch_end ?? ev.epoch_start ?? null;
+        if (end != null && (assumedCur == null || end > assumedCur)) assumedCur = end;
+        for (const c of ev.coins || []) {
+            if (!c?.denom) continue;
+            const d = (byDenom.get(c.denom) || { adds: 0, max_span_end: null });
+            d.adds++;
+            if (end != null && (d.max_span_end == null || end > d.max_span_end)) d.max_span_end = end;
+            byDenom.set(c.denom, d);
+        }
+    }
+    const alerts = [];
+    let okCount = 0;
+    for (const [den, amt] of [...active.entries()].sort()) {
+        const seen = byDenom.get(den);
+        if (!seen) {
+            alerts.push({ alert: 'POT_WITHOUT_PLACEMENT', class: 'never_captured', denom: den, active_amount: amt.toString(), note: 'live pot with ZERO placement events ever captured — walker/classifier bug candidate, inspect before assuming hole-era' });
+        } else if (assumedCur != null && (seen.max_span_end == null || seen.max_span_end < assumedCur)) {
+            alerts.push({ alert: 'POT_WITHOUT_PLACEMENT', class: 'no_current_placement_event', denom: den, active_amount: amt.toString(), last_captured_span_end: seen.max_span_end, note: 'live pot but no captured placement spans the present — the capture-hole signature; expected until the archive backfill lands, alarming after' });
+        } else okCount++;
+    }
+    return {
+        spec: 'SPEC-capture-registry-backfill §6',
+        assumed_current_epoch: assumedCur,
+        active_pot_denoms: active.size,
+        covered: okCount,
+        alerts: alerts.slice(0, DETAIL_CAP),
+        semantics: 'every denom holding a live pot on chain must have ≥1 captured bribe_add whose span reaches the present; violations classify as never_captured (bug candidate) vs no_current_placement_event (hole signature). Informational v1 — does not flip the verdict.',
+    };
+}
+
 // ---- bounded-concurrency map that PRESERVES failures (null ≠ empty)
 async function mapLimit(items, limit, fn) {
     const results = new Array(items.length);
@@ -335,6 +400,7 @@ async function main() {
     const bribesBaseline = bribesChain && !bribesChain._unavailable
         ? { chain_shape_keys: Object.keys(bribesChain).slice(0, 8), chain_entries: Array.isArray(bribesChain) ? bribesChain.length : (Array.isArray(bribesChain?.bribes) ? bribesChain.bribes.length : null), event_count: bribeEvents.length, note: 'expected large mismatch = the ~97% tribute-blindness baseline (defect #2)' }
         : { unavailable: bribesChain?._unavailable || 'no data', event_count: bribeEvents.length };
+    const potWatchdog = buildPotWatchdog(bribesChain, bribeEvents);
 
     // ---------- verdict + report ----------
     const lossSignal = counts.MISMATCH + counts.CHAIN_ONLY;
@@ -356,6 +422,7 @@ async function main() {
             event_net_count: lockArith,
         },
         bribes_baseline: bribesBaseline,
+        pot_watchdog: potWatchdog,
         errors: errors.slice(0, 100),
         verdict,
     };
@@ -364,6 +431,7 @@ async function main() {
     console.log(`votes: judged=${judged} MATCH=${counts.MATCH} MISMATCH=${counts.MISMATCH} CHAIN_ONLY=${counts.CHAIN_ONLY} EVENTS_ONLY=${counts.EVENTS_ONLY} → match_rate=${matchRate}%`);
     console.log(`locks: Σvp Δ=${vpDeltaPct?.toFixed(4)}% (tol ${VP_SUM_TOL_PCT}%) · net-count(diag)=${lockArith.net} vs chain ${numTokens}`);
     console.log(`status: ${status} (${errors.length} query errors)`);
+    console.log(`pot watchdog: ${potWatchdog.active_pot_denoms ?? 0} active denoms · ${potWatchdog.covered ?? 0} covered · ${potWatchdog.alerts?.length ?? 0} alert(s)`);
     console.log(`verdict: ${verdict}\n`);
 
     if (DRY_RUN || FIX) { console.log('(not published — DRY_RUN/MOCK)'); if (FIX) fs.writeFileSync('/tmp/reconciliation.mock.json', JSON.stringify(report, null, 2)); return; }
