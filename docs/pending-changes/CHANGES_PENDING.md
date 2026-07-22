@@ -12,6 +12,39 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## 🔴 2026-07-22 (late) — GAP SURVEY: the hole is the story · SPEC-capture-registry-backfill DRAFTED
+
+- **Full per-token bribe-attribution survey run (committed data):** 12 tokens
+  show the same hole-era gap Camron spotted in CAPA — LUNA 1.0%, CAPA 5.7%
+  (18.8M CAPA ≈ $20K unattributed), ASTRO 20.2%, ROAR 22.4%, ampLUNA/USDC
+  ~57%, five ibc tokens at 0%. SOLID/WHALE/ampROAR/MOAR ~100% complete. The
+  ledger has been measuring the missing mass all along; boards honestly show
+  only the attributed slice.
+- **Walker verified NOT the culprit (working conclusion):** live window has 3
+  payers, zero CAPA placements, yet a live 100K-CAPA pot on ampCAPA — bribes
+  span epochs (fixture: DeFi_Patriot's July add covers e193→e200), so
+  hole-era placements still burn in current state. §6 watchdog makes this
+  self-verifying forward.
+- **NEW defect class found: OVER-attribution** — ibc/517E…D84E at 114.3%,
+  ibc/…AC5E at 120.0% (attributed > measured flow). Hypothesis: bribe
+  withdrawals not netted in briber attribution. E0 fix + gate `attributed ≤
+  state` per token (spec §5).
+- **Votes reconcile corroborates:** 8 MISMATCH + 28 CHAIN_ONLY slots; its own
+  verdict says the capture-registry fix outranks rollup rebuilds. Locks
+  reconcile: perfect (Σvp+fixed = total vAMP, delta 0).
+- **SPEC-capture-registry-backfill.md DRAFTED (this folder) — P0.** One
+  archive pass over heights 13,737,811→21,481,530 via contract-scoped
+  tx_search (registry file, resumable cursors, production classifiers,
+  idempotent merge), recovering bribes+votes+locks+flows(v2) at once,
+  walk-once doctrine. E0 items need NO archive: over-attribution netting fix,
+  POT_WITHOUT_PLACEMENT watchdog, flows classifier v2 forward. **E1 blocks on
+  Camron: choose archive-node access** (rented archive RPC recommended).
+- Awaiting from Camron: rough dates (or txhashes) of his wBTC/ATOM-pool
+  bribes — 2025 ⇒ hole (backfill recovers); pre-2025-01-07 ⇒ FCD-era
+  classifier miss, chased separately in E0.
+
+---
+
 ## 🔶 2026-07-22 — Portfolio Arc: P&L spec drafted · VP audit resolved · bribe-board findings
 
 - **SPEC-portfolio-pnl DRAFTED + Phase A BUILT & GATED same session (deploy =
