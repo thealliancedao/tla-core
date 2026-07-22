@@ -12,6 +12,42 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## ✅ 2026-07-23 — FLOWS CLASSIFIER v2 SHIPPED (pool identity + claim amounts) · tribute=bucket identity resolved
+
+- **`<<FLOWS CLASSIFIER v2>>` built, gated, delivered** — installed
+  byte-identical in ALL THREE homes (platform-crons/tla-flows/index.js,
+  tla-core/.github/scripts/tla-flows/flows-fill.js + retained-gap-fill.js;
+  count==1 literal anchors, cross-diffed). Additive: every v1 field unchanged;
+  new per-record `pool` + `gauge`; claims measured (`claims` array of
+  {pool, reward_amount, gauge} from asset/claim_rewards — one event per pool;
+  `claimed_coins` denom:amount on compounder vault cycles, mechanism
+  'amplified_vault', user null BY MEANING). All fields evidenced by a
+  55,199-tx FCD attribute census — 100% attr presence per class, nothing
+  inferred.
+- **v1's null-user/foreign-claim defect FIXED at the classifier:** loose
+  /claim/i matched foreign vesting `claim` events (no user attr → the 1,532
+  null-user claims) AND misclassified 867 tribute-contract take-rate cycles
+  as member claims. v2 restricts to watched shapes; tribute plumbing stays in
+  the voting stream where it's already captured as bribes.
+- **Gates:** binding mock-run ALL GREEN (38 ✅ 0 ❌; scenario G updated —
+  v2 asserts defense-in-depth classifier rejection, replacing the obsolete
+  v1-defect-proving assert) · full-corpus parity gate 32,777 txs: pool on
+  100% of 15,727 deposits + 4,499 withdraws, gauge 100% of deposits,
+  parityFail=0 on all v1 fields, 10,253 wallet claims with per-pool amounts,
+  1,269 vault cycles with coins, 867 drops all verified tribute plumbing.
+- **IDENTITY RESOLVED: the four gauge tribute contracts ARE the four
+  asset-staking buckets** (addresses byte-equal in config) — one contract per
+  bucket stakes LPs and recycles take-rate as bribes. Registry updated:
+  labels amended, tribute entries carry streams [bribes, flows], compounder +
+  zapper added, TODO_FLOWS_HUBS removed.
+- **Deploy:** platform-crons (index.js + mock-run.js) → Render forward runs
+  capture v2 immediately; tla-core (.github twins + registry). Then re-run
+  `tla-flows-retained-gap-fill` once so the retained window re-fills at v2
+  quality (⚠ the time-sensitive item — do this promptly). P&L Phase-B rollup
+  legs (claims valuation) unblock after the first v2 data lands.
+
+---
+
 ## ✅ 2026-07-23 — Watchdog LIVE: first report analyzed · reconcile un-broke · calibration fix
 
 - **Reconcile Action was silently dead since the monthly restructure** (it read
