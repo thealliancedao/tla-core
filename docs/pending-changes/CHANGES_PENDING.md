@@ -12,6 +12,34 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## ✅ 2026-07-22 (night) — E0 EXECUTED: watchdog built & gated · over-attribution DIAGNOSED · registry committed
+
+- **POT_WITHOUT_PLACEMENT watchdog BUILT & MOCK-GATED 6/6** — `reconcile.js`
+  patched (shape-tolerant recursive pot scanner; per-denom classes:
+  `never_captured` = walker-bug candidate vs `no_current_placement_event` =
+  hole signature; `assumed_current_epoch` declared, informational v1, verdict
+  untouched). Gate: real committed streams + crafted 3-case chain mock (SOLID
+  covered / CAPA hole / fake never-seen) — all classified correctly. NOTE for
+  ops: the reconcile Action consolidates monthly streams into
+  vote-/lock-/bribe-events.json before running — unchanged, gate reproduced it.
+- **Over-attribution DIAGNOSED, hypothesis history closed:** NOT withdraw
+  netting (zero withdraws both tokens), NOT span-beyond-harvest (harvest
+  walked to p96, spans end e148/e117), NOT duplication (5 distinct txs).
+  Confirmed by elimination: **state = distributed, events = placed** — the
+  surplus is placed-but-never-distributed and `event_surplus` already
+  declares it. Real gap: refund/expiry/rollover is a MISSING EVENT CLASS
+  (stream vocabulary is only bribe_add + withdraw_bribes). E0c: enumerate
+  manager-emitted events from ve3 contract source → extend classifier →
+  backfill refunds in the same E2 pass. Spec §5/§7 rewritten to match.
+- **`tla-voting/capture-registry.json` COMMITTED** — 9 entries (manager,
+  controller, escrow, 4 tribute contracts, PD core, flows-hubs placeholder
+  blocked on classifier v2), cursors at hole floor 13,737,811.
+- Still blocking: **E1 archive access (Camron)** + his wBTC/ATOM bribe dates.
+  Next build: E0c contract-source event enumeration + flows classifier v2,
+  then the E2 job itself (transport-agnostic, plug in the endpoint).
+
+---
+
 ## 🔴 2026-07-22 (late) — GAP SURVEY: the hole is the story · SPEC-capture-registry-backfill DRAFTED
 
 - **Full per-token bribe-attribution survey run (committed data):** 12 tokens

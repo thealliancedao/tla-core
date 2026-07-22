@@ -105,15 +105,25 @@ count across these contracts for 17 months is thousands, not millions.
   idempotence pattern). Mock gate on real fixtures (PD txs as permanent
   assertions) before any commit, as always.
 
-## 5. Over-attribution anomaly (separate defect, fix first)
+## 5. Over-attribution: DIAGNOSED (2026-07-22, offline, definitive)
 
-Two tokens attribute MORE than measured flow (114%, 120%). Hypothesis:
-briber attribution sums `bribe_add` without netting `bribe_withdraw`
-(briber entries already carry `withdraw_event_count`), while the state
-ledger nets naturally. E0 task: reproduce per-token from the event stream;
-if confirmed, rollup builder nets withdrawals per briber per token and the
-gate asserts attributed ≤ state flow (+ε) for every token. Independent of
-archive access — do it before the backfill so post-merge gates are trustable.
+The two >100% tokens are **not** a builder bug and **not** withdraw netting.
+Reproduced from committed data: zero withdraw events for either token, state
+harvest complete down to period 96 (spans end e148/e117 — fully inside), and
+all five 86CC placements are distinct txs (no duplication). Remaining and
+confirmed-by-elimination explanation: **state = distributed, events = placed.**
+The manager's per-period totals record what was allocated; a spanning bribe
+whose epochs went partially unclaimed/refunded shrinks state below placement.
+The surplus (681B / 12.9B raw) is placed-but-never-distributed, and the
+rollup already declares it honestly as `event_surplus`.
+
+The stream's entire event vocabulary is `bribe_add` + `withdraw_bribes` —
+**refund/expiry/rollover is a missing event class.** E0 task: read the ve3
+incentive-manager contract source (GitHub) to enumerate every event the
+manager emits, extend the bribe classifier with the refund/rollover types,
+and backfill them in the same E2 pass. Gate changes accordingly: not
+"attributed ≤ state" (placement can legitimately exceed distribution) but
+"`event_surplus` fully reconciled by captured refund/expiry events" per token.
 
 ## 6. Watchdog (ship first, no archive needed)
 
@@ -128,7 +138,7 @@ monitored invariant.
 ## 7. Acceptance gates (before the backfill is called done)
 
 - Ledger attribution ≥99% for every token with ≥1,000 units lifetime flow;
-  **no token >100%+ε** (post-§5).
+  every `event_surplus` reconciled by captured refund/expiry events (§5).
 - Votes reconcile: MISMATCH + CHAIN_ONLY → 0 on the next weekly run.
 - Named fixtures found & attributed: PD ×2, Solid `s0yhw0` June CAPA,
   DeFi_Patriot wBTC/ATOM bribes (chain-exact amounts hand-checked vs his
@@ -142,9 +152,11 @@ monitored invariant.
 
 ## 8. Execution order
 
-- **E0 (now, no archive):** §5 anomaly reproduction + rollup netting fix ·
-  §6 watchdog · flows classifier v2 (forward) — all gateable on committed
-  data + walker.
+- **E0 (now, no archive):** §5 DONE (diagnosis) — remaining: refund event
+  class from contract source · §6 watchdog **BUILT & MOCK-GATED 6/6
+  2026-07-22** (reconcile.js patched; POT_WITHOUT_PLACEMENT with
+  never_captured vs no_current_placement_event classes) · flows classifier
+  v2 (forward) · `tla-voting/capture-registry.json` COMMITTED.
 - **E1 (Camron):** pick archive access; drop endpoint in Render env.
 - **E2:** registry job runs (Action or Render one-off; long-running →
   resumable either way), cursors advancing per contract.
