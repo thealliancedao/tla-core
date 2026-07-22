@@ -12,6 +12,35 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## ✅ 2026-07-23 — E0c: unknown-manager-wasm CENSUS shipped (chain-truth over source-hunt)
+
+- **Refund-event discovery redesigned:** the ve3 contract source is not
+  publicly locatable (org pages truncated/robots-blocked, name probes + crates
+  search exhausted — session evidence). Better path shipped instead:
+  **platform-crons/tla-voting `index.js` now censuses every incentive-manager
+  wasm `action` the classifier doesn't process** (known set:
+  `bribe/add_bribe`, `asset/track_bribes_callback`) — per-action counts +
+  first-sample with full attributes into the heartbeat
+  (`unknown_manager_wasm`). One epoch rollover hands us the refund/rollover
+  event's REAL shape from live traffic; every future unknown event class
+  surfaces the same way. Observational only — zero stream events produced,
+  capture cannot be corrupted.
+- **Gates:** binding mock-run parity 115/1 IDENTICAL to unpatched baseline
+  (the 1 failure is PRE-EXISTING fixture drift: "union grew past state-only
+  (205 > 406)" — message reads inverted; investigate before next classifier
+  deploy — new queue item) + targeted census gate 6/6 (unknown counted &
+  sampled once, known skipped, other-contract skipped, tx anchor kept).
+- **Deploy:** replace `platform-crons/tla-voting/index.js`; Render picks it up
+  next forward run. After the next Wednesday epoch rollover, read
+  `tla-voting/events/heartbeat.json → unknown_manager_wasm` — the refund
+  action name + attributes will be sitting there; then: add to
+  BRIBE_ACTION_KEYS/known-set, extend §5 gate, fold into E2 registry pass.
+- [ ] NEW: mock-run fixture drift (the pre-existing 115/1) — fix the union
+  assert or refresh fixtures; gate must be 116/116 before any further
+  classifier deploy beyond this observational patch.
+
+---
+
 ## ✅ 2026-07-22 (night) — E0 EXECUTED: watchdog built & gated · over-attribution DIAGNOSED · registry committed
 
 - **POT_WITHOUT_PLACEMENT watchdog BUILT & MOCK-GATED 6/6** — `reconcile.js`
