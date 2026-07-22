@@ -12,6 +12,53 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## 🔶 2026-07-22 — Portfolio Arc: P&L spec drafted · VP audit resolved · bribe-board findings
+
+- **SPEC-portfolio-pnl DRAFTED (this folder) — awaiting approval.** Phase A is
+  a pure derive from committed data (Action one-off `build-pnl.js`, zero chain
+  access): zap cost basis + lifetime slippage/fee ledger (measured), event
+  timeline, per-wallet coverage bands. Structural findings baked into the
+  phasing: flow events carry NO pool identity and claims carry NO amounts
+  (14,265/14,265 `amount:null`; rewards stream `coins:null` too) — both are
+  classifier enrichments (Phase B, `<<FLOWS CLASSIFIER v1>>`→`v2`,
+  byte-identity discipline) with a ⚠ time-sensitive walker-era re-read
+  (public-node tx retention; recommend: ship enrichment forward soon, fold
+  the backfill re-read into the Phase-2 registry one-pass).
+- **VP audit RESOLVED — no new fix needed; it's the accepted org-only scope.**
+  member-portfolio tile (1.31M) vs banner (1.18M→1.20M) traced: tile =
+  personal-feed `display_voting_power_human` (fixed×10, coincidentally right
+  for all-auto-max wallets), banner = boost-only `current_vp_human`. Canonical
+  Σ(boost+fixed) per lock = 1,310,560.38 verified from raw lock fields.
+  SPEC-vp-definition-fix already SHIPPED org-side 07-14 (org engine total
+  basis, `display_voting_power_human` RETIRED, member-data 1.1.0 canonical);
+  the page still reads retiring personal feeds — that's the documented
+  accepted consequence. Queue: **org positions-capture migration** (org
+  successor to adao-positions/tla-participants on the patched org engine, full
+  portfolio shape: locks/LP/rewards/prices — member-data 1.1.0 covers VP only)
+  → repoint member-portfolio.html. Optional interim: page-side Σ(raw
+  boost+fixed) transform, zero old-repo investment.
+- **DeFi_Patriot bribes "$262.82" EXPLAINED — two independent known causes:**
+  (1) capture hole 2025-01-08→2026-06-14 (rollup claim_coverage documents it;
+  Phase-2/archive backfill queued); (2) CoinGecko CAPA price hole **May-2024→
+  Aug/Sep-2025** (verified across the whole price-history archive: CAPA priced
+  2023-10→2024-04, dark, resumes 2025-08/09; SOLID starts 2025-09). His 110K
+  CAPA (epochs 109/112) is captured but $0 at placement; only the SOLID
+  bribes (e193/194) price. Same hole = the whole answer to "Solid Protocol
+  unpriced" (all 11 events in it). Rollup already carries `usd_at_build`
+  (him: $379.45, Solid: $568.04).
+- **Bribe-board polish queue (org data, site-only unless noted):**
+  1. [ ] "at today's prices" fallback: board shows `usd_at_build` (clearly
+     marked) when `usd_at_placement` is 0/unpriced — honest, no fake history.
+  2. [ ] Tooltip on the four "TLA gauge tribute contract" entries: protocol
+     plumbing (take-rate/ASTRO recyclers firing every epoch), not people.
+  3. [ ] Per-briber click-through modal: bribe timeline + USD-per-epoch chart
+     — data already in rollup `bribers[].by_epoch`, zero capture work.
+  4. [ ] (own spec, if wanted) CAPA placement-price backfill for the hole,
+     derived from on-chain Astroport pool reserves — estimate-class, so it
+     would be labeled as derived, per pricing doctrine.
+
+---
+
 ## ✅ 2026-07-20/21 — SITE GO-LIVE · GitHub-outage health check · votion-positions v1.1
 
 - **GO-LIVE (aDAO-links-site):** test.html → **tla-stats.html** (nav was built
