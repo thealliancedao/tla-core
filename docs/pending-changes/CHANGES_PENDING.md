@@ -14,8 +14,12 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ## 🔶 2026-07-22 — Portfolio Arc: P&L spec drafted · VP audit resolved · bribe-board findings
 
-- **SPEC-portfolio-pnl DRAFTED (this folder) — awaiting approval.** Phase A is
-  a pure derive from committed data (Action one-off `build-pnl.js`, zero chain
+- **SPEC-portfolio-pnl DRAFTED + Phase A BUILT & GATED same session (deploy =
+  commit `.github/scripts/tla-flows/build-pnl.js` + `tla-flows-pnl.yml`, then
+  Actions → Run workflow).** Gate on real data: 553 wallets / 36,243 events,
+  fixture wallet hand-reconciled, idempotent, honesty assertions pass; DAO
+  fees $5,727.90 + zap inputs $642,531.39 usd@event; 1,532 null-user claims
+  counted honestly. Phase A is a pure derive from committed data (zero chain
   access): zap cost basis + lifetime slippage/fee ledger (measured), event
   timeline, per-wallet coverage bands. Structural findings baked into the
   phasing: flow events carry NO pool identity and claims carry NO amounts

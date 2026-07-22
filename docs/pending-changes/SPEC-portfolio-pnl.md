@@ -1,6 +1,6 @@
 # SPEC — portfolio-pnl (member historical P&L)
 
-Status: **DRAFT — for approval** · Owner: capture layer (derive) + site (surface)
+Status: **Phase A BUILT & GATED 2026-07-22 — deploy pending commit** · Phases B–D open · Owner: capture layer (derive) + site (surface)
 Home: `tla-core/docs/pending-changes/`
 Evidence session: 2026-07-22 (all input counts below verified against the live
 committed data that day — nothing in this spec is assumed).
@@ -132,3 +132,21 @@ for the classifier + (b) for the backfill, so nothing is walked twice.
 - No bribe income leg (bribes are the VOTER stream — boundary marker in the
   queue stands; can join the waterfall later from tla-voting rollups).
 - No backfilling CAPA/SOLID prices from pool reserves (own spec if wanted).
+
+## 8. Phase A gate evidence (2026-07-22 — real committed data, full run)
+
+- `build-pnl.js` run on the live repo state: **553 wallets, 36,243 events**
+  (month files are truth; index counts recorded alongside for audit).
+- Fixture `terra1hr8…ulw`: 153 deposits / 56 withdraws / 59 claims,
+  first event 2024-09-01, both eras flagged; zap inputs LUNA-dominant,
+  $2,112 usd@event; hand-reconciled one raw 2024-09-01 zap leg (external
+  input detection + spread valued at that day's LUNA price) — exact.
+- Idempotence: two consecutive runs byte-identical with `builtAt` stripped.
+- Honesty assertions all pass; **1,532 claims carry `user:null`** (classifier
+  v1 unattributed) — counted in `sources.null_user_events`, never dropped
+  silently. Unpriced legs: 2,245 inputs / 13,749 fees (2024-era tokens absent
+  from price-history + non-pool historical denoms) — the per-denom worklist
+  is emitted in `pricing_meta.unknown_denoms`; WHALE-class tokens stay
+  unpriced by doctrine.
+- DAO-wide (usd@event): fees **$5,727.90**, zap inputs **$642,531.39**,
+  claims recorded (unvalued) 12,733.
