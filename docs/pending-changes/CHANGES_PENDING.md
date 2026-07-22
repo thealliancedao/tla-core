@@ -12,6 +12,52 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## ✅ 2026-07-20/21 — SITE GO-LIVE · GitHub-outage health check · votion-positions v1.1
+
+- **GO-LIVE (aDAO-links-site):** test.html → **tla-stats.html** (nav was built
+  with data-page="tla-stats"), test2.html → **member-portfolio.html**; prior
+  stats page preserved as tla-stats-legacy.html (holds the Epoch Bribes
+  all-time deep-dive pending re-home). Boards: chunked expanders (top 5 →
+  +10/click) on all seven; OG/Newcomers tiebreak = smallest held lock token
+  id; Top Bribers banner is MEASURED from bribe_ledger (LUNA attributed
+  share — auto-updates on rollup rebuild). Vercel page views were already
+  site-wide; custom events added (board_expand, bribe_board_mode,
+  portfolio_view/save — surface on Pro). Details: website-adao-core
+  tla-log.md Rev 5.2–5.4.
+- **Sunday rollup rebuild VERIFIED (07-20 02:09):** 2,837 attributed bribe
+  events (was 173), 17 bribers, wallets.json labels live on the board. LUNA
+  attributed share correctly still ~1% — the recovered tributes bribe in
+  ASTRO/pool tokens; PD's 72,676 LUNA stays honestly unattributed (both PD
+  txs sit in capture gaps: prop 247 pre-forward-capture, prop 250 in the
+  21.81–21.91M prune window) until the registry backfill or PD's next bribe.
+- **2026-07-20 GitHub API outage (~00:00–01:00 UTC):** 503s at the publish
+  step killed 10 crons in one hour — capture succeeded everywhere, only the
+  final PUT died. Hourly crons self-healed; address-catalog + adao-positions
+  re-run manually. HARDENING QUEUED: 3-attempt backoff retry on GitHub 5xx
+  in the shared publish helpers (would have turned ten failure emails into
+  zero). Corrected diagnosis on the volume tile: the astroport epoch-roller
+  was HEALTHY all along — the page-side epoch-boundary fallback was missing
+  on the NEW stats page (fixed in go-live).
+- **votion-positions v1.1.0 SHIPPED & LIVE-VERIFIED (cron-scripts repo):**
+  tx_search discovery ran on public-node ~2–3wk tx retention → historical
+  depositors invisible while `complete:true` asserted. Fix: org
+  address-catalog ∪ deposit-events candidate universe, one bank/balances
+  sweep (all 6 vdenoms/call), MEASURED completeness (supply_coverage_pct),
+  real total_tvl_usd + discovered_holders_usd, schema 2 + discovery meta.
+  Gate 14/14 on the Eris fixture; first run: 18 holders (was 2), TVL
+  $35,105. The catalog-sweep design is what org-votion-positions inherits
+  at migration. Member-portfolio Votion card live with coverage honesty
+  guard ("absence isn't proof of absence" below 90%).
+- **Portfolio Arc — REMAINING QUEUE:** (1) VP model audit — tile 1.31M vs
+  banner 1.18M→1.20M on one screen; (2) APR convention + price-source audit
+  (Eris arbLUNA ~$0.12 vs our hub-ratio ~$0.055); (3) SPEC-portfolio-pnl
+  (flows × price-history join — both feeds exist); (4) design pass. Plus:
+  SPEC-landing-pulse, 5xx retry hardening, old/new cron-pair retirement
+  ledger (address-catalog, nft-inventory×3, votion pair, astroport-snapshot
+  vs org-dex-data — retire after duty ports per parallel-run doctrine).
+
+---
+
 ## ✅ 2026-07-18 — v6.1 BUILT & GATED: governance-executed bribes captured · FCD re-derive READY
 
 Every line verified against real chainscope pastes or a full local run this session.
