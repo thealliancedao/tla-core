@@ -185,14 +185,18 @@ function buildPotWatchdog(bribesChain, bribeEvents) {
         return { status: 'skipped — bribes probe unavailable', alerts: [] };
     }
     const active = scanActivePotDenoms(bribesChain, new Map());
-    // assumed current epoch = the furthest epoch any captured event references;
-    // declared in the report so the assumption is auditable, never silent.
+    // assumed current epoch = the furthest epoch any captured placement STARTED
+    // at; declared in the report so the assumption is auditable, never silent.
+    // (First live run 2026-07-22 taught us max epoch_END overshoots: one
+    // forward-spanning bribe to e200 made every single-epoch e195 pot look
+    // stale. Placements start at-or-near the current epoch; spans reach ahead.)
     let assumedCur = null;
     const byDenom = new Map();   // denom -> { adds, max_span_end }
     for (const ev of bribeEvents) {
         if (ev.type !== 'bribe_add') continue;
+        const start = ev.epoch_start ?? null;
         const end = ev.epoch_end ?? ev.epoch_start ?? null;
-        if (end != null && (assumedCur == null || end > assumedCur)) assumedCur = end;
+        if (start != null && (assumedCur == null || start > assumedCur)) assumedCur = start;
         for (const c of ev.coins || []) {
             if (!c?.denom) continue;
             const d = (byDenom.get(c.denom) || { adds: 0, max_span_end: null });
