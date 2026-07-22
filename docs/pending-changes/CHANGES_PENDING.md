@@ -12,6 +12,27 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## ✅ 2026-07-23 — Watchdog LIVE: first report analyzed · reconcile un-broke · calibration fix
+
+- **Reconcile Action was silently dead since the monthly restructure** (it read
+  pre-restructure `*-events.json` consolidated files — ENOENT; the committed
+  reconciliation.json was stale). FIXED: `readEvents` consolidates the monthly
+  layout in-process (height-sorted, legacy fallback kept). First fresh run
+  2026-07-22T23:21: votes 728 MATCH / 8 MISMATCH / 27 CHAIN_ONLY (94.92%) —
+  confirms vote losses fresh; locks Δ 0.0000% perfect.
+- **First live pot_watchdog report — every alert dispositioned:** CAPA 300K
+  (his 3×100K exactly), USDC, LUNA(span e147) = clean hole signatures ✓.
+  ASTRO flagged = CALIBRATION ARTIFACT (assumed_current used max epoch_END;
+  one e193→e200 spanning bribe overshot it, staling single-epoch e195 pots) —
+  FIXED: max epoch_START, mock re-gated 4/4, ASTRO clears next run.
+  `ibc/4B44…3961` never_captured 36K live: INSPECTED — state flow starts
+  p154 (deep hole) → hole-era first placement spanning forward; walker
+  exonerated; E2 recovers payer; watchdog keeps watching for post-e195 pots.
+- Deploy: replace `.github/scripts/tla-voting/reconcile.js` (this batch),
+  re-run workflow → expected: 4 alerts, all hole-dispositioned, ASTRO covered.
+
+---
+
 ## ✅ 2026-07-23 — E0c: unknown-manager-wasm CENSUS shipped (chain-truth over source-hunt)
 
 - **Refund-event discovery redesigned:** the ve3 contract source is not
