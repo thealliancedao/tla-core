@@ -40,44 +40,94 @@ function fail(m) { console.error('INVARIANT FAIL: ' + m); process.exit(1); }
 const assert = (c, m) => { if (!c) fail(m); };
 
 // =============================================================================
-// SHARED CLASSIFIER — this section must stay BYTE-IDENTICAL with the copy in
-// tla-core/.github/scripts/tla-flows/ (the flows-fill derive). Any drift must
-// show in a plain diff. Marker: <<FLOWS CLASSIFIER v1>>
+// SHARED CLASSIFIER — this section must stay BYTE-IDENTICAL with the copies in
+// tla-core/.github/scripts/tla-flows/ (flows-fill + retained-gap-fill derives).
+// Any drift must show in a plain diff. Marker: <<FLOWS CLASSIFIER v2>>
 // =============================================================================
-// Rev A.3 parser, verified 42/42 on a live compounder tx_search dump + 8
-// hand-captured chainscope variations. Routes on the FIRST flow action so a
-// user-facing flow keeps the real user even when the compounder cascades a
-// second action under its own address. code!==0 txs are skipped (failed txs
-// appear in FCD-sourced fills and on some SDK indexers).
+// v2 (2026-07-23, SPEC-portfolio-pnl Phase B / SPEC-capture-registry-backfill):
+// additive on the Rev A.3 v1 parser — every v1 field is emitted unchanged.
+// New, all evidenced by the 55,199-tx FCD fixture census (attrs present on
+// 100% of their action class — nothing inferred):
+//   • pool identity: `pool` + `gauge` on deposits/withdraws — amp stake carries
+//     `asset`+`gauge`; bucket stake/unstake carry `asset` (gauge from the
+//     bucket contract); amp unstake carries it inside `returned` (v1 threw the
+//     prefix away). Missing → null, never guessed.
+//   • claims measured: `asset/claim_rewards` emits ONE event PER pool with
+//     `user`+`assets`+`reward_amount` → per-pool `claims` array; compounder
+//     vault cycles emit `ca/claim_rewards_callback` with `claimed` as
+//     denom:amount → `claimed_coins`, mechanism 'amplified_vault', user null
+//     BY MEANING (the vault claims for everyone; not a wallet flow).
+//   • claim detection tightened to watched shapes — v1's loose /claim/i also
+//     matched foreign airdrop/vesting `claim` events with no user attr (the
+//     1,532 null-user claims in the Phase-A rollup). Foreign claims no longer
+//     classify; a legacy /claim/i fallback remains for WATCHED contracts only.
+// `amount` stays null + `amount_unit` 'rewards' on claims (v1 consumer compat);
+// analysis reads `claims`/`claimed_coins`.
 
 function flowsAttrs(ev) { const o = {}; for (const a of (ev.attributes || [])) if (!(a.key in o)) o[a.key] = a.value; return o; }
 function flowsEventsOf(txr) {
   if (Array.isArray(txr.events) && txr.events.length) return txr.events;
   const out = []; for (const log of (txr.logs || [])) for (const e of (log.events || [])) out.push(e); return out;
 }
+function flowsGaugeOf(label) {
+  return (typeof label === 'string' && label.startsWith('staking-')) ? label.slice(8) : null;
+}
+function flowsParseReturned(returned) {
+  // 'cw20:terra1…:AMOUNT' | 'native:ibc/…:AMOUNT' → { pool, amount }
+  const s = String(returned || ''); const i = s.lastIndexOf(':');
+  if (i <= 0) return { pool: null, amount: s || null };
+  return { pool: s.slice(0, i) || null, amount: s.slice(i + 1) || null };
+}
 function classifyFlowTx(txr) {
   if (Number(txr.code || 0) !== 0) return null;
-  const wasm = flowsEventsOf(txr).filter(e => e.type === 'wasm').map(flowsAttrs);
+  const wasmRaw = flowsEventsOf(txr).filter(e => e.type === 'wasm');
+  const wasm = wasmRaw.map(flowsAttrs);
   let flow = null;
   for (const w of wasm) {
     const act = w.action;
-    if (act === 'asset-compounding/stake')        flow = { type: 'deposit',  mechanism: 'amplified',     user: w.user, amount: w.bond_share_adjusted || w.bond_share, unit: 'amplp' };
-    else if (act === 'asset-compounding/unstake') flow = { type: 'withdraw', mechanism: 'amplified',     user: w.user, amount: (w.returned || '').split(':').pop(), unit: 'lp' };
-    else if (act === 'asset/stake')               flow = { type: 'deposit',  mechanism: 'non_amplified', user: w.user, amount: w.share, unit: 'shares' };
-    else if (act === 'asset/unstake')             flow = { type: 'withdraw', mechanism: 'non_amplified', user: w.user, amount: w.share, unit: 'shares' };
+    if (act === 'asset-compounding/stake')        flow = { type: 'deposit',  mechanism: 'amplified',     user: w.user, amount: w.bond_share_adjusted || w.bond_share, unit: 'amplp', pool: w.asset || null, gauge: w.gauge || null };
+    else if (act === 'asset-compounding/unstake') { const r = flowsParseReturned(w.returned); flow = { type: 'withdraw', mechanism: 'amplified', user: w.user, amount: r.amount, unit: 'lp', pool: r.pool, gauge: null }; }
+    else if (act === 'asset/stake')               flow = { type: 'deposit',  mechanism: 'non_amplified', user: w.user, amount: w.share, unit: 'shares', pool: w.asset || null, gauge: flowsGaugeOf(WATCH[w._contract_address]) };
+    else if (act === 'asset/unstake')             flow = { type: 'withdraw', mechanism: 'non_amplified', user: w.user, amount: w.share, unit: 'shares', pool: w.asset || null, gauge: flowsGaugeOf(WATCH[w._contract_address]) };
     if (flow) break;
   }
+  let claims = null, claimedCoins = null;
   if (!flow) {
-    const c = wasm.find(w => /claim/i.test(w.action || ''));
-    if (c) flow = { type: 'claim', mechanism: null, user: c.user || c.sender, amount: null, unit: 'rewards' };
+    // measured wallet claims: one asset/claim_rewards event per pool, on a
+    // WATCHED bucket contract, user attr required (census: 100% carry it)
+    const cr = wasm.filter(w => w.action === 'asset/claim_rewards' && WATCH[w._contract_address] && w.user);
+    if (cr.length) {
+      claims = cr.map(w => ({ pool: w.assets || null, reward_amount: w.reward_amount || null, gauge: flowsGaugeOf(WATCH[w._contract_address]) }));
+      flow = { type: 'claim', mechanism: 'non_amplified', user: cr[0].user, amount: null, unit: 'rewards', pool: null, gauge: null };
+    }
+  }
+  if (!flow) {
+    // compounder vault claim cycle: claimed coins are measured; the vault
+    // claims for all depositors, so this is a protocol flow — user null BY
+    // MEANING, mechanism says so.
+    const cb = wasm.filter(w => w.action === 'ca/claim_rewards_callback' && w.claimed);
+    if (cb.length) {
+      claimedCoins = cb.map(w => { const r = flowsParseReturned(w.claimed); return { denom: r.pool, amount: r.amount }; });
+      flow = { type: 'claim', mechanism: 'amplified_vault', user: null, amount: null, unit: 'rewards', pool: null, gauge: null };
+    }
+  }
+  if (!flow) {
+    // legacy fallback — WATCHED contracts only (v2 tightening: foreign
+    // airdrop/vesting `claim` events no longer classify)
+    const c = wasm.find(w => /claim/i.test(w.action || '') && WATCH[w._contract_address]);
+    if (c) flow = { type: 'claim', mechanism: null, user: c.user || c.sender || null, amount: null, unit: 'rewards', pool: null, gauge: null };
   }
   if (!flow) return null;
   const viaZap = wasm.some(w => w.action === 'zapper/create_lp' || w.action === 'zapper/withdraw_lp');
   const cost = flowsExtractCost(wasm);
-  return { schemaVersion: 1, txhash: txr.txhash, height: Number(txr.height), timestamp: txr.timestamp,
+  const rec = { schemaVersion: 2, txhash: txr.txhash, height: Number(txr.height), timestamp: txr.timestamp,
            type: flow.type, mechanism: flow.mechanism, via_zap: viaZap, user: flow.user || null,
            amount: flow.amount || null, amount_unit: flow.unit, cost,
+           pool: flow.pool || null, gauge: flow.gauge || null,
            raw_actions: [...new Set(wasm.map(w => w.action).filter(Boolean))] };
+  if (claims) rec.claims = claims;
+  if (claimedCoins) rec.claimed_coins = claimedCoins;
+  return rec;
 }
 // Entry/exit cost: collect EVERY swap leg (a non-LUNA exit is multi-hop) plus
 // any provide_liquidity slippage (imbalanced "Tokens" deposits). Cross-denom
@@ -96,7 +146,7 @@ function flowsExtractCost(wasm) {
   if (!swaps.length && provide_slippage_pct == null) return null;
   return { swaps, provide_slippage_pct };
 }
-// ============================================================== <<FLOWS CLASSIFIER v1>> END
+// ============================================================== <<FLOWS CLASSIFIER v2>> END
 
 // ---------------------------------------------------------------- load + classify (all inputs committed in-repo)
 const seen = new Set();
@@ -161,7 +211,15 @@ function mergeMonth(existing, incoming) {
   const byHash = new Map();
   for (const r of existing) byHash.set(r.txhash, r);
   let added = 0;
-  for (const r of incoming) if (!byHash.has(r.txhash)) { byHash.set(r.txhash, r); added++; }
+  let upgraded = 0;
+  for (const r of incoming) {
+    const prev = byHash.get(r.txhash);
+    if (!prev) { byHash.set(r.txhash, r); added++; }
+    // schema-upgrade merge (v2 re-fill, 2026-07-23): a HIGHER-schema record for
+    // a known tx replaces the old one in place (same tx, richer fields); lower
+    // or equal never overwrites — re-runs stay idempotent, count never shrinks.
+    else if (Number(r.schemaVersion || 1) > Number(prev.schemaVersion || 1)) { byHash.set(r.txhash, r); upgraded++; }
+  }
   return { merged: [...byHash.values()].sort((a, b) => a.height - b.height || (a.txhash < b.txhash ? -1 : 1)), added };
 }
 
@@ -185,12 +243,12 @@ function mergeMonth(existing, incoming) {
     const repoPath = `${OUT_DIR}/${mk}.json`;
     const { data: existing } = await getJson(repoPath);
     const base = Array.isArray(existing) ? existing : [];
-    const { merged, added } = mergeMonth(base, byMonth[mk]);
+    const { merged, added, upgraded } = mergeMonth(base, byMonth[mk]);
     assert(merged.length >= base.length, `never-shrink violated for ${mk}`);
-    if (added === 0) { console.log(`  ${mk}: already filled (${base.length}) — skip`); continue; }
-    await putJson(repoPath, merged, `flows-fill ${mk}: +${added} archive events (${merged.length} total)`);
+    if (added === 0 && !upgraded) { console.log(`  ${mk}: already filled (${base.length}) — skip`); continue; }
+    await putJson(repoPath, merged, `flows-fill ${mk}: +${added} archive events, ${upgraded || 0} upgraded to v2 (${merged.length} total)`);
     published += added;
-    console.log(`  ${mk}: +${added} → ${merged.length}`);
+    console.log(`  ${mk}: +${added} · ↑${upgraded || 0} → ${merged.length}`);
   }
   // index merge: read live, add fill counts, union months, min first_date, add the honest gap
   const { data: idx0 } = await getJson(`${OUT_DIR}/index.json`);
