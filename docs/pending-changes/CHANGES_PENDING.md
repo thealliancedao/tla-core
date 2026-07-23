@@ -12,6 +12,25 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## ✅ 2026-07-23 — P&L PHASE B SHIPPED: the yield leg is measured
+
+- **build-pnl.js Phase B** (deploy = commit + Run `tla-flows-pnl` workflow):
+  wallet claims valued as LUNA at claim-day price — reward denom EVIDENCED by
+  the vault-claim census (4,484/4,484 native:uluna) and GUARDED at build (any
+  non-LUNA vault denom aborts publish rather than mispricing). Per-wallet
+  `claimed_yield` + `by_pool` (deposit/withdraw/claim counts + claim USD per
+  pool); claims block reconciles records vs pool-entries exactly
+  (measured_records + v1_unmeasured == count, asserted per wallet).
+- **Gate on real committed data:** DAO claimed yield **$567,984 / 1,197,236
+  LUNA** valued; fixture DeFi_Patriot: 56/59 records measured → 147 pool
+  entries → **1,469.36 LUNA ≈ $575.15**; idempotent (2 runs byte-identical
+  sans builtAt); v1-era remainder honestly labeled until E2.
+- **member-portfolio.html claims line upgraded** (data-layer, 1-line block):
+  shows measured yield + unmeasured residual when Phase-B fields present;
+  v1-honest fallback otherwise (safe against a pre-rebuild rollup).
+
+---
+
 ## ✅ 2026-07-23 — FCD ERA UPGRADED TO v2 ON MAIN (↑31,748) — verified
 
 - **Re-fill EXECUTED & BYTE-VERIFIED:** ↑204/↑4,879/↑6,028/↑8,228/↑10,155/
