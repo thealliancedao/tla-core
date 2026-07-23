@@ -27,13 +27,30 @@ const https = require('https');
 
 const ROOT = process.cwd();
 const LABELS = ['lp-compounder', 'lp-stable', 'lp-project', 'lp-bluechip', 'lp-single'];
+// Host contract for the shared <<FLOWS CLASSIFIER v2>> block: WATCH maps the
+// six flow contracts to labels (buckets as 'staking-<gauge>' — flowsGaugeOf
+// derives the gauge from that prefix). Values mirror platform-crons
+// config/contracts.js (chain-verified) and retained-gap-fill's copy.
+const WATCH = {
+  'terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx': 'compounder',
+  'terra1v399cx9drllm70wxfsgvfe694tdsd9x96p9ha36w7muffe4znlusqswspq': 'staking-stable',
+  'terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa': 'staking-project',
+  'terra14mmvqn0kthw6sre75vku263lafn5655mkjdejqjedjga4cw0qx2qlf4arv': 'staking-bluechip',
+  'terra1qdz5qgafx88kp5mf6m2tah8742g4u5g2cek0m3jrgssexexk7g4qw6e23k': 'staking-single',
+  'terra1qdjsxsv96aagrdxz83gwtjk8qvf2mrg4y8y3dqjxg556lm79pg5qdgmaxl': 'zapper',
+};
 const OUT_DIR = 'tla-flows/events';
 const GITHUB_REPO = process.env.GITHUB_REPO || 'thealliancedao/tla-core';
 const GITHUB_BRANCH = process.env.GITHUB_BRANCH || 'main';
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
 const DRY = process.argv[2] === '--dry-run' ? (process.argv[3] || '/tmp/flows-fill-dry') : null;
 
-const EXPECT = { total: 32615, deposit: 15727, withdraw: 4499, claim: 12389 };
+// CLASSIFIER v2 expectations (2026-07-23): deposits/withdraws unchanged from
+// v1; claims 12,389 → 11,522 because v2 correctly rejects the 867 tribute-
+// contract take-rate cycles v1 misclassified as member claims (full-corpus
+// gate: every drop verified tribute plumbing; those txs live in the voting
+// stream as bribe events). v1 totals were 32,615 / claim 12,389.
+const EXPECT = { total: 31748, deposit: 15727, withdraw: 4499, claim: 11522 };
 const SANITY_CEILING = 14000000; // ~2025-01-25 — no archive event may exceed this
 
 function fail(m) { console.error('INVARIANT FAIL: ' + m); process.exit(1); }
