@@ -123,6 +123,8 @@ function newWallet() {
         lp_amounts: { deposit_shares_raw: '0', deposit_lp_raw: '0', withdraw_lp_raw: '0', withdraw_shares_raw: '0' },
         deposits_with_cost: 0,
         claims: { count: 0, valued: false, reason: 'amounts not captured (classifier v1) — Phase B enrichment' },
+        claimed_yield: { luna_display: 0, usd_at_event: 0, valued_events: 0, unvalued_price_events: 0, v1_unmeasured_events: 0, measured_records: 0 },
+        by_pool: {},   // pool -> {deposits, withdraws, claims, claim_usd_at_event}
     };
 }
 
@@ -145,6 +147,7 @@ function main() {
         unpriced_input_legs: 0, unpriced_fee_legs: 0,
         unknown_denoms: {},
     };
+    meta.vault_claim_denoms = {};
     const wallets = new Map();
     const W = (addr) => { if (!wallets.has(addr)) wallets.set(addr, newWallet()); return wallets.get(addr); };
 
@@ -200,8 +203,38 @@ function main() {
             if (!w.first_by_type[type] || e.timestamp < w.first_by_type[type]) w.first_by_type[type] = e.timestamp;
             if (!w.last_by_type[type] || e.timestamp > w.last_by_type[type]) w.last_by_type[type] = e.timestamp;
             if (e.height <= fcdEndHeight) w.eras.fcd = true; else w.eras.walker = true;
+            for (const cc of (e.claimed_coins || [])) meta.vault_claim_denoms[cc.denom] = (meta.vault_claim_denoms[cc.denom] || 0) + 1;
 
-            if (type === 'claim') { w.claims.count++; continue; }
+            if (type === 'claim') {
+                w.claims.count++;
+                if (Array.isArray(e.claims) && e.claims.length) {
+                    w.claimed_yield.measured_records++;
+                    // Phase B: wallet claim rewards are LUNA — evidenced by the
+                    // vault claim callbacks, which name the denom explicitly
+                    // (build-time census below guards this; a non-LUNA denom
+                    // flips valuation off rather than mispricing).
+                    for (const cl of e.claims) {
+                        const amt = Number(cl.reward_amount || 0) / 1e6;
+                        if (!(amt > 0)) continue;
+                        w.claimed_yield.luna_display += amt;
+                        const p = priceAt(prices, 'LUNA', date, meta);
+                        if (p) { w.claimed_yield.usd_at_event += amt * p.usd; w.claimed_yield.valued_events++; }
+                        else { w.claimed_yield.unvalued_price_events++; meta.unpriced_input_legs++; }
+                        if (cl.pool) {
+                            const bp = (w.by_pool[cl.pool] ||= { deposits: 0, withdraws: 0, claims: 0, claim_usd_at_event: 0 });
+                            bp.claims++;
+                            if (p) bp.claim_usd_at_event += amt * p.usd;
+                        }
+                    }
+                } else {
+                    w.claimed_yield.v1_unmeasured_events++;
+                }
+                continue;
+            }
+            if (e.pool) {
+                const bp = (w.by_pool[e.pool] ||= { deposits: 0, withdraws: 0, claims: 0, claim_usd_at_event: 0 });
+                if (type === 'deposit') bp.deposits++; else if (type === 'withdraw') bp.withdraws++;
+            }
 
             // LP amounts recorded raw, per unit — NOT valued in Phase A
             if (e.amount) {
@@ -268,14 +301,29 @@ function main() {
             fees_unknown_legs: w.fees_unknown_legs,
             fees_usd_at_event: Object.values(w.fees).reduce((s, x) => s + x.usd_at_event, 0),
             lp_amounts: w.lp_amounts,
-            claims: { ...w.claims },
+            claims: {
+                count: w.claims.count,
+                measured_records: w.claimed_yield.measured_records,
+                v1_unmeasured_records: w.claimed_yield.v1_unmeasured_events,
+                pool_claim_entries: w.claimed_yield.valued_events + w.claimed_yield.unvalued_price_events,
+                note: w.claimed_yield.v1_unmeasured_events > 0 ? 'v1-era claims carry no amounts until the E2 re-derive' : undefined,
+            },
+            claimed_yield: {
+                luna_display: w.claimed_yield.luna_display,
+                usd_at_event: w.claimed_yield.usd_at_event,
+                valued_events: w.claimed_yield.valued_events,
+                unvalued_price_events: w.claimed_yield.unvalued_price_events,
+            },
+            by_pool: sortObj(w.by_pool),
         }));
 
     const totals = {
         wallets: walletRows.length,
         fees_usd_at_event: walletRows.reduce((s, r) => s + r.fees_usd_at_event, 0),
         zap_input_usd_at_event: walletRows.reduce((s, r) => s + r.zap_input_usd_at_event, 0),
-        claims_recorded_unvalued: walletRows.reduce((s, r) => s + r.claims.count, 0),
+        claims_recorded: walletRows.reduce((s, r) => s + r.claims.count, 0),
+        claimed_yield_usd_at_event: walletRows.reduce((s, r) => s + r.claimed_yield.usd_at_event, 0),
+        claimed_yield_luna: walletRows.reduce((s, r) => s + r.claimed_yield.luna_display, 0),
     };
 
     // ── Honesty assertions (abort — never publish inconsistent data) ────────
@@ -284,19 +332,23 @@ function main() {
         if (sum !== meta.by_type[t]) fail(`${t} reconcile ${sum} != ${meta.by_type[t]}`);
     }
     const claimSum = walletRows.reduce((s, r) => s + r.counts.claim, 0);
-    if (totals.claims_recorded_unvalued !== claimSum) fail('claims total mismatch');
+    if (totals.claims_recorded !== claimSum) fail('claims total mismatch');
+    for (const r of walletRows) if (r.claims.measured_records + r.claims.v1_unmeasured_records !== r.claims.count)
+        fail(`claim record reconcile ${r.address}: ${r.claims.measured_records}+${r.claims.v1_unmeasured_records} != ${r.claims.count}`);
+    const vd = Object.keys(meta.vault_claim_denoms || {});
+    if (vd.some(x => x !== 'native:uluna')) fail(`reward-denom guard: non-LUNA vault claim denom observed (${vd.join(',')}) — valuation method invalid, refusing to publish`);
 
     const builtAt = new Date().toISOString();
     const rollup = {
         schemaVersion: 1,
         spec: 'docs/pending-changes/SPEC-portfolio-pnl.md (Phase A)',
         builtAt,
-        phase: 'A',
+        phase: 'B',
         method: {
             valuation: `usd at event UTC date from price-history daily avg; fallback nearest PRIOR day <= ${PRICE_FALLBACK_DAYS}d (counted); never forward, never build-time prices`,
             zap_inputs: 'deposit cost.swaps offer assets that are no leg ask_asset (external inputs); lower bound — direct (non-swap) provide legs are not visible to classifier v1',
             fees: 'per swap leg: spread + commission + maker, denominated in ask asset',
-            claims: 'occurrence only — classifier v1 carries no amounts (Phase B)',
+            claims: 'v2 claim arrays valued as LUNA at claim-day price — reward denom evidenced by the vault claim callback census (guarded at build: any non-LUNA vault denom disables valuation rather than mispricing); v1-era claims stay unmeasured until the E2 re-derive',
             lp_amounts: 'recorded raw per unit, unvalued in Phase A',
         },
         sources: {
@@ -333,7 +385,7 @@ function main() {
     console.log(`OK: ${totals.wallets} wallets, ${meta.events_read} events`);
     console.log(`  DAO-wide fees (usd@event):      ${totals.fees_usd_at_event.toFixed(2)}`);
     console.log(`  DAO-wide zap inputs (usd@event): ${totals.zap_input_usd_at_event.toFixed(2)}`);
-    console.log(`  claims recorded (unvalued):      ${totals.claims_recorded_unvalued}`);
+    console.log(`  claims recorded:                 ${totals.claims_recorded} (yield valued: ${totals.claimed_yield_luna.toFixed(0)} LUNA ≈ ${totals.claimed_yield_usd_at_event.toFixed(2)} usd@event)`);
     console.log(`  unpriced legs: inputs=${meta.unpriced_input_legs} fees=${meta.unpriced_fee_legs} fallback=${meta.price_fallback_legs}`);
 }
 
