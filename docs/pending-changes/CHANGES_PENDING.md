@@ -12,6 +12,34 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## ✅ 2026-07-23 — FCD ERA UPGRADED TO v2 ON MAIN (↑31,748) — verified
+
+- **Re-fill EXECUTED & BYTE-VERIFIED:** ↑204/↑4,879/↑6,028/↑8,228/↑10,155/
+  ↑2,254 across 2024/08→2025/01; committed months confirmed: 100% of v2
+  deposits/withdraws carry `pool` (+`gauge`), claim arrays live with per-pool
+  `reward_amount`, vault cycles carry `claimed_coins`, ZERO v1-field
+  integrity regressions. Fixture: DeFi_Patriot's 2024-09-01 deposit pooled;
+  2024-09-03 claim shows per-pool amounts. Month totals unchanged
+  (upgrade-in-place; the non-↑ remainder = gap-fill-era records untouched,
+  correct).
+- **Three latent defects flushed & fixed on the way (each with the general
+  fix, counted anchors, and a real-data gate — logged for the pattern):**
+  (1) publish guards in all 3 homes only checked `added` → now
+  `added||upgraded`; (2) flows-fill lacked the classifier's host `WATCH` map
+  (only home without it; now defined + documented as the shared block's host
+  contract; fill scripts are now EXECUTED in gates, not just syntax-checked);
+  (3) flows-fill's mergeMonth return omitted `upgraded` (replace pattern
+  unasserted — the exact `count==1` doctrine violation, thrice tonight;
+  real-live-month merge gate added: 296 base + 204 incoming → ↑204).
+- **EXPECT invariant updated to v2 truth** (31,748 / claims 11,522; the −867
+  = tribute plumbing correctly excluded, verified per-drop).
+- **Remaining for full v2 coverage:** walker era Jun-16→v2-deploy stays v1 —
+  E2 re-derives it (registry `e2_note`); forward capture is v2 from deploy.
+  Phase-B P&L rollup legs (claims valuation, per-pool cost basis) now have
+  their data — next build session.
+
+---
+
 ## ✅ 2026-07-23 — SCHEMA-UPGRADE MERGE shipped (v2 re-fill unblocked) · corrected re-fill path
 
 - **retained-gap-fill "nothing to do" diagnosed:** its cursor says the window
