@@ -12,6 +12,25 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## ✅ 2026-07-23 — SCHEMA-UPGRADE MERGE shipped (v2 re-fill unblocked) · corrected re-fill path
+
+- **retained-gap-fill "nothing to do" diagnosed:** its cursor says the window
+  is harvested — at v1. AND `mergeMonth` was skip-on-txhash, so ANY re-fill
+  would add 0 and leave v1 in place. **FIXED in all three classifier homes:**
+  higher `schemaVersion` for a known tx replaces in place; lower/equal never
+  overwrites (idempotent, never-shrink preserved); `upgraded` count returned.
+  Gates: merge unit 5/5 · full flows mock suite 38 ✅ / 0 ❌.
+- **Corrected re-fill path:** (1) commit this batch; (2) dispatch the FCD
+  flows fill workflow (`tla-flows-fill`) — the frozen archive re-derives the
+  whole FCD era at v2 and the upgrade merge swaps records in place (expect a
+  large `upgraded` count, `added` ≈ 0); (3) the walker-era v1 stretch
+  (Jun-16 → v2 deploy) is NOT Action-re-walkable (block retention) — folded
+  into E2 instead: registry flows entries now carry an `e2_note` extending
+  their walk to the v2-deploy head. retained-gap-fill itself needs no state
+  surgery — its deepen probe duty is unchanged.
+
+---
+
 ## ✅ 2026-07-23 — FLOWS CLASSIFIER v2 SHIPPED (pool identity + claim amounts) · tribute=bucket identity resolved
 
 - **`<<FLOWS CLASSIFIER v2>>` built, gated, delivered** — installed
