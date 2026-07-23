@@ -105,6 +105,8 @@ function priceAt(prices, symbol, date, meta) {
             if (i > 0) meta.price_fallback_legs++;
             return { usd: day[symbol], date_used: d };
         }
+        const imp = prices.implied && prices.implied.get(`${symbol}|${d}`);
+        if (imp) { meta.implied_price_legs = (meta.implied_price_legs || 0) + 1; return { usd: imp.usd, date_used: d, tier: 'implied_from_swaps' }; }
     }
     return null;
 }
@@ -129,6 +131,45 @@ function newWallet() {
 }
 
 function bigAdd(aStr, bStr) { return (BigInt(aStr) + BigInt(bStr)).toString(); }
+
+// ---- implied-price derivation (Phase B.1) ----------------------------------
+// Tokens in the historical price gaps (CAPA/SOLID CoinGecko hole, ampROAR
+// never listed) appear constantly in our own captured zap swap legs — each leg
+// is an EXECUTED trade with both amounts. Where exactly one side has a
+// price-history quote that day, the other side's implied price falls out.
+// Daily median across all observations; used only as a FALLBACK tier, labeled
+// in meta. WHALE-class tokens stay unpriced by standing doctrine.
+const IMPLIED_EXCLUDE = new Set(['WHALE', 'bWHALE', 'ampWHALE']);
+function buildImpliedPrices(monthFiles, tokenMap, prices, meta) {
+    const obs = new Map(); // 'SYM|date' -> [prices]
+    for (const mf of monthFiles) {
+        for (const e of JSON.parse(fs.readFileSync(mf, 'utf8'))) {
+            const date = (e.timestamp || '').slice(0, 10);
+            const swaps = e.cost && Array.isArray(e.cost.swaps) ? e.cost.swaps : [];
+            for (const sw of swaps) {
+                const off = tokenMap.get(sw.offer_asset), ask = tokenMap.get(sw.ask_asset);
+                if (!off || !ask) continue;
+                const day = prices.days.get(date) || {};
+                const offP = day[off.symbol], askP = day[ask.symbol];
+                const offAmt = Number(sw.offer_amount || 0) / 10 ** off.decimals;
+                const askAmt = Number(sw.return_amount || 0) / 10 ** ask.decimals;
+                if (!(offAmt > 0 && askAmt > 0)) continue;
+                if (typeof offP === 'number' && typeof askP !== 'number' && !IMPLIED_EXCLUDE.has(ask.symbol)) {
+                    (obs.get(`${ask.symbol}|${date}`) || obs.set(`${ask.symbol}|${date}`, []).get(`${ask.symbol}|${date}`)).push(offAmt * offP / askAmt);
+                } else if (typeof askP === 'number' && typeof offP !== 'number' && !IMPLIED_EXCLUDE.has(off.symbol)) {
+                    (obs.get(`${off.symbol}|${date}`) || obs.set(`${off.symbol}|${date}`, []).get(`${off.symbol}|${date}`)).push(askAmt * askP / offAmt);
+                }
+            }
+        }
+    }
+    const implied = new Map(); // 'SYM|date' -> {usd, n}
+    for (const [k, arr] of obs) {
+        arr.sort((x, y) => x - y);
+        implied.set(k, { usd: arr[Math.floor(arr.length / 2)], n: arr.length });
+    }
+    meta.implied_price_points = implied.size;
+    return implied;
+}
 
 function main() {
     const tokenMap = loadTokenMap();
@@ -160,6 +201,8 @@ function main() {
         }
     }
     if (monthFiles.length === 0) fail('no event month files found');
+
+    prices.implied = buildImpliedPrices(monthFiles, tokenMap, prices, meta);
 
     const resolveTok = (denom) => {
         const t = tokenMap.get(denom);
@@ -348,6 +391,7 @@ function main() {
             valuation: `usd at event UTC date from price-history daily avg; fallback nearest PRIOR day <= ${PRICE_FALLBACK_DAYS}d (counted); never forward, never build-time prices`,
             zap_inputs: 'deposit cost.swaps offer assets that are no leg ask_asset (external inputs); lower bound — direct (non-swap) provide legs are not visible to classifier v1',
             fees: 'per swap leg: spread + commission + maker, denominated in ask asset',
+            implied_prices: 'gap tokens (e.g. CAPA/SOLID CoinGecko hole, ampROAR) valued from OUR OWN captured swap executions — daily median of implied prices where the counter-asset has a quote; a labeled derived tier, never applied to WHALE-class (unpriced by doctrine)',
             claims: 'v2 claim arrays valued as LUNA at claim-day price — reward denom evidenced by the vault claim callback census (guarded at build: any non-LUNA vault denom disables valuation rather than mispricing); v1-era claims stay unmeasured until the E2 re-derive',
             lp_amounts: 'recorded raw per unit, unvalued in Phase A',
         },
@@ -363,6 +407,8 @@ function main() {
         },
         pricing_meta: {
             price_fallback_legs: meta.price_fallback_legs,
+            implied_price_points: meta.implied_price_points || 0,
+            implied_price_legs: meta.implied_price_legs || 0,
             unpriced_input_legs: meta.unpriced_input_legs,
             unpriced_fee_legs: meta.unpriced_fee_legs,
             unknown_denoms: sortObj(meta.unknown_denoms),
