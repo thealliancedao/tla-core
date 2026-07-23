@@ -237,7 +237,7 @@ function mergeMonth(existing, incoming) {
     // or equal never overwrites — re-runs stay idempotent, count never shrinks.
     else if (Number(r.schemaVersion || 1) > Number(prev.schemaVersion || 1)) { byHash.set(r.txhash, r); upgraded++; }
   }
-  return { merged: [...byHash.values()].sort((a, b) => a.height - b.height || (a.txhash < b.txhash ? -1 : 1)), added };
+  return { merged: [...byHash.values()].sort((a, b) => a.height - b.height || (a.txhash < b.txhash ? -1 : 1)), added, upgraded };
 }
 
 (async () => {
