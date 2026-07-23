@@ -12,6 +12,49 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ---
 
+## 🔴 2026-07-23 — INCIDENT: flows walker pasted into the tla-voting slot (caught by commit audit)
+
+- **What happened:** during a pencil-paste, a tla-flows `index.js` landed in
+  `platform-crons/tla-voting/index.js`, overwriting the voting walker AND the
+  wasm census. **Voting forward capture down since 2026-07-22 23:02** (~5h;
+  flows unaffected and healthy). No data lost: the walker resumes from its
+  committed cursor (22,031,980) well within block retention IF restored
+  promptly.
+- **Restore shipped (`platform-crons-RESTORE-voting.zip`):**
+  `tla-voting/index.js` = the pre-incident walker + census (census gate 6/6,
+  syntax OK) and `tla-flows/mock-run.js` = scenario-G update (was also missing
+  on main; full flows mock suite ALL GREEN against the live v2 walker).
+  ⚠ Paste each file into its EXACT folder — the incident was a folder mixup.
+- **Post-restore verify:** next hourly voting run → heartbeat capturedAt
+  fresh, cursor advancing, gap window self-healed; then watch
+  `unknown_manager_wasm` appear (the census finally live).
+- Process note: the commit audit (fingerprint check across all repos) caught
+  this within hours — worth running at the end of any heavy paste session.
+
+---
+
+## 🔶 2026-07-23 — SPEC-lp-apr (queued, evidence in hand): the LP APR column omits TLA rewards
+
+- **Diagnosis (Camron's screenshots + dex-data verify):** card shows 5% / —
+  where Eris shows 71.23% base / 100.30% boosted / 68.40% single. The feed's
+  `pool_apr_pct` is DEX-side only (LUNA-ASTRO fee_apr on-chain: 0.85%; the
+  TLA reward emissions — the dominant yield — are absent; single-side pools
+  have no dex APR at all, hence —).
+- **Shipped now:** column relabeled **"Dex APR†"** with a tooltip stating
+  exactly what's excluded — the number no longer implies total yield.
+- **The model to build (all inputs org-side already):** per-pool reward APR =
+  latest-epoch distribution coins (tla-voting distributions harvest) × catalog
+  USD × 52.14 ÷ `staked_in_tla_usd` (snapshot); amplified positions show the
+  boosted figure (amp multiplier), non-amp the base. Conventions to fix in
+  the spec: base-vs-boosted display, TVL denominator, price source + capture
+  time, epoch annualization. **Acceptance fixture: DeFi_Patriot's LUNA-ASTRO
+  must reconcile to Eris's displayed 71.23% / 100.30%, xASTRO to 68.40%**
+  (same-day capture tolerance stated). Also shipped this batch: xASTRO
+  render-time catalog valuation (asterisked, excluded from tiles until the
+  org positions migration) + phase-aware P&L footer.
+
+---
+
 ## ✅ 2026-07-23 — P&L PHASE B SHIPPED: the yield leg is measured
 
 - **build-pnl.js Phase B** (deploy = commit + Run `tla-flows-pnl` workflow):
