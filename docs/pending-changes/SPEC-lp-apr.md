@@ -64,3 +64,30 @@ Compute page-side v1 (all feeds already loaded by member-portfolio) behind a
 `rewardAprFor(pool)` helper; column becomes "APR" again with fee+reward
 breakdown on hover; †-tooltip retired. Org-side derive product only if v1
 proves the model (avoid premature cron work).
+
+
+## 7. APR-convention reconciliation (OPEN — evidence 2026-07-31, Camron's side-by-side)
+
+Our figure (snapshot `approx_apr_pct`) = annual emissions USD ÷ **TLA-staked $**.
+Eris's display divides by something near **whole-pool depth with a fee
+treatment** — reads LOWER. Fixture pairs (same moment):
+
+| pool | ours | Eris base | Eris amp | staked | depth | Eris rewards/yr |
+|---|---|---|---|---|---|---|
+| LUNA-EURe | 90% | 53.24% | 68.62% | $209.6K | $217.6K | $131.8K |
+| LUNA-USDC (Astro) | 47% | 37.00% | 43.51% | $253.2K | $324.0K | $115.6K |
+| LUNA-USDC (Skel) | 47%* | 36.46% | 43.29% | $55.9K | $78.7K | $25.98K |
+| LUNA-USDT | — (<$20K clamp) | 34.16% | 39.89% | $8.2K | $11.1K | $3.58K |
+
+Candidates tested, none fits all rows: rewards÷depth (EURe 60.6% ✗),
+rewards×0.9÷depth (EURe 54.5 ✓, USDC 32.1 ✗), rewards÷staked (USDC 45.7 ✗).
+Also: our emissions estimate ≠ their rewards/yr (USDC 132.7K vs 115.6K —
+price + share drift). *Both LUNA-USDC rows currently collide to one figure
+(name+bucket lookup) — dex must join the match key.
+
+**Decision needed before any formula ships:** (a) which question the column
+answers — yield on TLA-staked capital (current, higher, defensible) vs match-
+the-deposit-venue display; (b) if matching Eris: pin their exact fee/denominator
+by reading the amplifier contract or asking the Eris team — do NOT curve-fit
+two screenshots. Interim (shipped): tooltips state our definition explicitly
+and that it intentionally differs from Eris's.
