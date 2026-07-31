@@ -168,3 +168,34 @@ monitored invariant.
 - No re-pricing of hole-era CAPA (price hole is a separate, optional spec).
 - No speculative attribution: events only, dao_attr rules only — a bribe with
   no on-chain payer stays unattributed even post-backfill, honestly.
+
+## 10. LOCKED FIXTURES — DeFi_Patriot's hole-era bribes (chainscope-verified 2026-07-30)
+
+Both predicted hole-era; both confirmed ABSENT from the captured stream; both
+placed 2025-08-26 (blocks 17,129,670 / 17,129,791 — inside
+13,737,811→21,481,530). The E2 merge MUST recover each verbatim or the gate
+fails:
+
+1. `D08804E15F5CCB9C834A786450D9347B67008B84DD68DBF94D2524925455BB04` —
+   h17,129,670 · 2025-08-26T19:12:19Z · add_bribe 0.00280192 wBTC
+   (`native:ibc/8838…84CB`, 280192 raw @ 8dp) · gauge bluechip · for LUNA-WBTC
+   (`cw20:terra1wdzdlty…v739js`) · linear span e148→e151 · fee_funds 10 LUNA.
+2. `89522902862D1F2CBC535FEE21AA7F4841690B8266554C23B341FCC04907D6C9` —
+   h17,129,791 · 2025-08-26T19:24:10Z · add_bribe 6.7 ATOM
+   (`native:ibc/2739…5EB2`, 6700000 raw) · gauge bluechip · for LUNA-ATOM
+   (`cw20:terra19xrvvkq…a9q2qt`) · span e148→e148 · fee_funds 10 LUNA.
+
+Doctrine finding recorded with these (verbatim in both event logs): the
+manager forwards the 10-LUNA add_bribe fee to the PD DAO core
+(`terra1k8ug6dk…4lppjg`) — fee income, must NOT be attributed as PD bribes;
+the classifier's `fee_funds` field keeps them out of `coins` — assert this
+stays true in the E2 merge. Both txs also confirm the live wasm shape
+end-to-end: `action bribe/add_bribe` with `start`/`end`/`added`,
+byte-consistent with the classifier's promotion rules.
+
+**Machine-readable home:** `tla-voting/backfill-fixtures.json` — the E2 job's
+completion gate (`registry-backfill.js`) evaluates these plus the
+named-wallet §2.5 checks (PD props 250/247, Solid June CAPA) against the
+merged streams and fails loudly on any miss; each recovered fixture event is
+printed verbatim for hand-verification. The registry itself stays
+cursors-only.

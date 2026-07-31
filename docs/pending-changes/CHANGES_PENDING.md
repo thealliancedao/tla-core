@@ -1,3 +1,56 @@
+## 🔧 2026-07-31 (3) — E2 EXTENSIONS: FULL-PICTURE P&L CAPTURE BUILT & GATED 8/8 (SPEC-registry-extensions-pnl v2)
+
+Portfolio audit → approved extensions → live 8-tx test matrix (Camron,
+blocks 22,163,785–896) → built. Batch: **platform-crons** flows v3
+(multi-flow fix + amp rate curve + both-sides liquidity) + aux-classifiers
+(Votion/pairs/NFT + mergeKeyed); **tla-core** registry v2 (54 entries),
+E2 job routing + action-filter probe, fixtures v2 (8), spec v2 (Votion =
+archive leg of SPEC-votion-capture; NFT = adao-provenance hole-fill; tax-prep
+CSV export named; forward capture DECIDED as walker WATCH rider). Deploy:
+commit both batches (platform-crons folder deploy restarts org-tla-flows at
+3.0.0 — forward captures v3 immediately); E2 walk unchanged otherwise.
+Open: walker WATCH rider build; Votion vault attr fixtures (optional live
+test pair); census persistence fix (tla-voting cron) still queued.
+
+---
+
+## 🔧 2026-07-31 (2) — E2 REGISTRY BACKFILL JOB BUILT & GATED (deploy-ready; walk awaits E1 endpoint)
+
+**Commit-audit catch first:** spec §10 (DeFi_Patriot's two hole-era bribe
+fixtures, delivered 07-30) was never committed — main's spec ended at §9.
+Fixed in this batch: §10 appended to `SPEC-capture-registry-backfill.md` AND
+mirrored machine-readable in `tla-voting/backfill-fixtures.json` (the job's
+completion gate; registry stays cursors-only).
+
+**Built (this batch, all in tla-core):**
+- `.github/scripts/tla-voting/registry-backfill.js` — the E2 archive walk.
+  Dual checkout, require()s LIVE platform-crons classifiers (no third copy).
+  Modes: preflight (capability probe) / walk (DRY_RUN supported) / gate
+  (offline self-tests). Voting entries target the committed voting cursor
+  (full walker-era re-derive at v6.1 → recovers PD props 250/247 from the
+  pre-promotion stretch); flows entries target the derived v2-deploy head.
+  Floors honor stream known_gaps left edges. Per-window git checkpoints;
+  TIME_BUDGET_MIN clean stop; done-stays-done. Census histogram →
+  `tla-voting/backfill-report.json` (§5/E0c refund enumeration rides free).
+- `.github/workflows/tla-voting-registry-backfill.yml` — dispatch with
+  mode/dry_run/endpoint/window/budget/head-override inputs; secrets fallback
+  `ARCHIVE_LCD`/`ARCHIVE_RPC`.
+- `tla-voting/backfill-fixtures.json` — 5 completion-gate fixtures: his two
+  bribes VERBATIM (exact coins/pool/span + fee_funds-out-of-coins doctrine
+  assert), PD prop 250 (10 events / 34,763,534,826 uluna / dao_attr),
+  prop 247 (37,912.49 LUNA attributed), Solid ×3 1M-CAPA June 2026.
+
+**Gates:** MODE=gate 4/4 on real committed data · full E2E walk vs mock
+archive LCD — all 5 fixtures recovered verbatim into the real tree, 2026/07's
+203 committed events byte-identical, index 3,014→3,033, re-run adds 0.
+
+**Deploy steps:** (1) commit this batch; (2) `mode=preflight` dispatchable
+anytime (clean "E1 pending" without endpoint); (3) when E1 lands: set repo
+secret `ARCHIVE_LCD` → preflight → walk `dry_run=1` → walk, re-dispatch until
+COMPLETE (§10 gate runs itself); (4) E3: rollup + P&L rebuilds, spec §7 gates.
+
+---
+
 ## ✅ 2026-07-31 — CHANGELOGS MIGRATED TO ORG REPO (single home)
 
 All seven per-page site changelogs now live in `tla-core/docs/changelogs/`
