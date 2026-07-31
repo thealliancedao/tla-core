@@ -6,6 +6,87 @@ Spec: `docs/pending-changes/SPEC-tla-voting.md`
 
 ---
 
+# Rev 10 — 2026-07-31 — E2 EXTENSIONS BUILT: full-picture P&L capture (flows v3 · Votion · pairs · NFT provenance · tax-grade cost basis) — gated 8/8
+
+**SPEC-registry-extensions-pnl v2 executed.** The E2 walk now recovers the
+COMPLETE member picture in the same archive pass (walk-once):
+
+- **<<FLOWS CLASSIFIER v3>>** (org-tla-flows-3.0.0): multi-flow txs captured
+  (`flows[]` — the v2 one-flow-per-tx bug DeFi_Patriot's live 8-tx test
+  matrix exposed on tx DCA53591: a bucket→vault migration whose amp re-stake
+  v2 silently dropped); amp LP↔amplp rate fields (bond_amount/bond_share/
+  adjusted on stake, tf_burn-derived on unstake) = the MEASURED
+  compounding-yield curve, no pro-rating ever; pair provide/withdraw
+  both-sides truth + zapper exit assets riding the same tx. Every v2
+  top-level field byte-preserved; schema-upgrade re-walk repairs all
+  committed records in place. Legacy fill-script copies FROZEN at v2 (noted).
+- **aux-classifiers.js** (tla-flows/lib, one home): classifyVotionTx v1
+  (defensive raw-capture — the archive leg of SPEC-votion-capture),
+  classifyPairLiquidityTx (provide/withdraw + swap price samples → daily
+  reserve-implied series, CAPA/SOLID price-hole fill), classifyNftTx
+  (extends the EXECUTED adao-provenance past the FCD freeze + lock NFTs on
+  the escrow corpus), shared mergeKeyed law.
+- **Registry v2: 54 entries** (+6 Votion vaults, +37 tla_relevant Astroport
+  pairs [action-filter-gated, preflight-probed], +ADAO collection; escrow
+  gains nft_transfers). New homes: votion/events, dex-liquidity/events,
+  nfts/adao/transfers, price-history/reserve-implied — all monthly arrays,
+  mergeKeyed (schema-upgrade + never-shrink).
+- **Fixtures v2 (8):** §10 pair + PD ×2 + Solid + THREE flows_record
+  post-walk asserts from the live test matrix (multi-flow, provide
+  both-sides, amp burn + refund).
+- **Gates 8/8** on real committed data + real-tx crafted shapes; basis labels
+  and version-agnostic self-gates included.
+- **Queued from this arc:** walker WATCH forward rider (adopts
+  aux-classifiers — decided, small build), tax-prep CSV export + "My TLA
+  Report" + hold-LUNA benchmark (spec §6b/6c), zap-route simulator (has a
+  measured ground-truth pair now).
+
+---
+
+# Rev 9 — 2026-07-31 — E2 BUILT: registry archive backfill (registry-backfill.js) — gated + E2E-mock-verified, awaiting E1 endpoint
+
+**The hole-closing job exists.** `tla-core/.github/scripts/tla-voting/registry-backfill.js`
++ workflow `tla-voting-registry-backfill.yml` (SPEC-capture-registry-backfill
+§§2–8, §10): registry-driven archive walk of all 10 capture-registry
+contracts, recovering bribes+votes+locks+rewards+flows(v2) in one pass via
+the LIVE platform-crons classifiers (dual checkout, no third copy — the
+fcd-rederive precedent). Deploy-ready TODAY: no archive endpoint → clean
+"E1 pending" exit; set secret `ARCHIVE_LCD` when E1 lands, then
+preflight → walk.
+
+- **Targets (recorded into the registry as `target_height`/`target_basis`):**
+  voting entries walk to the committed voting cursor — full walker-era
+  re-derive at v6.1, dedup-safe, covering the hole AND the pre-v6.1 stretch
+  where governance bribes were walked but never promoted (PD props 250/247
+  live there — this is what puts PD on the bribe board). Flows entries walk
+  to the derived v2-deploy head (earliest schemaVersion≥2 record above the
+  hole). Floors honor per-stream `known_gaps` left edges (the bribes gap
+  starts 1,214 blocks BELOW the registry floor — honored).
+- **Resumable:** per-window git checkpoint commits (cursor + months + report);
+  TIME_BUDGET_MIN clean stop; once `done:true`, done (extensions = registry
+  edit + re-run). Gap-floor lowering applies once (`walk_floor_applied`).
+- **§10 completion gate:** `tla-voting/backfill-fixtures.json` — DeFi_Patriot's
+  two hole-era bribes asserted VERBATIM (full hashes, exact coins/pool/span,
+  fee_funds doctrine: the 10-LUNA fee must stay OUT of coins), PD prop 250
+  (10 events, 34,763,534,826 uluna, dao_attr), prop 247 (37,912.49 LUNA
+  attributed total), Solid ×3 1M-CAPA June 2026. Any miss fails the job loud.
+- **Census rider:** `unknown_manager_wasm` histogram over the whole archive
+  corpus lands in `tla-voting/backfill-report.json` — the §5/E0c refund-event
+  enumeration comes free with the walk; classifier learns it → re-run
+  backfills refunds (idempotence makes that safe).
+- **Gated:** MODE=gate 4/4 on real committed data (PD self-gate, flows-v2
+  self-gate, real-month re-merge idempotence + prior-verbatim on 844-event
+  2024/11 and 10,341-record flows 2024/12, fixture-matcher mutation test) ·
+  full E2E walk against a mock archive LCD: all 5 fixtures recovered
+  VERBATIM into the real committed tree, 2026/07's 203 prior events
+  byte-identical, index recount 3,014→3,033, second run adds 0.
+
+**Also this Rev:** spec §10 COMMITTED (delivered 07-30 but fell off the
+commit checklist — caught by the end-of-session commit audit; the fixtures
+now live in both the spec and the machine-readable gate file).
+
+---
+
 # Rev 8 — 2026-07-15 — 2.3.0 BUILT: rollups schema 5 (build #3.5) — the blind spot becomes a number. Mock-gated 108/108, DEPLOY PENDING
 
 **Build #3.5 lands the same evening as build #3** (2.2.0's first live run
