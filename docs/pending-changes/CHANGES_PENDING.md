@@ -1,3 +1,57 @@
+## ✅ 2026-07-30/31 — BRIBE RUNWAY + FUNDERS + POOL HEALTH v3 + VOTION INTENTION LAYER (all deployed)
+
+**Capture (platform-crons):**
+- `tla-voting/lib/bribe-runway.js` + wiring — hourly forward probe of the
+  manager's FUTURE pots (head→+26 until empty) → `tla-voting/bribe-state/runway.json`.
+  v1.1 funders overlay: per-pool payer tags from ATTRIBUTED events spanning the
+  present — classes dex (4 bucket addrs) / pd / project (registry subtype) /
+  user; `has_unattributed` whenever pots exceed events. Chain-verified: Camron's
+  LUNA-SOLID = [user · thru e200] `has_unattributed:false` (first fully
+  accounted pool); a 2nd bribe of his surfaced (52.57 SOLID e194→195).
+  Incident: `readBribeEvents` was try-local → hoisted (one failed run, isolated).
+- `votion/index.js` Branch C — Votion optimizer capture (first-party API,
+  verbatim) per vault slug + cross-lockup AGGREGATE (planned respects
+  isWorthChanging skips; NEW/EXIT notes). All 6 lockups captured once env set;
+  live story: +510K VP into ampCAPA before 2026-08-02, PAXG-wBTC −72% exit.
+  ⚠ OPEN: `VOTION_OPT_SLUGS` env still not reaching the publishing service
+  (old/new votion pair on Render — verify which one).
+
+**tla-stats.html (single file, many revs, gate 49/49):**
+- Runway chips (thresholds ≤1 red / 2–4 amber / 5+ green) + funder-class tags
+  + "+unattributed"; runway COLUMN colored + click→drill.
+- Pool Health v3: ALL pools per bucket; sort toolbar w/ tooltips (staked /
+  inflows / outflows / windowed trend / APR / runway / risk); 4/8/12-epoch
+  window drives charts+trend+net-flow+sorts+verdicts; column header row;
+  row mid-chart (compact, label-overlap fixed); staked ±% vs last epoch;
+  plain-English generated VERDICT per drill; who's-paying block; 3-layer
+  VOTE SHIFT (casted / Votion planned / total projected); VOTION'S PLAN panel;
+  2-column drill layout; dot-color tooltips; composition preface.
+- Top Bribers: loud 1%-coverage banner naming absent payers; tribute tooltip
+  states these ARE the Astroport take-rate flow.
+- APR: 3-layer bug fixed — figure lives on `store.tlaPools.apr_non_amp`
+  (vote-pools array never had it); next-ep vote-shift estimate line added.
+
+**member-portfolio.html:** APR cell = Non-Amp / ≈Amp (weekly-compound estimate,
+within ±5% of Eris boosted) + next-ep estimate line; xASTRO catalog valuation;
+claims-yield line; phase-aware footer. All committed.
+
+**APR CONVENTION (the recurring fight) — status:** SPEC-lp-apr §7 has the
+evidence table (ours = emissions ÷ TLA-staked; Eris lower, per-depth+fees; no
+held denominator fits all pools — matches CRON-FIXES-BRIEF §2.10's June
+conclusion). Backend endpoint disproven live (5 NestJS 404s pasted by Camron)
+⇒ client-side computation confirmed. **Fix path (needs no user input): fetch
+liquidity-hub HTML server-side → bundle URL → extract Eris's formula from
+their own JS → implement vs mapped contracts → validate vs BOTH ground-truth
+tables (§2.10 19-pool + §7 4-pool) → publish `eris_apr_pct`.** Interim:
+tooltips state our definition explicitly. Session opener: "eris apr".
+
+**Process:** page gates must assert SPECIFIC values in SPECIFIC cells — a
+generic "some % renders" stayed green through a broken APR; Camron's
+screenshots were the detector twice. End-of-session commit audit remains
+doctrine (caught the never-committed chips page).
+
+---
+
 # Changes Pending — TLA Stats platform work queue
 
 > **Home: `tla-core/docs/pending-changes/` — SINGLE HOME since 2026-07-14**
