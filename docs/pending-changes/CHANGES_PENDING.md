@@ -1,3 +1,14 @@
+## ✅ 2026-07-31 — CHANGELOGS MIGRATED TO ORG REPO (single home)
+
+All seven per-page site changelogs now live in `tla-core/docs/changelogs/`
+(README maps file→page). tla-log gained Rev 6.0/6.1; portfolio-log.md created.
+All 17 site pages repointed to the new raw URLs (tla-stats repoint built on the
+staged v3 file, regated 49/49). Old-repo (`website-adao-core`) copies
+ABANDONED — deprecation notes committed there. **Doctrine: changelog entries
+append in docs/changelogs/ at each delivery, not batched at chat end.**
+
+---
+
 ## ✅ 2026-07-30/31 — BRIBE RUNWAY + FUNDERS + POOL HEALTH v3 + VOTION INTENTION LAYER (all deployed)
 
 **Capture (platform-crons):**
