@@ -1,0 +1,107 @@
+name: TLA Voting Registry Backfill (E2)
+
+# The capture-registry archive backfill — spec:
+# docs/pending-changes/SPEC-capture-registry-backfill.md
+#
+# Registry-driven archive walk (tla-voting/capture-registry.json) recovering
+# bribes + votes + locks + rewards + flows(v2) in one pass, using the LIVE
+# platform-crons classifiers via dual checkout ("no third copy", the
+# fcd-rederive precedent). Resumable: cursors checkpoint-committed after every
+# window; a killed/expired run continues on re-dispatch.
+#
+# E1: set repo secrets ARCHIVE_LCD (cosmos REST, preferred) and/or ARCHIVE_RPC
+# (Tendermint) when the archive endpoint arrives — or pass them as inputs for
+# a one-off. With no endpoint the job exits cleanly ("E1 pending"): this
+# workflow is safe to commit and dispatch TODAY.
+#
+# Order of operations once the endpoint exists:
+#   1. mode=preflight       — capability report (dialect, index depth, counts)
+#   2. mode=walk dry_run=1  — plan only, nothing written
+#   3. mode=walk            — the backfill; re-dispatch until COMPLETE
+#   4. §10 fixture gate runs automatically at completion (fails loud)
+#   5. E3: rollup + P&L rebuilds, spec §7 gates
+
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "preflight = capability probe (writes nothing) | walk = the backfill | gate = offline self-tests"
+        type: choice
+        default: preflight
+        options: [preflight, walk, gate]
+      dry_run:
+        description: "1 = classify+merge in memory, print plan, write/commit nothing"
+        type: string
+        default: "0"
+      archive_lcd:
+        description: "OPTIONAL archive cosmos-REST endpoint (else secret ARCHIVE_LCD)"
+        type: string
+        default: ""
+      archive_rpc:
+        description: "OPTIONAL archive Tendermint RPC (else secret ARCHIVE_RPC)"
+        type: string
+        default: ""
+      window_blocks:
+        description: "Blocks per resumable window (cursor checkpoints per window)"
+        type: string
+        default: "250000"
+      time_budget_min:
+        description: "Clean-stop budget (Actions job ceiling is 360)"
+        type: string
+        default: "320"
+      voting_head:
+        description: "OPTIONAL override: voting entries' walk target height (default: committed voting cursor)"
+        type: string
+        default: ""
+      e2_head:
+        description: "OPTIONAL override: flows entries' walk target height (default: derived v2-deploy head)"
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: tla-voting-registry-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - name: Checkout tla-core
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Checkout platform-crons (live classifiers)
+        uses: actions/checkout@v4
+        with:
+          repository: thealliancedao/platform-crons
+          path: platform-crons
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Git identity (checkpoint commits)
+        run: |
+          git config user.name "tla-registry-backfill"
+          git config user.email "actions@users.noreply.github.com"
+
+      - name: Run registry backfill
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TLA_CORE_DIR: .
+          PLATFORM_CRONS_DIR: ./platform-crons
+          MODE: ${{ inputs.mode }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          ARCHIVE_LCD: ${{ inputs.archive_lcd != '' && inputs.archive_lcd || secrets.ARCHIVE_LCD }}
+          ARCHIVE_RPC: ${{ inputs.archive_rpc != '' && inputs.archive_rpc || secrets.ARCHIVE_RPC }}
+          WINDOW_BLOCKS: ${{ inputs.window_blocks }}
+          TIME_BUDGET_MIN: ${{ inputs.time_budget_min }}
+          VOTING_HEAD: ${{ inputs.voting_head }}
+          E2_HEAD: ${{ inputs.e2_head }}
+        run: node .github/scripts/tla-voting/registry-backfill.js
