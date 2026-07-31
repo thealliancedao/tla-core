@@ -35,3 +35,13 @@ site-runtime logs (`*-log.md` the live site fetches), chat-bootstrap docs
     epoch number → date). Crons use this for epoch timing.
   - `staking-apr.csv` — historical staking APR reference.
   - `tla-docs-content.json` — content for the site's TLA docs page.
+
+
+## docs/changelogs/ — per-page site changelogs (SINGLE HOME since 2026-07-31)
+
+All aDAO-site page change histories live here (index/tla/portfolio/dao/
+explorer/lore/catalog-log.md — see changelogs/README.md for the page map).
+Migrated from `defipatriot/website-adao-core`; the old-repo copies are
+ABANDONED — **future sessions append changelog entries HERE, at each
+delivery** (newest on top, UTC). All 17 site pages fetch these raw from this
+location with cache-busting.
