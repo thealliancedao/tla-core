@@ -194,10 +194,18 @@ function selfGateFlows() {
 }
 
 // ============================================================================= transport
-function httpGetJson(url, timeoutMs = 30000) {
+function httpGetJson(url, timeoutMs = 30000, redirects = 3) {
     const mod = url.startsWith('https:') ? https : http;
     return new Promise((res, rej) => {
         const r = mod.get(url, { headers: { Accept: 'application/json', 'User-Agent': 'tla-registry-backfill/1.0' } }, (x) => {
+            // follow redirects (Cloudflare-fronted LCDs 301 to their canonical
+            // host — observed on phoenix-lcd.terra.dev, preflight run #2)
+            if ([301, 302, 307, 308].includes(x.statusCode) && x.headers.location && redirects > 0) {
+                x.resume();
+                const next = new URL(x.headers.location, url).toString();
+                console.log(`    ↪ HTTP ${x.statusCode} → following redirect to ${next.split('/').slice(0, 3).join('/')}…`);
+                return res(httpGetJson(next, timeoutMs, redirects - 1));
+            }
             let b = ''; x.on('data', c => b += c); x.on('end', () => {
                 if (x.statusCode >= 200 && x.statusCode < 300) { try { res(JSON.parse(b)); } catch { rej(new Error(`bad JSON (HTTP ${x.statusCode})`)); } }
                 else rej(Object.assign(new Error(`HTTP ${x.statusCode} ${b.slice(0, 200)}`), { statusCode: x.statusCode, body: b.slice(0, 400) }));
