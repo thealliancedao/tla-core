@@ -219,12 +219,13 @@ let LCD_DIALECT = null; // 'query' | 'events'
 async function probeLcdDialect() {
     if (LCD_DIALECT) return LCD_DIALECT;
     const cond = `wasm._contract_address='${MANAGER}' AND tx.height>=13737811 AND tx.height<=13737911`;
+    const errs = [];
     for (const dialect of ['query', 'events']) {
         const url = `${ARCHIVE_LCD}/cosmos/tx/v1beta1/txs?${dialect}=${encodeURIComponent(cond)}&order_by=ORDER_BY_ASC&page=1&limit=1`;
         try { await httpGetJson(url); LCD_DIALECT = dialect; return dialect; }
-        catch (e) { if (e.statusCode && e.statusCode !== 400) throw e; /* 400 → try other dialect */ }
+        catch (e) { errs.push(`${dialect}=: ${e.message.slice(0, 120)}`); }
     }
-    throw new Error('archive LCD rejected BOTH tx-query dialects (query= and events=) — endpoint unusable for event queries');
+    throw new Error(`archive LCD rejected BOTH tx-query dialects — endpoint unusable for height-ranged event queries (${errs.join(' | ')})`);
 }
 
 async function probeActionFilter(registry) {
@@ -785,15 +786,52 @@ async function preflight() {
     }
     const report = { at: new Date().toISOString(), lcd: null, rpc: null };
     if (ARCHIVE_LCD) {
-        const lcd = { endpoint: ARCHIVE_LCD };
-        try {
-            const dialect = await probeLcdDialect();
-            lcd.tx_query_dialect = dialect;
-            const w = await fetchWindowTxs(MANAGER, Number(registry.hole.from_height), Number(registry.hole.from_height) + 50000, 'preflight-window');
-            lcd.hole_floor_window_txs = w.totalSeen; lcd.reported_total = w.reportedTotal;
-            lcd.depth_ok = true;
-            console.log(`LCD ✓ dialect=${dialect}; hole-floor 50K-block window on the manager: ${w.totalSeen} txs (index reaches the hole)`);
-        } catch (e) { lcd.error = e.message; lcd.depth_ok = false; console.log(`LCD ✗ ${e.message}`); }
+        const lcd = { endpoint: ARCHIVE_LCD, checks: {} };
+        const FIXTURE_HASH = 'D08804E15F5CCB9C834A786450D9347B67008B84DD68DBF94D2524925455BB04'; // §10 wBTC bribe, h17,129,670 (mid-hole)
+        const step = async (name, fn, describe) => {
+            try { const v = await fn(); lcd.checks[name] = { ok: true, ...(v || {}) }; console.log(`  ✓ ${name}: ${describe(v)}`); return v; }
+            catch (e) { lcd.checks[name] = { ok: false, error: e.message.slice(0, 200) }; console.log(`  ✗ ${name}: ${e.message.slice(0, 160)}`); return null; }
+        };
+        console.log('LCD capability matrix:');
+        const live = await step('alive', async () => {
+            const r = await httpGetJson(`${ARCHIVE_LCD}/cosmos/base/tendermint/v1beta1/blocks/latest`);
+            return { head: Number(r?.block?.header?.height) };
+        }, v => `LCD responds, head ${v.head}`);
+        await step('state_depth', async () => {
+            const r = await httpGetJson(`${ARCHIVE_LCD}/cosmos/base/tendermint/v1beta1/blocks/${registry.hole.from_height}`);
+            return { block_time: r?.block?.header?.time };
+        }, v => `serves hole-floor block ${registry.hole.from_height} (${String(v.block_time).slice(0, 10)}) — archive-depth block storage`);
+        const txDepth = await step('tx_depth_fixture', async () => {
+            const r = await httpGetJson(`${ARCHIVE_LCD}/cosmos/tx/v1beta1/txs/${FIXTURE_HASH}`);
+            const h = Number(r?.tx_response?.height);
+            if (!h) throw new Error('tx_response missing');
+            return { height: h };
+        }, v => `serves the §10 fixture tx BY HASH (h${v.height}, 2025-08-26) — tx storage reaches mid-hole`);
+        const dialectOk = await step('event_query_recent', async () => {
+            const head = live?.head || 22160000;
+            const dialect = await probeLcdDialect();       // probes at the hole floor
+            return { dialect };
+        }, v => `height-ranged event queries work (dialect=${v.dialect})`);
+        if (dialectOk) {
+            await step('event_index_depth', async () => {
+                const w = await fetchWindowTxs(MANAGER, Number(registry.hole.from_height), Number(registry.hole.from_height) + 50000, 'preflight-window');
+                lcd.hole_floor_window_txs = w.totalSeen; lcd.reported_total = w.reportedTotal;
+                if (w.totalSeen === 0) throw new Error('window returned 0 txs — event index likely pruned below the hole (or genuinely empty; cross-check another window)');
+                return { txs: w.totalSeen };
+            }, v => `hole-floor 50K-block manager window: ${v.txs} txs — EVENT INDEX REACHES THE HOLE`);
+            await step('action_filter', async () => {
+                ACTION_FILTER_OK = null;
+                const ok = await probeActionFilter(registry);
+                if (!ok) throw new Error('compound wasm.action conditions rejected — pair walks would be blocked');
+                return {};
+            }, () => 'compound action-filtered queries supported — pair walks enabled');
+        }
+        lcd.depth_ok = !!(lcd.checks.event_index_depth && lcd.checks.event_index_depth.ok);
+        lcd.verdict = lcd.depth_ok
+            ? 'READY — this endpoint can feed the full walk'
+            : txDepth ? 'PARTIAL — tx storage is deep but the height-ranged EVENT INDEX is unavailable; the walk needs the event index. Ask the provider to enable tx indexing (indexer=kv) or pick one that has it.'
+            : 'UNSUITABLE for the walk (see failed checks)';
+        console.log(`  verdict: ${lcd.verdict}`);
         report.lcd = lcd;
     }
     if (ARCHIVE_RPC) {
@@ -816,6 +854,7 @@ async function preflight() {
     }
     console.log('\npreflight report:\n' + JSON.stringify(report, null, 2));
     if (report.lcd?.depth_ok) console.log('\n➡ READY: dispatch mode=walk (DRY_RUN=1 first if you want the plan).');
+    else if (report.lcd) console.log('\n➡ NOT READY — try the next candidate endpoint with mode=preflight (each probe is free).');
 }
 
 // ============================================================================= walk
