@@ -1009,6 +1009,8 @@ async function walk() {
         // resume continues from the advanced cursor, never re-walks from floor.
         const stagedFloor = WALK_FLOOR != null ? Math.max(plan.floor, WALK_FLOOR) : null;
         if (stagedFloor != null) {
+            const sPairOnly = (entry.streams || []).includes('dex_liquidity') && !(entry.streams || []).includes('flows');
+            if (sPairOnly && !actionFilter) { blocked.add(entry.address); console.log(`— ${entry.label}: BLOCKED in staged pass (no action-filtered queries on this endpoint)`); continue; }
             // STAGED MODE: this source can't reach the true floor — walk only
             // its serviceable slice [stagedFloor, target]; the deep remainder
             // [floor, stagedFloor) stays honestly open (done stays false; a
@@ -1021,7 +1023,7 @@ async function walk() {
                 const hFrom = sCur + 1, hTo = Math.min(sCur + WINDOW_BLOCKS, plan.target);
                 const label = `${entry.label} [staged] ${hFrom}-${hTo}`;
                 let txs, totalSeen;
-                if (pairOnly) {
+                if (sPairOnly) {
                     const a = await fetchWindowTxs(entry.address, hFrom, hTo, label + ' [provide]', `wasm.action='provide_liquidity'`);
                     const b = await fetchWindowTxs(entry.address, hFrom, hTo, label + ' [withdraw]', `wasm.action='withdraw_liquidity'`);
                     const seenH = new Set(a.txs.map(t => t.txhash));
