@@ -586,14 +586,16 @@ function checkpoint(msg) {
         .filter(pth => fs.existsSync(path.join(CORE_DIR, pth)));   // dirs/files are born on first write — add only what exists
     git(['add', ...addPaths]);
     try { git(['commit', '-m', msg]); } catch { console.log('  checkpoint: nothing to commit'); return; }
-    for (let a = 1; a <= 3; a++) {
+    for (let a = 1; a <= 10; a++) {
         try { git(['push']); console.log(`  ✓ checkpoint pushed: ${msg}`); return; }
         catch (e) {
-            console.warn(`  ⚠ push failed (attempt ${a}) — pull --rebase and retry`);
+            const wait = 1000 * a + Math.floor(Math.random() * 4000);   // jitter past the hourly crons' publish bursts
+            console.warn(`  ⚠ push race lost (attempt ${a}/10) — rebase + retry in ${wait}ms`);
             try { git(['pull', '--rebase']); } catch (pe) { console.warn(`  ⚠ rebase failed: ${String(pe).slice(0, 200)}`); }
+            execFileSync('sleep', [String(wait / 1000)]);
         }
     }
-    throw new Error(`checkpoint push failed after 3 attempts (${msg}) — aborting so the failure is loud, work up to the previous checkpoint is committed`);
+    throw new Error(`checkpoint push failed after 10 attempts (${msg}) — aborting so the failure is loud, work up to the previous checkpoint is committed`);
 }
 
 // ============================================================================= §10 fixture gate
@@ -1041,7 +1043,7 @@ async function walk() {
                 runRec.entries[entry.label] = { staged_cursor: sCur, staged_floor: stagedFloor, target: plan.target, slice_done: sCur >= plan.target };
                 if (!DRY) writeJson(REGISTRY_PATH, registry, 2);
                 console.log(`  ${label}: ${totalSeen} txs (${txs.length} ok) → tallies ${JSON.stringify(tallies)}`);
-                checkpoint(`registry-backfill[staged≥${stagedFloor}]: ${entry.label} → ${sCur}${sCur >= plan.target ? ' (SLICE DONE)' : ''}`);
+                if (runRec.windows % 3 === 0 || sCur >= plan.target) checkpoint(`registry-backfill[staged≥${stagedFloor}]: ${entry.label} → ${sCur}${sCur >= plan.target ? ' (SLICE DONE)' : ''}`);
             }
             if (stoppedForBudget) break;
             continue;
@@ -1107,7 +1109,7 @@ async function walk() {
             runRec.entries[entry.label] = { cursor: cur, target: plan.target, done: !!entry.done };
             if (!DRY) writeJson(REGISTRY_PATH, registry, 2);
             console.log(`  ${label}: ${totalSeen} txs (${txs.length} ok) → tallies ${JSON.stringify(tallies)}${before === JSON.stringify(tallies) ? ' (no new)' : ''}`);
-            checkpoint(`registry-backfill: ${entry.label} → ${cur}${entry.done ? ' (DONE)' : ''}`);
+            if (runRec.windows % 3 === 0 || entry.done) checkpoint(`registry-backfill: ${entry.label} → ${cur}${entry.done ? ' (DONE)' : ''}`);
         }
         if (stoppedForBudget) break;
     }
