@@ -90,6 +90,10 @@ const CORE_DIR = path.resolve(process.env.TLA_CORE_DIR || '.');
 const CRONS_DIR = path.resolve(process.env.PLATFORM_CRONS_DIR || path.join(CORE_DIR, '..', 'platform-crons'));
 const ARCHIVE_LCD = (process.env.ARCHIVE_LCD || '').replace(/\/+$/, '');
 const ARCHIVE_RPC = (process.env.ARCHIVE_RPC || '').replace(/\/+$/, '');
+const STARSCREAM_URL = (process.env.STARSCREAM_URL || '').replace(/\/+$/, '');   // Chainscope GraphQL indexer (E1 alt transport — USE ONLY WITH THEIR BLESSING)
+const SS_LIMIT = Number(process.env.SS_LIMIT || 100);
+const SS_PAIRS = process.env.STARSCREAM_PAIRS === '1';   // pair walks over starscream page EVERY swap — explicit opt-in only
+const TRANSPORT = STARSCREAM_URL && !ARCHIVE_LCD ? 'starscream' : 'lcd';
 const WINDOW_BLOCKS = Math.max(10000, Number(process.env.WINDOW_BLOCKS || 250000));
 const PAGE_LIMIT = Number(process.env.PAGE_LIMIT || 100);
 const PAGE_RETRIES = Number(process.env.PAGE_RETRIES || 8);
@@ -276,6 +280,55 @@ async function fetchWindowTxs(addr, hFrom, hTo, label, extraCond) {
     out.sort((a, b) => Number(a.height) - Number(b.height) || (a.txhash < b.txhash ? -1 : 1));
     const ok = out.filter(tr => Number(tr.code || 0) === 0);   // failed txs never classified (walker law)
     return { txs: ok, totalSeen: out.length, reportedTotal: total };
+}
+
+// ----------------------------------------------------------------------------- starscream transport (Chainscope GraphQL indexer)
+// Address-paged discovery: AddressTxs(address, offset) DESC pages with FULL
+// decoded messages + per-message raw events (shape verified from a real
+// captured response of DeFi_Patriot's own test tx DCA53591 — gate 9).
+// Adapter maps each tx onto the exact tx_response shape every classifier has
+// always consumed; events are flattened with msg_index injected per message
+// position when absent. Pair entries stay BLOCKED under this transport unless
+// STARSCREAM_PAIRS=1 (paging every swap ever is a volume decision Chainscope
+// gets to make, not us).
+const SS_QUERY = `query AddressTxs($address: String!, $offset: String) {\n  address(address: $address) {\n    txsCount\n    txs(offset: $offset) {\n      height txhash code timestamp\n      messages { msg { value } events { type attributes { key value } } }\n    }\n  }\n}`;
+function httpPostJson(url, body, timeoutMs = 45000) {
+    return new Promise((res, rej) => {
+        const u = new URL(url);
+        const r = https.request({ hostname: u.hostname, port: u.port || 443, path: u.pathname || '/', method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'User-Agent': 'tla-registry-backfill/1.0' } }, (x) => {
+            let b = ''; x.on('data', c => b += c); x.on('end', () => {
+                if (x.statusCode >= 200 && x.statusCode < 300) { try { res(JSON.parse(b)); } catch { rej(new Error(`bad JSON (HTTP ${x.statusCode})`)); } }
+                else rej(Object.assign(new Error(`HTTP ${x.statusCode} ${b.slice(0, 200)}`), { statusCode: x.statusCode }));
+            });
+        });
+        r.on('error', rej); r.setTimeout(timeoutMs, () => r.destroy(new Error('timeout')));
+        r.write(JSON.stringify(body)); r.end();
+    });
+}
+function adaptStarscreamTx(t) {
+    const messages = (t.messages || []).map(m => m?.msg?.value).filter(Boolean);
+    const events = [];
+    (t.messages || []).forEach((m, mi) => {
+        for (const ev of (m.events || [])) {
+            const hasIdx = (ev.attributes || []).some(a => a.key === 'msg_index');
+            events.push(hasIdx ? ev : { type: ev.type, attributes: [...(ev.attributes || []), { key: 'msg_index', value: String(mi) }] });
+        }
+    });
+    return { txhash: t.txhash, height: String(t.height), timestamp: t.timestamp, code: Number(t.code || 0),
+             tx: { body: { messages } }, events };
+}
+async function ssFetchPage(address, offset) {
+    let last = null;
+    for (let a = 0; a < PAGE_RETRIES; a++) {
+        try {
+            const r = await httpPostJson(STARSCREAM_URL, { query: SS_QUERY, variables: { address, offset: String(offset), order: 'desc', limit: SS_LIMIT }, operationName: 'AddressTxs' });
+            if (r.errors) throw new Error('GraphQL: ' + JSON.stringify(r.errors).slice(0, 160));
+            const a2 = r?.data?.address || {};
+            return { txs: a2.txs || [], txsCount: Number(a2.txsCount ?? NaN) };
+        } catch (e) { last = e; await sleep(ERR_BACKOFF * (a + 1)); }
+    }
+    throw new Error(`starscream page @${offset} for ${address.slice(0, 12)}…: ${last && last.message}`);
 }
 
 // ============================================================================= registry + targets
@@ -616,6 +669,9 @@ function evalFixtures(fixturesDoc, events) {
 }
 
 // ============================================================================= gate mode (offline, run before every commit of this file)
+// Real starscream AddressTxs response for test tx DCA53591 (HAR-captured
+// 2026-07-31; trimmed to msg values + wasm/tf events) — gate 9's fixture.
+const SS_FIXTURE_JSON = "{\"txhash\": \"DCA53591AAAD50EE2AF16803DCD6C00F74EDD4751AA6028CEBF1EA542854C564\", \"height\": \"22163886\", \"timestamp\": \"2026-07-31T20:19:12Z\", \"code\": 0, \"messages\": [{\"msg\": {\"value\": {\"@type\": \"/cosmwasm.wasm.v1.MsgExecuteContract\", \"sender\": \"terra1hr8zsfpch47qygc96c8e6rzkd2t7mafqx77ulw\", \"contract\": \"terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa\", \"msg\": {\"unstake\": {\"asset\": {\"amount\": \"20268566\", \"info\": {\"cw20\": \"terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}}, \"recipient\": \"terra1qdjsxsv96aagrdxz83gwtjk8qvf2mrg4y8y3dqjxg556lm79pg5qdgmaxl\"}}, \"funds\": []}}, \"events\": [{\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa\"}, {\"key\": \"action\", \"value\": \"asset/unstake\"}, {\"key\": \"user\", \"value\": \"terra1hr8zsfpch47qygc96c8e6rzkd2t7mafqx77ulw\"}, {\"key\": \"recipient\", \"value\": \"terra1qdjsxsv96aagrdxz83gwtjk8qvf2mrg4y8y3dqjxg556lm79pg5qdgmaxl\"}, {\"key\": \"asset\", \"value\": \"cw20:terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, {\"key\": \"amount\", \"value\": \"20268565\"}, {\"key\": \"share\", \"value\": \"24491990\"}, {\"key\": \"msg_index\", \"value\": \"0\"}]}, {\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra1eywh4av8sln6r45pxq45ltj798htfy0cfcf7fy3pxc2gcv6uc07se4ch9x\"}, {\"key\": \"action\", \"value\": \"claim_rewards\"}, {\"key\": \"action\", \"value\": \"withdraw\"}, {\"key\": \"amount\", \"value\": \"20268565\"}, {\"key\": \"claimed_position\", \"value\": \"terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, {\"key\": \"lp_token\", \"value\": \"terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, {\"key\": \"user\", \"value\": \"terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa\"}, {\"key\": \"msg_index\", \"value\": \"0\"}]}, {\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, {\"key\": \"action\", \"value\": \"transfer\"}, {\"key\": \"amount\", \"value\": \"20268565\"}, {\"key\": \"from\", \"value\": \"terra1eywh4av8sln6r45pxq45ltj798htfy0cfcf7fy3pxc2gcv6uc07se4ch9x\"}, {\"key\": \"to\", \"value\": \"terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa\"}, {\"key\": \"msg_index\", \"value\": \"0\"}]}, {\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa\"}, {\"key\": \"action\", \"value\": \"asset/track_bribes_callback\"}, {\"key\": \"msg_index\", \"value\": \"0\"}]}, {\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, {\"key\": \"action\", \"value\": \"transfer\"}, {\"key\": \"amount\", \"value\": \"20268565\"}, {\"key\": \"from\", \"value\": \"terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa\"}, {\"key\": \"to\", \"value\": \"terra1qdjsxsv96aagrdxz83gwtjk8qvf2mrg4y8y3dqjxg556lm79pg5qdgmaxl\"}, {\"key\": \"msg_index\", \"value\": \"0\"}]}]}, {\"msg\": {\"value\": {\"@type\": \"/cosmwasm.wasm.v1.MsgExecuteContract\", \"sender\": \"terra1hr8zsfpch47qygc96c8e6rzkd2t7mafqx77ulw\", \"contract\": \"terra1qdjsxsv96aagrdxz83gwtjk8qvf2mrg4y8y3dqjxg556lm79pg5qdgmaxl\", \"msg\": {\"zap\": {\"assets\": [{\"cw20\": \"terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}], \"into\": {\"cw20\": \"terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, \"post_action\": {\"liquid_stake\": {\"compounder\": \"terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx\", \"gauge\": \"project\"}}}}, \"funds\": []}}, \"events\": [{\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra1qdjsxsv96aagrdxz83gwtjk8qvf2mrg4y8y3dqjxg556lm79pg5qdgmaxl\"}, {\"key\": \"action\", \"value\": \"zapper/zap\"}, {\"key\": \"msg_index\", \"value\": \"1\"}]}, {\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra1qdjsxsv96aagrdxz83gwtjk8qvf2mrg4y8y3dqjxg556lm79pg5qdgmaxl\"}, {\"key\": \"action\", \"value\": \"zapper/callback_liquid_stake_result\"}, {\"key\": \"msg_index\", \"value\": \"1\"}]}, {\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, {\"key\": \"action\", \"value\": \"send\"}, {\"key\": \"amount\", \"value\": \"20268565\"}, {\"key\": \"from\", \"value\": \"terra1qdjsxsv96aagrdxz83gwtjk8qvf2mrg4y8y3dqjxg556lm79pg5qdgmaxl\"}, {\"key\": \"to\", \"value\": \"terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx\"}, {\"key\": \"msg_index\", \"value\": \"1\"}]}, {\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx\"}, {\"key\": \"action\", \"value\": \"asset-compounding/stake\"}, {\"key\": \"asset\", \"value\": \"cw20:terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, {\"key\": \"bond_amount\", \"value\": \"20268565\"}, {\"key\": \"bond_share\", \"value\": \"4707941\"}, {\"key\": \"bond_share_adjusted\", \"value\": \"4706408\"}, {\"key\": \"gauge\", \"value\": \"project\"}, {\"key\": \"user\", \"value\": \"terra1hr8zsfpch47qygc96c8e6rzkd2t7mafqx77ulw\"}, {\"key\": \"msg_index\", \"value\": \"1\"}]}, {\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, {\"key\": \"action\", \"value\": \"send\"}, {\"key\": \"amount\", \"value\": \"20268565\"}, {\"key\": \"from\", \"value\": \"terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx\"}, {\"key\": \"to\", \"value\": \"terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa\"}, {\"key\": \"msg_index\", \"value\": \"1\"}]}, {\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa\"}, {\"key\": \"action\", \"value\": \"asset/stake\"}, {\"key\": \"amount\", \"value\": \"20268565\"}, {\"key\": \"asset\", \"value\": \"cw20:terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, {\"key\": \"share\", \"value\": \"24491989\"}, {\"key\": \"user\", \"value\": \"terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx\"}, {\"key\": \"msg_index\", \"value\": \"1\"}]}, {\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, {\"key\": \"action\", \"value\": \"send\"}, {\"key\": \"amount\", \"value\": \"20268565\"}, {\"key\": \"from\", \"value\": \"terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa\"}, {\"key\": \"to\", \"value\": \"terra1eywh4av8sln6r45pxq45ltj798htfy0cfcf7fy3pxc2gcv6uc07se4ch9x\"}, {\"key\": \"msg_index\", \"value\": \"1\"}]}, {\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra1eywh4av8sln6r45pxq45ltj798htfy0cfcf7fy3pxc2gcv6uc07se4ch9x\"}, {\"key\": \"action\", \"value\": \"claim_rewards\"}, {\"key\": \"action\", \"value\": \"deposit\"}, {\"key\": \"amount\", \"value\": \"20268565\"}, {\"key\": \"claimed_position\", \"value\": \"terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, {\"key\": \"lp_token\", \"value\": \"terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8\"}, {\"key\": \"user\", \"value\": \"terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa\"}, {\"key\": \"user\", \"value\": \"terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa\"}, {\"key\": \"msg_index\", \"value\": \"1\"}]}, {\"type\": \"wasm\", \"attributes\": [{\"key\": \"_contract_address\", \"value\": \"terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa\"}, {\"key\": \"action\", \"value\": \"asset/track_bribes_callback\"}, {\"key\": \"msg_index\", \"value\": \"1\"}]}, {\"type\": \"tf_mint\", \"attributes\": [{\"key\": \"amount\", \"value\": \"4707941factory/terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx/13/project/amplp\"}, {\"key\": \"mint_to_address\", \"value\": \"terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx\"}, {\"key\": \"msg_index\", \"value\": \"1\"}]}]}]}";
 function gateMode() {
     console.log('\n🧪 MODE=gate — offline self-tests (no network, no writes)\n');
     selfGateVoting();
@@ -770,6 +826,27 @@ function gateMode() {
         if (!okPair || !okNft || !okVt || !okMerge) { console.error(`gate 8 FAILED: aux (pair ${okPair}, nft ${okNft}, votion ${okVt}, merge ${okMerge})`); process.exit(1); }
         console.log('gate 8: aux classifiers — pair provide + swap sample dedup, NFT transfer, votion deposit rate sample, mergeKeyed laws');
     }
+    // gate 9 — REAL starscream response (DeFi_Patriot's test tx DCA53591,
+    // captured from the live indexer 2026-07-31) through the adapter into the
+    // v3 classifier: the full alternate-transport path, end-to-end, offline.
+    {
+        const ssTx = JSON.parse(SS_FIXTURE_JSON);
+        const ad = adaptStarscreamTx(ssTx);
+        const okAdapt = ad.txhash === 'DCA53591AAAD50EE2AF16803DCD6C00F74EDD4751AA6028CEBF1EA542854C564' &&
+            ad.tx.body.messages.length === 2 && ad.tx.body.messages[0].sender && ad.tx.body.messages[0].contract && ad.events.length >= 10;
+        const r = MF.classifyFlowTx(ad);
+        // The REAL event chain yields THREE flows: the wallet's unstake, the
+        // wallet's amp re-stake (rate fields), AND the vault's own internal
+        // bucket re-stake (user = the compounder contract). All three are
+        // truth; derive filters member P&L by user === wallet.
+        const okClassify = r && Array.isArray(r.flows) && r.flows.length === 3 &&
+            r.flows[0].type === 'withdraw' && r.flows[0].mechanism === 'non_amplified' && r.flows[0].user === ad.tx.body.messages[0].sender &&
+            r.flows[1].type === 'deposit' && r.flows[1].mechanism === 'amplified' && r.flows[1].user === ad.tx.body.messages[0].sender &&
+            r.flows[1].bond_amount === '20268565' && r.flows[1].bond_share === '4707941' &&
+            r.flows[2].mechanism === 'non_amplified' && r.flows[2].user !== ad.tx.body.messages[0].sender;
+        if (!okAdapt || !okClassify) { console.error(`gate 9 FAILED: starscream adapter (adapt ${okAdapt}, classify ${okClassify})`, JSON.stringify(r).slice(0, 300)); process.exit(1); }
+        console.log('gate 9: starscream transport — REAL captured indexer response adapts + classifies verbatim (multi-flow, amp rate fields)');
+    }
     console.log('\n✅ ALL GATES PASS\n');
 }
 
@@ -777,6 +854,23 @@ function gateMode() {
 async function preflight() {
     console.log('\n🔎 MODE=preflight — E1 capability probe (writes nothing)\n');
     const registry = readJson(REGISTRY_PATH, null);
+    if (STARSCREAM_URL) {
+        console.log('STARSCREAM probe:');
+        try {
+            const { txs, txsCount } = await ssFetchPage(MANAGER, 0);
+            const hs = txs.map(t => Number(t.height));
+            console.log(`  ✓ alive: manager txsCount=${txsCount}, first page ${txs.length} txs, heights ${Math.min(...hs)}–${Math.max(...hs)}`);
+            const one = txs.find(t => Number(t.code || 0) === 0);
+            if (one) {
+                const ad = adaptStarscreamTx(one);
+                const ok = ad.txhash && ad.events.length && ad.tx.body.messages.length;
+                console.log(`  ${ok ? '✓' : '✗'} adapter: sample tx ${ad.txhash.slice(0, 12)}… → ${ad.tx.body.messages.length} msgs, ${ad.events.length} events`);
+            }
+            console.log('  depth: proven by termination (pages walk DESC to below the floor); indexer serves 2023-era txs (HAR-verified 2026-07-31)');
+            console.log('\n➡ starscream READY (pending Chainscope blessing): dispatch mode=walk with STARSCREAM_URL set.');
+        } catch (e) { console.log(`  ✗ starscream probe failed: ${e.message}`); }
+        if (!ARCHIVE_LCD && !ARCHIVE_RPC) return;
+    }
     if (!ARCHIVE_LCD && !ARCHIVE_RPC) {
         console.log('E1 PENDING — no archive endpoint configured.');
         console.log('When the endpoint arrives: set repo secret ARCHIVE_LCD (cosmos REST, preferred)');
@@ -862,7 +956,8 @@ async function walk() {
     console.log(`\n🚜 MODE=walk${DRY ? ' (DRY RUN)' : ''} — registry archive backfill\n`);
     selfGateVoting();
     selfGateFlows();
-    if (!ARCHIVE_LCD) { console.error('walk requires ARCHIVE_LCD (see preflight). Aborting.'); process.exit(1); }
+    if (!ARCHIVE_LCD && !STARSCREAM_URL) { console.error('walk requires ARCHIVE_LCD or STARSCREAM_URL (see preflight). Aborting.'); process.exit(1); }
+    if (TRANSPORT === 'starscream') console.log('  transport: STARSCREAM (Chainscope GraphQL) — run this ONLY with their blessing; REQ_DELAY_MS + SS_LIMIT are your politeness knobs');
 
     const registry = readJson(REGISTRY_PATH, null);
     const votingIndex = readJson(path.join(VOTING_DIR, 'index.json'), null);
@@ -873,7 +968,7 @@ async function walk() {
         pairs: Object.fromEntries(registry.contracts.filter(c => (c.streams || []).includes('dex_liquidity')).map(c => [c.address, { name: (c.label.match(/pair ([^ ]+)/) || [])[1] || c.label, bucket: null }])),
         nftContracts: Object.fromEntries(registry.contracts.filter(c => (c.streams || []).includes('nft_transfers')).map(c => [c.address, c.label])),
     };
-    const actionFilter = await probeActionFilter(registry);
+    const actionFilter = TRANSPORT === 'lcd' ? await probeActionFilter(registry) : false;
     const blocked = new Set();
 
     const discovered = {}, contextCensus = {}, tallies = {};
@@ -895,8 +990,41 @@ async function walk() {
         let cur = begun ? Number(entry.cursor_height) : Math.min(Number(entry.cursor_height), plan.floor);
         entry.walk_floor_applied = true;
         const pairOnly = (entry.streams || []).includes('dex_liquidity') && !(entry.streams || []).includes('flows');
-        if (pairOnly && !actionFilter) { blocked.add(entry.address); console.log(`— ${entry.label}: BLOCKED (archive lacks action-filtered queries — see preflight)`); continue; }
-        console.log(`\n▶ ${entry.label} — ${cur} → ${plan.target} (${plan.basis})`);
+        if (TRANSPORT === 'starscream' && pairOnly && !SS_PAIRS) { blocked.add(entry.address); console.log(`— ${entry.label}: BLOCKED under starscream transport (paging every swap needs Chainscope's explicit OK — set STARSCREAM_PAIRS=1 once blessed)`); continue; }
+        if (TRANSPORT === 'lcd' && pairOnly && !actionFilter) { blocked.add(entry.address); console.log(`— ${entry.label}: BLOCKED (archive lacks action-filtered queries — see preflight)`); continue; }
+        console.log(`\n▶ ${entry.label} — ${cur} → ${plan.target} (${plan.basis})${TRANSPORT === 'starscream' ? ' [starscream]' : ''}`);
+        if (TRANSPORT === 'starscream') {
+            // address-paged DESC: resume from committed ss_offset; done when a
+            // page's min height drops below the walk floor.
+            let offset = Number(entry.ss_offset || 0);
+            let firstHashPrev = entry.ss_first_hash_prev || null;
+            const floor = plan.floor;
+            while (true) {
+                if (outOfBudget()) { stoppedForBudget = true; break; }
+                const { txs: pageTxs, txsCount } = await ssFetchPage(entry.address, offset);
+                if (!pageTxs.length) { entry.done = true; break; }
+                if (pageTxs[0].txhash === firstHashPrev) throw new Error(`${entry.label}: starscream pagination stuck at offset ${offset}`);
+                firstHashPrev = pageTxs[0].txhash;
+                const heights = pageTxs.map(t => Number(t.height));
+                const minH = Math.min(...heights);
+                const inRange = pageTxs.filter(t => Number(t.height) >= floor && Number(t.height) <= plan.target && Number(t.code || 0) === 0)
+                    .map(adaptStarscreamTx).sort((a, b) => Number(a.height) - Number(b.height));
+                const classified = routeAndClassify(plan, inRange, discovered, contextCensus, regCtx);
+                stageAndMerge(classified, tallies);
+                offset += pageTxs.length;
+                entry.ss_offset = offset; entry.ss_first_hash_prev = firstHashPrev; entry.ss_txs_count = txsCount;
+                runRec.windows++;
+                runRec.entries[entry.label] = { ss_offset: offset, txsCount, min_height_seen: minH, done: minH < floor };
+                if (minH < floor) { entry.done = true; entry.cursor_height = plan.target; }
+                if (!DRY) writeJson(REGISTRY_PATH, registry, 2);
+                console.log(`  ${entry.label} p@${offset}: ${pageTxs.length} txs (min h${minH}) → tallies ${JSON.stringify(tallies)}`);
+                if (offset % (SS_LIMIT * 10) === 0 || entry.done) checkpoint(`registry-backfill[ss]: ${entry.label} @${offset}${entry.done ? ' (DONE)' : ''}`);
+                if (entry.done) break;
+                await sleep(REQ_DELAY);
+            }
+            if (stoppedForBudget) break;
+            continue;
+        }
         while (cur < plan.target) {
             if (outOfBudget()) { stoppedForBudget = true; break; }
             const hFrom = cur + 1, hTo = Math.min(cur + WINDOW_BLOCKS, plan.target);
