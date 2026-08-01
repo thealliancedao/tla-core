@@ -248,18 +248,29 @@ async function probeActionFilter(registry) {
 // Height-windowed page fetch. Archive nodes paginate deterministically (the
 // publicnode flake the seed's pager fights is a shared-fleet artifact), but we
 // keep per-page retries + a dedupe/regression check anyway — trust nothing.
+let EFF_PAGE_LIMIT = null;   // adaptive: shrinks (stickily) when a node's gRPC response-size cap trips on event-heavy pages
 async function fetchWindowTxs(addr, hFrom, hTo, label, extraCond) {
     const dialect = await probeLcdDialect();
+    if (EFF_PAGE_LIMIT == null) EFF_PAGE_LIMIT = PAGE_LIMIT;
     const cond = `wasm._contract_address='${addr}' AND tx.height>=${hFrom} AND tx.height<=${hTo}` + (extraCond ? ` AND ${extraCond}` : '');
-    const urlOf = (page) => `${ARCHIVE_LCD}/cosmos/tx/v1beta1/txs?${dialect}=${encodeURIComponent(cond)}&order_by=ORDER_BY_ASC&page=${page}&limit=${PAGE_LIMIT}`;
-    const out = []; const seen = new Set();
+    const urlOf = (page) => `${ARCHIVE_LCD}/cosmos/tx/v1beta1/txs?${dialect}=${encodeURIComponent(cond)}&order_by=ORDER_BY_ASC&page=${page}&limit=${EFF_PAGE_LIMIT}`;
+    let out = []; let seen = new Set();
     let total = null;
     for (let page = 1; ; page++) {
         let resp = null, lastErr = null;
         for (let a = 0; a < PAGE_RETRIES; a++) {
             try { resp = await httpGetJson(urlOf(page)); break; }
-            catch (e) { lastErr = e; await sleep(ERR_BACKOFF * (a + 1)); }
+            catch (e) {
+                if (/larger than max/i.test(e.message) && EFF_PAGE_LIMIT > 5) {
+                    EFF_PAGE_LIMIT = Math.max(5, Math.floor(EFF_PAGE_LIMIT / 2));
+                    console.log(`    ↳ ${label}: node's response-size cap tripped — page limit shrunk to ${EFF_PAGE_LIMIT}, window restarts`);
+                    out = []; seen = new Set(); total = null; page = 0;   // restart this window's paging at the smaller size
+                    resp = null; lastErr = null; break;
+                }
+                lastErr = e; await sleep(ERR_BACKOFF * (a + 1));
+            }
         }
+        if (page === 0) continue;
         if (!resp) throw new Error(`${label} p${page}: unreachable after ${PAGE_RETRIES} tries (${lastErr && lastErr.message}) — window aborts, cursor holds`);
         const batch = resp.tx_responses || [];
         const t = Number(resp.total ?? resp.pagination?.total ?? NaN);
@@ -271,7 +282,7 @@ async function fetchWindowTxs(addr, hFrom, hTo, label, extraCond) {
         }
         if (!batch.length) break;
         if (total != null && out.length >= total) break;
-        if (batch.length < PAGE_LIMIT && total == null) break;
+        if (batch.length < EFF_PAGE_LIMIT && total == null) break;
         if (fresh === 0 && batch.length) throw new Error(`${label} p${page}: page returned only duplicates — pagination broken, window aborts`);
         await sleep(REQ_DELAY);
     }
