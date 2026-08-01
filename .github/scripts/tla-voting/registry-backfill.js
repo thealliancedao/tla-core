@@ -582,7 +582,9 @@ function recountFlowsIndex() {
 function git(args, opts = {}) { return execFileSync('git', args, { cwd: CORE_DIR, encoding: 'utf8', ...opts }); }
 function checkpoint(msg) {
     if (DRY || !GIT_CHECKPOINT) { console.log(`  [${DRY ? 'dry' : 'no-checkpoint'}] would commit: ${msg}`); return; }
-    git(['add', 'tla-voting/events', 'tla-voting/capture-registry.json', 'tla-voting/backfill-report.json', 'tla-flows/events', 'votion/events', 'dex-liquidity', 'nfts/adao/transfers', 'price-history/reserve-implied']);
+    const addPaths = ['tla-voting/events', 'tla-voting/capture-registry.json', 'tla-voting/backfill-report.json', 'tla-flows/events', 'votion/events', 'dex-liquidity', 'nfts/adao/transfers', 'price-history/reserve-implied']
+        .filter(pth => fs.existsSync(path.join(CORE_DIR, pth)));   // dirs/files are born on first write — add only what exists
+    git(['add', ...addPaths]);
     try { git(['commit', '-m', msg]); } catch { console.log('  checkpoint: nothing to commit'); return; }
     for (let a = 1; a <= 3; a++) {
         try { git(['push']); console.log(`  ✓ checkpoint pushed: ${msg}`); return; }
