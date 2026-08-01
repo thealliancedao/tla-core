@@ -61,6 +61,10 @@ on:
         description: "OPTIONAL override: flows entries' walk target height (default: derived v2-deploy head)"
         type: string
         default: ""
+      walk_floor:
+        description: "STAGED MODE: walk only heights ≥ this on this source (from preflight's event_index_floor); deep remainder stays open"
+        type: string
+        default: ""
 
 permissions:
   contents: write
@@ -109,4 +113,5 @@ jobs:
           TIME_BUDGET_MIN: ${{ inputs.time_budget_min }}
           VOTING_HEAD: ${{ inputs.voting_head }}
           E2_HEAD: ${{ inputs.e2_head }}
+          WALK_FLOOR: ${{ inputs.walk_floor }}
         run: node .github/scripts/tla-voting/registry-backfill.js
