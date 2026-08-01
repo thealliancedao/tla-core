@@ -103,6 +103,7 @@ const TIME_BUDGET_MIN = Number(process.env.TIME_BUDGET_MIN || 320);
 const GIT_CHECKPOINT = process.env.GIT_CHECKPOINT !== '0';
 const VOTING_HEAD = process.env.VOTING_HEAD ? Number(process.env.VOTING_HEAD) : null;
 const E2_HEAD = process.env.E2_HEAD ? Number(process.env.E2_HEAD) : null;
+const WALK_FLOOR = process.env.WALK_FLOOR ? Number(process.env.WALK_FLOOR) : null;  // staged mode: walk only [max(floor,WALK_FLOOR), target] on THIS source; deep remainder stays honestly open
 
 process.env.GITHUB_TOKEN = process.env.GITHUB_TOKEN || 'unused-local';
 
@@ -913,6 +914,26 @@ async function preflight() {
                 if (w.totalSeen === 0) throw new Error('window returned 0 txs — event index likely pruned below the hole (or genuinely empty; cross-check another window)');
                 return { txs: w.totalSeen };
             }, v => `hole-floor 50K-block manager window: ${v.txs} txs — EVENT INDEX REACHES THE HOLE`);
+            await step('event_index_floor', async () => {
+                // bisect the endpoint's tx-event-index floor: the manager has
+                // had steady traffic since Aug 2024, so any ~250K-block window
+                // above TLA genesis returning 0 txs means the index doesn't
+                // reach it. ~14 queries → floor to ±35K blocks (~1 day).
+                const head = (lcd.checks.alive && lcd.checks.alive.head) || 22160000;
+                let lo = Number(registry.hole.from_height), hi = head - 300000, floorAt = null;
+                const has = async (h) => { const w = await fetchWindowTxs(MANAGER, h, h + 250000, `bisect@${h}`); return w.totalSeen > 0; };
+                if (await has(lo)) { floorAt = lo; }
+                else {
+                    while (hi - lo > 70000) {
+                        const mid = Math.floor((lo + hi) / 2);
+                        if (await has(mid)) hi = mid; else lo = mid;
+                    }
+                    floorAt = hi;
+                }
+                lcd.event_index_floor = floorAt;
+                const covered = head - floorAt, hole = head - Number(registry.hole.from_height);
+                return { floor: floorAt, pct_of_span: +(100 * covered / hole).toFixed(1) };
+            }, v => `event index floors at ≈ block ${v.floor} — this endpoint can serve ~${v.pct_of_span}% of the span FOR FREE (dispatch mode=walk with WALK_FLOOR=${v.floor} to harvest it now; deep remainder stays open in the registry)`);
             await step('action_filter', async () => {
                 ACTION_FILTER_OK = null;
                 const ok = await probeActionFilter(registry);
@@ -986,6 +1007,41 @@ async function walk() {
         entry.target_height = plan.target; entry.target_basis = plan.basis;
         // gap-floor lowering applies ONCE (first window ever); afterwards a
         // resume continues from the advanced cursor, never re-walks from floor.
+        const stagedFloor = WALK_FLOOR != null ? Math.max(plan.floor, WALK_FLOOR) : null;
+        if (stagedFloor != null) {
+            // STAGED MODE: this source can't reach the true floor — walk only
+            // its serviceable slice [stagedFloor, target]; the deep remainder
+            // [floor, stagedFloor) stays honestly open (done stays false; a
+            // deeper source later walks the rest, dedup makes overlap free).
+            if (Number(entry.staged_floor_done || Infinity) <= stagedFloor) { console.log(`— ${entry.label}: staged slice already done (≥${entry.staged_floor_done})`); continue; }
+            let sCur = entry.staged && entry.staged.floor === stagedFloor ? Number(entry.staged.cursor) : stagedFloor;
+            console.log(`\n▶ ${entry.label} [STAGED] — ${sCur} → ${plan.target} (deep remainder ${plan.floor}–${stagedFloor} stays open)`);
+            while (sCur < plan.target) {
+                if (outOfBudget()) { stoppedForBudget = true; break; }
+                const hFrom = sCur + 1, hTo = Math.min(sCur + WINDOW_BLOCKS, plan.target);
+                const label = `${entry.label} [staged] ${hFrom}-${hTo}`;
+                let txs, totalSeen;
+                if (pairOnly) {
+                    const a = await fetchWindowTxs(entry.address, hFrom, hTo, label + ' [provide]', `wasm.action='provide_liquidity'`);
+                    const b = await fetchWindowTxs(entry.address, hFrom, hTo, label + ' [withdraw]', `wasm.action='withdraw_liquidity'`);
+                    const seenH = new Set(a.txs.map(t => t.txhash));
+                    txs = [...a.txs, ...b.txs.filter(t => !seenH.has(t.txhash))].sort((x, y) => Number(x.height) - Number(y.height));
+                    totalSeen = a.totalSeen + b.totalSeen;
+                } else ({ txs, totalSeen } = await fetchWindowTxs(entry.address, hFrom, hTo, label));
+                const classified = routeAndClassify(plan, txs, discovered, contextCensus, regCtx);
+                stageAndMerge(classified, tallies);
+                sCur = hTo;
+                entry.staged = { floor: stagedFloor, cursor: sCur };
+                if (sCur >= plan.target) { entry.staged_floor_done = stagedFloor; delete entry.staged; }
+                runRec.windows++;
+                runRec.entries[entry.label] = { staged_cursor: sCur, staged_floor: stagedFloor, target: plan.target, slice_done: sCur >= plan.target };
+                if (!DRY) writeJson(REGISTRY_PATH, registry, 2);
+                console.log(`  ${label}: ${totalSeen} txs (${txs.length} ok) → tallies ${JSON.stringify(tallies)}`);
+                checkpoint(`registry-backfill[staged≥${stagedFloor}]: ${entry.label} → ${sCur}${sCur >= plan.target ? ' (SLICE DONE)' : ''}`);
+            }
+            if (stoppedForBudget) break;
+            continue;
+        }
         const begun = entry.walk_floor_applied === true;
         let cur = begun ? Number(entry.cursor_height) : Math.min(Number(entry.cursor_height), plan.floor);
         entry.walk_floor_applied = true;
@@ -1068,6 +1124,14 @@ async function walk() {
         return;
     }
 
+    if (WALK_FLOOR != null) {
+        const sliced = registry.contracts.filter(e => Number(e.staged_floor_done || Infinity) <= Math.max(WALK_FLOOR, 0)).length;
+        checkpoint(`registry-backfill: staged pass (floor ${WALK_FLOOR}) checkpoint`);
+        console.log(`\n⏸ STAGED PASS (WALK_FLOOR=${WALK_FLOOR}): ${sliced}/${registry.contracts.length} entries have completed their serviceable slice.`);
+        console.log('Deep remainder below the staged floor stays open in the registry; §10 fixtures evaluate on the eventual FULL-depth completion.');
+        console.log('Fixtures that live ABOVE the staged floor (PD props, June Solid, flows-v3 upgrades) can be spot-checked now in the committed months.');
+        return;
+    }
     const allDone = registry.contracts.every(e => e.done || blocked.has(e.address));
     if (!allDone) { checkpoint('registry-backfill: partial (see registry cursors)'); console.log('\n⏸ not all entries complete — re-dispatch to continue.'); return; }
     if (blocked.size) console.log(`\n⚠ ${blocked.size} pair entr${blocked.size === 1 ? 'y' : 'ies'} BLOCKED on action-filter support — everything else complete; fixtures evaluated on what was walked.`);
