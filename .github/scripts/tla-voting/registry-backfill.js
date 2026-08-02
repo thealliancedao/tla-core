@@ -132,6 +132,8 @@ const PD_DAO = 'terra1k8ug6dkzntczfzn76wsh24tdjmx944yj6mk063wum7n20cwd7lxq4lppjg
 const PD_PROP = 'terra1660g9mle5kfsq8c0p4k4hgr9ujdyr3m48c22cawy0akr98rmwksqehqnup';
 
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+let WINDOWS_DONE = 0;   // global progress — survives into the crash handler
+function writeRunStatus(state) { try { fs.writeFileSync('/tmp/backfill-status.json', JSON.stringify({ state, windows: WINDOWS_DONE })); } catch {} }
 const startedAt = Date.now();
 const outOfBudget = () => (Date.now() - startedAt) / 60000 > TIME_BUDGET_MIN;
 
@@ -592,6 +594,7 @@ function recountFlowsIndex() {
 // ============================================================================= git checkpoint
 function git(args, opts = {}) { return execFileSync('git', args, { cwd: CORE_DIR, encoding: 'utf8', ...opts }); }
 function checkpoint(msg) {
+    if (MODE === 'walk' && !DRY) writeRunStatus('continue');
     if (DRY || !GIT_CHECKPOINT) { console.log(`  [${DRY ? 'dry' : 'no-checkpoint'}] would commit: ${msg}`); return; }
     const addPaths = ['tla-voting/events', 'tla-voting/capture-registry.json', 'tla-voting/backfill-report.json', 'tla-flows/events', 'votion/events', 'dex-liquidity', 'nfts/adao/transfers', 'price-history/reserve-implied']
         .filter(pth => fs.existsSync(path.join(CORE_DIR, pth)));   // dirs/files are born on first write — add only what exists
@@ -1011,9 +1014,10 @@ async function walk() {
     const report = readJson(REPORT_PATH, { kind: 'backfill-report', runs: [] });
     const runRec = { startedAt: new Date().toISOString(), mode: DRY ? 'dry' : 'walk', windows: 0, entries: {} };
 
-    let stoppedForBudget = false;
+    let stoppedForBudget = false; let entryErrors = 0;
     for (const plan of plans) {
         const { entry } = plan;
+        try {
         // once done, done — targets derived from a LIVE cursor move on every
         // run; re-opening completed entries would chase the forward walker
         // forever (extensions are a registry edit + re-run, per doctrine).
@@ -1050,7 +1054,7 @@ async function walk() {
                 sCur = hTo;
                 entry.staged = { floor: stagedFloor, cursor: sCur };
                 if (sCur >= plan.target) { entry.staged_floor_done = stagedFloor; delete entry.staged; }
-                runRec.windows++;
+                runRec.windows++; WINDOWS_DONE++;
                 runRec.entries[entry.label] = { staged_cursor: sCur, staged_floor: stagedFloor, target: plan.target, slice_done: sCur >= plan.target };
                 if (!DRY) writeJson(REGISTRY_PATH, registry, 2);
                 console.log(`  ${label}: ${totalSeen} txs (${txs.length} ok) → tallies ${JSON.stringify(tallies)}`);
@@ -1086,7 +1090,7 @@ async function walk() {
                 stageAndMerge(classified, tallies);
                 offset += pageTxs.length;
                 entry.ss_offset = offset; entry.ss_first_hash_prev = firstHashPrev; entry.ss_txs_count = txsCount;
-                runRec.windows++;
+                runRec.windows++; WINDOWS_DONE++;
                 runRec.entries[entry.label] = { ss_offset: offset, txsCount, min_height_seen: minH, done: minH < floor };
                 if (minH < floor) { entry.done = true; entry.cursor_height = plan.target; }
                 if (!DRY) writeJson(REGISTRY_PATH, registry, 2);
@@ -1116,11 +1120,17 @@ async function walk() {
             cur = hTo;
             entry.cursor_height = cur;
             if (cur >= plan.target) entry.done = true;
-            runRec.windows++;
+            runRec.windows++; WINDOWS_DONE++;
             runRec.entries[entry.label] = { cursor: cur, target: plan.target, done: !!entry.done };
             if (!DRY) writeJson(REGISTRY_PATH, registry, 2);
             console.log(`  ${label}: ${totalSeen} txs (${txs.length} ok) → tallies ${JSON.stringify(tallies)}${before === JSON.stringify(tallies) ? ' (no new)' : ''}`);
             if (runRec.windows % 3 === 0 || entry.done) checkpoint(`registry-backfill: ${entry.label} → ${cur}${entry.done ? ' (DONE)' : ''}`);
+        }
+        } catch (e) {
+            entryErrors++;
+            console.warn(`  ⚠ ${entry.label}: ${String(e.message).slice(0, 200)} — entry skipped this hop (cursor holds; the self-chain retries it next dispatch)`);
+            runRec.entries[entry.label] = { error: String(e.message).slice(0, 200) };
+            try { checkpoint(`registry-backfill: checkpoint before skipping ${entry.label}`); } catch {}
         }
         if (stoppedForBudget) break;
     }
@@ -1137,20 +1147,25 @@ async function walk() {
 
     if (stoppedForBudget) {
         checkpoint('registry-backfill: budget checkpoint (re-dispatch to continue)');
-        console.log(`\n⏸ TIME_BUDGET_MIN (${TIME_BUDGET_MIN}) reached — cursors committed; re-dispatch mode=walk to continue.`);
+        writeStatus('continue');
+        console.log(`\n⏸ TIME_BUDGET_MIN (${TIME_BUDGET_MIN}) reached — cursors committed; self-chain continues.`);
         return;
     }
 
+    const writeStatus = (state) => { try { fs.writeFileSync('/tmp/backfill-status.json', JSON.stringify({ state, windows: WINDOWS_DONE, entryErrors })); } catch {} };
     if (WALK_FLOOR != null) {
         const sliced = registry.contracts.filter(e => Number(e.staged_floor_done || Infinity) <= Math.max(WALK_FLOOR, 0)).length;
+        const remaining = registry.contracts.filter(e => !(Number(e.staged_floor_done || Infinity) <= Math.max(WALK_FLOOR, 0)) && !blocked.has(e.address)).length;
         checkpoint(`registry-backfill: staged pass (floor ${WALK_FLOOR}) checkpoint`);
-        console.log(`\n⏸ STAGED PASS (WALK_FLOOR=${WALK_FLOOR}): ${sliced}/${registry.contracts.length} entries have completed their serviceable slice.`);
+        writeStatus(remaining === 0 ? 'complete' : 'continue');
+        console.log(`\n${remaining === 0 ? '✅ STAGED PASS COMPLETE' : '⏸ STAGED PASS'} (WALK_FLOOR=${WALK_FLOOR}): ${sliced}/${registry.contracts.length} entries have completed their serviceable slice${remaining ? `; ${remaining} remain — self-chain continues` : ''}.`);
         console.log('Deep remainder below the staged floor stays open in the registry; §10 fixtures evaluate on the eventual FULL-depth completion.');
         console.log('Fixtures that live ABOVE the staged floor (PD props, June Solid, flows-v3 upgrades) can be spot-checked now in the committed months.');
         return;
     }
     const allDone = registry.contracts.every(e => e.done || blocked.has(e.address));
-    if (!allDone) { checkpoint('registry-backfill: partial (see registry cursors)'); console.log('\n⏸ not all entries complete — re-dispatch to continue.'); return; }
+    if (!allDone) { checkpoint('registry-backfill: partial (see registry cursors)'); writeStatus('continue'); console.log('\n⏸ not all entries complete — self-chain continues.'); return; }
+    writeStatus('complete');
     if (blocked.size) console.log(`\n⚠ ${blocked.size} pair entr${blocked.size === 1 ? 'y' : 'ies'} BLOCKED on action-filter support — everything else complete; fixtures evaluated on what was walked.`);
 
     // §10 completion gate
@@ -1176,4 +1191,11 @@ async function walk() {
     if (MODE === 'preflight') return preflight();
     if (MODE === 'walk') return walk();
     throw new Error(`unknown MODE ${MODE}`);
-})().catch(e => { console.error('FATAL', e.stack || e.message); process.exit(1); });
+})().catch(e => {
+    console.error('FATAL', e.stack || e.message);
+    if (MODE === 'walk' && !DRY && WINDOWS_DONE > 0) {
+        writeRunStatus('continue');   // progress WAS made and is committed — the self-chain resumes past this transient
+        console.error(`(${WINDOWS_DONE} windows committed before the crash — status=continue written; the chain re-dispatches and resumes from committed cursors)`);
+    }
+    process.exit(1);
+});
