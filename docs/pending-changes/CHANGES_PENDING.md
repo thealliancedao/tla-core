@@ -1,3 +1,82 @@
+## ✅ 2026-08-02 (3) — EVENING: BRIBER BOARD T1→T2.6 · ROLLUP REBUILD (PD #1) · FUEL PRICED · pd-bribes PRODUCT LIVE 20/20
+
+**Rollup rebuild (FORCE_ROLLUPS) cashed the whole capture arc at once:** 17→**32
+bribers**, 2,924→**10,002 attributed events**. Phoenix Directive lands **rank #1**
+(189 events, **427,876.96 LUNA**, $36.6K at placement, 2025-04→2026-07); Solid's
+current wallet on (15 events, $15.8K); DeFi_Patriot's hole-era fixtures merged
+(walk had already descended past h17.13M). The T1 amber backfill note
+**self-removed** — 0/19 tokens with ledger gaps, its designed retirement.
+LUNA attribution computes **104.6%** (spanning-vs-floor overlap) — cap-and-explain
+queued. `rollups.js` shipped `by_epoch.n` (total event count incl. pool-null
+governance legs) so PD's modal epoch chart renders its real history.
+
+**test.html Rev T1→T2.6 (cumulative, gate 98/98, staged for promotion):**
+volume board All/Astro/SS + APR Amp/Non toggles · utilization stale-gap tiebreak ·
+briber label scheme (registered handles bold sky, protocol labels bold orange) ·
+tribute-bucket names · clickable briber rows → deep-dive modal · boardExpander
+collapse everywhere + three Pool-Tops expanders · hero band v2 (merged Active
+Pools, NEW TLA TVL tile, sparklines from poolStatusHistory, movers diverging
+bars, stale/take-rate mini bars, freshness chips, uniform label/value/sub/pill
+tiles, whole-tile drills) · **three-mode bribers card**: Bribers / **Earned**
+(all-time claimed per wallet from rollup `voters[].claims`, valued at claim date
+— lower bound per `claim_coverage`) / **Pending** (renamed) · **Pending mode now
+computes live vote-share × pots per member** (the tile's math, shared fn) —
+AUDIT FINDING: `adao-positions summary.total_pending_bribes_usd` is BROKEN
+(11/155 wallets nonzero, max $26.62 vs $960 live pots, values unstable between
+loads); page no longer consumes it — **cron field fix-or-retire QUEUED**.
+
+**FUEL arc:** all "missing" FUEL bribers were captured all along — three unnamed
+wallets, spanning placements (main: ONE 900K-FUEL tx 2026-03-10 spanning
+e176→e200 = 36K/epoch, runway ends e200). Identity labels deliberately NOT
+added (pattern ≠ identity; wallets.json untouched). **price-history FUEL
+points committed** at true capture dates only: e165/166/167/169 contemporaneous
+captures ($0.00392/$0.00429/$0.00452/$0.00374) + reserve-implied 2026-03-10
+$0.00272878 (dex-liquidity provide ratio × LUNA coingecko; corroborated by
+e177 manual $0.00292). Oct-2025 wallet stays honestly unpriced. Post-rebuild:
+main FUEL wallet **$2,545.88 → rank 6**. The fuel-tool's today's-ratio estimate
+series was REJECTED as a source (the stale-ratio sin).
+
+**token-catalog forward-append fix (deployed):** daily price-history append read
+`discovered.symbol` only — **20 PRICED tokens silently dropped daily** (ATOM,
+stLUNA, stATOM, INJ, xASTRO, wBTC variants, FUEL…). Effective-first now (the
+buildTokenMap convention). **VERIFY next daily run: Aug day-row token count
+~16 → ~35+.**
+
+**pd-bribes product v1.0.0→v1.2.0 (SPEC-pd-directive-watch data layer) — DEPLOY
+VERIFIED:** heartbeat `status: ok`, **20/20 proposals verified, 0 unmatched
+either side, 427,876.955482 LUNA, zero flags** — every PD proposal ever
+executed (ids 141→250) matched to its captured chain execution. The two honest
+failures were the diagnosis: v1.0 flags revealed the ve3 AddBribe schema
+(`bribe`/`gauge`/`for_info`/`distribution`), v1.1 matched amounts to the digit
+but read denom None → **ve3 AssetInfo is cw-asset dialect** (`{native:"uluna"}`
+/ `{cw20:addr}`), both dialects now parsed. Design: match by (denom|net)
+multiset ONLY; **spans come from the matched chain events** (`distribution`
+stays opaque, never decoded); msg net cross-checks funds−fee; 10-LUNA fee
+excluded everywhere; executed-but-uncaptured proposals flagged never merged.
+Product replaces `tla_pd_bribes.json` permanently — page T2.6 consumes it
+gid-keyed (no name matching), stale note self-retired, PD modal By-pool filled
+("from proposal-state derive"). Proposal titles carry PD's stated basis
+verbatim ("vote incentives based on trading efficiency + volume") — Watch-page
+epigraph material.
+
+**Doctrine recorded:** (1) honest-failure heartbeats self-diagnose — refusing to
+publish garbage twice handed us the fix both times; (2) DAO proposal-module
+STATE is a permanent archive-free source for governance-executed payloads;
+(3) capture runs ahead of presentation — every "where's X?" tonight (PD, his
+bribes, FUEL, Solid) was already in tla-core awaiting render; (4) effective-first
+symbols everywhere (append had diverged from buildTokenMap); (5) when designed
+behavior changes, gate truths update WITH the cause asserted (note
+self-removal gated as gaps==0 && !note). NOTE: PROJECT_KNOWLEDGE.md referenced
+by session doctrine does not exist in tla-core — session grounding is THIS
+file + changelogs + specs.
+
+**Queue (this session's adds):** adao-positions `total_pending_bribes_usd`
+fix-or-retire · bribe_ledger >100% cap-and-explain · freeze/retire legacy
+`tla_pd_bribes.json` (unreachable fallback now) · price-history append token
+count verify (next daily) · **NEXT SESSION: tla-stats LOWER HALF build** (then
+test.html→live promotion after Camron's review) · PD Watch page views 1–4
+(spec committed, product live, view 4 gated on SS /api/pools).
+
 ## ✅ 2026-08-02 (2) — APR/PRICING REPAIRS DEPLOYED & FORMULA-VALIDATED · R3a QUEUED
 
 **Shipped + live-verified:** org-votion **1.2.0** (LST hub-rate three-link
