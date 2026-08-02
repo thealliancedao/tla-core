@@ -65,9 +65,18 @@ on:
         description: "STAGED MODE: walk only heights ≥ this on this source (from preflight's event_index_floor); deep remainder stays open"
         type: string
         default: ""
+      req_delay_ms:
+        description: "Politeness delay between requests in ms (set to the node operator's preferred rate; 500 = ~2 req/s)"
+        type: string
+        default: "250"
+      hop:
+        description: "self-chain hop counter (leave at 0 — the job increments it itself)"
+        type: string
+        default: "0"
 
 permissions:
   contents: write
+  actions: write
 
 concurrency:
   group: tla-voting-registry-backfill
@@ -114,4 +123,27 @@ jobs:
           VOTING_HEAD: ${{ inputs.voting_head }}
           E2_HEAD: ${{ inputs.e2_head }}
           WALK_FLOOR: ${{ inputs.walk_floor }}
+          REQ_DELAY_MS: ${{ inputs.req_delay_ms }}
         run: node .github/scripts/tla-voting/registry-backfill.js
+
+      - name: Self-chain (re-dispatch until the pass completes)
+        if: always() && inputs.mode == 'walk' && inputs.dry_run != '1'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          STATUS=$(cat /tmp/backfill-status.json 2>/dev/null || echo '{}')
+          STATE=$(echo "$STATUS" | python3 -c "import json,sys; print(json.load(sys.stdin).get('state',''))" 2>/dev/null || echo "")
+          WINDOWS=$(echo "$STATUS" | python3 -c "import json,sys; print(json.load(sys.stdin).get('windows',0))" 2>/dev/null || echo 0)
+          HOP=${{ inputs.hop || 0 }}
+          echo "state=$STATE windows=$WINDOWS hop=$HOP"
+          if [ "$STATE" = "complete" ]; then echo "✅ pass complete — chain ends"; exit 0; fi
+          if [ "$HOP" -ge 40 ]; then echo "⚠ hop cap (40) reached — chain ends, inspect logs"; exit 0; fi
+          if [ "$STATE" != "continue" ] && [ "$WINDOWS" = "0" ]; then echo "⚠ no progress and no continue-signal (crash before first window) — chain ends to avoid a crash loop"; exit 0; fi
+          echo "↻ re-dispatching hop $((HOP+1))"
+          gh workflow run tla-voting-registry-backfill.yml -R "$GITHUB_REPOSITORY" \
+            -f mode=walk -f dry_run=0 \
+            -f archive_lcd="${{ inputs.archive_lcd }}" -f archive_rpc="${{ inputs.archive_rpc }}" \
+            -f starscream_url="${{ inputs.starscream_url }}" \
+            -f window_blocks="${{ inputs.window_blocks }}" -f time_budget_min="${{ inputs.time_budget_min }}" \
+            -f voting_head="${{ inputs.voting_head }}" -f e2_head="${{ inputs.e2_head }}" \
+            -f walk_floor="${{ inputs.walk_floor }}" -f req_delay_ms="${{ inputs.req_delay_ms }}" -f hop="$((HOP+1))"
