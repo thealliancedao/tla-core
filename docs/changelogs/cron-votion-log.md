@@ -4,6 +4,43 @@ Owner: `platform-crons/votion/` (Render job `org-votion`, hourly at :20).
 Writes `tla-core/votion/`. Spec: SPEC-votion-capture.md (G2 from
 UI-DATA-READINESS — the data-loss-clock gap).
 
+# Rev 2 — 2026-08-02 — 1.2.0: LST hub-rate pricing (three-link chain) — mock-gated 48/48
+
+**The fix (AUDIT-eris-apr-pricing fix #1, ported here after the personal
+votion-positions patch was RETRACTED — retiring-repo doctrine; org-votion
+Branch B is the successor):** Branch B USD was `underlying_lst × catalog LST
+price`, which for arbLUNA carries the amp-class figure → the audited 2.2×
+understatement. Now: `underlying_usd = underlying_lst × LST's OWN hub
+exchange_rate × LUNA_USD` — hub rates queried on-chain per run
+(`LST_HUB_CANDIDATES` keyed by LST cw20; dual query shape `{state:{}}` →
+`{exchange_rate:{}}`; sanity window 0.5–50; ampLUNA carries BOTH curated
+"Eris ampLUNA Hub" entries — first sane responder wins and is published so
+the registry label conflict can be curated). Catalog LST price survives only
+as a labeled `(fallback)` → status partial + heartbeat
+`lst_rate_fallback_in_use` + `lst_hub` error row.
+
+**Published (additive):** Branch A `vaults.json` + history points gain
+`lst_luna_hub_rate` (+`lst_hub_addr` in vaults.json); Branch B vault blocks
+gain `lst_luna_hub_rate`/`lst_hub_addr`/`lst_rate_source` + real
+`vault_tvl_usd`; totals gain `total_vault_tvl_usd` (existing
+`total_tvl_usd` = discovered-holders sum, semantic unchanged); meta gains
+`lst_pricing_convention`.
+
+**Gate 48/48** (full prior suite + hub scenarios): three-link exactness
+(carol 20k arbLUNA → $5,800 vs v1.1's $2,660), Branch-A/history hub fields,
+R6 no-LUNA-price → USD honestly null with hub rate still published, R8
+arb-hub-dead → labeled coingecko fallback + partial + flags with ampLUNA
+unaffected. Harness hardened: Branch C `T.fetch` now stubbed (was hitting
+the live Votion backend — gate is hermetic/CI-safe).
+
+**Deploy verify (first run):** heartbeat `lst_rate_fallback_in_use:false`;
+vaults.json arb rate ≈2.9 / amp ≈1.34; DeFi_Patriot's arbLUNA position USD
+≈2.16× its prior figure; note which ampLUNA hub candidate answered →
+correct the duplicate curated label. Page repoint
+(member-portfolio → `tla-core/votion/snapshots/current.json`) is queued for
+the site batch under parallel-run: verify org output vs the personal feed,
+repoint, THEN retire the personal cron on Render.
+
 # Rev 1 — 2026-07-16 — 1.0.0 BUILT: vaults hourly + positions daily — mock-gated 28/28, DEPLOY PENDING PROBE VALIDATION
 
 **What:** Branches A + B of SPEC-votion-capture (Branch C optimizer = v1.1;
