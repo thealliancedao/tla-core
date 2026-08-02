@@ -2,7 +2,10 @@
 
 Date: 2026-08-01 · Source: Eris webapp bundle + query decode (HAR capture by
 DeFi_Patriot; 15 JS bundles, all contract queries decoded) · Status: **audit
-CLOSED — fixes prescribed, implementation queued**
+CLOSED — fixes prescribed, implementation queued** · 2026-08-02: gauge LP APR
+logic CONFIRMED FROM SOURCE (Philipp shared `getLiquidityIncentives` + the
+APR composition verbatim) and folded in as §Gauge-LP-APR — that section is
+the implementation contract for `eris_apr_pct`.
 
 ## The discrepancy
 
@@ -51,6 +54,67 @@ figures read systematically lower for the same underlying yield. Our v3
 capture already records the historical rate curve (bond_amount/bond_share per
 event), so historical realized APY is derivable from our own data.
 
+## Gauge LP APR (CONFIRMED FROM SOURCE — Philipp, 2026-08-02)
+
+Eris shared the actual code (`getLiquidityIncentives` + the APR composition).
+This section is the implementation contract for the published `eris_apr_pct`
+— replicate the mixed convention EXACTLY, do not "clean it up".
+
+**Stage 1 — chain inputs (both height-parameterizable for history):**
+- `/terra/alliances` — per-alliance `reward_weight`, `denom`,
+  `reward_start_time`, `last_reward_change_time`, `reward_change_interval`
+- `/cosmos/mint/v1beta1/annual_provisions` — yearly LUNA emission
+
+**Stage 2 — per-gauge incentive pot:**
+
+```
+totalReward   = Σ reward_weight over ACTIVE alliances only
+                (active = reward_start_time < now)  + 1   // +1 = regular staking
+allianceAsset = alliances.find(denom == gauge.alliance_connector_vt)
+rewardPct     = allianceAsset.reward_weight / totalReward   // 0 if not yet active
+rewardsPerYear  = annual_provisions × rewardPct
+rewardsPerEpoch = rewardsPerYear / 365 × 7                  // plain 365, not 365.25
+rewardsUpdate   = last_reward_change_time + reward_change_interval
+                                    // next expected weight change (startup ramps)
+```
+
+**Stage 3 — per-pool APR:**
+
+```
+incentivesLpPerYear = rewardsPerYear × assetDistribution.distribution
+                                    // distribution = pool's share of gauge votes
+                                    //   = our captured vote outcomes
+incentivesUsd = incentivesLpPerYear / decimals.factor × LUNA_USD
+tvl           = pool.price × totalStaked            // TLA-STAKED TVL ONLY
+                                    // (pool.tvl = full DEX depth is kept
+                                    //  separately but NOT the APR denominator)
+incentiveApr  = incentivesUsd / tvl
+                // edge cases verbatim: tvl==0 && incentives==0 → 0
+                //                      tvl==0                  → Infinity
+```
+
+**Stage 4 — displayed figure (verbatim composition):**
+
+```
+apy   = aprToApy(incentiveApr × 0.92 × 100) / 100 + tradingApr − yearly_take_rate
+total = incentiveApr − yearly_take_rate + tradingApr      // linear variant, kept
+```
+
+- **0.92 = Eris's 8% cut on incentives**, silently netted inside the displayed
+  number (investor-lens finding — never stated in their UI; ours says so in
+  the tooltip).
+- **Mixed convention by their design:** incentive leg COMPOUNDED (aprToApy,
+  daily per the §APY section), trading-fee leg and take-rate deduction LINEAR.
+  Replicate as-is so our number reconciles to their screen; publish the
+  linear `total` alongside for the APR-labeled variant.
+- `yearly_take_rate` comes from the LP config; `tradingApr` from their pool
+  service — WE substitute our own dex-data fee APR for that leg (state the
+  substitution in the figure's provenance).
+- **Historical claimed APR fully reconstructable from our own capture:**
+  distribution shares = tla-voting vote outcomes/distributions; staked TVL =
+  our snapshots; the two Stage-1 endpoints ride the during-access-window
+  state sampler, height-parameterized (already queued).
+
 ## Prescribed fixes (implementation queued — next session)
 
 1. **votion-positions cron** (`defipatriot/cron-scripts`): query each LST's
@@ -64,6 +128,17 @@ event), so historical realized APY is derivable from our own data.
 3. **APR display convention**: adopt daily-compounded, LABELED "APY", to
    match what members see on Eris (or show both APR/APY). Decision:
    DeFi_Patriot leans match-Eris.
+4. **`eris_apr_pct` published from the CRON, not computed on pages**
+   (2026-08-02, DeFi_Patriot's call): implement §Gauge-LP-APR in the org
+   capture layer (dex-data or token-catalog stage — decide at build),
+   validate against BOTH ground-truth tables (SPEC-lp-apr §7 4-pool +
+   CRON-FIXES-BRIEF §2.10 19-pool, same-day-capture tolerance stated),
+   publish per-pool `eris_apr_pct` + `eris_apy_pct` (linear `total` and
+   compounded `apy` per Stage 4), then re-point every page APR surface to
+   the published figures and RETIRE all page-side APR math (tla-stats
+   `_aprOf` estimates, member-portfolio Rev 1.3 weekly-compound estimate).
+   Backfill order: fix historical series first, then the cron, then trigger
+   runs so pages read corrected data.
 
 ## Bonus findings from the same capture
 
