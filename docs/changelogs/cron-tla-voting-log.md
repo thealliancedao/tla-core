@@ -6,6 +6,82 @@ Spec: `docs/pending-changes/SPEC-tla-voting.md`
 
 ---
 
+# Rev 12 — 2026-08-02 — E1 GRANTED: DEEP WALK LAUNCHED (full depth, community archive endpoint) — completeness review closed first
+
+**The hole is draining.** A community node operator granted archive access
+(endpoint held in repo secrets ONLY, per their preference — never committed;
+`ARCHIVE_LCD`/`ARCHIVE_RPC`, walk rate set via new `req_delay_ms` workflow
+input). First contact confirmed live: action-filtered queries SUPPORTED (all
+64 pair walks GO) and the manager pulling real txs from block 13,736,598 —
+Jan 2025, data no public node has served in a year. Early tallies mid-walk:
+6,540 bribes / 10,016 rewards / 2,410 votes and climbing; self-chain doing
+the rest unattended.
+
+**Pre-launch completeness review (walk-once discipline, DeFi_Patriot-driven):**
+project-lens + cautious-investor-lens audit against docs/ecosystem-knowledge
+found three gaps — (A) **historical STATE sampler** (hub exchange-rate
+history for correct LST USD-at-time cost basis; TVL/VP/APY curves to
+genesis) — gated on archive-STATE support, probe via preflight `state_depth`
+during the access window; partially mitigated already: pair-swap samples
+give a market-implied LST↔LUNA ratio series through the hole automatically;
+(B) **27 SkeletonSwap tla_relevant pairs** — ADDED to the registry pre-walk
+(81 entries total), riding the same pass full-depth, classifier defensive on
+the Astroport-family fork shapes; (C) **Credia leverage layer** (accepts TLA
+ampLP collateral → borrow/repay/liquidation history = the risk signal) —
+scoped, next build. Optional D (DAODAO governance events) parked.
+
+**Final shakedown before first contact:** full-depth E2E on the EXACT
+dispatch bytes (81-entry registry, mock at the corrected 11-leg PD) ran to
+`✅ BACKFILL COMPLETE` — all 8 fixtures green, §10 pair recovered VERBATIM
+with fee_funds doctrine intact, pair-block guard proven. Every historical
+bug class re-verified fixed in one pass. Zero code changes were needed
+against the live node.
+
+---
+
+# Rev 11 — 2026-08-01 — STAGED HARVEST COMPLETE 54/54 (Polkachu, free): walker era + hole tail recovered; PD corrected to chain truth; deep remainder honestly parked
+
+**E1 resolved without archive access, without asking anyone** — the staged
+multi-source doctrine, again: preflight's new capability matrix + index-floor
+BISECT measured Polkachu's free tx-event index to block **21,294,875**
+(~Jun 2 2026), and staged mode (`WALK_FLOOR`) harvested everything above it.
+Transport saga en route (each fix permanent): redirect-following (TFL fronts
+301), 6-check capability matrix incl. §10-hash depth probe, lenient dialect
+probe, adaptive page-size (Polkachu's 10MB gRPC cap on event-heavy zapper
+pages), 10-attempt jittered push retry + every-3rd-window checkpoints (the
+hourly crons' publish races), per-entry error containment + **self-chaining
+workflow** (re-dispatches itself until the pass completes — kick once).
+A starscream (Chainscope GraphQL) alternate transport was also built and
+live-probe-verified (gate 9 on a real captured response) — held in reserve,
+unused without their blessing.
+
+**Harvested (all committed, all merge-law-verified):** bribes 3,014→3,464 ·
++63 votes / +59 locks / +214 rewards · the recorded Jun-15→22 prune gaps
+HEALED (62 votes recovered inside) · **flows fully at v3** (4,246 records:
+walker era re-classified + the Jul-23→v3-flip v2 seam of 776 records sealed
+in a follow-up staged pass; all 3 test-tx flows_record fixtures VERBATIM) ·
+NEW STREAMS BORN: dex-liquidity 5,319 both-sides records on 22 pairs ·
+reserve-implied price series 509 daily samples / 47 days · votion 164 events
+with 27 vtoken↔LST rate samples · 38 NFT transfers · Solid ×3 1M-CAPA June
+fixtures byte-exact.
+
+**CORRECTION (chain truth, DeFi_Patriot chainscope-recounted):** PD prop 250
+(tx 402AE7B1…) = **ELEVEN add_bribe legs, gross 38,155.099199 LUNA**. The
+previously "locked" 10 / 34,763.534826-net figure (incl. in Rev 9's fixture
+description) was a manual tally that collapsed the two identical
+3,391.564373 legs; collision-aware promotion is what kept them both.
+Fixtures amended to truth. PD lands on the bribe board at the next rollup
+rebuild. Prop 247 executed BELOW the staged floor — deep-remainder item.
+
+**Honestly open (machine-recorded per registry entry as staged_floor_done
+with done:false):** the deep remainder 13,736,597→21,294,875 (Jan 2025→Jun
+2026) — §10's two bribes, prop 247, pre-June Votion history. Paths: Eris ask
+pending (they run phoenix-rpc.erisprotocol.com — probe queued) · sovereign
+node spec queued (tx-index-only sync, state pruning hard — no true archive
+needed). §10 fixtures evaluate on eventual FULL-depth completion.
+
+---
+
 # Rev 10 — 2026-07-31 — E2 EXTENSIONS BUILT: full-picture P&L capture (flows v3 · Votion · pairs · NFT provenance · tax-grade cost basis) — gated 8/8
 
 **SPEC-registry-extensions-pnl v2 executed.** The E2 walk now recovers the
