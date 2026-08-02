@@ -1,793 +1,1090 @@
 {
-  "schemaVersion": 2,
-  "kind": "capture-registry",
-  "spec": "docs/pending-changes/SPEC-capture-registry-backfill.md",
-  "note": "The ledger of every contract whose events feed a stream. The backfill job iterates these entries with archive tx_search (wasm._contract_address), advancing each cursor; adding a contract later = append an entry and run the same job. Cursors are committed after every page (resume-proof). | v2 (2026-07-31, SPEC-registry-extensions-pnl): + Votion vaults (votion_flows), TLA Astroport pairs (dex_liquidity + reserve-implied price samples), ADAO/lock NFT transfers (nft_transfers). Aux classifiers: platform-crons/tla-flows/lib/aux-classifiers.js. Pair walks REQUIRE archive action-filtered queries (preflight-probed).",
-  "hole": {
-    "from_height": 13737811,
-    "to_height": 21481530,
-    "from_date_approx": "2025-01-07",
-    "to_date_approx": "2026-06-14"
+ "schemaVersion": 2,
+ "kind": "capture-registry",
+ "spec": "docs/pending-changes/SPEC-capture-registry-backfill.md",
+ "note": "The ledger of every contract whose events feed a stream. The backfill job iterates these entries with archive tx_search (wasm._contract_address), advancing each cursor; adding a contract later = append an entry and run the same job. Cursors are committed after every page (resume-proof). | v2 (2026-07-31, SPEC-registry-extensions-pnl): + Votion vaults (votion_flows), TLA Astroport pairs (dex_liquidity + reserve-implied price samples), ADAO/lock NFT transfers (nft_transfers). Aux classifiers: platform-crons/tla-flows/lib/aux-classifiers.js. Pair walks REQUIRE archive action-filtered queries (preflight-probed). | +27 SkeletonSwap tla_relevant pairs (2026-08-01, pre-deep-walk).",
+ "hole": {
+  "from_height": 13737811,
+  "to_height": 21481530,
+  "from_date_approx": "2025-01-07",
+  "to_date_approx": "2026-06-14"
+ },
+ "contracts": [
+  {
+   "address": "terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh",
+   "label": "TLA Incentive Manager",
+   "streams": [
+    "bribes"
+   ],
+   "classifier": "org-tla-voting 2.3.1 bribe rules (+ refund/rollover event class once learned \u2014 spec \u00a75)",
+   "cursor_height": 13737811,
+   "done": false,
+   "target_height": 22166823,
+   "target_basis": "committed voting cursor (22166823) \u2014 full walker-era re-derive at v6.1 (dedup-safe)",
+   "staged_floor_done": 21294875
   },
-  "contracts": [
-    {
-      "address": "terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh",
-      "label": "TLA Incentive Manager",
-      "streams": [
-        "bribes"
-      ],
-      "classifier": "org-tla-voting 2.3.1 bribe rules (+ refund/rollover event class once learned — spec §5)",
-      "cursor_height": 13737811,
-      "done": false,
-      "target_height": 22166823,
-      "target_basis": "committed voting cursor (22166823) — full walker-era re-derive at v6.1 (dedup-safe)",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1hfksrhchkmsj4qdq33wkksrslnfles6y2l77fmmzeep0xmq24l2smsd3lj",
-      "label": "TLA Gauge Controller",
-      "streams": [
-        "votes"
-      ],
-      "classifier": "org-tla-voting 2.3.1 vote rules",
-      "cursor_height": 13737811,
-      "done": false,
-      "target_height": 22166823,
-      "target_basis": "committed voting cursor (22166823) — full walker-era re-derive at v6.1 (dedup-safe)",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1uqhj8agyeaz8fu6mdggfuwr3lp32jlrx5hqag4jxexde92rzkamq3l62zg",
-      "label": "vAMP Escrow (voting escrow)",
-      "streams": [
-        "locks",
-        "nft_transfers"
-      ],
-      "classifier": "org-tla-voting 2.3.1 lock rules (VP stamping preserved) + aux classifyNftTx v1 (lock NFTs)",
-      "cursor_height": 13737811,
-      "done": false,
-      "target_height": 22166823,
-      "target_basis": "committed voting cursor (22166823) — full walker-era re-derive at v6.1 (dedup-safe)",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1v399cx9drllm70wxfsgvfe694tdsd9x96p9ha36w7muffe4znlusqswspq",
-      "label": "TLA staking bucket / gauge tribute contract (...qswspq)",
-      "streams": [
-        "bribes",
-        "flows"
-      ],
-      "classifier": "org-tla-voting 2.3.1 tribute route + <<FLOWS CLASSIFIER v2>> (pool identity + claim amounts — SHIPPED 2026-07-23, gated 32,777-tx corpus)",
-      "cursor_height": 13737811,
-      "done": false,
-      "note": "IDENTITY (2026-07-23): the tribute contracts ARE the four asset-staking buckets — one contract stakes the LPs and recycles take-rate fees as bribes.",
-      "e2_note": "E2 scope: walk 13,737,811 → the v2-deploy head (not just the hole) — the walker era Jun-16→v2-deploy was captured at v1 (no pool/claim amounts); the archive pass re-derives it at v2 and the schema-upgrade merge replaces in place.",
-      "target_height": 22166823,
-      "target_basis": "E2_HEAD override",
-      "e2_note_seam": "v2 seam re-walk 2026-08-01: dispatched with e2_head at live cursor to upgrade the Jul-23→v3-flip stretch (776 v2 records incl. the 3 test-tx fixtures) to v3 in place",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa",
-      "label": "TLA staking bucket / gauge tribute contract (...gw3lpa)",
-      "streams": [
-        "bribes",
-        "flows"
-      ],
-      "classifier": "org-tla-voting 2.3.1 tribute route + <<FLOWS CLASSIFIER v2>> (pool identity + claim amounts — SHIPPED 2026-07-23, gated 32,777-tx corpus)",
-      "cursor_height": 13737811,
-      "done": false,
-      "note": "IDENTITY (2026-07-23): the tribute contracts ARE the four asset-staking buckets — one contract stakes the LPs and recycles take-rate fees as bribes.",
-      "e2_note": "E2 scope: walk 13,737,811 → the v2-deploy head (not just the hole) — the walker era Jun-16→v2-deploy was captured at v1 (no pool/claim amounts); the archive pass re-derives it at v2 and the schema-upgrade merge replaces in place.",
-      "target_height": 22166823,
-      "target_basis": "E2_HEAD override",
-      "e2_note_seam": "v2 seam re-walk 2026-08-01: dispatched with e2_head at live cursor to upgrade the Jul-23→v3-flip stretch (776 v2 records incl. the 3 test-tx fixtures) to v3 in place",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra14mmvqn0kthw6sre75vku263lafn5655mkjdejqjedjga4cw0qx2qlf4arv",
-      "label": "TLA staking bucket / gauge tribute contract (...lf4arv)",
-      "streams": [
-        "bribes",
-        "flows"
-      ],
-      "classifier": "org-tla-voting 2.3.1 tribute route + <<FLOWS CLASSIFIER v2>> (pool identity + claim amounts — SHIPPED 2026-07-23, gated 32,777-tx corpus)",
-      "cursor_height": 13737811,
-      "done": false,
-      "note": "IDENTITY (2026-07-23): the tribute contracts ARE the four asset-staking buckets — one contract stakes the LPs and recycles take-rate fees as bribes.",
-      "e2_note": "E2 scope: walk 13,737,811 → the v2-deploy head (not just the hole) — the walker era Jun-16→v2-deploy was captured at v1 (no pool/claim amounts); the archive pass re-derives it at v2 and the schema-upgrade merge replaces in place.",
-      "target_height": 22166823,
-      "target_basis": "E2_HEAD override",
-      "e2_note_seam": "v2 seam re-walk 2026-08-01: dispatched with e2_head at live cursor to upgrade the Jul-23→v3-flip stretch (776 v2 records incl. the 3 test-tx fixtures) to v3 in place",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1qdz5qgafx88kp5mf6m2tah8742g4u5g2cek0m3jrgssexexk7g4qw6e23k",
-      "label": "TLA staking bucket / gauge tribute contract (...w6e23k)",
-      "streams": [
-        "bribes",
-        "flows"
-      ],
-      "classifier": "org-tla-voting 2.3.1 tribute route + <<FLOWS CLASSIFIER v2>> (pool identity + claim amounts — SHIPPED 2026-07-23, gated 32,777-tx corpus)",
-      "cursor_height": 13737811,
-      "done": false,
-      "note": "IDENTITY (2026-07-23): the tribute contracts ARE the four asset-staking buckets — one contract stakes the LPs and recycles take-rate fees as bribes.",
-      "e2_note": "E2 scope: walk 13,737,811 → the v2-deploy head (not just the hole) — the walker era Jun-16→v2-deploy was captured at v1 (no pool/claim amounts); the archive pass re-derives it at v2 and the schema-upgrade merge replaces in place.",
-      "target_height": 22166823,
-      "target_basis": "E2_HEAD override",
-      "e2_note_seam": "v2 seam re-walk 2026-08-01: dispatched with e2_head at live cursor to upgrade the Jul-23→v3-flip stretch (776 v2 records incl. the 3 test-tx fixtures) to v3 in place",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1k8ug6dkzntczfzn76wsh24tdjmx944yj6mk063wum7n20cwd7lxq4lppjg",
-      "label": "Phoenix Directive DAO core",
-      "streams": [
-        "dao_attr_context"
-      ],
-      "classifier": "dao_attr rule v6.1 (single distinct dao wasm attribute; shared proposal module never labeled)",
-      "cursor_height": 13737811,
-      "done": false,
-      "target_height": 22166823,
-      "target_basis": "committed voting cursor (22166823) — full walker-era re-derive at v6.1 (dedup-safe)",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx",
-      "label": "Eris amp compounder (amplified LP vault)",
-      "streams": [
-        "flows"
-      ],
-      "classifier": "<<FLOWS CLASSIFIER v2>> (pool identity + claim amounts — SHIPPED 2026-07-23, gated 32,777-tx corpus)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "E2 scope: walk 13,737,811 → the v2-deploy head (not just the hole) — the walker era Jun-16→v2-deploy was captured at v1 (no pool/claim amounts); the archive pass re-derives it at v2 and the schema-upgrade merge replaces in place.",
-      "target_height": 22166823,
-      "target_basis": "E2_HEAD override",
-      "e2_note_seam": "v2 seam re-walk 2026-08-01: dispatched with e2_head at live cursor to upgrade the Jul-23→v3-flip stretch (776 v2 records incl. the 3 test-tx fixtures) to v3 in place",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1qdjsxsv96aagrdxz83gwtjk8qvf2mrg4y8y3dqjxg556lm79pg5qdgmaxl",
-      "label": "Eris zapper",
-      "streams": [
-        "flows"
-      ],
-      "classifier": "<<FLOWS CLASSIFIER v2>> (pool identity + claim amounts — SHIPPED 2026-07-23, gated 32,777-tx corpus)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "E2 scope: walk 13,737,811 → the v2-deploy head (not just the hole) — the walker era Jun-16→v2-deploy was captured at v1 (no pool/claim amounts); the archive pass re-derives it at v2 and the schema-upgrade merge replaces in place.",
-      "target_height": 22166823,
-      "target_basis": "E2_HEAD override",
-      "e2_note_seam": "v2 seam re-walk 2026-08-01: dispatched with e2_head at live cursor to upgrade the Jul-23→v3-flip stretch (776 v2 records incl. the 3 test-tx fixtures) to v3 in place",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1v7aw9eartqrjrhwd6c7hkmlkspcy5q4tvc07gjmvzqezk3fttr4s3mffyz",
-      "label": "Votion vault (max/vampluna, …3mffyz)",
-      "streams": [
-        "votion_flows"
-      ],
-      "classifier": "aux classifyVotionTx v1 (defensive raw-capture; fixtures pending — spec §9)",
-      "cursor_height": 13737811,
-      "done": false,
-      "vdenom": "factory/terra1v7aw9eartqrjrhwd6c7hkmlkspcy5q4tvc07gjmvzqezk3fttr4s3mffyz/max/vampluna",
-      "lst": "terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct",
-      "e2_note": "target = live head (no forward capture until walker WATCH extension deploys)",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1dr7mv4w6chznedhp7uw6ntz9zjj4hxcdga2lmenlfuj35vmwpf0qhnzm5p",
-      "label": "Votion vault (12/vampluna, …hnzm5p)",
-      "streams": [
-        "votion_flows"
-      ],
-      "classifier": "aux classifyVotionTx v1 (defensive raw-capture; fixtures pending — spec §9)",
-      "cursor_height": 13737811,
-      "done": false,
-      "vdenom": "factory/terra1dr7mv4w6chznedhp7uw6ntz9zjj4hxcdga2lmenlfuj35vmwpf0qhnzm5p/12/vampluna",
-      "lst": "terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct",
-      "e2_note": "target = live head (no forward capture until walker WATCH extension deploys)",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra13aae4futz6jk7hmdv0gwm2xs6p4nxv4xwz5tc0c2vt4960u4j6jqpqmye9",
-      "label": "Votion vault (max/varbluna, …pqmye9)",
-      "streams": [
-        "votion_flows"
-      ],
-      "classifier": "aux classifyVotionTx v1 (defensive raw-capture; fixtures pending — spec §9)",
-      "cursor_height": 13737811,
-      "done": false,
-      "vdenom": "factory/terra13aae4futz6jk7hmdv0gwm2xs6p4nxv4xwz5tc0c2vt4960u4j6jqpqmye9/max/varbluna",
-      "lst": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
-      "e2_note": "target = live head (no forward capture until walker WATCH extension deploys)",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1mzelg87h36y6wvtgj6fh9s4crgx9acw63l3zc6f9px6pc5f8h8lqs0sux0",
-      "label": "Votion vault (1/vampluna, …s0sux0)",
-      "streams": [
-        "votion_flows"
-      ],
-      "classifier": "aux classifyVotionTx v1 (defensive raw-capture; fixtures pending — spec §9)",
-      "cursor_height": 13737811,
-      "done": false,
-      "vdenom": "factory/terra1mzelg87h36y6wvtgj6fh9s4crgx9acw63l3zc6f9px6pc5f8h8lqs0sux0/1/vampluna",
-      "lst": "terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct",
-      "e2_note": "target = live head (no forward capture until walker WATCH extension deploys)",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra163jnveun52hxv2kg4ys9a28h20trmccr98tnrvr92snn6yzdeg7qd9zj9l",
-      "label": "Votion vault (12/varbluna, …d9zj9l)",
-      "streams": [
-        "votion_flows"
-      ],
-      "classifier": "aux classifyVotionTx v1 (defensive raw-capture; fixtures pending — spec §9)",
-      "cursor_height": 13737811,
-      "done": false,
-      "vdenom": "factory/terra163jnveun52hxv2kg4ys9a28h20trmccr98tnrvr92snn6yzdeg7qd9zj9l/12/varbluna",
-      "lst": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
-      "e2_note": "target = live head (no forward capture until walker WATCH extension deploys)",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra16xzky47caqc3krsxpla58m36ttxcjty3zpp92344m2tere5t26ysuxkjuj",
-      "label": "Votion vault (1/varbluna, …uxkjuj)",
-      "streams": [
-        "votion_flows"
-      ],
-      "classifier": "aux classifyVotionTx v1 (defensive raw-capture; fixtures pending — spec §9)",
-      "cursor_height": 13737811,
-      "done": false,
-      "vdenom": "factory/terra16xzky47caqc3krsxpla58m36ttxcjty3zpp92344m2tere5t26ysuxkjuj/1/varbluna",
-      "lst": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
-      "e2_note": "target = live head (no forward capture until walker WATCH extension deploys)",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1cupwgntu082ypw2ztgtxfzcenexcu6ggp5zzunn3yzfwgrvdcclqgjrjqg",
-      "label": "Astroport pair LUNA-ampLUNA (project)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1v3lqxl0eyte9x3nhdgcj8hwvjq76aupnnzz0yll8mxs5cckc29pqvg2scu",
-      "label": "Astroport pair LUNA-USDC (stable)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1ys7edvw89krf47n4zsz4c4m9das7ppltjtfv2epw85thqpvl6hhqn55m6y",
-      "label": "Astroport pair USDC-EURe (bluechip)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1vhxl8ggscmhae3muvwvs2vs8ppprzqf07xngcdp798fwnrcksjxszqfa8n",
-      "label": "Astroport pair LUNA-EURe (stable)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1dnssvse0fqw4d4gqc8kvchfud5r6e8cr7w9cdpervhl2pgr2eecquujpg6",
-      "label": "Astroport pair USDC-USDT (single)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1g55qjcptzqgdyqfgzu5mj8x82955rvlxy4c37z5t6ldgz7cz033q0xr2lx",
-      "label": "Astroport pair PAXG-WBTC (single)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1mea829xtsnxwv4l9lhzs0tzpnyamjpz5y45a9tpp06jgdhjd48yqc4ales",
-      "label": "Astroport pair LUNA-WBTC (bluechip)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1fwjxdjpl98shj20l4swlen9hyu4lhvekrvqkqn393lzzghmsn2wqjdnvpu",
-      "label": "Astroport pair USDC-SOLID (project)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra183wqgrwa2k0uvlz99j57c496gfuwgtaccrhv4stcjzv3ydacl9zq0hmf25",
-      "label": "Astroport pair LUNA-CAPA (project)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra10yfnsqn20rzlnlzkeva5255q27zp6ws9te9uuql9e0lacfcze7zsffjct5",
-      "label": "Astroport pair LUNA-FUEL (project)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1j3d29y506cvtavdpakdzl6e0g2xcskvmmulsetcd0jfwrpr8eu9qfe0dmf",
-      "label": "Astroport pair LUNA-ATOM (bluechip)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra189v2ewgfx5wdhje6geefdtxefeemujplk8qw2wx3x5hdswn95l8qf4n2r0",
-      "label": "Astroport pair LUNA-ROAR (project)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra10m23jmgtx0lvc6v5gffdmcutlmrgy9pnf8wun4mxft2xd3dnqdvsv392j5",
-      "label": "Astroport pair LUNA-INJ (bluechip)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1xgdyzzhs2v2ne3us2kyj5ry47fwc7uk44k035dyyygq42xechwwqlddmcr",
-      "label": "Astroport pair LUNA-PAXG (bluechip)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1e45ctmel6t5m9vdgxv3zxh3ecflkfcd6mr42sluzrqnhveqmy3fss338s7",
-      "label": "Astroport pair LUNA-SOLID (project)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1p9lcjw8knxhtv2pyr9wa8e2ushjnjllljvsuu9cugv7trqynjzasz4x52j",
-      "label": "Astroport pair LUNA-arbLUNA (single)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1aategw0787y4fyunmwdvdqraxfc8jtxykyed2skx3p5fd3lkgkmsqry7pz",
-      "label": "Astroport pair LUNA-USDT (stable)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1nwepezm3mghyxm7fjfhfr2d4jwqzndtncf9tclgunqfcwhe52mpq4sxaqr",
-      "label": "Astroport pair LUNA-ASTRO (project)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra16nfwldn9j5xhry2y78gvm3x4vte8vu77zr3ctlan79w5f5aheawqnz7a4f",
-      "label": "Astroport pair LUNA-arbLUNA (single)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1a0h6vrzkztjystg8sd949qyrc6mw9gzxk2870cr2mukg53uzgvqs46qul9",
-      "label": "Astroport pair ATOM-dATOM (single)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1re0yj0j6e9v2szg7kp02ut6u8jjea586t6pnpq6628wl36fphtpqwt6l7p",
-      "label": "Astroport pair LUNA-stLUNA (project)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1h32epkd72x7st0wk49z35qlpsxf26pw4ydacs8acq6uka7hgshmq7z7vl9",
-      "label": "Astroport pair LUNA-bLUNA (project)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1yga5eepqnpg77gaj59uqfkm2qtllvpq642cmx5gj5lzjf5v88wzs2srzp7",
-      "label": "Astroport pair wstETH-WETH.axl (single)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1afkvgc0mxfqakqlaqpxdgy58n79x4r239q3tucxmrsqvqk7ce3ksnctxfu",
-      "label": "Astroport pair LUNA-WBTC.axl (bluechip)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1crlsemxx6yjpeq3am9dzccln0dykusm685ecxscuyny7u596elqqj6xd9z",
-      "label": "Astroport pair LUNA-SWTH (project)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1f9vmtntpjmkyhkxtlc49jcq6cv8rfz0kr06zv6efdtdgae4m9y9qlzm36t",
-      "label": "Astroport pair ATOM-stATOM (single)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1mps5z5gt2c2akwcp86mq0zhw66kdugtc3selcyradtje0vp0z49sfrk8jx",
-      "label": "Astroport pair WBTC.axl-WBTC.osmo (single)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra10clh64cpvjjen8f24qz2046d24s79w2ev2dyd9ke29wmqdqp4yjs3cyk0y",
-      "label": "Astroport pair LUNA-wBNB.axl (bluechip)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1rzw2egugtjhxz2x58z55kwldm96fzck8qsf9srf5v0uehf64a2asjsak68",
-      "label": "Astroport pair SWTH-rSWTH (single)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra16zzqwekwsqn4zlsyu4vhjr52ee2hdvppjcr8h22qznjadaazzdgsvd905d",
-      "label": "Astroport pair LUNA-wSOL.wh (bluechip)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1u0sp5gaw9amfa8vsaaqvvjpqqdyz4eeslzdjsgaq40afctpx7f6s6augj2",
-      "label": "Astroport pair LUNA-wstETH (bluechip)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1p996av7ftzj973swd4yt2er2sn3v9y5j9qfxz67gatnrpf8lfgwsel8hcg",
-      "label": "Astroport pair LUNA-WBTC (bluechip)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1v3xmc8nn8h8e7z55d80a72g4rgz6mrxyasxq089k8n6m40xldlksf2w5x8",
-      "label": "Astroport pair LUNA-wBNB.wh (bluechip)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra129hvq9mgqtye4kg0cfmv9z6sq5f7sgpmrspr72968xx20gx4t2rqvpue0z",
-      "label": "Astroport pair WHALE-ampWHALE (single)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra18hhsyrjac6hud4tc9q05s8em35utm6jndswhw5v56lh5ld37ml6secl2rd",
-      "label": "Astroport pair WHALE-bWHALE (single)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1a6d0lcvfzyllulaaazzg5j70yn4m3e2t90shtlxsr3fwhcg34g2sgwfr75",
-      "label": "Astroport pair LUNA-WHALE (project)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1z8q0mwfgsxk25wv7egj5adanztvz9kv26t58hgavw9g5d7km9qqs72k22h",
-      "label": "Astroport pair LUNA-WHALE (project)",
-      "streams": [
-        "dex_liquidity"
-      ],
-      "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "REQUIRES action-filtered archive queries (preflight probe) — full-corpus walk of a pair is swap-volume-prohibitive",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    },
-    {
-      "address": "terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9",
-      "label": "ADAO NFT collection (provenance hole-fill: post-FCD-freeze transfers)",
-      "streams": [
-        "nft_transfers"
-      ],
-      "classifier": "aux classifyNftTx v1",
-      "cursor_height": 13737811,
-      "done": false,
-      "e2_note": "extends the EXECUTED SPEC-adao-provenance product past the FCD freeze; derive re-run absorbs these",
-      "target_height": 22166823,
-      "target_basis": "live head (22166823) — extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
-      "staged_floor_done": 21294875
-    }
-  ]
+  {
+   "address": "terra1hfksrhchkmsj4qdq33wkksrslnfles6y2l77fmmzeep0xmq24l2smsd3lj",
+   "label": "TLA Gauge Controller",
+   "streams": [
+    "votes"
+   ],
+   "classifier": "org-tla-voting 2.3.1 vote rules",
+   "cursor_height": 13737811,
+   "done": false,
+   "target_height": 22166823,
+   "target_basis": "committed voting cursor (22166823) \u2014 full walker-era re-derive at v6.1 (dedup-safe)",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1uqhj8agyeaz8fu6mdggfuwr3lp32jlrx5hqag4jxexde92rzkamq3l62zg",
+   "label": "vAMP Escrow (voting escrow)",
+   "streams": [
+    "locks",
+    "nft_transfers"
+   ],
+   "classifier": "org-tla-voting 2.3.1 lock rules (VP stamping preserved) + aux classifyNftTx v1 (lock NFTs)",
+   "cursor_height": 13737811,
+   "done": false,
+   "target_height": 22166823,
+   "target_basis": "committed voting cursor (22166823) \u2014 full walker-era re-derive at v6.1 (dedup-safe)",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1v399cx9drllm70wxfsgvfe694tdsd9x96p9ha36w7muffe4znlusqswspq",
+   "label": "TLA staking bucket / gauge tribute contract (...qswspq)",
+   "streams": [
+    "bribes",
+    "flows"
+   ],
+   "classifier": "org-tla-voting 2.3.1 tribute route + <<FLOWS CLASSIFIER v2>> (pool identity + claim amounts \u2014 SHIPPED 2026-07-23, gated 32,777-tx corpus)",
+   "cursor_height": 13737811,
+   "done": false,
+   "note": "IDENTITY (2026-07-23): the tribute contracts ARE the four asset-staking buckets \u2014 one contract stakes the LPs and recycles take-rate fees as bribes.",
+   "e2_note": "E2 scope: walk 13,737,811 \u2192 the v2-deploy head (not just the hole) \u2014 the walker era Jun-16\u2192v2-deploy was captured at v1 (no pool/claim amounts); the archive pass re-derives it at v2 and the schema-upgrade merge replaces in place.",
+   "target_height": 22166823,
+   "target_basis": "E2_HEAD override",
+   "e2_note_seam": "v2 seam re-walk 2026-08-01: dispatched with e2_head at live cursor to upgrade the Jul-23\u2192v3-flip stretch (776 v2 records incl. the 3 test-tx fixtures) to v3 in place",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa",
+   "label": "TLA staking bucket / gauge tribute contract (...gw3lpa)",
+   "streams": [
+    "bribes",
+    "flows"
+   ],
+   "classifier": "org-tla-voting 2.3.1 tribute route + <<FLOWS CLASSIFIER v2>> (pool identity + claim amounts \u2014 SHIPPED 2026-07-23, gated 32,777-tx corpus)",
+   "cursor_height": 13737811,
+   "done": false,
+   "note": "IDENTITY (2026-07-23): the tribute contracts ARE the four asset-staking buckets \u2014 one contract stakes the LPs and recycles take-rate fees as bribes.",
+   "e2_note": "E2 scope: walk 13,737,811 \u2192 the v2-deploy head (not just the hole) \u2014 the walker era Jun-16\u2192v2-deploy was captured at v1 (no pool/claim amounts); the archive pass re-derives it at v2 and the schema-upgrade merge replaces in place.",
+   "target_height": 22166823,
+   "target_basis": "E2_HEAD override",
+   "e2_note_seam": "v2 seam re-walk 2026-08-01: dispatched with e2_head at live cursor to upgrade the Jul-23\u2192v3-flip stretch (776 v2 records incl. the 3 test-tx fixtures) to v3 in place",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra14mmvqn0kthw6sre75vku263lafn5655mkjdejqjedjga4cw0qx2qlf4arv",
+   "label": "TLA staking bucket / gauge tribute contract (...lf4arv)",
+   "streams": [
+    "bribes",
+    "flows"
+   ],
+   "classifier": "org-tla-voting 2.3.1 tribute route + <<FLOWS CLASSIFIER v2>> (pool identity + claim amounts \u2014 SHIPPED 2026-07-23, gated 32,777-tx corpus)",
+   "cursor_height": 13737811,
+   "done": false,
+   "note": "IDENTITY (2026-07-23): the tribute contracts ARE the four asset-staking buckets \u2014 one contract stakes the LPs and recycles take-rate fees as bribes.",
+   "e2_note": "E2 scope: walk 13,737,811 \u2192 the v2-deploy head (not just the hole) \u2014 the walker era Jun-16\u2192v2-deploy was captured at v1 (no pool/claim amounts); the archive pass re-derives it at v2 and the schema-upgrade merge replaces in place.",
+   "target_height": 22166823,
+   "target_basis": "E2_HEAD override",
+   "e2_note_seam": "v2 seam re-walk 2026-08-01: dispatched with e2_head at live cursor to upgrade the Jul-23\u2192v3-flip stretch (776 v2 records incl. the 3 test-tx fixtures) to v3 in place",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1qdz5qgafx88kp5mf6m2tah8742g4u5g2cek0m3jrgssexexk7g4qw6e23k",
+   "label": "TLA staking bucket / gauge tribute contract (...w6e23k)",
+   "streams": [
+    "bribes",
+    "flows"
+   ],
+   "classifier": "org-tla-voting 2.3.1 tribute route + <<FLOWS CLASSIFIER v2>> (pool identity + claim amounts \u2014 SHIPPED 2026-07-23, gated 32,777-tx corpus)",
+   "cursor_height": 13737811,
+   "done": false,
+   "note": "IDENTITY (2026-07-23): the tribute contracts ARE the four asset-staking buckets \u2014 one contract stakes the LPs and recycles take-rate fees as bribes.",
+   "e2_note": "E2 scope: walk 13,737,811 \u2192 the v2-deploy head (not just the hole) \u2014 the walker era Jun-16\u2192v2-deploy was captured at v1 (no pool/claim amounts); the archive pass re-derives it at v2 and the schema-upgrade merge replaces in place.",
+   "target_height": 22166823,
+   "target_basis": "E2_HEAD override",
+   "e2_note_seam": "v2 seam re-walk 2026-08-01: dispatched with e2_head at live cursor to upgrade the Jul-23\u2192v3-flip stretch (776 v2 records incl. the 3 test-tx fixtures) to v3 in place",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1k8ug6dkzntczfzn76wsh24tdjmx944yj6mk063wum7n20cwd7lxq4lppjg",
+   "label": "Phoenix Directive DAO core",
+   "streams": [
+    "dao_attr_context"
+   ],
+   "classifier": "dao_attr rule v6.1 (single distinct dao wasm attribute; shared proposal module never labeled)",
+   "cursor_height": 13737811,
+   "done": false,
+   "target_height": 22166823,
+   "target_basis": "committed voting cursor (22166823) \u2014 full walker-era re-derive at v6.1 (dedup-safe)",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx",
+   "label": "Eris amp compounder (amplified LP vault)",
+   "streams": [
+    "flows"
+   ],
+   "classifier": "<<FLOWS CLASSIFIER v2>> (pool identity + claim amounts \u2014 SHIPPED 2026-07-23, gated 32,777-tx corpus)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "E2 scope: walk 13,737,811 \u2192 the v2-deploy head (not just the hole) \u2014 the walker era Jun-16\u2192v2-deploy was captured at v1 (no pool/claim amounts); the archive pass re-derives it at v2 and the schema-upgrade merge replaces in place.",
+   "target_height": 22166823,
+   "target_basis": "E2_HEAD override",
+   "e2_note_seam": "v2 seam re-walk 2026-08-01: dispatched with e2_head at live cursor to upgrade the Jul-23\u2192v3-flip stretch (776 v2 records incl. the 3 test-tx fixtures) to v3 in place",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1qdjsxsv96aagrdxz83gwtjk8qvf2mrg4y8y3dqjxg556lm79pg5qdgmaxl",
+   "label": "Eris zapper",
+   "streams": [
+    "flows"
+   ],
+   "classifier": "<<FLOWS CLASSIFIER v2>> (pool identity + claim amounts \u2014 SHIPPED 2026-07-23, gated 32,777-tx corpus)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "E2 scope: walk 13,737,811 \u2192 the v2-deploy head (not just the hole) \u2014 the walker era Jun-16\u2192v2-deploy was captured at v1 (no pool/claim amounts); the archive pass re-derives it at v2 and the schema-upgrade merge replaces in place.",
+   "target_height": 22166823,
+   "target_basis": "E2_HEAD override",
+   "e2_note_seam": "v2 seam re-walk 2026-08-01: dispatched with e2_head at live cursor to upgrade the Jul-23\u2192v3-flip stretch (776 v2 records incl. the 3 test-tx fixtures) to v3 in place",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1v7aw9eartqrjrhwd6c7hkmlkspcy5q4tvc07gjmvzqezk3fttr4s3mffyz",
+   "label": "Votion vault (max/vampluna, \u20263mffyz)",
+   "streams": [
+    "votion_flows"
+   ],
+   "classifier": "aux classifyVotionTx v1 (defensive raw-capture; fixtures pending \u2014 spec \u00a79)",
+   "cursor_height": 13737811,
+   "done": false,
+   "vdenom": "factory/terra1v7aw9eartqrjrhwd6c7hkmlkspcy5q4tvc07gjmvzqezk3fttr4s3mffyz/max/vampluna",
+   "lst": "terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct",
+   "e2_note": "target = live head (no forward capture until walker WATCH extension deploys)",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1dr7mv4w6chznedhp7uw6ntz9zjj4hxcdga2lmenlfuj35vmwpf0qhnzm5p",
+   "label": "Votion vault (12/vampluna, \u2026hnzm5p)",
+   "streams": [
+    "votion_flows"
+   ],
+   "classifier": "aux classifyVotionTx v1 (defensive raw-capture; fixtures pending \u2014 spec \u00a79)",
+   "cursor_height": 13737811,
+   "done": false,
+   "vdenom": "factory/terra1dr7mv4w6chznedhp7uw6ntz9zjj4hxcdga2lmenlfuj35vmwpf0qhnzm5p/12/vampluna",
+   "lst": "terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct",
+   "e2_note": "target = live head (no forward capture until walker WATCH extension deploys)",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra13aae4futz6jk7hmdv0gwm2xs6p4nxv4xwz5tc0c2vt4960u4j6jqpqmye9",
+   "label": "Votion vault (max/varbluna, \u2026pqmye9)",
+   "streams": [
+    "votion_flows"
+   ],
+   "classifier": "aux classifyVotionTx v1 (defensive raw-capture; fixtures pending \u2014 spec \u00a79)",
+   "cursor_height": 13737811,
+   "done": false,
+   "vdenom": "factory/terra13aae4futz6jk7hmdv0gwm2xs6p4nxv4xwz5tc0c2vt4960u4j6jqpqmye9/max/varbluna",
+   "lst": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
+   "e2_note": "target = live head (no forward capture until walker WATCH extension deploys)",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1mzelg87h36y6wvtgj6fh9s4crgx9acw63l3zc6f9px6pc5f8h8lqs0sux0",
+   "label": "Votion vault (1/vampluna, \u2026s0sux0)",
+   "streams": [
+    "votion_flows"
+   ],
+   "classifier": "aux classifyVotionTx v1 (defensive raw-capture; fixtures pending \u2014 spec \u00a79)",
+   "cursor_height": 13737811,
+   "done": false,
+   "vdenom": "factory/terra1mzelg87h36y6wvtgj6fh9s4crgx9acw63l3zc6f9px6pc5f8h8lqs0sux0/1/vampluna",
+   "lst": "terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct",
+   "e2_note": "target = live head (no forward capture until walker WATCH extension deploys)",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra163jnveun52hxv2kg4ys9a28h20trmccr98tnrvr92snn6yzdeg7qd9zj9l",
+   "label": "Votion vault (12/varbluna, \u2026d9zj9l)",
+   "streams": [
+    "votion_flows"
+   ],
+   "classifier": "aux classifyVotionTx v1 (defensive raw-capture; fixtures pending \u2014 spec \u00a79)",
+   "cursor_height": 13737811,
+   "done": false,
+   "vdenom": "factory/terra163jnveun52hxv2kg4ys9a28h20trmccr98tnrvr92snn6yzdeg7qd9zj9l/12/varbluna",
+   "lst": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
+   "e2_note": "target = live head (no forward capture until walker WATCH extension deploys)",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra16xzky47caqc3krsxpla58m36ttxcjty3zpp92344m2tere5t26ysuxkjuj",
+   "label": "Votion vault (1/varbluna, \u2026uxkjuj)",
+   "streams": [
+    "votion_flows"
+   ],
+   "classifier": "aux classifyVotionTx v1 (defensive raw-capture; fixtures pending \u2014 spec \u00a79)",
+   "cursor_height": 13737811,
+   "done": false,
+   "vdenom": "factory/terra16xzky47caqc3krsxpla58m36ttxcjty3zpp92344m2tere5t26ysuxkjuj/1/varbluna",
+   "lst": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
+   "e2_note": "target = live head (no forward capture until walker WATCH extension deploys)",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1cupwgntu082ypw2ztgtxfzcenexcu6ggp5zzunn3yzfwgrvdcclqgjrjqg",
+   "label": "Astroport pair LUNA-ampLUNA (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1v3lqxl0eyte9x3nhdgcj8hwvjq76aupnnzz0yll8mxs5cckc29pqvg2scu",
+   "label": "Astroport pair LUNA-USDC (stable)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1ys7edvw89krf47n4zsz4c4m9das7ppltjtfv2epw85thqpvl6hhqn55m6y",
+   "label": "Astroport pair USDC-EURe (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1vhxl8ggscmhae3muvwvs2vs8ppprzqf07xngcdp798fwnrcksjxszqfa8n",
+   "label": "Astroport pair LUNA-EURe (stable)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1dnssvse0fqw4d4gqc8kvchfud5r6e8cr7w9cdpervhl2pgr2eecquujpg6",
+   "label": "Astroport pair USDC-USDT (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1g55qjcptzqgdyqfgzu5mj8x82955rvlxy4c37z5t6ldgz7cz033q0xr2lx",
+   "label": "Astroport pair PAXG-WBTC (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1mea829xtsnxwv4l9lhzs0tzpnyamjpz5y45a9tpp06jgdhjd48yqc4ales",
+   "label": "Astroport pair LUNA-WBTC (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1fwjxdjpl98shj20l4swlen9hyu4lhvekrvqkqn393lzzghmsn2wqjdnvpu",
+   "label": "Astroport pair USDC-SOLID (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra183wqgrwa2k0uvlz99j57c496gfuwgtaccrhv4stcjzv3ydacl9zq0hmf25",
+   "label": "Astroport pair LUNA-CAPA (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra10yfnsqn20rzlnlzkeva5255q27zp6ws9te9uuql9e0lacfcze7zsffjct5",
+   "label": "Astroport pair LUNA-FUEL (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1j3d29y506cvtavdpakdzl6e0g2xcskvmmulsetcd0jfwrpr8eu9qfe0dmf",
+   "label": "Astroport pair LUNA-ATOM (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra189v2ewgfx5wdhje6geefdtxefeemujplk8qw2wx3x5hdswn95l8qf4n2r0",
+   "label": "Astroport pair LUNA-ROAR (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra10m23jmgtx0lvc6v5gffdmcutlmrgy9pnf8wun4mxft2xd3dnqdvsv392j5",
+   "label": "Astroport pair LUNA-INJ (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1xgdyzzhs2v2ne3us2kyj5ry47fwc7uk44k035dyyygq42xechwwqlddmcr",
+   "label": "Astroport pair LUNA-PAXG (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1e45ctmel6t5m9vdgxv3zxh3ecflkfcd6mr42sluzrqnhveqmy3fss338s7",
+   "label": "Astroport pair LUNA-SOLID (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1p9lcjw8knxhtv2pyr9wa8e2ushjnjllljvsuu9cugv7trqynjzasz4x52j",
+   "label": "Astroport pair LUNA-arbLUNA (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1aategw0787y4fyunmwdvdqraxfc8jtxykyed2skx3p5fd3lkgkmsqry7pz",
+   "label": "Astroport pair LUNA-USDT (stable)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1nwepezm3mghyxm7fjfhfr2d4jwqzndtncf9tclgunqfcwhe52mpq4sxaqr",
+   "label": "Astroport pair LUNA-ASTRO (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra16nfwldn9j5xhry2y78gvm3x4vte8vu77zr3ctlan79w5f5aheawqnz7a4f",
+   "label": "Astroport pair LUNA-arbLUNA (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1a0h6vrzkztjystg8sd949qyrc6mw9gzxk2870cr2mukg53uzgvqs46qul9",
+   "label": "Astroport pair ATOM-dATOM (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1re0yj0j6e9v2szg7kp02ut6u8jjea586t6pnpq6628wl36fphtpqwt6l7p",
+   "label": "Astroport pair LUNA-stLUNA (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1h32epkd72x7st0wk49z35qlpsxf26pw4ydacs8acq6uka7hgshmq7z7vl9",
+   "label": "Astroport pair LUNA-bLUNA (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1yga5eepqnpg77gaj59uqfkm2qtllvpq642cmx5gj5lzjf5v88wzs2srzp7",
+   "label": "Astroport pair wstETH-WETH.axl (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1afkvgc0mxfqakqlaqpxdgy58n79x4r239q3tucxmrsqvqk7ce3ksnctxfu",
+   "label": "Astroport pair LUNA-WBTC.axl (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1crlsemxx6yjpeq3am9dzccln0dykusm685ecxscuyny7u596elqqj6xd9z",
+   "label": "Astroport pair LUNA-SWTH (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1f9vmtntpjmkyhkxtlc49jcq6cv8rfz0kr06zv6efdtdgae4m9y9qlzm36t",
+   "label": "Astroport pair ATOM-stATOM (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1mps5z5gt2c2akwcp86mq0zhw66kdugtc3selcyradtje0vp0z49sfrk8jx",
+   "label": "Astroport pair WBTC.axl-WBTC.osmo (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra10clh64cpvjjen8f24qz2046d24s79w2ev2dyd9ke29wmqdqp4yjs3cyk0y",
+   "label": "Astroport pair LUNA-wBNB.axl (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1rzw2egugtjhxz2x58z55kwldm96fzck8qsf9srf5v0uehf64a2asjsak68",
+   "label": "Astroport pair SWTH-rSWTH (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra16zzqwekwsqn4zlsyu4vhjr52ee2hdvppjcr8h22qznjadaazzdgsvd905d",
+   "label": "Astroport pair LUNA-wSOL.wh (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1u0sp5gaw9amfa8vsaaqvvjpqqdyz4eeslzdjsgaq40afctpx7f6s6augj2",
+   "label": "Astroport pair LUNA-wstETH (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1p996av7ftzj973swd4yt2er2sn3v9y5j9qfxz67gatnrpf8lfgwsel8hcg",
+   "label": "Astroport pair LUNA-WBTC (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1v3xmc8nn8h8e7z55d80a72g4rgz6mrxyasxq089k8n6m40xldlksf2w5x8",
+   "label": "Astroport pair LUNA-wBNB.wh (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra129hvq9mgqtye4kg0cfmv9z6sq5f7sgpmrspr72968xx20gx4t2rqvpue0z",
+   "label": "Astroport pair WHALE-ampWHALE (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra18hhsyrjac6hud4tc9q05s8em35utm6jndswhw5v56lh5ld37ml6secl2rd",
+   "label": "Astroport pair WHALE-bWHALE (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1a6d0lcvfzyllulaaazzg5j70yn4m3e2t90shtlxsr3fwhcg34g2sgwfr75",
+   "label": "Astroport pair LUNA-WHALE (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1z8q0mwfgsxk25wv7egj5adanztvz9kv26t58hgavw9g5d7km9qqs72k22h",
+   "label": "Astroport pair LUNA-WHALE (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (provide/withdraw + swap price samples)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "REQUIRES action-filtered archive queries (preflight probe) \u2014 full-corpus walk of a pair is swap-volume-prohibitive",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9",
+   "label": "ADAO NFT collection (provenance hole-fill: post-FCD-freeze transfers)",
+   "streams": [
+    "nft_transfers"
+   ],
+   "classifier": "aux classifyNftTx v1",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "extends the EXECUTED SPEC-adao-provenance product past the FCD freeze; derive re-run absorbs these",
+   "target_height": 22166823,
+   "target_basis": "live head (22166823) \u2014 extension stream, no forward capture yet; walker WATCH rider takes over post-deploy",
+   "staged_floor_done": 21294875
+  },
+  {
+   "address": "terra1frfcj4xhvx0emkup4vel5jun9zun0797j5yhn7ant3r4jzy9mkxqzcwev6",
+   "label": "SkeletonSwap pair ATOM-LUNA (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1j5znhs9jeyty9u9jcagl3vefkvzwqp6u9tq9a3e5qrz4gmj2udyqp0z0xc",
+   "label": "SkeletonSwap pair bLUNA-LUNA (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1tsx0dmasjvd45k6tdywzv77d5t9k3lpzyuleavuah77pg3lwm9cq4469pm",
+   "label": "SkeletonSwap pair ampLUNA-LUNA (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1d8ap3zyd6tfnruuuwvs0t927lr4zwptruhulfwnxjpqzudvyn8usfgl8ze",
+   "label": "SkeletonSwap pair ampROAR-ROAR (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra16a45v4k74w3yy30utfxdsekdlnks27sv48sn2suaf4wt7u6meq8scz75mx",
+   "label": "SkeletonSwap pair LUNA-USDC (stable)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1aysexulsnuxna62m5rlnuzfcvct3df93gd4q0kkjtjcqsvv93s5sd0fyd2",
+   "label": "SkeletonSwap pair wBTC.osmo-LUNA (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1wymgwg90ry2w04avy899ucmuuak7w8n3xw2msmw2jf9rfugre0ssenx4hn",
+   "label": "SkeletonSwap pair LUNA-USDt (stable)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra18fved7svlqq9q9h23cg4uw97lllmg7fa03psevczy20ayhdwrm3sznjeh5",
+   "label": "SkeletonSwap pair LUNA-SOLID (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1hvntefafgn05llkqyl6uxx6j0jjwmqjtxqdrwdm43s9tkzx7xkfqkcl7h6",
+   "label": "SkeletonSwap pair LUNA-ASTRO (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra126w5m24usxydxn0tjqd73k8uw06r42wttahf9t0cjyhmljlqhrdsjucx45",
+   "label": "SkeletonSwap pair LUNA-ROAR (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra12exvyhctk6ggqvzj2tlhsv769llctntf5zdj9erz6q2uq4h8hn8q5k5xpg",
+   "label": "SkeletonSwap pair LUNA-stLUNA (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1nll8xy7m2dyac3sww2tg7dqj8s0mlak68drgtzd9gh4yvnvpplhsn3sxnv",
+   "label": "SkeletonSwap pair LUNA-SWTH (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1wje8lj3372njwuw8t4scmyp94t5pyxxh89tsnkrfyxghqh6aunzqz4a9k3",
+   "label": "SkeletonSwap pair USDC-SOLID (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra12hs75vlyd38zjvhegsqzr8uvz2r764fdy8mhqw0qg0s2mv858yvstwmsf8",
+   "label": "SkeletonSwap pair LUNA-wstETH (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra178ca7z2w6346wlkmxwpw80s2a5fmas9q28xlzegkt4c4rdam67aql5fgxj",
+   "label": "SkeletonSwap pair USDC-USDt (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1q2gd6kc7nt8xct94chrlsqtpxfs9rve0j76lquce624y5zp85cdseshh85",
+   "label": "SkeletonSwap pair LUNA-INJ (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1m5juz238n27dd24d9e3kacmqax8gu7j5ee9hhfczpl52f3n7adaqudk2c9",
+   "label": "SkeletonSwap pair LUNA-wBNB (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra12u7a9wkjqrkhxjcxx70uhfx8y49j4lclfnet2smw9agpnrv9chps27n9mh",
+   "label": "SkeletonSwap pair LUNA-wSOL (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1aa8nurhuk7rwedhjyzptggypuxd3y66qp4nsx6ph240g37esdm7qyheqkd",
+   "label": "SkeletonSwap pair ATOM-dATOM (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1nezkc3lxdxv26hqwy44jr7j9typtk39pns254ev52s9guqc2zsyqx7hvc9",
+   "label": "SkeletonSwap pair SWTH-rSWTH (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra13ywdferm4jtcperal9png3cvhtmar5se9nu4r49k7vujrakwy9zqa3rhwe",
+   "label": "SkeletonSwap pair wBTC.osmo-wBTC.axl (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1wttdzwa6pdegtrdjdw49y0pd3dd8qd3cqn89j6t9v978lx05rr8sew5jyq",
+   "label": "SkeletonSwap pair LUNA-arbLUNA (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1gny66hmejvrkra39cn7r8f7y7yg06hy3cv2xehpxraqfgjtdtpnqjtmu53",
+   "label": "SkeletonSwap pair LUNA-EURe (stable)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1t9uvn05g0hdlx2nnqug3lt3pkla4sfdj0n0xnd66kmwvyt25y65sk37cej",
+   "label": "SkeletonSwap pair USDC-EURe (bluechip)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra15rzp38yq2cqy2jnewc9vgzqguf3t2q0gqpv9evg8tckrtqp8x44qezhthc",
+   "label": "SkeletonSwap pair CAPA-LUNA (project)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra1c439uc3qdlfuqncxae7l07nsdgjtu45g98yhn5ydjn2866nsw3ws0e0vte",
+   "label": "SkeletonSwap pair ATOM-stATOM (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  },
+  {
+   "address": "terra12252e02w0k5yv9mryctth4j3y2sdas0xremw0jznzwal5v3xeqjst7q537",
+   "label": "SkeletonSwap pair wETH-wstETH (single)",
+   "streams": [
+    "dex_liquidity"
+   ],
+   "classifier": "aux classifyPairLiquidityTx v1 (SS = Astroport-family fork; attr shapes captured defensively \u2014 first recovered events confirm or amend, re-walk free)",
+   "cursor_height": 13737811,
+   "done": false,
+   "e2_note": "added 2026-08-01 pre-deep-walk (walk-once): SS-side direct provide/withdraw cost basis + LST ratio samples. REQUIRES action-filtered queries (same gate as Astroport pairs)."
+  }
+ ]
 }
