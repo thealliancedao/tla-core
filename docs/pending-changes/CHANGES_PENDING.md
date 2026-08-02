@@ -1,3 +1,41 @@
+## 🚀 2026-08-02 — DEEP WALK RUNNING (E1 granted; endpoint in secrets only) + completeness review closed
+
+Rev 12 has full detail. Live now: full-depth walk (13.74M→head) on a granted
+community archive endpoint, self-chaining unattended; action filters ✓ (64
+pair walks GO incl. the 27 SS pairs added pre-walk — registry at 81 entries).
+Pre-launch: investor/project completeness review closed (state-sampler
+spec'd pending `state_depth` probe; Credia leverage stream scoped; SS in);
+full-depth E2E shakedown on exact bytes → ✅ COMPLETE, 8/8 fixtures.
+**On walk completion:** verify §10 verbatim + prop-247 real hash + early
+Votion entries; then E3 unblocked on a COMPLETE record. **During access
+window:** probe state_depth; build state sampler + Credia if green.
+
+---
+
+## ✅ 2026-08-01 — STAGED HARVEST 54/54 COMPLETE + AUDITS CLOSED (session wrap)
+
+Full detail: cron-tla-voting-log Rev 11. Headlines: free-fleet staged harvest
+recovered the walker era + hole tail (Jun 2 2026→head) across all 54 registry
+entries — flows fully v3 (test-tx fixtures VERBATIM, seam sealed), 4 new
+streams born (dex-liquidity/prices/votion/NFT), June prune gaps healed, PD
+prop 250 corrected to chain truth (11 legs / 38,155.10 gross — old 34,763.53
+figure RETIRED). Eris APR/pricing audit CLOSED → `AUDIT-eris-apr-pricing.md`
+(arbLUNA 2.2× understatement root-caused: missing LST hub-rate link; Eris
+shows APY not APR). Deep remainder (Jan 2025→Jun 2026) honestly open in the
+registry; Eris archive ask sent (they run their own phoenix node — preflight
+probe of phoenix-lcd/rpc.erisprotocol.com queued for Camron's machine).
+
+**Next-session queue (priority order):** (1) walker WATCH rider — new streams
+are frozen-forward at walk head, free retention window ticking; (2)
+arbLUNA/APY fix per the audit doc (fresh pulls: votion cron + site price
+layer); (3) census persistence fix (rides #1's batch); (4)
+hole-reconciliation derive (edge-delta chips + deep-walk verification
+harness); (5) E3: rollups over new data → build-pnl → portfolio card v2
+(two-lens) → tax export → site update. Sunday's rollup flip puts PD's
+38,155.10 on the board automatically.
+
+---
+
 ## 🔧 2026-07-31 (3) — E2 EXTENSIONS: FULL-PICTURE P&L CAPTURE BUILT & GATED 8/8 (SPEC-registry-extensions-pnl v2)
 
 Portfolio audit → approved extensions → live 8-tx test matrix (Camron,
