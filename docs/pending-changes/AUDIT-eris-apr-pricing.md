@@ -1,11 +1,15 @@
 # AUDIT — Eris APR & LST pricing conventions (arbLUNA discrepancy RESOLVED)
 
 Date: 2026-08-01 · Source: Eris webapp bundle + query decode (HAR capture by
-DeFi_Patriot; 15 JS bundles, all contract queries decoded) · Status: **audit
-CLOSED — fixes prescribed, implementation queued** · 2026-08-02: gauge LP APR
-logic CONFIRMED FROM SOURCE (Philipp shared `getLiquidityIncentives` + the
-APR composition verbatim) and folded in as §Gauge-LP-APR — that section is
-the implementation contract for `eris_apr_pct`.
+DeFi_Patriot; 15 JS bundles, all contract queries decoded) · Status:
+**FORMULA VALIDATED 2026-08-02 (§Validation) — product-level pending 1.3.1 +
+astroport recovery** · 2026-08-02: gauge LP APR logic CONFIRMED FROM SOURCE
+(Philipp shared `getLiquidityIncentives` + the APR composition verbatim),
+folded in as §Gauge-LP-APR, implemented as dex-data eris-apr (1.3.0/1.3.1),
+and reconciled against Eris's live screen same-day — see §Validation.
+ERRATA same date: the "amp hub ≈1.34" figure below was the STALE ratio the
+broken pipeline was applying, not the amp hub's truth — chain + catalog both
+read amp ≈2.25, arb ≈2.99 (details in the corrected root-cause paragraph).
 
 ## The discrepancy
 
@@ -25,9 +29,16 @@ Their bundle maps each LST token to a rate-source sigil:
 // price = coingeckoPrice("terra-luna-2") × getExchangeRateFromCombination(sigil)
 ```
 
-The arb (slow-burn) vault has compounded since 2022 — its hub rate is ≈ **2.9**,
-vs ampLUNA's ≈ 1.34. Our number implies we price arbLUNA with the amp-class
-rate (0.12 / 0.055 ≈ 2.9 / 1.34). Additionally, our Votion snapshots carry
+The arb (slow-burn) vault has compounded since 2022 — its hub rate is ≈ **2.99**
+(chain-read 2026-08-02: 2.9922; Eris UI price $0.1238 = LUNA $0.0414 × 2.99 ✓).
+[CORRECTED 2026-08-02] The amp hub's true rate is ≈ **2.25** (chain 2.2477;
+token-catalog independently 2.2308) — the "≈1.34" in the original audit was
+the STALE ratio the legacy network-and-prices feed carried, i.e. the wrong
+value the old pipeline applied, not the amp hub's reading. The observed
+understatement: arbLUNA priced at the stale 1.34 instead of its own 2.99 →
+0.055/0.12 ≈ 1.34/2.99. Anywhere else that stale 1.34-era ratio was applied
+to ampLUNA is ALSO understated (~1.68×) — surfaced positions revalue upward
+under the hub fix. Additionally, our Votion snapshots carry
 ONLY the vtoken→LST rates (1.03–1.53) and never the LST→LUNA hub rates, so a
 Votion position's correct USD chain is **three links** and we compute two:
 
@@ -139,6 +150,31 @@ total = incentiveApr − yearly_take_rate + tradingApr      // linear variant, k
    `_aprOf` estimates, member-portfolio Rev 1.3 weekly-compound estimate).
    Backfill order: fix historical series first, then the cron, then trigger
    runs so pages read corrected data.
+
+## Validation — 2026-08-02 (formula-level PASS)
+
+First live eris-apr run (chain inputs all parsed: provisions 95.87M LUNA/yr,
+totalReward 1.398, TLA weights stable 0.10 / project·bluechip·single 0.05,
+28 gauge distribution entries) reconciled against Eris's liquidity-hub screen
+captured the SAME DAY (DeFi_Patriot screenshots, 11 pools):
+
+- **Rewards column reproduced to the dollar:** our
+  `rewards_per_year × distribution × LUNA_USD` = their displayed "Rewards $"
+  — EURe $135,010 vs $135,010; LUNA-USDC $118,416 vs $118,410; LUNA-CAPA and
+  USDC-SOLID both $27,091 vs $27,090 (the two 0.1910 project entries).
+- **Both conventions match:** their dotted % = our `eris_apr_pct` (linear
+  total), their flame = our `eris_apy_pct` (compounded display). Per-pool Δ
+  is IDENTICAL across both conventions (0.00–1.83 pp) — i.e. the entire
+  residual is the trading-fee leg (our stated substitution). Near-zero-fee
+  pools match to ±0.06 pp: LUNA-USDC(SS) Δ0.00, FUEL −0.01, ROAR +0.01,
+  stLUNA −0.00, CAPA +0.06. Fee-bearing pools' Δ (EURe 0.36, USDC 1.28,
+  ASTRO 1.83) = that pool's trading APR.
+- Convention key for all consumers: **dotted = APR (linear), flame = APY.**
+
+**Product-level completion (before pages consume):** 1.3.1 deployed (catalog
+LUNA/single fallback) + astroport adapter recovery (pair TVL + fee_apr legs)
+→ published `eris_apr_pct`/`eris_apy_pct` spot-checked once against the
+screen → clear `meta.validation`. The formula itself needs no further proof.
 
 ## Bonus findings from the same capture
 
