@@ -1,3 +1,50 @@
+## ✅ 2026-08-02 (2) — APR/PRICING REPAIRS DEPLOYED & FORMULA-VALIDATED · R3a QUEUED
+
+**Shipped + live-verified:** org-votion **1.2.0** (LST hub-rate three-link
+pricing, gate 48/48; first run clean: arb hub 2.9922 / amp hub 2.2477, zero
+fallback, corrected holder USD lands on the next daily Branch-B pass) ·
+dex-data **1.3.1** (eris-apr rider per AUDIT §Gauge-LP-APR, gates 59/59 then
+64/64 with the token-catalog price fallback; live: all 28 chain-input shapes
+parsed first try, 2/28 singles fully priced through the Astroport outage).
+Personal votion-positions patch RETRACTED pre-commit (retiring doctrine;
+org Branch B is the successor — recorded in cron-votion-log Rev 2).
+
+**RECONCILIATION: FORMULA PASS (audit §Validation).** Eleven pools vs Eris's
+live screen same-day: our gauge math reproduces their "Rewards $" column TO
+THE DOLLAR; dotted % = our `eris_apr_pct`, flame = our `eris_apy_pct`;
+near-zero-fee pools match ±0.06pp, residual = the stated trading-fee
+substitution exactly. ERRATA folded in: the "amp ≈1.34" was the STALE legacy
+ratio (true amp ≈2.25 — ampLUNA positions were ALSO ~1.68× understated).
+
+**Waiting on Astroport only:** their tRPC broke 06:01→10:02 (org pulled 276
+pools fine at 06:01 — outage is theirs, not blocking). Hourly cadence
+self-heals; first green run prints 28/28 → product-level spot-check → clear
+`meta.validation` → R4 page repoint becomes legal.
+
+**Queued from this arc:**
+- [ ] **R3a — realized-APR history derive (SUPERSEDES the provisions-model
+  path for covered spans):** historical APR from CAPTURED tla-voting
+  distributions (actual per-pool pots per epoch × price-at-epoch ÷
+  staked-at-epoch), take/cut/convention layers per the validated formula →
+  org `apr-history` product; pages repoint, personal apr-history.json
+  freezes. Pure derive, no archive dependency. State-sampler still covers:
+  displayed-figure reconstruction where inputs varied + hub-rate history for
+  LST cost basis (check `last_reward_change_time` first — may chain-prove
+  weights constant, turning that leg measured-for-free).
+- [ ] Registry curation: `terra1kye343…a2ue88` "Eris ampLUNA Hub" label is
+  the MISLABEL (real hub = `terra10788fkzah…`, cross-validated by catalog
+  ratio 2.2308) — fix in known_contracts.json next touch.
+- [ ] Changelog-home inconsistency: dex-data has BOTH in-folder CHANGELOG.md
+  (richer, used) and docs/changelogs/cron-dex-data-log.md — pick one home,
+  deprecation-note the other (one fact, one home).
+- [ ] R4 (site batch): APR surfaces repoint to published
+  `eris_apr_pct`/`eris_apy_pct` (labeled APR/APY per the dotted/flame
+  convention), page-side APR math retired; member-portfolio Votion card
+  repoints to `votion/snapshots/current.json` under parallel-run, then the
+  personal votion cron retires on Render.
+
+---
+
 ## 🚀 2026-08-02 — DEEP WALK RUNNING (E1 granted; endpoint in secrets only) + completeness review closed
 
 Rev 12 has full detail. Live now: full-depth walk (13.74M→head) on a granted
