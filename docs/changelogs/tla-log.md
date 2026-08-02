@@ -5,6 +5,34 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev T1–T2.6 (test.html staging) — 2026-08-02
+
+Staged on `/test.html` (98-assertion gate), pending promotion to
+`tla-stats.html` after live review. One cumulative file.
+
+- **Hero band v2:** merged Active Pools tile (+Astro/SS sub), new TLA TVL tile
+  wired to the history/trend system, epoch sparklines, status pills
+  (bold rounded green/red), uniform label/value/sub/pill rhythm, whole-tile
+  drills into per-metric epoch history, movers diverging bars, stale-VP and
+  take-rate mini bars, freshness chips.
+- **Boards:** volume All/Astro/SS toggle (recomputed within DEX), APR Amp/Non
+  toggle, utilization tiebreak by smallest stale gap, expand/collapse on all six
+  boards + the three Pool-Tops tiles.
+- **Bribers card, three modes:** Bribers (all-time providers) · **Earned** (NEW —
+  all-time claimed per wallet, valued at claim date, lower bound per rollup
+  claim coverage) · **Pending** (this epoch, now computed live per member as
+  vote-share × pots — the broken positions-cron field is no longer consumed).
+- **Labels:** DAODAO handles bold sky-blue, protocol labels bold orange,
+  addresses gray mono; Astroport take-rate buckets named; briber rows clickable
+  → deep-dive modal (epoch chart now counts governance/null-pool events).
+- **PD split re-homed:** epoch-bribes popup reads the org `pd-bribes` product
+  (proposal-state derive, 20/20 chain-verified placements) keyed by gauge id;
+  the stale hand-file path is dead; PD's By-pool drill filled from the product.
+- Data-side same day: rollup rebuild (32 bribers, PD #1 @ 427.9K LUNA), FUEL
+  placement pricing, token-catalog forward-append fix.
+
+---
+
 ## Rev 6.1 — 2026-07-31
 
 - **APR truth, finally:** the reward-APR column and drill were showing "—"/wrong
