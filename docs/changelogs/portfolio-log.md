@@ -5,6 +5,30 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 2.2 — 2026-08-03 — LIVENESS PASS (P1.6 + P1.7), production
+
+**P1.6 — live claimable.** The participants feed is a DAILY 03:00 UTC
+snapshot; a claim made after capture showed as pending all day (observed
+live on DP's own claim — his post-claim reload is the acceptance
+fixture). Rewards now read LIVE per wallet (the same four bucket
+all_pending_rewards + rebase queries the DAO pages run in production),
+green "live" tag; daily value stays as the labeled fallback. The card
+splits honestly: "claimable now" (live) vs "accruing this epoch (est.,
+settles at close — not claimable)". Never-understate guard: a failed
+query or missing rate while rewards exist invalidates the live read and
+falls back labeled — a broken query can never masquerade as a live zero.
+Loop-guarded (render→fetch→render recursion replayed 1-fetch-per-wallet).
+Copy fix: "about an hour" → the truthful next-daily-snapshot.
+
+**P1.7 — live repricing.** Quantities move rarely; prices move
+constantly. All summary values now = feed amounts × LIVE prices: LP
+underlyings priced from the hourly TLA snapshot by symbol (29 priced),
+wallet + locks from the org catalog by denom (symbol→denom bridge built
+from the feed itself — the catalog carries no symbol field). Real-record
+replay: locks $5,531→$5,263 (a $268 same-day staleness caught), LP full
+reprice zero-fallback. Unpriceable items keep their feed value, labeled —
+never silently bridged. Tiles carry "live px".
+
 ## Rev 2.0 — 2026-08-03 (staged on test.html — the P1+P2 portfolio rebuild)
 
 Full-page rebuild toward the awe-factor brief ("this is people's money"),

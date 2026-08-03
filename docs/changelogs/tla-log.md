@@ -5,6 +5,36 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev T3.3 — 2026-08-03 — liveness pass · arb radar · flip-day hardening (T2.7d–T2.8c)
+
+**T2.7d** — zap-out dollars-lost under every target cell at the exact
+fraction zapped; simulator card auto-opens in member mode (wallet selected
+= the planner is the workflow), TLA-wide keeps the 08-02 collapsed
+default, manual toggle wins.
+
+**T2.8/T2.8b/T2.8c — ARB RADAR (embedded strip)**: cross-pool price
+divergences from the hourly snapshot, xyk-only (concentrated/stable hold
+imbalanced reserves BY DESIGN — including them manufactures fake arbs);
+same-pair comparison cancels catalog prices entirely, so spreads are raw
+reserve truth. Optimal size + net profit from the exact xyk optimum after
+0.3%×2 fees. Quiet state shows the largest sub-threshold gap ("efficient"
+is a reading). Strip lives OUTSIDE the collapse and SELF-ARMS on DOM
+ready (retries until snapshot pools exist) — the initial render chain has
+unguarded upstream renderers whose exceptions silently killed downstream
+hooks (observed live). The self-arming retry surfaced the real bug: `esc`
+undefined in this page's scope (ported from slippage.html which defines
+its own) — ×24 in console; renderArbStrip is now self-contained. First
+live catch: ampROAR-ROAR (Skeleton) vs an unlisted pool, 13.92% apart —
+and the honest lesson shipped with it: persistent visible spreads usually
+mean a catch (unlisted/paused/stale pool); verify on-chain first.
+
+**Votion epoch-boundary fallback** — same pattern as the (already-live)
+astroport one: on flip day the roller hasn't birthed epoch-N.json yet;
+the page now falls back to N−1 (observed live e197: votion 404 → boards
+empty until tonight's run; astro fallback was working as designed).
+Full-simulator radar (slippage.html): same math, always-visible quiet
+state, live-gated (26 xyk pools, hot/exclusion replays).
+
 ## Rev T3.2 — 2026-08-03 — PD split epoch-flip fix (T2.7) + zap-in multiplier mode (T2.7b)
 
 **T2.7b — Zap planner grow-to-N× (Camron's spec):** Zap-in gains a preset
