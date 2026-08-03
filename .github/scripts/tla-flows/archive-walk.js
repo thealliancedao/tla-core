@@ -31,9 +31,16 @@
 const https = require('https');
 const zlib = require('zlib');
 
-const ARCHIVE_RPC   = process.env.ARCHIVE_RPC;
+// trailing slash in the secret produced '//block?…' → the node 301s and the
+// fetcher (correctly) refused to guess — normalize here, and follow same-host
+// redirects defensively (2026-08-03 live failure).
+const ARCHIVE_RPC   = String(process.env.ARCHIVE_RPC || '').replace(/\/+$/, '');
 const FROM          = Number(process.env.WALK_FROM || process.argv[2]);
-const TO            = Number(process.env.WALK_TO   || process.argv[3]);
+const FINAL         = Number(process.env.FINAL_HEIGHT || 0);   // self-chain target (0 = single-range mode)
+const CHUNK         = Number(process.env.CHUNK_BLOCKS || 450000);
+const TO_RAW        = process.env.WALK_TO || process.argv[3];
+const TO            = TO_RAW ? Number(TO_RAW) : (FINAL ? Math.min(FROM + CHUNK - 1, FINAL) : NaN);
+const WORKFLOW_FILE = process.env.WORKFLOW_FILE || 'tla-flows-archive-walk.yml';
 const CONC          = Number(process.env.WALK_CONCURRENCY || 6);
 const PART_TXS      = Number(process.env.RAW_PART_TXS || 1500);   // txs per raw part (~1-3MB gz)
 const GITHUB_REPO   = process.env.GITHUB_REPO || 'thealliancedao/tla-core';
@@ -50,7 +57,8 @@ const CENSUS_MIN = { deposit_legs_pct: 70, withdraw_legs_pct: 60, claim_measured
 
 function fail(m) { console.error('FATAL: ' + m); process.exit(1); }
 if (!ARCHIVE_RPC) fail('ARCHIVE_RPC missing (repo secret)');
-if (!Number.isFinite(FROM) || !Number.isFinite(TO) || FROM > TO) fail('WALK_FROM/WALK_TO invalid');
+if (!Number.isFinite(FROM) || !Number.isFinite(TO) || FROM > TO) fail('WALK_FROM/WALK_TO/FINAL_HEIGHT invalid');
+if (FINAL && TO > FINAL) fail('TO beyond FINAL_HEIGHT');
 
 // custody contracts — mirror platform-crons config (chain-verified)
 const WATCH = {
@@ -65,9 +73,14 @@ const WATCH = {
 // ---------------------------------------------------------------- transport
 const AGENT = new https.Agent({ keepAlive: true, maxSockets: CONC });
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-function httpGet(url, t = 25000) {
+function httpGet(url, t = 25000, hops = 0) {
   return new Promise((res, rej) => {
     const r = https.get(url, { agent: AGENT, headers: { Accept: 'application/json', 'User-Agent': 'tla-archive-walk/1.0' } }, (x) => {
+      if (x.statusCode >= 301 && x.statusCode <= 308 && x.headers.location && hops < 3) {
+        x.resume(); clearTimeout(dl);
+        const next = new URL(x.headers.location, url).toString();
+        return httpGet(next, t, hops + 1).then(res, rej);
+      }
       let b = ''; x.on('data', c => b += c); x.on('end', () => { clearTimeout(dl);
         if (x.statusCode >= 200 && x.statusCode < 300) { try { res(JSON.parse(b)); } catch { rej(new Error('bad JSON')); } }
         else rej(new Error(`HTTP ${x.statusCode} ${b.slice(0, 100)}`)); });
@@ -351,6 +364,11 @@ function touches(events, auxWatch) {
   return { core, aux, transfer };
 }
 
+function nextRange(to, final, chunk) {
+  if (!final || to >= final) return null;
+  return { from: to + 1, to: Math.min(to + chunk, final) };
+}
+
 (async () => {
   console.log(`archive-walk ${FROM} → ${TO} (${TO - FROM + 1} blocks) via ${ARCHIVE_RPC.replace(/\/\/.*@/, '//***@')}`);
   const auxWatch = await loadAuxWatch();
@@ -443,9 +461,23 @@ function touches(events, auxWatch) {
   }
 
   // MANIFEST — the walk's own record of exactly what was covered
-  const report = { schemaVersion: 1, kind: 'archive-walk-manifest', from: FROM, to: TO,
+  const report = { schemaVersion: 1, kind: 'archive-walk-manifest', from: FROM, to: TO, final_height: FINAL || undefined,
     walkedAt: new Date().toISOString(), matched_txs: matched, raw_parts: partN, raw_txs: rawTotal,
     classified: records.length, events_added: added, events_upgraded: upgraded, transfers: tAdded, census };
   await putJson(`${RAW_DIR()}/report.json`, report, `archive-walk manifest ${FROM}-${TO}`);
   console.log(`\n✅ archive-walk complete: ${matched} matched · raw ${rawTotal} txs in ${partN} parts · events +${added}/↑${upgraded} · transfers +${tAdded}`);
+
+  // SELF-CHAIN (one dispatch walks the whole hole): a successful chunk
+  // dispatches the next one until FINAL_HEIGHT is reached. A failed chunk
+  // stops the chain (census gate included) — re-dispatch from the failure
+  // point after diagnosis. Requires workflow permissions: actions: write.
+  const nxt = nextRange(TO, FINAL, CHUNK);
+  if (nxt) {
+    console.log(`self-chain: dispatching next chunk ${nxt.from} → ${nxt.to} (final ${FINAL})`);
+    await ghReq('POST', `/repos/${GITHUB_REPO}/actions/workflows/${WORKFLOW_FILE}/dispatches`,
+      { ref: GITHUB_BRANCH, inputs: { from_height: String(nxt.from), final_height: String(FINAL) } });
+    console.log('self-chain: dispatched.');
+  } else if (FINAL) {
+    console.log(`🏁 FINAL_HEIGHT ${FINAL} reached — the walk is COMPLETE.`);
+  }
 })().catch(e => { console.error('FATAL:', e && e.message); process.exit(1); });
