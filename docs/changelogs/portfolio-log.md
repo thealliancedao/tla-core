@@ -9,7 +9,7 @@ Newest revisions on top. Times are UTC.
 
 Full-page rebuild toward the awe-factor brief ("this is people's money"),
 staged on `test.html` (free since the TLA Stats T3 promotion); promotes to
-`member-portfolio.html` when approved. Gate: **108/108** fixture-derived
+`member-portfolio.html` when approved. Gate: **117/117** fixture-derived
 assertions (new page surface = new baseline suite in the session workspace).
 
 - **Net-worth banner — the full splice, one number.** TLA (locks+LP+wallet)
@@ -125,6 +125,27 @@ assertions (new page surface = new baseline suite in the session workspace).
   overrides the derived sibling) for wallets whose derivation differs —
   with an honest empty-state that offers linking instead of pretending
   absence. Native Terra staking row also gains pending rewards (priced).
+
+**P1.4 — "make it mean something" round (Camron):**
+- **"How you've done" card** (new, under the trend chart) — the honest
+  bottom line: in-TLA-since fact (first epoch + real date; **the fixture
+  wallet has been in since e96, TLA's literal first epoch, 2024-08-26 —
+  stated as the day-one badge it is**), then three measured pieces side by
+  side: what went in (zap cost, with the N-of-M coverage stated), what
+  you've earned (LP yield + bribes at claim-day value), what you hold now
+  (live). Plus the LUNA-terms strip (LUNA in · LUNA claimed · LUNA-equiv
+  locked) — the units this crowd actually thinks in. Explicit netting
+  honesty: no single up/down number until Phase C exit valuations + full
+  entry costs; the earned-vs-cost ratio is shown as pieces, never a net.
+- **Deep chart rebuilt as ONE continuous whole-life chart** — no more
+  window paging: every epoch a point from your first epoch to today, real
+  month labels on the x-axis (epoch calendar), span chips (whole life /
+  last year / last 26), Σ cumulative default, and the genesis start-note
+  ("e96 · TLA's first epoch (2024-08-26) — you were there day one").
+
+**P1.5:** aDAO Treasury made viewable (richer feed record now wins the
+registry merge; "🏛️ aDAO Treasury" welcome chip) — its full profile
+(~$13K, 898 NFTs, locks) renders like any member. Gate 117/117.
 
 **P2.5 — DEEP HISTORY (the heavy lift, same session):** paging ◀ past the
 start of the daily archive now crosses into **epoch-ledger mode** — your
