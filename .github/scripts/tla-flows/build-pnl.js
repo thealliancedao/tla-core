@@ -12,6 +12,18 @@
  * Writes:
  *   tla-flows/pnl/rollup.json
  *   tla-flows/pnl/heartbeat.json
+ *   tla-flows/pnl/ledger/index.json          (v2 — SPEC-portfolio-epoch-ledger)
+ *   tla-flows/pnl/ledger/{address}.json      (per-wallet epoch series)
+ *
+ * v2 LEDGER (2026-08-03, SPEC-portfolio-epoch-ledger): the SAME event pass
+ * additionally buckets every wallet by TLA epoch (docs/epoch_1-300_date.json):
+ * per-epoch flow counts, LP-unit DELTAS per pool per unit (amplp/shares kept
+ * segregated — never mixed, never converted), and the same Tier-M measured
+ * USD legs (zap-in, fees, claimed yield) the rollup carries, just epoch-
+ * bucketed. Position VALUE per epoch is NOT here — no historical pool state
+ * exists before dex-data (2026-06-26); that tier arrives with the archive
+ * state sampler and upgrades in place. Rollup output is unchanged by v2
+ * (gate: old-vs-new build byte-identical minus builtAt).
  *
  * Phase A legs (honesty tiers per the spec):
  *   Tier M (measured): zap external inputs (deposit cost.swaps) valued at
@@ -90,6 +102,27 @@ function loadPrices() {
     return { days, months };
 }
 
+// ── Epoch calendar: timestamp → TLA epoch number ────────────────────────────
+function loadEpochs() {
+    const raw = readJson(path.join(ROOT, 'docs', 'epoch_1-300_date.json'));
+    const rows = Object.values(raw)
+        .filter(r => r && r.epoch != null && r.start_time)
+        .map(r => ({ epoch: Number(r.epoch), start: Date.parse(r.start_time) }))
+        .sort((a, b) => a.start - b.start);
+    if (!rows.length) fail('epoch calendar empty');
+    return (ts) => {
+        const t = Date.parse(ts);
+        if (!(t >= rows[0].start)) return null;   // pre-genesis — honestly outside
+        let lo = 0, hi = rows.length - 1;
+        while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (rows[mid].start <= t) lo = mid; else hi = mid - 1; }
+        return rows[lo].epoch;
+    };
+}
+
+function bigAddSigned(aStr, bStr, sign) {
+    return (BigInt(aStr) + (sign < 0 ? -BigInt(bStr) : BigInt(bStr))).toString();
+}
+
 function addDays(dateStr, n) {
     const d = new Date(dateStr + 'T00:00:00Z');
     d.setUTCDate(d.getUTCDate() + n);
@@ -127,6 +160,9 @@ function newWallet() {
         claims: { count: 0, valued: false, reason: 'amounts not captured (classifier v1) — Phase B enrichment' },
         claimed_yield: { luna_display: 0, usd_at_event: 0, valued_events: 0, unvalued_price_events: 0, v1_unmeasured_events: 0, measured_records: 0 },
         by_pool: {},   // pool -> {deposits, withdraws, claims, claim_usd_at_event}
+        // v2 ledger: epoch → bucket. Filled in the same pass; written sharded.
+        epochs: {},    // E -> {c:{dep,wdr,clm}, zap_usd, fees_usd, clm_luna, clm_usd, pools:{pool:{units:{unit:signedRaw}, dep, wdr}}}
+        pre_calendar_events: 0,
     };
 }
 
@@ -171,8 +207,13 @@ function buildImpliedPrices(monthFiles, tokenMap, prices, meta) {
     return implied;
 }
 
+function epochBucket(w, E) {
+    return w.epochs[E] || (w.epochs[E] = { c: { dep: 0, wdr: 0, clm: 0 }, zap_usd: 0, fees_usd: 0, clm_luna: 0, clm_usd: 0, pools: {} });
+}
+
 function main() {
     const tokenMap = loadTokenMap();
+    const epochOf = loadEpochs();
     const labels = loadLabels();
     const prices = loadPrices();
     const index = readJson(path.join(EVENTS_DIR, 'index.json'));
@@ -211,22 +252,25 @@ function main() {
     };
 
     const valueLeg = (w, bucket, denom, amountRaw, date) => {
-        // bucket: w.zap_inputs or w.fees-style accumulation for one token amount
+        // bucket: w.zap_inputs or w.fees-style accumulation for one token amount.
+        // v2: returns the leg's usd (0 when unvalued) so the epoch ledger can
+        // carry the SAME figure — one valuation, two views, no drift possible.
         const amt = BigInt(amountRaw || '0');
-        if (amt === 0n) return;
+        if (amt === 0n) return 0;
         const tok = resolveTok(denom);
         if (!tok) {
             const u = w.zap_inputs_unknown[denom] || (w.zap_inputs_unknown[denom] = { amount_raw_sum: '0', legs: 0 });
             u.amount_raw_sum = bigAdd(u.amount_raw_sum, amountRaw); u.legs++;
             meta.unpriced_input_legs++;
-            return;
+            return 0;
         }
         const disp = Number(amt) / 10 ** tok.decimals;
         const e = bucket[tok.symbol] || (bucket[tok.symbol] = { amount_display: 0, usd_at_event: 0, valued_legs: 0, unvalued_legs: 0 });
         e.amount_display += disp;
         const p = priceAt(prices, tok.symbol, date, meta);
-        if (p) { e.usd_at_event += disp * p.usd; e.valued_legs++; }
-        else { e.unvalued_legs++; meta.unpriced_input_legs++; }
+        if (p) { e.usd_at_event += disp * p.usd; e.valued_legs++; return disp * p.usd; }
+        e.unvalued_legs++; meta.unpriced_input_legs++;
+        return 0;
     };
 
     for (const mf of monthFiles) {
@@ -246,6 +290,10 @@ function main() {
             if (!w.first_by_type[type] || e.timestamp < w.first_by_type[type]) w.first_by_type[type] = e.timestamp;
             if (!w.last_by_type[type] || e.timestamp > w.last_by_type[type]) w.last_by_type[type] = e.timestamp;
             if (e.height <= fcdEndHeight) w.eras.fcd = true; else w.eras.walker = true;
+            const E = epochOf(e.timestamp);
+            if (E == null) w.pre_calendar_events++;
+            const eb = E != null ? epochBucket(w, E) : null;
+            if (eb) eb.c[type === 'deposit' ? 'dep' : type === 'withdraw' ? 'wdr' : 'clm']++;
             for (const cc of (e.claimed_coins || [])) meta.vault_claim_denoms[cc.denom] = (meta.vault_claim_denoms[cc.denom] || 0) + 1;
 
             if (type === 'claim') {
@@ -260,8 +308,9 @@ function main() {
                         const amt = Number(cl.reward_amount || 0) / 1e6;
                         if (!(amt > 0)) continue;
                         w.claimed_yield.luna_display += amt;
+                        if (eb) eb.clm_luna += amt;
                         const p = priceAt(prices, 'LUNA', date, meta);
-                        if (p) { w.claimed_yield.usd_at_event += amt * p.usd; w.claimed_yield.valued_events++; }
+                        if (p) { w.claimed_yield.usd_at_event += amt * p.usd; w.claimed_yield.valued_events++; if (eb) eb.clm_usd += amt * p.usd; }
                         else { w.claimed_yield.unvalued_price_events++; meta.unpriced_input_legs++; }
                         if (cl.pool) {
                             const bp = (w.by_pool[cl.pool] ||= { deposits: 0, withdraws: 0, claims: 0, claim_usd_at_event: 0 });
@@ -283,6 +332,15 @@ function main() {
             if (e.amount) {
                 const key = `${type}_${e.amount_unit === 'shares' ? 'shares' : 'lp'}_raw`;
                 if (w.lp_amounts[key] !== undefined) w.lp_amounts[key] = bigAdd(w.lp_amounts[key], e.amount);
+                // v2 ledger: signed unit delta per (pool, unit) per epoch —
+                // amplp and shares NEVER mix (no historical exchange rates to
+                // convert honestly; the segregation IS the honesty).
+                if (eb && e.pool) {
+                    const pp = eb.pools[e.pool] || (eb.pools[e.pool] = { units: {}, dep: 0, wdr: 0 });
+                    const unit = e.amount_unit || 'unknown';
+                    pp.units[unit] = bigAddSigned(pp.units[unit] || '0', e.amount, type === 'withdraw' ? -1 : 1);
+                    if (type === 'deposit') pp.dep++; else if (type === 'withdraw') pp.wdr++;
+                }
             }
 
             const swaps = e.cost && Array.isArray(e.cost.swaps) ? e.cost.swaps : null;
@@ -294,7 +352,8 @@ function main() {
                 const asks = new Set(swaps.map(s => s.ask_asset));
                 for (const s of swaps) {
                     if (asks.has(s.offer_asset)) continue; // internal hop
-                    valueLeg(w, w.zap_inputs, s.offer_asset, s.offer_amount, date);
+                    const legUsd = valueLeg(w, w.zap_inputs, s.offer_asset, s.offer_amount, date);
+                    if (eb) eb.zap_usd += legUsd;
                 }
             }
 
@@ -319,7 +378,7 @@ function main() {
                 }
                 if (legTotal === 0) continue;
                 const p = priceAt(prices, tok.symbol, date, meta);
-                if (p) { f.usd_at_event += legTotal * p.usd; f.valued_legs++; }
+                if (p) { f.usd_at_event += legTotal * p.usd; f.valued_legs++; if (eb) eb.fees_usd += legTotal * p.usd; }
                 else { f.unvalued_legs++; meta.unpriced_fee_legs++; }
             }
         }
@@ -428,7 +487,81 @@ function main() {
         zap_input_usd_at_event: totals.zap_input_usd_at_event,
     }, null, 1) + '\n');
 
+    // ── v2 LEDGER write-out (SPEC-portfolio-epoch-ledger) ───────────────────
+    const LEDGER_DIR = path.join(OUT_DIR, 'ledger');
+    fs.mkdirSync(LEDGER_DIR, { recursive: true });
+    let ledgerFiles = 0, negFlagWallets = 0, preCalTotal = 0;
+    const epochSpan = { min: null, max: null };
+    for (const [address, w] of [...wallets.entries()].sort(([a], [b]) => a.localeCompare(b))) {
+        const eKeys = Object.keys(w.epochs).map(Number).sort((a, b) => a - b);
+        preCalTotal += w.pre_calendar_events;
+        if (!eKeys.length) continue;
+        if (epochSpan.min === null || eKeys[0] < epochSpan.min) epochSpan.min = eKeys[0];
+        if (epochSpan.max === null || eKeys[eKeys.length - 1] > epochSpan.max) epochSpan.max = eKeys[eKeys.length - 1];
+        // reconcile: Σ epoch counts + pre-calendar == wallet counts — abort on drift
+        const sums = { dep: 0, wdr: 0, clm: 0 };
+        for (const E of eKeys) { const b = w.epochs[E]; sums.dep += b.c.dep; sums.wdr += b.c.wdr; sums.clm += b.c.clm; }
+        const pre = w.pre_calendar_events;
+        if (sums.dep + sums.wdr + sums.clm + pre !== w.counts.deposit + w.counts.withdraw + w.counts.claim)
+            fail(`ledger epoch reconcile ${address}: ${sums.dep + sums.wdr + sums.clm}+${pre} != ${w.counts.deposit + w.counts.withdraw + w.counts.claim}`);
+        // cumulative per pool|unit at head + negative-dip census (unit-mix or
+        // missing-capture flags — counted and listed, never hidden or clamped)
+        const cum = {}; const negFlags = [];
+        for (const E of eKeys) {
+            const b = w.epochs[E];
+            for (const [pool, pp] of Object.entries(b.pools)) {
+                for (const [unit, delta] of Object.entries(pp.units)) {
+                    const k = `${pool}|${unit}`;
+                    cum[k] = bigAdd(cum[k] || '0', delta);
+                    if (BigInt(cum[k]) < 0n && !negFlags.includes(k)) negFlags.push(k);
+                }
+            }
+        }
+        if (negFlags.length) negFlagWallets++;
+        const sortObj2 = (o) => Object.fromEntries(Object.entries(o).sort(([a], [b]) => a.localeCompare(b)));
+        const doc = {
+            schemaVersion: 1,
+            spec: 'docs/pending-changes/SPEC-portfolio-epoch-ledger.md',
+            address,
+            builtAt,
+            method: {
+                buckets: 'every captured flow event bucketed by TLA epoch (docs/epoch_1-300_date.json start_times)',
+                units: 'LP-unit deltas per pool per unit (amplp/shares segregated — no historical exchange rates exist to convert honestly)',
+                usd_legs: 'identical Tier-M figures as rollup.json (same valuation calls), epoch-bucketed: zap-in, swap fees, claimed LUNA yield at claim-day price',
+                value_curve: 'NOT present — no pool state exists before dex-data (2026-06-26); the archive state sampler upgrades this tier in place',
+            },
+            epoch_span: [eKeys[0], eKeys[eKeys.length - 1]],
+            pre_calendar_events: pre || undefined,
+            negative_unit_flags: negFlags.length ? negFlags.sort() : undefined,
+            cumulative_units_at_head: sortObj2(cum),
+            epochs: Object.fromEntries(eKeys.map(E => {
+                const b = w.epochs[E];
+                return [E, {
+                    c: b.c,
+                    zap_usd: b.zap_usd || undefined,
+                    fees_usd: b.fees_usd || undefined,
+                    clm_luna: b.clm_luna || undefined,
+                    clm_usd: b.clm_usd || undefined,
+                    pools: Object.fromEntries(Object.entries(b.pools).sort(([a], [b2]) => a.localeCompare(b2)).map(([pool, pp]) => [pool, { dep: pp.dep || undefined, wdr: pp.wdr || undefined, units: sortObj2(pp.units) }])),
+                }];
+            })),
+        };
+        fs.writeFileSync(path.join(LEDGER_DIR, `${address}.json`), JSON.stringify(doc, null, 1) + '\n');
+        ledgerFiles++;
+    }
+    fs.writeFileSync(path.join(LEDGER_DIR, 'index.json'), JSON.stringify({
+        schemaVersion: 1,
+        spec: 'docs/pending-changes/SPEC-portfolio-epoch-ledger.md',
+        builtAt,
+        wallet_files: ledgerFiles,
+        epoch_span: [epochSpan.min, epochSpan.max],
+        pre_calendar_events_total: preCalTotal,
+        negative_unit_flag_wallets: negFlagWallets,
+        note: 'per-wallet epoch series at ledger/{address}.json — flow counts, segregated LP-unit deltas, Tier-M measured USD legs. Value curve absent by design until the archive state sampler.',
+    }, null, 1) + '\n');
+
     console.log(`OK: ${totals.wallets} wallets, ${meta.events_read} events`);
+    console.log(`  ledger: ${ledgerFiles} wallet files, epochs ${epochSpan.min}→${epochSpan.max}, neg-unit-flag wallets: ${negFlagWallets}, pre-calendar events: ${preCalTotal}`);
     console.log(`  DAO-wide fees (usd@event):      ${totals.fees_usd_at_event.toFixed(2)}`);
     console.log(`  DAO-wide zap inputs (usd@event): ${totals.zap_input_usd_at_event.toFixed(2)}`);
     console.log(`  claims recorded:                 ${totals.claims_recorded} (yield valued: ${totals.claimed_yield_luna.toFixed(0)} LUNA ≈ ${totals.claimed_yield_usd_at_event.toFixed(2)} usd@event)`);
