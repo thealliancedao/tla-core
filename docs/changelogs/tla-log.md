@@ -5,7 +5,33 @@ Newest revisions on top. Times are UTC.
 
 ---
 
-## Rev T3.2 — 2026-08-03 — PD split epoch-flip fix (T2.7)
+## Rev T3.2 — 2026-08-03 — PD split epoch-flip fix (T2.7) + zap-in multiplier mode (T2.7b)
+
+**T2.7b — Zap planner grow-to-N× (Camron's spec):** Zap-in gains a preset
+row (1.25× · 1.5× · 1.75× · 2× · 3× · 4× · 5×, plus "$" returning to the
+fixed-amount mode). In multiplier mode each HELD pool shows the dollar add
+needed to reach the target multiple ((N−1) × current position, +$ shown per
+row) and the routing impact grade computed at exactly that size, using the
+selected source asset (LUNA/USDC/SOLID/any listed). Pools the wallet
+doesn't hold are excluded — multiplying an empty position is meaningless.
+Positions under $1 skipped.
+
+**T2.7c — dollar cost on zap-in rows (Camron's spec):** every zap-in and
+multiplier row now shows the estimated dollars lost to price impact at
+that exact size next to the % grade ("~$9.30 lost"), same math as the
+full simulator's lost figure — the % finally answers "is it worth it?"
+Fixed-$ mode uses the selected amount; multiplier mode uses that pool's
+computed add.
+
+**QUEUED — full-simulator rework (SPEC-simulator-v2, next site batch):**
+bring the member-aware planner features into the standalone simulator:
+wallet selector (positions-first ordering + exit costs like the embedded
+card), zap in/out modes with source-asset choice, the grow-to-N×
+multiplier row, and per-row dollars-lost. The simulator keeps its
+strengths (token picker, size slider, depth bars, crown ranking) and
+gains the planner's position awareness — one tool instead of two
+half-tools.
+
 
 Live flip-day failure (e196→e197, morning of 2026-08-03): the epoch popup's
 PD column fell to $0.00 with the stale legacy note, while PD's per-epoch
