@@ -9,7 +9,7 @@ Newest revisions on top. Times are UTC.
 
 Full-page rebuild toward the awe-factor brief ("this is people's money"),
 staged on `test.html` (free since the TLA Stats T3 promotion); promotes to
-`member-portfolio.html` when approved. Gate: **85/85** fixture-derived
+`member-portfolio.html` when approved. Gate: **97/97** fixture-derived
 assertions (new page surface = new baseline suite in the session workspace).
 
 - **Net-worth banner — the full splice, one number.** TLA (locks+LP+wallet)
@@ -83,8 +83,26 @@ assertions (new page surface = new baseline suite in the session workspace).
   average — the label now says so explicitly ("reflects PAST position sizes,
   not today's"), with a recent-rate view queued behind the monthly-buckets
   derive. Sub-cent accrual rows filtered.
+- **Coverage strip now derives from `sources.months_read`** (what the P&L
+  builder actually read) instead of the recorded-gap note — which went stale
+  the moment the 2026-08-03 rollup rebuild landed the archive-walk months
+  (coverage is now unbroken 2024-08 → 2026-08; the strip proved it green
+  without a code guess, and would paint real missing months red just as
+  automatically). Income footer text is months-aware the same way.
 - **Trend paging**: 12w range added; ◀ earlier / later ▶ window paging —
   ready to walk into the epoch-ledger history when that derive lands.
+
+**P2.5 — DEEP HISTORY (the heavy lift, same session):** paging ◀ past the
+start of the daily archive now crosses into **epoch-ledger mode** — your
+whole TLA life in epoch buckets back to e96 (Aug 2024), from the
+genesis-complete flow capture: Claimed $/ep · Deposited $/ep (measured
+zap-entry, lower bound) · Fees $/ep · Activity, 26-epoch windows with
+◀ ▶ paging to your first epoch. Powered by the new
+`tla-flows/pnl/ledger/{address}.json` product (build-pnl v2 — see
+SPEC-portfolio-epoch-ledger, builder gate 22/22). On-chart honesty: value
+curve absent pre-2026-06 (no pool state exists; the archive state sampler
+upgrades in place), cross-unit position flags surfaced, ledger-absent
+wallets get an honest empty state.
 
 Known limits, stated on-page: the TLA daily archive covers registered members
 only (others get honest empty trends); NFT value carries no daily archive
