@@ -1,3 +1,37 @@
+## 🚀 2026-08-03 (V4) — CLASSIFIER V4 BUILT · archive-walk runner · all gates green
+
+<<FLOWS CLASSIFIER v4>> (additive on v3): `fee` {amount,denom,payer} from
+tx-level events; `classifyTransferTx` — wallet↔wallet amp-token moves →
+NEW stream `tla-flows/transfers/{YYYY}/{MM}.json` (key txhash:idx). THREE
+byte-identical copies (platform-crons walker · flows-fill · NEW
+archive-walk.js) — diff-verify per scripts README. NEW
+`tla-flows-archive-walk.yml`: explicit [from,to] range against secret
+ARCHIVE_RPC, RAW ATTRIBUTE ARCHIVE (`tla-flows/raw/{from}-{to}/part-*.json.gz`,
+write-once) + census gate (dep-legs ≥70%, wdr-legs ≥60%, measured-claims
+≥95% — thresholds fail the run before publishing thin data) + per-range
+manifest.
+
+GATES: classifier 12/12 · flows-fill v4 FULL-CORPUS dry-run EXACT
+(31,748 = 15,727/4,499/11,522; 2024 legs 84.5%/76.7% recovered; DP
+spot-check: 2024-09 deposit 19D166F0 carries both provide legs) · walk
+logic 9/9. Measured: FCD fee blank forever (no auth data archived); FCD
+wallet-transfers unrecoverable from the contract-scoped corpus.
+
+**RUN ORDER (the deep backfill):**
+1. platform-crons: commit `tla-flows/index.js` (forward cron gains fee+transfers)
+2. tla-core: commit flows-fill.js + archive-walk.js + workflow + docs (this ZIP)
+3. Dispatch `tla-flows-fill` — re-run upgrades ALL 2024 events in place
+   with legs (idempotent, EXPECT-gated, ~minutes)
+4. Dispatch `tla-flows-archive-walk` over the hole in CHUNKS of ~400–500k
+   blocks (13,737,811 → 21,481,530 ≈ 7.74M blocks ≈ 16 sequential runs —
+   dispatch the next chunk when one finishes; write-once raw parts make
+   overlaps harmless but keep ranges clean)
+5. After walks: re-dispatch `tla-flows-pnl` (ledger/rollup re-derive picks
+   up legs + fees platform-wide)
+6. Parallel: 1-week test lock matures → lock-exit fixture → lock
+   classifier v2 next build; PL deferred walk after mains; state sampler
+   next session.
+
 ## 🚀 2026-08-03 (FINAL) — WALK PLAN LOCKED · commit set minimized · clock starts
 
 Camron blessed the walk. Final scope adjustments: **lock-NFT marketplace

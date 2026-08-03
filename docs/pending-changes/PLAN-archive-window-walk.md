@@ -1,5 +1,19 @@
 # PLAN — the archive-window walk (master checklist, one pass, no regrets)
 
+> **STATUS 2026-08-03: BUILT.** Classifier v4 shipped (fee + wallet↔wallet
+> amp-transfer stream), three byte-identical copies (cron walker ·
+> flows-fill · archive-walk), all gated: classifier unit gate 12/12 ·
+> flows-fill FULL-CORPUS dry-run exact (31,748 = 15,727/4,499/11,522) ·
+> walk logic gate 9/9. **Census on the real FCD corpus: 2024 deposits
+> carry token legs 84.5% (13,288/15,727), withdraws 76.7% — the missing
+> remainder are single-side routes with no pair event, BY MEANING.**
+> Measured truths locked: FCD source kept no auth data → FCD-era gas is
+> permanently blank, stated; FCD corpus is contract-scoped → FCD-era
+> wallet↔wallet transfers unrecoverable from it (archive-node walk only).
+> 2025→now legs already exist at ~90%/~80% (the deep walk ran v3) — the
+> hole re-walk adds fee, transfers, leg stragglers, and the RAW ARCHIVE.
+
+
 Status: 2026-08-03 · Access CONFIRMED LIVE · This document is the walk's
 contract: nothing starts until Camron blesses the field list, and nothing
 re-walks twice for a forgotten field.
