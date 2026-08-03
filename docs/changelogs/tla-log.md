@@ -5,6 +5,23 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev T3.2 — 2026-08-03 — PD split epoch-flip fix (T2.7)
+
+Live flip-day failure (e196→e197, morning of 2026-08-03): the epoch popup's
+PD column fell to $0.00 with the stale legacy note, while PD's per-epoch
+LUNA sat visibly in "Other" ($87.63 on LUNA-ampLUNA = 2,121 LUNA × $0.0413).
+Root cause was N/N+1: the popup renders the incentive manager's active set —
+the DISTRIBUTING epoch's frozen bribes (N tallies during N, pays during
+N+1) — while the org-product split keyed by the RUNNING epoch. Every flip
+morning the two disagree by one. Fix: prefer `by_epoch[epNow]`, fall back
+to the distributing epoch `epNow−1`; once a PD range truly ends, neither
+slot exists and a corrected honest note engages (the old note falsely
+blamed missing attribution when the product was loaded and simply not
+covering the epoch). Replayed against the real product: flip-day resolves
+to e196 (11 pools, 9,538.8 LUNA); post-range e198 correctly falls to the
+note. pd-bribes derive itself verified healthy (v1.2.0, 20 placements, 0
+unmatched, 427,877 LUNA chain truth).
+
 ## Rev T3.1 — 2026-08-03 (live-page touch: badge fix + Unlock Runway)
 
 Two changes to the LIVE `tla-stats.html` (base byte-verified == the promoted
