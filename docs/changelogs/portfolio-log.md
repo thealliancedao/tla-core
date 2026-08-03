@@ -9,7 +9,7 @@ Newest revisions on top. Times are UTC.
 
 Full-page rebuild toward the awe-factor brief ("this is people's money"),
 staged on `test.html` (free since the TLA Stats T3 promotion); promotes to
-`member-portfolio.html` when approved. Gate: **61/61** fixture-derived
+`member-portfolio.html` when approved. Gate: **84/84** fixture-derived
 assertions (new page surface = new baseline suite in the session workspace).
 
 - **Net-worth banner — the full splice, one number.** TLA (locks+LP+wallet)
@@ -48,11 +48,44 @@ assertions (new page surface = new baseline suite in the session workspace).
 - **Modal/drill system + tooltip pass** across every new surface; old
   bottom "Trends" honesty card folded into the chart's footer.
 
-Known limits, stated on-page: daily archive covers registered members only
-(others get honest empty trends); Votion & NFT values carry no daily archive
-yet (votion cron rider v1.2.0 ships alongside this rev; every day before
-2026-08-03 is permanently missing); income figures are lower bounds until the
-archive-gap backfill.
+- **Votion layer re-pointed to the ORG feed** (`tla-core/votion/snapshots/`),
+  retiring this page's read of the personal `votion-positions-data_2026`
+  repo. The org feed is strictly better: hub-rate LST pricing per
+  AUDIT-eris-apr-pricing (per-row price-source tag rendered), the corrected
+  VP definition (fixed + boost — DP implied VP 159.5K vs the old feed's
+  143.5K undercount), per-vault `holder_discovery_complete` honesty, and a
+  **daily archive already running since 2026-07-16** — so the Votion card
+  gains a 30d sparkline and the Votion tile a full-history drill, both from
+  org dailies. Vault labels derived from the factory vdenom
+  ({duration}/{vtoken}).
+
+**P1.1 — same-day feedback round (Camron):**
+- **TLA-wide VP rank**: identity now ranks across ALL lock holders from the
+  org member-data snapshot (fixture wallet: #4 of 203 — the old "#1" was the
+  registered subset only), with a tap-to-open **peer ladder** modal: top
+  ranks + your ±4 neighbors, self-highlighted, registered names shown,
+  Votion vault whales labeled.
+- **ampCAPA governance position** re-attributed into LP Positions via a live
+  chain read (same DAODAO voting-module + ve3 rate chain as tla-stats T3 /
+  ampcapa-tool) — tagged "gov · live", excluded from summary tiles, renders
+  only when the chain confirms a balance.
+- **Native LUNA staking** row in Wallet Balances (live delegations read,
+  validator count, valued via catalog).
+- **Wallet balances v2**: live bank scan merged with the feed's cw20 set;
+  same-token reads reconciled (never summed); zLUNA receipts + sub-$0.10
+  dust collapsed into one line with a hover itemization; unpriced on-chain
+  denoms counted, not guessed.
+- **Income projection**: "if you reclaimed your +X VP" — the live pot math
+  re-run at display VP + gap, with the added VP included in each pool's
+  denominator (the share never pretends the pool stays the same size).
+- **Trend paging**: 12w range added; ◀ earlier / later ▶ window paging —
+  ready to walk into the epoch-ledger history when that derive lands.
+
+Known limits, stated on-page: the TLA daily archive covers registered members
+only (others get honest empty trends); NFT value carries no daily archive
+yet; Votion history begins 2026-07-16 (org archive start — earlier days are
+permanently missing); income figures are lower bounds until the archive-gap
+backfill.
 
 ## Rev 1.3 — 2026-07-31
 
