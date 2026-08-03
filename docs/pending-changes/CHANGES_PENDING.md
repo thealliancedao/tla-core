@@ -1,4 +1,4 @@
-## ✅ 2026-08-03 (2) — MEMBER-PORTFOLIO P1+P2 REBUILD staged (gate 61/61) + votion daily rider v1.2.0 (13/13)
+## ✅ 2026-08-03 (2) — MEMBER-PORTFOLIO P1+P2+P1.1 REBUILD staged (gate 84/84) + Votion layer moved to the ORG feed
 
 **Session record.** Full survey (SPEC-portfolio-tracker, SPEC-portfolio-pnl,
 UI-DATA-READINESS, portfolio-log, live-feed verification) → approved plan →
@@ -7,28 +7,55 @@ promotes to `member-portfolio.html` on approval). Full feature record in
 portfolio-log **Rev 2.0**: net-worth splice banner, daily-archive trend
 engine, tiles v2 with drills, live-math Claimable (R2 — broken cron field
 replaced), Income card (LP yield + lifetime bribe income + measured rate),
-LP 30d sparklines, lock-decay visuals + cliff strip, votes earning-per-epoch.
+LP 30d sparklines, lock-decay visuals + cliff strip, votes earning-per-epoch,
+**Votion re-pointed to `tla-core/votion/snapshots/` with trend + drill from
+the org daily archive (running since 2026-07-16)**.
+
+**Wrong-repo catch (recorded per doctrine).** A votion daily-archive rider
+was first drafted against the retired `defipatriot/cron-scripts`
+votion-positions cron — caught by Camron, discarded. Root cause: the "Votion
+daily forfeit" urgency came from the stale 2026-07-16 UI-DATA-READINESS G2
+entry plus a 404 on the OLD personal feed's daily path; org-votion has in
+fact been daily-archiving since 2026-07-16. Lesson reinforced: **check the
+org tree first — G-status in old audit docs is not current truth, and
+personal repos receive nothing new, ever.**
 
 **Committing now (this delivery):**
 - `defipatriot/aDAO-links-site` → `test.html` (portfolio TEST P1)
-- `defipatriot/cron-scripts` → `votion-positions/votion-positions.js`
-  (**v1.2.0** — daily archive `data/daily/YYYY-MM-DD.json`, write-once per
-  UTC day, retention field honest, mock-gated on the real live fixture.
-  Closes the "capture now or lose forever" Votion item flagged 2026-06-14;
-  every day before 2026-08-03 is permanently missing, stated in the doc.)
 - this docs ZIP (also carries the 2026-08-03 T3 entries — the previous docs
   ZIP was never committed; this one supersedes it)
+
+**Retire candidate:** the personal `votion-positions` cron on Render — the
+portfolio page was its last site consumer; org-votion covers the capture
+(better VP math, hub-rate pricing, daily archive). Retire per parallel-run
+doctrine once Camron confirms no other consumer remains.
+
+**Still reading personal feeds — org successors DON'T exist yet** (kept
+alive per parallel-run doctrine; migrations are their own queued builds):
+participants / adao-positions current + daily (G1 position-layer extension of
+member-data), allies (G8), tla-snapshot (G5 pool-status/apr rollups).
+
+**⚡ ACTION (Camron, one click): re-run the `tla-flows-pnl` workflow.** The
+rollup's builtAt is 2026-07-27 — BEFORE the deep walk filled the 18-month
+hole. The 2025 event months now hold 9–20MB each (fixture wallet: 97 events
+in 5 sampled 2025 months). A manual dispatch of the existing Action rebuilds
+Lifetime Cost & Activity with the hole-era deposits/withdraws/claims — this
+is most of the "my true costs are missing" gap, zero code needed. (Remaining
+after rebuild: withdraw/exit valuation = pnl Phase C; direct non-zap deposit
+costs = classifier limitation, stated on-card.)
+
+**[QUEUED SPEC] SPEC-portfolio-epoch-ledger** (committed in this ZIP):
+per-member epoch-by-epoch position + value reconstruction to TLA genesis
+from the now-complete flow capture — feeds the trend chart's page-back
+buttons and the P3 timeline. Build after the pnl rebuild proves the
+hole-era events; plan+approval before code.
 
 **Queue adds / carries:**
 - [PENDING] **R3 — pnl builder monthly buckets** (per-wallet per-month event
   counts + claimed USD): unlocks the P3 activity timeline + income curve
   without page-side 9MB event fetches. GitHub Action derive extension.
-- [PENDING] R1 verify after deploy: `data/daily/…` lands on the next cron
-  run; add the feed to System Health FRESHNESS_MAP on next health touch.
 - [PENDING] `tla-stats.html` promotion leftover: live page still shows the
   "TEST T3" staging badge — one-line cosmetic fix on next touch.
-- [PENDING] participants/allies daily-archive decision (electorate-wide
-  trends; registered members only today).
 - [PENDING] Portfolio P3: activity timeline + heatmap (needs R3), NFT
   floor-trend mini from floor-history, full by_pool P&L render.
 - [WATCH] LP APR "next ep ≈0%" lines on flip day (Rev 1.3 vote-shift feature
