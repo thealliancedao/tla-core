@@ -1,3 +1,89 @@
+## ✅ 2026-08-03 (2) — MEMBER-PORTFOLIO P1+P2 REBUILD staged (gate 61/61) + votion daily rider v1.2.0 (13/13)
+
+**Session record.** Full survey (SPEC-portfolio-tracker, SPEC-portfolio-pnl,
+UI-DATA-READINESS, portfolio-log, live-feed verification) → approved plan →
+built. New portfolio staged on `test.html` (free since the T3 promotion;
+promotes to `member-portfolio.html` on approval). Full feature record in
+portfolio-log **Rev 2.0**: net-worth splice banner, daily-archive trend
+engine, tiles v2 with drills, live-math Claimable (R2 — broken cron field
+replaced), Income card (LP yield + lifetime bribe income + measured rate),
+LP 30d sparklines, lock-decay visuals + cliff strip, votes earning-per-epoch.
+
+**Committing now (this delivery):**
+- `defipatriot/aDAO-links-site` → `test.html` (portfolio TEST P1)
+- `defipatriot/cron-scripts` → `votion-positions/votion-positions.js`
+  (**v1.2.0** — daily archive `data/daily/YYYY-MM-DD.json`, write-once per
+  UTC day, retention field honest, mock-gated on the real live fixture.
+  Closes the "capture now or lose forever" Votion item flagged 2026-06-14;
+  every day before 2026-08-03 is permanently missing, stated in the doc.)
+- this docs ZIP (also carries the 2026-08-03 T3 entries — the previous docs
+  ZIP was never committed; this one supersedes it)
+
+**Queue adds / carries:**
+- [PENDING] **R3 — pnl builder monthly buckets** (per-wallet per-month event
+  counts + claimed USD): unlocks the P3 activity timeline + income curve
+  without page-side 9MB event fetches. GitHub Action derive extension.
+- [PENDING] R1 verify after deploy: `data/daily/…` lands on the next cron
+  run; add the feed to System Health FRESHNESS_MAP on next health touch.
+- [PENDING] `tla-stats.html` promotion leftover: live page still shows the
+  "TEST T3" staging badge — one-line cosmetic fix on next touch.
+- [PENDING] participants/allies daily-archive decision (electorate-wide
+  trends; registered members only today).
+- [PENDING] Portfolio P3: activity timeline + heatmap (needs R3), NFT
+  floor-trend mini from floor-history, full by_pool P&L render.
+- [WATCH] LP APR "next ep ≈0%" lines on flip day (Rev 1.3 vote-shift feature
+  reading transition-state feeds) — verify on epoch day 2+; if persistent,
+  guard the projection when distributions/pool-status disagree on period.
+
+## ✅ 2026-08-03 — LOWER-HALF REBUILD: test.html Rev T3 (six review items, one cumulative build, gate 99/99)
+
+**Session-start verifications all green:** pd-bribes heartbeat ok 20/20 verified /
+0 unmatched / 427,876.955482 LUNA · price-history 2026/08 latest day-row **36
+tokens incl. FUEL + ATOM** (token-catalog effective-first fix's first daily run
+confirmed working) · live test.html = T2.6. **Epoch flipped 196→197 at
+2026-08-03T00:00Z mid-session** — day-1 fallbacks engaged for review.
+
+**test.html Rev T2.6→T3 (cumulative, staged, pending Camron's live review):**
+Pool Health reorg (DEX tags Astro-blue/Skeleton-orange on all rows incl. member
+mode, chip diet → funder tags to hover+drill, sticky column header, bucket
+net-flow figures) · **waterfall shift view** (ghost outline at locked-in size +
+green/red hatched delta, total-shift labels, tooltip decomposition = cast-vote
+drift + Votion planned — an identity, both measured; bucket shift-summary line
+with top-3 movers) · **ampCAPA gov fix** (live DAODAO voting-module read per
+selected wallet, ampcapa-tool contract chain: balance × ve3 rate → ampCAPA ×
+hub-ratio price; re-attributes the false "withdrawn" row ONLY on chain-confirmed
+balance; purple "staked in ampCAPA Gov · still TLA" chip) · **growth tile v2**
+(per-epoch real-flow bars, 4/8/all window toggle, LUNA-family vs
+everything-else split cards, Base-retained % gauge) · **zap planner** (member
+zap-out 25/50/75/100% → LUNA/USDC/SOLID/+dropdown; zap-in mode; direct-vs-two-
+hop-via-LUNA routing from live reserves, routes named on hover, same-pool
+reserve shrink on exit, honest "no TLA route" for unroutable legs; simulator
+card collapsed by default) · **footer refresh** (disclaimer one-liner +
+expander, credits → thealliancedao/tla-core, PD Watch "soon" slot).
+
+**Gate 99/99** (jsdom + real committed fixtures, fixture-derived assertions,
+DeFi_Patriot acceptance wallet for member flows). HONESTY: the T2.6 98-suite
+was session-local and lost with that sandbox — suite reconstructed to the same
+surfaces + T3 coverage; extend-never-reset resumes from 99. ampCAPA LCD leg is
+stubbed in-gate (schema-exact per ampcapa-tool queries) — **live verification =
+Camron selects an affected wallet** (current fixture pair shows six wallets with
+an ampCAPA row and ~zero receipt balance: Rebel_Defi et al.).
+
+### QUEUED (new this session)
+- [ ] **Boundary-snapshot rider:** stamp per-pool aDAO + per-member VP at
+  lock-in (epoch boundary) so the waterfall's member/aDAO shift decomposition
+  becomes exact instead of honestly-absent.
+- [ ] **adao-positions cron rider:** capture each member's ampCAPA gov-module
+  receipt balance (list_stakers sweep) so the page's live read gains a cron
+  fallback + the archives carry the position.
+- [ ] **Rankings-tab retirement** — Camron's call, not taken unilaterally.
+- [ ] Parked ideas (offered, untriaged): VP-composition stacked epoch chart ·
+  epoch clock ribbon · Bribe-ROI ($/VP) column on Pool Health · full zap matrix
+  on slippage.html.
+- [ ] Promotion: test.html → tla-stats.html after live review.
+
+---
+
 ## ✅ 2026-08-02 (3) — EVENING: BRIBER BOARD T1→T2.6 · ROLLUP REBUILD (PD #1) · FUEL PRICED · pd-bribes PRODUCT LIVE 20/20
 
 **Rollup rebuild (FORCE_ROLLUPS) cashed the whole capture arc at once:** 17→**32
