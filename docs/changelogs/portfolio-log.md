@@ -5,6 +5,55 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 2.0 — 2026-08-03 (staged on test.html — the P1+P2 portfolio rebuild)
+
+Full-page rebuild toward the awe-factor brief ("this is people's money"),
+staged on `test.html` (free since the TLA Stats T3 promotion); promotes to
+`member-portfolio.html` when approved. Gate: **61/61** fixture-derived
+assertions (new page surface = new baseline suite in the session workspace).
+
+- **Net-worth banner — the full splice, one number.** TLA (locks+LP+wallet)
+  + Votion (per-holder feed) + aDAO NFTs at sales floors, with a clickable
+  composition bar (segments scroll to their section), 1d/7d/30d change chips
+  from the daily archive (TLA slice only — labeled, since Votion/NFTs have no
+  archive yet), a 30-day sparkline, and the unpriced-assets honesty chip.
+  Votion and the NFT scan resolve async and the banner updates in place.
+- **"Your position over time" trend engine.** Sampled real days from the
+  registered-member daily archive (since 2026-06-13): metric toggle
+  (Portfolio $ / VP / LP / Locked), 14d/30d/all ranges, tracking-began marker
+  on "all", dots are captured days, never interpolated. Per-wallet slim
+  records cached in sessionStorage; ≤17 fetches per range.
+- **Tiles v2.** Six tiles now cover the whole splice (VP · Locked · LP ·
+  Votion · NFTs · Claimable), each with an async 7d delta vs the archive and
+  a whole-tile drill into a full-history modal chart. Wallet folded into the
+  banner composition (still itemized in Balances).
+- **Claimable goes live-math (R2).** `total_pending_bribes_usd` is the
+  proven-broken cron field — replaced by your VP share of each voted pool's
+  live pot valued via the org token catalog (same replacement tla-stats made
+  in T2.6). Feed value only as a labeled fallback. Tile, alert, and Income
+  card all use it; live figure $61.12 vs the feed's $37.68 on the fixture
+  wallet at gate time.
+- **Income card (new).** Every income stream, measured: claimable now, LP
+  yield claimed (pnl Phase B: 1,695.73 LUNA ≈ $585.39 at claim-day prices on
+  the fixture), lifetime **bribe income** joined from the voting rollups
+  ($3.6K / 105 paid claims on the fixture — first time surfaced per-member),
+  income rate = measured ÷ months active, per-epoch accrual by pool, and the
+  coverage-hole lower-bound statement.
+- **LP table:** 30d per-pool value sparkline column (async from the archive).
+- **Locks:** the decay picture made visual — per-lock live-VP bars against
+  the dashed adjusted-potential outline (the gap IS the reclaimable), plus an
+  unlock-cliff chip strip for non-auto-max locks.
+- **Vote allocations:** each vote shows "earning ≈ $X/ep" — your live share
+  of that pool's bribe pot, tooltip with share % and pot size.
+- **Modal/drill system + tooltip pass** across every new surface; old
+  bottom "Trends" honesty card folded into the chart's footer.
+
+Known limits, stated on-page: daily archive covers registered members only
+(others get honest empty trends); Votion & NFT values carry no daily archive
+yet (votion cron rider v1.2.0 ships alongside this rev; every day before
+2026-08-03 is permanently missing); income figures are lower bounds until the
+archive-gap backfill.
+
 ## Rev 1.3 — 2026-07-31
 
 - **APR cell rebuilt as the Non-Amp / Amp pair** (e.g. "72% / ≈103%", the

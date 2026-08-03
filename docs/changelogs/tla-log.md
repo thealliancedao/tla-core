@@ -5,6 +5,68 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev T3 (test.html staging) — 2026-08-03
+
+Lower-half rebuild (Camron's six review items, 2026-08-02), staged cumulatively
+on `/test.html` on top of T2.6, pending live review + promotion. One file.
+
+- **Pool Health reorganized:** every row now carries a **DEX tag** (Astro blue /
+  Skeleton orange — waterfall color convention; the two LUNA-USDC rows are
+  finally distinguishable), in TLA-wide AND member mode. **Chip diet**: rows keep
+  name · DEX · bucket · status · runway only; funder-class + "+unattributed"
+  moved to the runway chip's hover text and the drill (where the full
+  who's-paying panel already lives); skew chips only surface for the
+  possible-depeg case. Column header row is now **sticky**; bucket headers carry
+  a **windowed net-flow** figure (follows the 4/8/12 toggle).
+- **Waterfall shift view (Planned):** each bar shows a **ghost dashed outline at
+  its locked-in size** with a green/red **hatched region for the change** — the
+  current→planned move is finally visible, not inferred. Shift label = TOTAL
+  projected−locked (+N/+%), decomposed in the tooltip as **cast-vote drift**
+  (live votes vs the boundary snapshot) **+ Votion planned** (optimizer target vs
+  current placement) — an identity, both terms measured. New bucket-level
+  **shift summary** line: net bucket shift + top-3 movers + encoding legend.
+  Honesty note when a member is selected: member/aDAO per-pool lock-in baselines
+  aren't captured yet, so their shifts aren't decomposed (boundary-snapshot
+  rider queued).
+- **ampCAPA gov false-"withdrawn" fixed:** when a member stakes their ampCAPA
+  position's receipt (ampLP) into the ampCAPA governance DAO, the receipt leaves
+  the wallet and the exit logic read it as withdrawn. Now: one live per-wallet
+  LCD read of the DAODAO voting module (contracts + conversion chain lifted from
+  `ampcapa-tool.html`: balance × ve3 rate = ampCAPA, priced via the hub-ratio
+  feed), cached per session. **Re-attribution only fires on a chain-confirmed
+  balance** — LCD down or zero balance changes nothing. The row renders a purple
+  **"staked in ampCAPA Gov · still TLA"** chip instead of the exit chip.
+- **"Is TLA Growing" v2:** per-epoch **real-flow bars** under the index lines
+  (the E188 event is now one visible red bar, hover for amounts) · window toggle
+  4/8/all · **two-force cards**: LUNA-family net (mostly auto-compounding) vs
+  everything-else net (real LP deposits/withdrawals) · **Base retained %** gauge
+  (real base now ÷ window start).
+- **Zap planner (member mode, inside the simulator card):** per-position
+  **zap-out** costs at 25/50/75/100% to LUNA / USDC / SOLID (+ any other target
+  via dropdown), and a **zap-in** mode (source asset + the card's $ amount, your
+  pools starred first). Routing = best of direct pool or two-hop via LUNA from
+  live reserves, winning route named on hover; withdrawals shrink the exited
+  pool before any same-pool swap; unroutable legs say **"no TLA route"** rather
+  than guessing (e.g. xASTRO has no TLA pair). ≤ convention kept for
+  concentrated/stable legs. Simulator card itself now **collapsed by default**
+  (tap-to-open header, full-sim link stays live).
+- **Footer refresh:** four-paragraph disclaimer block → one line + expander;
+  credits link re-pointed to `thealliancedao/tla-core` (the actual data home);
+  **PD Watch** slot added (dim, "soon" — the data product behind it is live).
+
+**Gate: 99/99 green** (jsdom, real committed fixtures, fixture-derived expected
+values in specific cells; member flows exercised with the DeFi_Patriot
+acceptance wallet). Honesty note: the T2.6 98-assertion suite was session-local
+and lost with that sandbox — this suite **reconstructs** the same surface
+coverage and extends it with T3; extend-never-reset resumes from here.
+**Live-verify on review:** the ampCAPA leg runs against a stubbed LCD in the
+gate (sandbox can't reach publicnode) — select an affected wallet on the live
+page to confirm the chain read end-to-end. Note the epoch flipped 196→197 at
+2026-08-03T00:00Z, so day-1 fallbacks (astroport epoch file, SS weekly) are
+engaged during review.
+
+---
+
 ## Rev T1–T2.6 (test.html staging) — 2026-08-02
 
 Staged on `/test.html` (98-assertion gate), pending promotion to
