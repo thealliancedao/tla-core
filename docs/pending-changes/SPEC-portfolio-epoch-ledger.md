@@ -1,7 +1,20 @@
 # SPEC — portfolio-epoch-ledger (per-member epoch-by-epoch history to genesis)
 
-Status: **QUEUED — spec drafted 2026-08-03 (Camron's deep-history request)** ·
+Status: **BUILT & GATED 2026-08-03 — deploy pending commit** (builder gate
+22/22 on the real repo data incl. epoch-level hand-reconciliation; page
+deep-history mode gate inside the portfolio suite 97/97) ·
 Owner: capture layer (GitHub Action derive) + site (trend paging surface)
+
+**As built (v1):** extends `build-pnl.js` (v2) — same event pass, second
+output `tla-flows/pnl/ledger/` (index + per-wallet epoch files, 754 files /
+9.4MB, epochs 96→197). Per epoch: flow counts, segregated LP-unit deltas
+per pool per unit (amplp vs shares never mixed — 519 wallets carry
+cross-unit flags, recorded not clamped), and the SAME Tier-M USD legs the
+rollup carries (identical valuation calls — Σ epoch legs == rollup wallet
+totals asserted exactly). Rollup output byte-identical old-vs-new (minus
+builtAt). Value curve absent by design until the archive state sampler
+(§ below unchanged). No workflow change: the existing tla-flows-pnl Action
+already commits all of `tla-flows/pnl/`.
 Home: `tla-core/docs/pending-changes/`
 
 ## 1. Goal (in Camron's words)

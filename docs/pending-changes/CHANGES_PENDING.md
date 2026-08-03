@@ -38,7 +38,22 @@ alive per parallel-run doctrine; migrations are their own queued builds):
 participants / adao-positions current + daily (G1 position-layer extension of
 member-data), allies (G8), tla-snapshot (G5 pool-status/apr rollups).
 
-**⚡ ACTION (Camron, one click): re-run the `tla-flows-pnl` workflow.** The
+**✅ DONE 2026-08-03: `tla-flows-pnl` rebuild ran (Camron dispatched).**
+754 wallets / 116,499 events (was 555 / 36,243); DAO-wide fees $35,898,
+zap inputs $2.23M, claimed yield 15.6M LUNA ≈ $2.45M usd@event. Fixture
+wallet: 320/132/105 events, fees $128.56 (was $36.55), 7,707.7 LUNA
+claimed. The "my true costs are missing" gap is substantially closed;
+remaining: exit valuation (Phase C), 4,949 user-null claims, unpriced legs.
+
+**[HOUSEKEEPING — capture layer] `tla-flows/events/index.json` known_gaps
+is stale:** the 2026-07-09 gap record still claims 2025-01→2026-06 needs an
+archive node, but months_read is unbroken through the span (deep walk
+landed). Update or close-out the record on the next org-tla-flows touch so
+downstream consumers don't repeat the false claim — the portfolio page no
+longer trusts it (it derives coverage from months_read), but the record
+itself should tell the truth too.
+
+**(superseded) ⚡ prior ACTION text: re-run the `tla-flows-pnl` workflow.** The
 rollup's builtAt is 2026-07-27 — BEFORE the deep walk filled the 18-month
 hole. The 2025 event months now hold 9–20MB each (fixture wallet: 97 events
 in 5 sampled 2025 months). A manual dispatch of the existing Action rebuilds
@@ -47,7 +62,18 @@ is most of the "my true costs are missing" gap, zero code needed. (Remaining
 after rebuild: withdraw/exit valuation = pnl Phase C; direct non-zap deposit
 costs = classifier limitation, stated on-card.)
 
-**[QUEUED SPEC] SPEC-portfolio-epoch-ledger** (committed in this ZIP):
+**✅ BUILT (this delivery): SPEC-portfolio-epoch-ledger v1** — build-pnl
+v2 in this ZIP (`.github/scripts/tla-flows/build-pnl.js`): same pass,
+second output `tla-flows/pnl/ledger/` (754 per-wallet epoch files, e96→197).
+Builder gate 22/22 on real repo data (rollup byte-invariance, determinism,
+DP June-2025 epoch hand-reconciliation, Σ-epoch==rollup exact). Page
+deep-history mode in test.html (gate 97/97). **Deploy order: commit this
+ZIP first, dispatch `tla-flows-pnl` (no yml change — it already commits
+all of tla-flows/pnl/), THEN the page's deep mode lights up** (it 404s
+gracefully until the ledger publishes). Upgrade path unchanged: archive
+state sampler adds the per-epoch VALUE tier in place.
+
+**(spec text below predates the build)** SPEC-portfolio-epoch-ledger:
 per-member epoch-by-epoch position + value reconstruction to TLA genesis
 from the now-complete flow capture — feeds the trend chart's page-back
 buttons and the P3 timeline. Build after the pnl rebuild proves the
