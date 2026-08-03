@@ -9,7 +9,7 @@ Newest revisions on top. Times are UTC.
 
 Full-page rebuild toward the awe-factor brief ("this is people's money"),
 staged on `test.html` (free since the TLA Stats T3 promotion); promotes to
-`member-portfolio.html` when approved. Gate: **105/105** fixture-derived
+`member-portfolio.html` when approved. Gate: **108/108** fixture-derived
 assertions (new page surface = new baseline suite in the session workspace).
 
 - **Net-worth banner — the full splice, one number.** TLA (locks+LP+wallet)
@@ -108,6 +108,23 @@ assertions (new page surface = new baseline suite in the session workspace).
   chain is NOT proof of absence), amounts stay unpriced (outside the TLA
   catalog — never guessed), empty chains fold away, Injective excluded by
   construction (different key scheme).
+
+**P1.3 — third feedback round (Camron):**
+- **NFT valuation switched to the CONSERVATIVE floor** — min(live listing
+  floor, recent sales floor) per tier. Root cause of the "value too high"
+  report: Atrium listings WERE captured all along (19 live, SOLID-denom) and
+  set the listing floor ($50.11 base), but the ladder valued at the recent-
+  SALES floor ($97.90). The lower signal is now the mark, the source used is
+  named on each row, both signals shown. Banner + NFT tile follow.
+- **Deep history defaults to Σ CUMULATIVE** (running total since the
+  wallet's first epoch — the story view; per-epoch buckets one toggle away).
+  Running total computed from e-first so paging never lies mid-history.
+- **Sibling chains v2**: rest.cosmos.directory primaries with publicnode
+  fallback; **pending staking rewards** per chain (distribution module);
+  **manual address linking** ("link ATOM address" → saved locally,
+  overrides the derived sibling) for wallets whose derivation differs —
+  with an honest empty-state that offers linking instead of pretending
+  absence. Native Terra staking row also gains pending rewards (priced).
 
 **P2.5 — DEEP HISTORY (the heavy lift, same session):** paging ◀ past the
 start of the daily archive now crosses into **epoch-ledger mode** — your

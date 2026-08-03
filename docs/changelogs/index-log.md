@@ -7,6 +7,30 @@ This file also covers cross-cutting site changes that affect multiple pages — 
 
 ---
 
+## 2026-08-03 (2) — site-wide floor-consumer audit (Camron) + two index fixes
+
+Audited every floor-price consumer across the site after the valuation-policy
+catch. Findings:
+
+| Consumer | Was | Now |
+|---|---|---|
+| portfolio (test.html) ladder + banner/tiles | sales floor only | conservative min — fixed this session |
+| **index headline "Unbroken Floor" tile** | **BBL-only** (first non-broken BBL listing, bLUNA) | cross-marketplace override once the v2 context loads: lowest non-broken listing across BBL + Boost + Atrium, venue named in the subtext (BBL value remains the fast first paint) |
+| **index NFT mcap** | midpoint of sales-median & listing floor | conservative min (floor-based mcap convention) |
+| index per-marketplace tier rows | per-venue min (correct scope) | labels clarified earlier today |
+| index backing-vs-floor chart floor layer | dormant (`floorPerNft_USD` never populated — layer never renders) | untouched; wiring it to org floor-history is queued |
+| tla-stats / explorer / dao / others | no NFT floor valuation | clean |
+| capture layer (floor-history) | provides BOTH signals | correct by design |
+| member-portfolio.html (live) | old sales-floor valuation | superseded when test.html promotes |
+
+## 2026-08-03 — marketplace tier-floor label fix
+
+- Per-tier marketplace floors read "$50.00 × 17", implying 17 listings AT
+  the floor — the count is actually ALL listings in that tier on that
+  marketplace, floor = the lowest of them (Camron's catch). Relabeled to
+  "from $50.00 · 17 listed" with a hover stating the semantics exactly.
+  No math changed.
+
 ## Rev 3.55 — 2026-07-17
 
 Community-suggestion fixes + sparkline revival + fetch hygiene. (Note: in-code
