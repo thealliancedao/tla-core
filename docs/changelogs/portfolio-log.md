@@ -9,7 +9,7 @@ Newest revisions on top. Times are UTC.
 
 Full-page rebuild toward the awe-factor brief ("this is people's money"),
 staged on `test.html` (free since the TLA Stats T3 promotion); promotes to
-`member-portfolio.html` when approved. Gate: **84/84** fixture-derived
+`member-portfolio.html` when approved. Gate: **85/85** fixture-derived
 assertions (new page surface = new baseline suite in the session workspace).
 
 - **Net-worth banner — the full splice, one number.** TLA (locks+LP+wallet)
@@ -78,6 +78,11 @@ assertions (new page surface = new baseline suite in the session workspace).
 - **Income projection**: "if you reclaimed your +X VP" — the live pot math
   re-run at display VP + gap, with the added VP included in each pool's
   denominator (the share never pretends the pool stays the same size).
+- **Income "Lifetime avg" relabel** (was "Income rate"): a wallet that
+  farmed big through 2024 and holds $2 today still shows its true historical
+  average — the label now says so explicitly ("reflects PAST position sizes,
+  not today's"), with a recent-rate view queued behind the monthly-buckets
+  derive. Sub-cent accrual rows filtered.
 - **Trend paging**: 12w range added; ◀ earlier / later ▶ window paging —
   ready to walk into the epoch-ledger history when that derive lands.
 

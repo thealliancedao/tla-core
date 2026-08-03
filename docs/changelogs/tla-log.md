@@ -5,6 +5,25 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev T3.1 — 2026-08-03 (live-page touch: badge fix + Unlock Runway)
+
+Two changes to the LIVE `tla-stats.html` (base byte-verified == the promoted
+T3 build). Gate: the full T3 suite re-run on the edited file + new
+assertions — **104/104**.
+
+- **"TEST T3" staging badge removed** — promotion leftover.
+- **Unlock Runway card** (Camron's exit-pressure request), between the
+  leader boards and the vote waterfall: VP scheduled to unlock over the next
+  8 weeks from non-auto-max locks across the tracked electorate. Headline =
+  ≤4-epoch VP total + share of tracked VP; 8 week-bucket bars (weeks 1–4
+  highlighted) with per-week lock counts + asset amounts in the hover;
+  "largest upcoming unlocks" list (name/wallet, lock id, amount, VP, weeks,
+  ≤2w in red). Honesty: tracked-electorate coverage stated; auto-max locks
+  never unlock and are excluded by definition; healthy-empty state when
+  nothing is inside the window. Someone letting a lock run out is often
+  pulling LUNA — this is the early tell, and pairs with the Pool Health
+  member flows view for the "same wallet also unwinding LP" check.
+
 ## Rev T3 (test.html staging) — 2026-08-03
 
 Lower-half rebuild (Camron's six review items, 2026-08-02), staged cumulatively
