@@ -1,3 +1,31 @@
+## 🚀 2026-08-03 (EVENING) — build sprint landed · walk chaining · announcement track
+
+SHIPPED + VERIFIED live (codeload): member-portfolio (P1.6 live claimable
++ P1.7 live repricing — promoted to production, TEST labels stripped),
+slippage.html (Arb Radar), tla-stats (arb strip + esc fix + PD flip fix
+CONFIRMED live in console: LUNA-ampLUNA PD=$87.24). PENDING one paste:
+tla-stats votion-fallback revision. Walk self-chains (~450k/chunk,
+time-budget adaptive, endpoint leak fixed + logs scrubbed).
+
+FOUND VIA HAR/console sweep: astro daily cron down 08-02/03 (Astroport
+outage per Camron, self-heals; the two missed dailies recoverable later
+from Astroport charts history — queued gap-fill); votion flip-day 404
+(fixed site-side); "PD Rankings: 0 pools" console line (cosmetic legacy
+section — investigate); July-20 astro epoch fallback confirmed ALREADY
+LIVE (stale pending-item cleared).
+
+ANNOUNCEMENT GATE (Camron): walk completes (~4-5 days) → final
+tla-flows-pnl fold + FORCE_ROLLUPS re-home of gap-recovered PD txs +
+stale known_gaps closure → QA pass → announce.
+
+NEXT SESSION: ① byte-verify sweep ② SIMULATOR-V2 build (planner port
+into slippage.html: wallet selector, zap in/out + multiplier, radar
+already in) ③ price-mark audit (SOLID $1 mark, arbLUNA $0.12 vs $0.055 —
+radar is immune, tiles are not) ④ daily-CSV gap-fill for 08-02/03 ⑤
+verify astro cron resumed (data/daily/2026-08-04.csv exists). Parallel:
+test lock matures ~08-10 → exit fixture → lock classifier v2; VERSION
+bump rides next platform-crons batch; PL walk after mains.
+
 ## 🚀 2026-08-03 (V4) — CLASSIFIER V4 BUILT · archive-walk runner · all gates green
 
 <<FLOWS CLASSIFIER v4>> (additive on v3): `fee` {amount,denom,payer} from
