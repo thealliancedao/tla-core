@@ -21,7 +21,10 @@ org tree first — G-status in old audit docs is not current truth, and
 personal repos receive nothing new, ever.**
 
 **Committing now (this delivery):**
-- `defipatriot/aDAO-links-site` → `test.html` (portfolio TEST P1)
+- `defipatriot/aDAO-links-site` → `test.html` (portfolio TEST P1, gate 85/85)
+- `defipatriot/aDAO-links-site` → `tla-stats.html` (**Rev T3.1**: staging
+  badge removed + Unlock Runway card — full T3 suite re-run on the edited
+  live file, 104/104)
 - this docs ZIP (also carries the 2026-08-03 T3 entries — the previous docs
   ZIP was never committed; this one supersedes it)
 
@@ -54,8 +57,6 @@ hole-era events; plan+approval before code.
 - [PENDING] **R3 — pnl builder monthly buckets** (per-wallet per-month event
   counts + claimed USD): unlocks the P3 activity timeline + income curve
   without page-side 9MB event fetches. GitHub Action derive extension.
-- [PENDING] `tla-stats.html` promotion leftover: live page still shows the
-  "TEST T3" staging badge — one-line cosmetic fix on next touch.
 - [PENDING] Portfolio P3: activity timeline + heatmap (needs R3), NFT
   floor-trend mini from floor-history, full by_pool P&L render.
 - [WATCH] LP APR "next ep ≈0%" lines on flip day (Rev 1.3 vote-shift feature
