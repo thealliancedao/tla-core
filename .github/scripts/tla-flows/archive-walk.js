@@ -38,6 +38,7 @@ const ARCHIVE_RPC   = String(process.env.ARCHIVE_RPC || '').replace(/\/+$/, '');
 const FROM          = Number(process.env.WALK_FROM || process.argv[2]);
 const FINAL         = Number(process.env.FINAL_HEIGHT || 0);   // self-chain target (0 = single-range mode)
 const CHUNK         = Number(process.env.CHUNK_BLOCKS || 450000);
+const RUN_BUDGET_MS = Number(process.env.RUN_BUDGET_MIN || 320) * 60000;  // stop-early budget (Actions limit 355m)
 const TO_RAW        = process.env.WALK_TO || process.argv[3];
 const TO            = TO_RAW ? Number(TO_RAW) : (FINAL ? Math.min(FROM + CHUNK - 1, FINAL) : NaN);
 const WORKFLOW_FILE = process.env.WORKFLOW_FILE || 'tla-flows-archive-walk.yml';
@@ -370,7 +371,7 @@ function nextRange(to, final, chunk) {
 }
 
 (async () => {
-  console.log(`archive-walk ${FROM} → ${TO} (${TO - FROM + 1} blocks) via ${ARCHIVE_RPC.replace(/\/\/.*@/, '//***@')}`);
+  console.log(`archive-walk ${FROM} → ${TO} (${TO - FROM + 1} blocks) via [ARCHIVE_RPC]`);
   const auxWatch = await loadAuxWatch();
   const watchedAll = new Set([...Object.keys(WATCH), ...auxWatch]);
   const records = [], transfers = [], raw = [];
@@ -392,7 +393,10 @@ function nextRange(to, final, chunk) {
   const launch = (h) => { if (h <= TO && !inFlight.has(h)) inFlight.set(h, getBlock(h)); };
   for (let h = FROM; h < FROM + CONC && h <= TO; h++) launch(h);
   let lastLog = Date.now();
+  const t0 = Date.now();
+  let processedTo = FROM - 1;
   for (let N = FROM; N <= TO; N++) {
+    if (Date.now() - t0 > RUN_BUDGET_MS) { console.log(`⏱ time budget reached at ${N - 1} — stopping early, publishing the walked span, chaining onward`); break; }
     const blk = await inFlight.get(N); inFlight.delete(N); launch(N + CONC);
     if (blk.txsB64.length) {
       const results = await getBlockResults(N);
@@ -408,9 +412,11 @@ function nextRange(to, final, chunk) {
       }
       await flushRaw(false);
     }
+    processedTo = N;
     if (Date.now() - lastLog > 15000) { console.log(`  at ${N} (${TO - N} to go · ${records.length} flows · ${transfers.length} transfers · ${matched} matched)`); lastLog = Date.now(); }
   }
   await flushRaw(true);
+  const walkedTo = processedTo;   // = TO when the budget never fired
 
   // census gate — thresholds fail the run BEFORE any event publish
   const census = { deposit: { n: 0, legs: 0, fee: 0 }, withdraw: { n: 0, legs: 0, fee: 0 }, claim: { n: 0, fee: 0, measured: 0 } };
@@ -461,17 +467,17 @@ function nextRange(to, final, chunk) {
   }
 
   // MANIFEST — the walk's own record of exactly what was covered
-  const report = { schemaVersion: 1, kind: 'archive-walk-manifest', from: FROM, to: TO, final_height: FINAL || undefined,
+  const report = { schemaVersion: 1, kind: 'archive-walk-manifest', from: FROM, to: walkedTo, planned_to: TO, final_height: FINAL || undefined,
     walkedAt: new Date().toISOString(), matched_txs: matched, raw_parts: partN, raw_txs: rawTotal,
     classified: records.length, events_added: added, events_upgraded: upgraded, transfers: tAdded, census };
-  await putJson(`${RAW_DIR()}/report.json`, report, `archive-walk manifest ${FROM}-${TO}`);
+  await putJson(`${RAW_DIR()}/report.json`, report, `archive-walk manifest ${FROM}-${walkedTo}`);
   console.log(`\n✅ archive-walk complete: ${matched} matched · raw ${rawTotal} txs in ${partN} parts · events +${added}/↑${upgraded} · transfers +${tAdded}`);
 
   // SELF-CHAIN (one dispatch walks the whole hole): a successful chunk
   // dispatches the next one until FINAL_HEIGHT is reached. A failed chunk
   // stops the chain (census gate included) — re-dispatch from the failure
   // point after diagnosis. Requires workflow permissions: actions: write.
-  const nxt = nextRange(TO, FINAL, CHUNK);
+  const nxt = nextRange(walkedTo, FINAL, CHUNK);
   if (nxt) {
     console.log(`self-chain: dispatching next chunk ${nxt.from} → ${nxt.to} (final ${FINAL})`);
     await ghReq('POST', `/repos/${GITHUB_REPO}/actions/workflows/${WORKFLOW_FILE}/dispatches`,
