@@ -1,9 +1,9 @@
 # archive-walk — the ACCESS-WINDOW walk (PLAN-archive-window-walk).
-# Manual dispatch with an explicit height range. Secret ARCHIVE_RPC required.
-# Chunk dispatches (~400-500k blocks per run stays inside the 6h Actions
-# limit at archive-node latencies); dispatch the next chunk when one
-# finishes. Raw parts are write-once, so accidental overlaps are harmless —
-# but keep ranges clean for manifest hygiene.
+# SELF-CHAINING: dispatch ONCE with from_height + final_height; each
+# successful chunk (~450k blocks, sized for the 6h Actions limit)
+# dispatches the next until final_height is reached. A failure (including
+# the census gate) STOPS the chain — re-dispatch from the failure point.
+# Raw parts are write-once, merges idempotent: overlaps are harmless.
 name: tla-flows-archive-walk
 on:
   workflow_dispatch:
@@ -11,9 +11,17 @@ on:
       from_height:
         description: 'walk FROM height (inclusive)'
         required: true
+      final_height:
+        description: 'self-chain until this height (inclusive)'
+        required: false
+        default: '21481530'
       to_height:
-        description: 'walk TO height (inclusive)'
-        required: true
+        description: 'OPTIONAL single-chunk override (blank = auto-chunk + chain)'
+        required: false
+        default: ''
+permissions:
+  contents: write
+  actions: write
 concurrency:
   group: tla-flows-archive-walk
   cancel-in-progress: false
@@ -34,4 +42,5 @@ jobs:
           ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
           WALK_FROM: ${{ inputs.from_height }}
           WALK_TO: ${{ inputs.to_height }}
+          FINAL_HEIGHT: ${{ inputs.final_height }}
         run: node .github/scripts/tla-flows/archive-walk.js
