@@ -9,7 +9,7 @@ Newest revisions on top. Times are UTC.
 
 Full-page rebuild toward the awe-factor brief ("this is people's money"),
 staged on `test.html` (free since the TLA Stats T3 promotion); promotes to
-`member-portfolio.html` when approved. Gate: **97/97** fixture-derived
+`member-portfolio.html` when approved. Gate: **105/105** fixture-derived
 assertions (new page surface = new baseline suite in the session workspace).
 
 - **Net-worth banner — the full splice, one number.** TLA (locks+LP+wallet)
@@ -91,6 +91,23 @@ assertions (new page surface = new baseline suite in the session workspace).
   automatically). Income footer text is months-aware the same way.
 - **Trend paging**: 12w range added; ◀ earlier / later ▶ window paging —
   ready to walk into the epoch-ledger history when that derive lands.
+
+**P1.2 — second feedback round (Camron):**
+- **ampCAPA gov row completed**: now carries the pool's TLA reward APR
+  (base/≈amplified pair — the gov-staked receipt IS an amplified position),
+  pool share = your ampCAPA value ÷ ALL ampCAPA staked in TLA (non-amp +
+  amplified; gov receipts remain inside the amplified total, so that
+  denominator is the whole pool — method in the hover), and the pool-level
+  threshold distance. **Folded into totals**: LP tile and the banner grand
+  now include the gov position (asterisked as a live read; only when
+  catalog-priced, never a guessed dollar).
+- **Other Cosmos chains** in Wallet Balances: sibling addresses (your terra1
+  key-hash re-encoded per chain prefix — the chainscope approach) with live
+  bank + staking reads on Cosmos Hub / Osmosis / Neutron. Honesty built in:
+  the tooltip states the coin-type-330-vs-118 derivation caveat (an empty
+  chain is NOT proof of absence), amounts stay unpriced (outside the TLA
+  catalog — never guessed), empty chains fold away, Injective excluded by
+  construction (different key scheme).
 
 **P2.5 — DEEP HISTORY (the heavy lift, same session):** paging ◀ past the
 start of the daily archive now crosses into **epoch-ledger mode** — your
