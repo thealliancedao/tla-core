@@ -1,3 +1,22 @@
+## 🚀 2026-08-03 (FINAL) — WALK PLAN LOCKED · commit set minimized · clock starts
+
+Camron blessed the walk. Final scope adjustments: **lock-NFT marketplace
+sales CONFIRMED real** (Boost + Atrium venues, historical sales, Camron's
+own early-number purchase) → in scope with payment legs; **lock-exit live
+experiment** started (1-week test lock → matured-withdraw tx becomes the
+classifier fixture); **Pixel Lions DEFERRED** to its own deeper-window
+backfill after the main walk.
+
+State verified live at packaging time: tla-stats.html (T3.1) ✓ committed ·
+index.html (floor fixes) ✓ committed · build-pnl v2 ✓ committed · **ledger
+PUBLISHED (754 wallet files, index 200)** ✓ · tla-log/index-log/epoch-
+ledger spec ✓ committed. Remaining commit set: `test.html` (site) + the
+four docs in this ZIP (portfolio-log, this file, roundtrip SPEC, walk
+PLAN).
+
+**Next session opener: classifier v4 per PLAN-archive-window-walk.md** —
+raw-attribute archive first-class, field-completeness census as the gate.
+
 ## ✅ 2026-08-03 (2) — MEMBER-PORTFOLIO P1+P2+P1.1 REBUILD staged (gate 84/84) + Votion layer moved to the ORG feed
 
 **Session record.** Full survey (SPEC-portfolio-tracker, SPEC-portfolio-pnl,
@@ -100,6 +119,61 @@ Floor tile (was BBL-only — now the lowest non-broken listing across
 BBL+Boost+Atrium) and the NFT mcap mark (midpoint → conservative min).
 Remaining queued: wire the dormant backing-vs-floor chart floor layer to
 org floor-history; live member-portfolio.html retires on promotion.
+
+**PRE-WALK COMPLETENESS SWEEP DONE (Camron: "make sure we get it all") —
+master checklist committed as `PLAN-archive-window-walk.md`.** The sweep
+found the events-without-costs disease in FOUR more places (lock legs with
+args_unknown + missing lock exits/transfers; user-null claims; gas never
+captured; NFT payment legs) and sets the structural insurance: **archive
+the RAW wasm attributes of every matched tx during the walk** — walk once,
+classify forever; future oversights become local re-derives, not lost-
+access tragedies. Field-completeness census thresholds gate the walk
+itself. Pixel Lions doctrine recorded: phoenix-era scope only (Classic-era
+history is on another chain — stated, not chased).
+
+**✅ ARCHIVE ACCESS CONFIRMED LIVE (Camron 2026-08-03). Build order for
+the access window — in priority, each gated before the next:**
+1. **Classifier v4 + full re-walk** (SPEC-portfolio-roundtrip-pnl §3 —
+   token legs on every provide/withdraw/zap-out + LP-transfer events).
+   Unlocks true round-trip P&L to genesis.
+2. **Historical STATE sampler** — per-epoch pool reserves + LP supply +
+   amp exchange rates + hub rates. Unlocks the value curve, amplified-
+   compounding attribution, and LST cost bases.
+3. **classifyNftTx v2 + ADAO collection re-walk** — capture the PAYMENT
+   legs (mint price, sale price, denom, payer). Answers "mint USD cost for
+   every NFT in circulation": today we have sales/listing history and
+   FCD-era provenance pricing, but hole-era mint payments were captured
+   WITHOUT the payment leg — the v2 walk closes that permanently.
+4. **Ally collections onboarding** (Pixel Lions + TLA lock NFTs) — the
+   capture registry is already multi-collection by design; each ally is a
+   registry entry + a collection walk (+ a floors source where a
+   marketplace lists them). Walk them while the archive lives; supporting
+   those who support us is the point.
+
+**aDAO treasury profile (Camron Q3): viewable NOW** — the treasury's full
+position record was already captured (feed: "aDAO Treasury",
+terra1sffd…3m5vzm, ~$13K) but the portfolio page never surfaced it; fixed
+this delivery (merged into the registry + a welcome-screen chip). Note the
+UNMINTED 5,828 sit with the mint wallet, not the treasury — an "unminted
+tier" line for DAO-wallet views is queued alongside the round-trip work.
+
+**(answered) prior decision flag:** The round-trip P&L Camron specced (SPEC-portfolio-roundtrip-pnl,
+in this ZIP) is blocked on a classifier-v4 re-walk: verified against raw
+events — provides and withdrawals carry NO underlying token amounts today
+(units + action names only), so exits and direct entries are unvaluable
+until the re-walk captures the token legs the chain logs already contain.
+FCD era re-walks anytime; the hole era re-walks ONLY while the archive
+grant lives. If it's live: v4 re-walk + state sampler are the next two
+builds, ahead of everything. If lapsed: v4 ships anyway (FCD + forward),
+hole-era exits stay honestly blank until access returns.
+
+**"Up or down overall?" — the real answer needs two derives (queued in
+priority order):** (1) **archive STATE sampler** (the access-window build)
+→ per-epoch pool state → the ledger's VALUE tier lights up in place → the
+whole-life chart gains the actual position-value curve; (2) **P&L Phase C**
+(exit valuation + direct-deposit costs) → a true measured net P&L number
+for the story card. Both consume products that already exist after this
+session; nothing captured today blocks them.
 
 **Queue adds / carries:**
 - [PENDING] **R3 — pnl builder monthly buckets** (per-wallet per-month event
