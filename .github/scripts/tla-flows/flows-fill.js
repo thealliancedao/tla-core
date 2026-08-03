@@ -6,7 +6,7 @@
 // Runs as a GitHub Action in tla-core (workflow: tla-flows-fill.yml, manual
 // dispatch) with the repo checked out — reads archive/fcd/lp-* locally,
 // classifies with a BYTE-IDENTICAL copy of the walker's <<FLOWS CLASSIFIER
-// v1>> block (diff-verify: see README), and publishes monthly
+// v4>> block (diff-verify: see README), and publishes monthly
 // tla-flows/events/{YYYY}/{MM}.json via the same read-merge-dedupe-
 // never-shrink rules the walker uses. Archive months (…→2025/01) cannot
 // collide with walker months (2026/07→), and the index merge is
@@ -50,38 +50,45 @@ const DRY = process.argv[2] === '--dry-run' ? (process.argv[3] || '/tmp/flows-fi
 // contract take-rate cycles v1 misclassified as member claims (full-corpus
 // gate: every drop verified tribute plumbing; those txs live in the voting
 // stream as bribe events). v1 totals were 32,615 / claim 12,389.
+// v4 keeps v3's primary-flow first-match semantics — record COUNTS are
+// invariant across v2→v4 (fields additive). The 31,748 figure is the
+// chain-derived truth and the re-run gate.
 const EXPECT = { total: 31748, deposit: 15727, withdraw: 4499, claim: 11522 };
 const SANITY_CEILING = 14000000; // ~2025-01-25 — no archive event may exceed this
 
 function fail(m) { console.error('INVARIANT FAIL: ' + m); process.exit(1); }
 const assert = (c, m) => { if (!c) fail(m); };
 
+// SHARED CLASSIFIER — Marker: <<FLOWS CLASSIFIER v3>>
+// v3 (2026-07-31, SPEC-registry-extensions-pnl — evidenced by DeFi_Patriot's
+// 8-tx live test matrix, blocks 22,163,785–896, all shapes chainscope-read):
+// additive on v2 — every v2 top-level field is emitted UNCHANGED (primary-flow
+// selection keeps v2's exact first-match semantics, so the schema-upgrade
+// merge replaces v2 records with byte-identical v2 fields + the new ones).
+//   • MULTI-FLOW TXS (test tx DCA53591…: non-amp unstake + amp re-stake in ONE
+//     tx — v2's one-flow-per-tx dropped the re-stake, silently corrupting
+//     position tracking): `flows[]` now carries EVERY stake/unstake flow in
+//     event order. Record identity unchanged (one record per tx, txhash key).
+//   • AMP RATE FIELDS (test A38C20B3…): asset-compounding/stake carries
+//     bond_amount + bond_share + bond_share_adjusted → recorded per flow; the
+//     LP↔amplp rate (bond_amount/bond_share) is the measured compounding-yield
+//     curve — no pro-rating ever. Unstake has no rate attrs; amplp burned is
+//     recovered from the tf_burn event (F051E83A…) → rate = returned/burned.
+//   • PROVIDE / WITHDRAW BOTH-SIDES TRUTH (82FBE584…, 29537FA7…): pair
+//     provide_liquidity {assets×2, share} and withdraw_liquidity
+//     {refund_assets×2, withdrawn_share} in the SAME tx are recorded as
+//     `provides[]` / `withdraw_liqs[]` — zap post-value + exit valuation with
+//     zero pair-walk dependency.
+//   • Repeated-attr events handled (zapper callback_send_results carries TWO
+//     `returned` attrs — 29537FA7…): v3 fields parse ALL occurrences; v2's
+//     first-occurrence flowsAttrs stays untouched for v2 semantics.
+// The legacy classifier copies in tla-core/.github/scripts/tla-flows/
+// (flows-fill, retained-gap-fill) are FROZEN at v2 — executed one-shots; any
+// future re-run must require() this live module (no-third-copy doctrine).
 // =============================================================================
-// SHARED CLASSIFIER — this section must stay BYTE-IDENTICAL with the copies in
-// tla-core/.github/scripts/tla-flows/ (flows-fill + retained-gap-fill derives).
-// Any drift must show in a plain diff. Marker: <<FLOWS CLASSIFIER v2>>
-// =============================================================================
-// v2 (2026-07-23, SPEC-portfolio-pnl Phase B / SPEC-capture-registry-backfill):
-// additive on the Rev A.3 v1 parser — every v1 field is emitted unchanged.
-// New, all evidenced by the 55,199-tx FCD fixture census (attrs present on
-// 100% of their action class — nothing inferred):
-//   • pool identity: `pool` + `gauge` on deposits/withdraws — amp stake carries
-//     `asset`+`gauge`; bucket stake/unstake carry `asset` (gauge from the
-//     bucket contract); amp unstake carries it inside `returned` (v1 threw the
-//     prefix away). Missing → null, never guessed.
-//   • claims measured: `asset/claim_rewards` emits ONE event PER pool with
-//     `user`+`assets`+`reward_amount` → per-pool `claims` array; compounder
-//     vault cycles emit `ca/claim_rewards_callback` with `claimed` as
-//     denom:amount → `claimed_coins`, mechanism 'amplified_vault', user null
-//     BY MEANING (the vault claims for everyone; not a wallet flow).
-//   • claim detection tightened to watched shapes — v1's loose /claim/i also
-//     matched foreign airdrop/vesting `claim` events with no user attr (the
-//     1,532 null-user claims in the Phase-A rollup). Foreign claims no longer
-//     classify; a legacy /claim/i fallback remains for WATCHED contracts only.
-// `amount` stays null + `amount_unit` 'rewards' on claims (v1 consumer compat);
-// analysis reads `claims`/`claimed_coins`.
 
 function flowsAttrs(ev) { const o = {}; for (const a of (ev.attributes || [])) if (!(a.key in o)) o[a.key] = a.value; return o; }
+function flowsAttrsAll(ev) { const o = {}; for (const a of (ev.attributes || [])) (o[a.key] ||= []).push(a.value); return o; }
 function flowsEventsOf(txr) {
   if (Array.isArray(txr.events) && txr.events.length) return txr.events;
   const out = []; for (const log of (txr.logs || [])) for (const e of (log.events || [])) out.push(e); return out;
@@ -95,19 +102,37 @@ function flowsParseReturned(returned) {
   if (i <= 0) return { pool: null, amount: s || null };
   return { pool: s.slice(0, i) || null, amount: s.slice(i + 1) || null };
 }
+// '5097943terra10aa3zd…, 124842627uluna' → [{amount,denom}, …] (pair-event coin lists)
+function flowsParseCoinList(s) {
+  return String(s || '').split(',').map(x => x.trim()).filter(Boolean).map(x => {
+    const m = /^(\d+)(.+)$/.exec(x);
+    return m ? { amount: m[1], denom: m[2] } : { amount: null, denom: x };
+  });
+}
+
 function classifyFlowTx(txr) {
   if (Number(txr.code || 0) !== 0) return null;
-  const wasmRaw = flowsEventsOf(txr).filter(e => e.type === 'wasm');
+  const allEvents = flowsEventsOf(txr);
+  const wasmRaw = allEvents.filter(e => e.type === 'wasm');
   const wasm = wasmRaw.map(flowsAttrs);
-  let flow = null;
+  // v3: collect EVERY stake/unstake flow in event order (v2 kept only the first)
+  const flowList = [];
   for (const w of wasm) {
     const act = w.action;
-    if (act === 'asset-compounding/stake')        flow = { type: 'deposit',  mechanism: 'amplified',     user: w.user, amount: w.bond_share_adjusted || w.bond_share, unit: 'amplp', pool: w.asset || null, gauge: w.gauge || null };
-    else if (act === 'asset-compounding/unstake') { const r = flowsParseReturned(w.returned); flow = { type: 'withdraw', mechanism: 'amplified', user: w.user, amount: r.amount, unit: 'lp', pool: r.pool, gauge: null }; }
-    else if (act === 'asset/stake')               flow = { type: 'deposit',  mechanism: 'non_amplified', user: w.user, amount: w.share, unit: 'shares', pool: w.asset || null, gauge: flowsGaugeOf(WATCH[w._contract_address]) };
-    else if (act === 'asset/unstake')             flow = { type: 'withdraw', mechanism: 'non_amplified', user: w.user, amount: w.share, unit: 'shares', pool: w.asset || null, gauge: flowsGaugeOf(WATCH[w._contract_address]) };
-    if (flow) break;
+    let f = null;
+    if (act === 'asset-compounding/stake')        f = { type: 'deposit',  mechanism: 'amplified',     user: w.user, amount: w.bond_share_adjusted || w.bond_share, unit: 'amplp', pool: w.asset || null, gauge: w.gauge || null,
+                                                        bond_amount: w.bond_amount || null, bond_share: w.bond_share || null, bond_share_adjusted: w.bond_share_adjusted || null };
+    else if (act === 'asset-compounding/unstake') { const r = flowsParseReturned(w.returned); f = { type: 'withdraw', mechanism: 'amplified', user: w.user, amount: r.amount, unit: 'lp', pool: r.pool, gauge: null, amplp_burned: null }; }
+    else if (act === 'asset/stake')               f = { type: 'deposit',  mechanism: 'non_amplified', user: w.user, amount: w.share, unit: 'shares', pool: w.asset || null, gauge: flowsGaugeOf(WATCH[w._contract_address]) };
+    else if (act === 'asset/unstake')             f = { type: 'withdraw', mechanism: 'non_amplified', user: w.user, amount: w.share, unit: 'shares', pool: w.asset || null, gauge: flowsGaugeOf(WATCH[w._contract_address]) };
+    if (f) flowList.push(f);
   }
+  // amp unstake rate leg: pair tf_burn amplp amounts to amplified withdraws in order
+  const burns = allEvents.filter(e => e.type === 'tf_burn').map(flowsAttrs)
+    .map(a => /^(\d+)(factory\/.+)$/.exec(String(a.amount || ''))).filter(Boolean);
+  let bi = 0;
+  for (const f of flowList) if (f.mechanism === 'amplified' && f.type === 'withdraw' && bi < burns.length) f.amplp_burned = burns[bi++][1];
+  let flow = flowList[0] || null;   // primary = v2's exact first-match
   let claims = null, claimedCoins = null;
   if (!flow) {
     // measured wallet claims: one asset/claim_rewards event per pool, on a
@@ -135,15 +160,35 @@ function classifyFlowTx(txr) {
     if (c) flow = { type: 'claim', mechanism: null, user: c.user || c.sender || null, amount: null, unit: 'rewards', pool: null, gauge: null };
   }
   if (!flow) return null;
-  const viaZap = wasm.some(w => w.action === 'zapper/create_lp' || w.action === 'zapper/withdraw_lp');
+  const viaZap = wasm.some(w => w.action === 'zapper/create_lp' || w.action === 'zapper/withdraw_lp' || w.action === 'zapper/zap');
   const cost = flowsExtractCost(wasm);
-  const rec = { schemaVersion: 2, txhash: txr.txhash, height: Number(txr.height), timestamp: txr.timestamp,
+  // v3: both-sides liquidity truth from pair events riding the same tx
+  const provides = wasmRaw.filter(e => flowsAttrs(e).action === 'provide_liquidity')
+    .map(e => { const a = flowsAttrs(e); return { pair: a._contract_address || null, assets: flowsParseCoinList(a.assets), share: a.share || null }; });
+  const withdrawLiqs = wasmRaw.filter(e => flowsAttrs(e).action === 'withdraw_liquidity')
+    .map(e => { const a = flowsAttrs(e); return { pair: a._contract_address || null, refund_assets: flowsParseCoinList(a.refund_assets), share: a.withdrawn_share || null }; });
+  // v3: final zapper exit assets (callback_send_result(s) — may repeat `returned`)
+  const sendResults = [];
+  for (const e of wasmRaw) {
+    const all = flowsAttrsAll(e);
+    const act = (all.action || [])[0];
+    if (act === 'zapper/callback_send_results' || act === 'zapper/callback_send_result') {
+      for (const r of (all.returned || all.amount || [])) { const p = flowsParseReturned(r); if (p.amount) sendResults.push({ denom: p.pool, amount: p.amount }); }
+    }
+  }
+  const fee = flowsExtractFee(allEvents);
+  const rec = { schemaVersion: 4, txhash: txr.txhash, height: Number(txr.height), timestamp: txr.timestamp,
            type: flow.type, mechanism: flow.mechanism, via_zap: viaZap, user: flow.user || null,
            amount: flow.amount || null, amount_unit: flow.unit, cost,
            pool: flow.pool || null, gauge: flow.gauge || null,
            raw_actions: [...new Set(wasm.map(w => w.action).filter(Boolean))] };
   if (claims) rec.claims = claims;
   if (claimedCoins) rec.claimed_coins = claimedCoins;
+  if (flowList.length) rec.flows = flowList;
+  if (provides.length) rec.provides = provides;
+  if (withdrawLiqs.length) rec.withdraw_liqs = withdrawLiqs;
+  if (sendResults.length) rec.zap_out_assets = sendResults;
+  if (fee) rec.fee = fee;
   return rec;
 }
 // Entry/exit cost: collect EVERY swap leg (a non-LUNA exit is multi-hop) plus
@@ -163,11 +208,51 @@ function flowsExtractCost(wasm) {
   if (!swaps.length && provide_slippage_pct == null) return null;
   return { swaps, provide_slippage_pct };
 }
-// ============================================================== <<FLOWS CLASSIFIER v2>> END
+function flowsExtractFee(allEvents) {
+  for (const e of allEvents || []) {
+    if (e.type !== 'tx') continue;
+    const a = flowsAttrs(e);
+    if (!a.fee) continue;
+    const c = flowsParseCoinList(a.fee)[0];
+    if (c && c.amount) return { amount: c.amount, denom: c.denom, payer: a.fee_payer || null };
+  }
+  return null;
+}
+// wallet↔wallet amp-token movements. `watched` = every custody/aux contract
+// address; movements touching any of them are pool flows, not transfers.
+function classifyTransferTx(txr, watched) {
+  if (Number(txr.code || 0) !== 0) return [];
+  const allEvents = flowsEventsOf(txr);
+  const fee = flowsExtractFee(allEvents);
+  const out = [];
+  let idx = 0;
+  for (const e of allEvents) {
+    if (e.type !== 'transfer') continue;
+    const all = flowsAttrsAll(e);
+    const n = Math.max((all.recipient || []).length, (all.sender || []).length, (all.amount || []).length);
+    for (let i = 0; i < n; i++) {
+      const from = (all.sender || [])[i] || null, to = (all.recipient || [])[i] || null;
+      if (!from || !to) continue;
+      if ((watched && (watched.has ? (watched.has(from) || watched.has(to)) : (watched[from] || watched[to])))) continue;
+      for (const c of flowsParseCoinList((all.amount || [])[i])) {
+        if (!c.amount || !c.denom) continue;
+        if (!(c.denom.startsWith('factory/') && c.denom.includes('amplp'))) continue;
+        const rec = { schemaVersion: 4, txhash: txr.txhash, height: Number(txr.height), timestamp: txr.timestamp,
+                      key: `${txr.txhash}:${idx++}`, type: 'transfer', denom: c.denom, amount: c.amount, from, to };
+        if (fee) rec.fee = fee;
+        out.push(rec);
+      }
+    }
+  }
+  return out;
+}
+// ============================================================== <<FLOWS CLASSIFIER v4>> END
 
 // ---------------------------------------------------------------- load + classify (all inputs committed in-repo)
 const seen = new Set();
 const records = [];
+const transfers = [];
+const WATCHED_SET = new Set(Object.keys(WATCH));
 for (const label of LABELS) {
   const dir = path.join(ROOT, 'archive', 'fcd', label);
   const state = JSON.parse(fs.readFileSync(path.join(dir, 'state.json'), 'utf8'));
@@ -177,6 +262,7 @@ for (const label of LABELS) {
       if (seen.has(t.txhash)) continue; seen.add(t.txhash);
       const rec = classifyFlowTx(t);
       if (rec) records.push(rec);
+      transfers.push(...classifyTransferTx(t, WATCHED_SET));
     }
   }
   console.log(`${label}: loaded (running totals: ${seen.size} unique txs, ${records.length} flows)`);
@@ -187,6 +273,19 @@ for (const r of records) byType[r.type] = (byType[r.type] || 0) + 1;
 console.log(`classified ${records.length} flows:`, byType);
 assert(records.length === EXPECT.total, `total ${records.length} != ${EXPECT.total}`);
 for (const k of ['deposit', 'withdraw', 'claim']) assert(byType[k] === EXPECT[k], `${k} ${byType[k]} != ${EXPECT[k]}`);
+// ---- v4 field-completeness census (PLAN-archive-window-walk §5): the gate
+// that keeps "captured events but not the costs" from ever recurring.
+const census = { deposit: { n: 0, legs: 0, fee: 0 }, withdraw: { n: 0, legs: 0, fee: 0 }, claim: { n: 0, fee: 0, measured: 0 } };
+for (const r of records) {
+  const c = census[r.type]; if (!c) continue;
+  c.n++;
+  if (r.fee) c.fee++;
+  if (r.type === 'deposit' && r.provides && r.provides.length) c.legs++;
+  if (r.type === 'withdraw' && ((r.withdraw_liqs && r.withdraw_liqs.length) || (r.zap_out_assets && r.zap_out_assets.length))) c.legs++;
+  if (r.type === 'claim' && (r.claims || r.claimed_coins)) c.measured++;
+}
+console.log('v4 census:', JSON.stringify(census), `transfers: ${transfers.length}`);
+console.log('  (FCD source kept no auth data — fee 0% here is the stated truth, not a bug)');
 const FREEZE = records[records.length - 1].height; // data-derived archive end (per-label drains differ)
 assert(FREEZE < SANITY_CEILING, `archive end ${FREEZE} beyond sanity ceiling — inputs changed?`);
 console.log(`archive end (data-derived): height ${FREEZE} @ ${records[records.length - 1].timestamp}`);
@@ -248,6 +347,7 @@ function mergeMonth(existing, incoming) {
       fs.writeFileSync(f, JSON.stringify(byMonth[mk]) + '\n');
     }
     const report = { months: months.length, total: records.length, by_type: byType,
+      census, transfers: transfers.length,
       per_month: Object.fromEntries(months.map(m => [m, byMonth[m].length])),
       first: records[0].timestamp, last: records[records.length - 1].timestamp };
     fs.writeFileSync(path.join(DRY, 'report.json'), JSON.stringify(report, null, 2));
@@ -267,6 +367,28 @@ function mergeMonth(existing, incoming) {
     published += added;
     console.log(`  ${mk}: +${added} · ↑${upgraded || 0} → ${merged.length}`);
   }
+  // v4 transfers stream — own files, key-based (txhash:idx) merge
+  if (transfers.length) {
+    const mergeKeyedBy = (existing, incoming) => {
+      const byK = new Map(existing.map(r => [r.key, r]));
+      let changed = 0;
+      for (const r of incoming) { const p = byK.get(r.key); if (!p) { byK.set(r.key, r); changed++; } else if (Number(r.schemaVersion || 1) > Number(p.schemaVersion || 1)) { byK.set(r.key, r); changed++; } }
+      return { merged: [...byK.values()].sort((a, b) => a.height - b.height || String(a.key).localeCompare(String(b.key))), changed };
+    };
+    const tByM = {};
+    for (const r of transfers) (tByM[monthKey(r.timestamp)] ||= []).push(r);
+    for (const mk of Object.keys(tByM).sort()) {
+      const p2 = `tla-flows/transfers/${mk}.json`;
+      const { data: ex } = await getJson(p2);
+      const base2 = Array.isArray(ex) ? ex : [];
+      const { merged, changed } = mergeKeyedBy(base2, tByM[mk]);
+      assert(merged.length >= base2.length, `transfers never-shrink violated for ${mk}`);
+      if (!changed) { console.log(`  transfers ${mk}: already filled — skip`); continue; }
+      await putJson(p2, merged, `flows-fill transfers ${mk}: +${changed} (${merged.length} total)`);
+      console.log(`  transfers ${mk}: +${changed} → ${merged.length}`);
+    }
+  }
+
   // index merge: read live, add fill counts, union months, min first_date, add the honest gap
   const { data: idx0 } = await getJson(`${OUT_DIR}/index.json`);
   const idx = idx0 || { schemaVersion: 2, product: 'tla-flows/events', total_events: 0, by_type: {}, months_present: {}, known_gaps: [] };

@@ -1,12 +1,20 @@
 # tla-flows scripts (tla-core side)
 
+`archive-walk.js` — ACCESS-WINDOW walk runner (PLAN-archive-window-walk):
+explicit [from,to] range vs secret ARCHIVE_RPC; raw attribute archive
+(write-once gz parts + per-range manifest under `tla-flows/raw/`), v4
+events (schema-upgrade merge), transfers stream, census gate. Workflow:
+`tla-flows-archive-walk` (manual dispatch, chunk ~400–500k blocks/run).
+
 `flows-fill.js` — one-shot archive backfill; see
 `docs/pending-changes/SPEC-tla-flows-fill.md`. Trigger via the
 `tla-flows-fill` workflow (Actions tab, manual dispatch).
 
-**Classifier discipline:** the `<<FLOWS CLASSIFIER v1>>` block in this script
-must stay BYTE-IDENTICAL with `platform-crons/tla-flows/index.js`. Verify
-after any change to either side:
+**Classifier discipline (v4, 2026-08-03):** the `<<FLOWS CLASSIFIER v4>>`
+block now lives in THREE copies that must stay BYTE-IDENTICAL:
+`platform-crons/tla-flows/index.js` · `flows-fill.js` · `archive-walk.js`.
+Verify after any change to any copy (span: `SHARED CLASSIFIER` →
+`<<FLOWS CLASSIFIER v4>> END`):
 
 ```
 diff <(sed -n '/SHARED CLASSIFIER/,/CLASSIFIER v1>> END/p' flows-fill.js) \
