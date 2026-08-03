@@ -21,7 +21,8 @@ org tree first — G-status in old audit docs is not current truth, and
 personal repos receive nothing new, ever.**
 
 **Committing now (this delivery):**
-- `defipatriot/aDAO-links-site` → `test.html` (portfolio TEST P1, gate 85/85)
+- `defipatriot/aDAO-links-site` → `test.html` (portfolio TEST P1, gate 108/108)
+- `defipatriot/aDAO-links-site` → `index.html` (tier-floor label fix)
 - `defipatriot/aDAO-links-site` → `tla-stats.html` (**Rev T3.1**: staging
   badge removed + Unlock Runway card — full T3 suite re-run on the edited
   live file, 104/104)
@@ -78,6 +79,27 @@ per-member epoch-by-epoch position + value reconstruction to TLA genesis
 from the now-complete flow capture — feeds the trend chart's page-back
 buttons and the P3 timeline. Build after the pnl rebuild proves the
 hole-era events; plan+approval before code.
+
+**NFT-floor finding (resolved page-side, no capture work needed):** Atrium
+listings were ALWAYS captured (summary.marketplaces.atrium, listing_floor
+in floor-history) — the overvaluation was a VALUATION POLICY bug (sales
+floor used while live listings sat lower). Portfolio now marks at the
+conservative floor; index.html tier-floor labels clarified. Any page
+valuing NFTs from sales_floor_usd alone should adopt the same min() policy
+on next touch.
+
+**Verify on screen (live chain reads, stubbed in gates):** sibling-chain
+balances + pending rewards (cosmos.directory rests), native staking
+pending, ampCAPA gov row — if the derived sibling addresses come up empty
+for wallets known to hold ATOM, that's the coin-type-330 derivation caveat:
+use the new "link address" affordance.
+
+**Floor-consumer audit complete (Camron 2026-08-03)** — table in
+index-log. Two further fixes shipped in index.html: the headline Unbroken
+Floor tile (was BBL-only — now the lowest non-broken listing across
+BBL+Boost+Atrium) and the NFT mcap mark (midpoint → conservative min).
+Remaining queued: wire the dormant backing-vs-floor chart floor layer to
+org floor-history; live member-portfolio.html retires on promotion.
 
 **Queue adds / carries:**
 - [PENDING] **R3 — pnl builder monthly buckets** (per-wallet per-month event
