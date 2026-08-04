@@ -1,4 +1,4 @@
-# AUDIT — Eris APR & LST pricing conventions (arbLUNA discrepancy RESOLVED)
+# AUDIT — Eris APR & LST pricing conventions (arbLUNA RESOLVED · canary shipped 2026-08-04)
 
 Date: 2026-08-01 · Source: Eris webapp bundle + query decode (HAR capture by
 DeFi_Patriot; 15 JS bundles, all contract queries decoded) · Status:
@@ -185,3 +185,53 @@ screen → clear `meta.validation`. The formula itself needs no further proof.
   `total_staked_balances`) are byte-identical to our capture layer's — their
   `total_vamp.vp` matched our canonical Total-VP model exactly (29.27M vAMP
   at capture).
+
+## Price-mark audit + standing canary (2026-08-03/04)
+
+Live re-measurement of the queued "SOLID $1 mark / arbLUNA $0.12-vs-$0.055"
+concern, against fresh captures (nap 2026-08-04T00:40Z, dex-data current):
+
+**Method:** every `final_price_usd` compared to the price implied by the
+deepest **xyk** pool pairing the token with a trusted anchor (USDC/USDT/LUNA
+at our own finals). Concentrated/stable pools EXCLUDED — their reserve ratio
+deviates from price BY DESIGN.
+
+**Findings:**
+- **The over-mark does not reproduce.** arbLUNA $0.1223 = hub 2.9927 ×
+  LUNA $0.0409 exactly (the §Root-cause fix holding), and agrees within 0.1%
+  with the only xyk reference that exists. Every token with a deep honest
+  reference sits within ±2%: ampLUNA +0.8% (vs $74k xyk), bLUNA +1.2%
+  (vs $171k SS xyk, unverified upstream), SOLID −0.11% (vs $90k Astroport
+  xyk USDC-SOLID), CAPA +0.3%.
+- **SOLID's "$1 mark" is market truth** — but NOT a constant: Solid
+  Protocol's own peg chart (DeFi_Patriot capture, 90D) shows $0.98–$1.08
+  swings. A hardcoded $1 anywhere would be wrong by up to ~8% at the peaks;
+  our astroport-sourced mark tracks the real peg. Nothing to fix; plenty to
+  keep watching.
+- **THE TRAP, named:** a naive "market price" read of arbLUNA's deep pools —
+  all concentrated/stable ($18.8k + $7.2k + $43.6k) — implies ~$0.20 (−40%
+  phantom "drift"). This is the same mechanism the Arb Radar excludes to
+  avoid manufacturing fake arbs. Any past sighting of a wildly different
+  arbLUNA "market price" from a pool ratio was likely this trap (the
+  CONFIRMED historical miss was the stale-1.34 ratio, §Root-cause — a
+  different bug, since fixed). Doctrine: **reserve-implied prices come from
+  xyk pools only.**
+
+**Standing canary SHIPPED** (per the CHANGES_PENDING canary idea):
+`platform-crons/network-and-prices` **3.0.0** — the org port of the pricing
+cron (repo law: legacy `defipatriot` repo is inspiration-only from here) with
+PHASE 6.5 PRICE CANARY: xyk-implied cross-check of every final price against
+tla-core's own dex-data captures, each run. Depth floor $5k, flag >10%
+(review-signal only — never flips finals, matching §Prescribed-fixes'
+hub-primary skepticism of thin pools), SS references marked unverified,
+concentrated/stable excluded with the doctrine comment inline. Snapshot gains
+`price_canary`; heartbeat gains `price_canary_flags`. Gate 24/24 on
+trimmed-real fixtures including a provenance layer proving the port is
+byte-identical to legacy + declared edits. Parallel-run + consumer-cutover
+checklist in the module README; the arbLUNA/ampCAPA/ampROAR "market address
+TBD" gap in the legacy divergence check is superseded by the canary (it
+self-discovers references from captures instead of hand-listed addresses).
+
+**Still open from this audit:** §Prescribed-fixes items 1–4 (votion-positions
+hub rates, APR/APY display convention, cron-published `eris_apr_pct`) remain
+queued as written; the canary neither replaces nor blocks them.
