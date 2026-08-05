@@ -7,6 +7,34 @@ This file also covers cross-cutting site changes that affect multiple pages — 
 
 ---
 
+## Rev 3.60 — 2026-08-04 — ECOSYSTEM PULSE (SPEC-landing-pulse v1) + rev-footer law
+
+**Pulse tile** above the fold: window pills 24h/48h/7d/14d/30d (default 48h),
+rows TLA TVL (daily, dex captures), Votion vault TVL (daily; field exists
+since votion-positions v1.1 2026-08-03 — earlier days honestly show Δ n/a,
+and total_tvl_usd is NEVER substituted, it's a different metric), VP renewed
+(daily, positive per-wallet vAMP deltas from member-data), bribes posted
+(bribe_add event count in window — multi-denom, count is the honest primary).
+**30-point chart** with ‹ › back-paging per metric; gaps render as gaps (no
+interpolation), missing captures marked. Committed tla-core products only —
+this is a history feature, cron products ARE the truth. sessionStorage cache
+under adao_live: convention; immutable dated files cached hard.
+
+**Total VP row DEFERRED**: distributions gauge VP reads 25–30M while the
+banner convention is ~1.2–1.3M — a units question owned by the queued VP
+audit. Not shipping an unexplained 23× on the landing page; do not add the
+row back without that audit.
+
+**Rev-footer law lands on index.html**: footer span (which had drifted —
+showed 3.51 while code comments were at 3.56) now renders from REV/REV_DATE
+constants via #page-rev. Bump both on every change.
+
+Gate 17/17: provenance layer (original + 3 anchored edits byte-identical to
+shipped), pinned real-fixture values (TVL 08-01 $2,393,265.45 / 08-03
+$2,393,738.07; Votion 08-03 $31,498.74 with 08-01 null; VP renewed
+61,432.05; 35 bribe_adds in 08-01..04; July window 0), schema-evolution
+honesty, Total-VP absence, and jitter-disclosure strings asserted.
+
 ## 2026-08-03 (2) — site-wide floor-consumer audit (Camron) + two index fixes
 
 Audited every floor-price consumer across the site after the valuation-policy
