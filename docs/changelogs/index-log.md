@@ -7,6 +7,194 @@ This file also covers cross-cutting site changes that affect multiple pages — 
 
 ---
 
+## Rev 3.70 — 2026-08-04 — Bribes this epoch row (Camron: "$3 can't be right")
+
+The $3 was right but answered the wrong question (newly-ADDED bribes in
+48h, dust-bot era). New row answers the intuitive one: **Bribes this
+epoch** — everything sitting in the current epoch's buckets awaiting
+voters, from the bribe-state harvest at current prices ($844.27 across 19
+pools at epoch 196 at build). PD's governance bribes route via the ve3
+manager, not bribe-state — disclosed in-row as additional; full total
+lands with pd-bribes integration. The added-in-window row stays (renamed
+for clarity) — recent flow and standing pot are both true, different
+questions. Gate 58/58. Queued next session: votion-positions ORG-PORT to
+platform-crons (the delivered-not-committed v1.1 fix — kills the Votion
+"—" permanently under repo law), then cutover, then the Votion epoch view.
+
+## Rev 3.69 — 2026-08-04 — Astroport status semantics fix (site-verified)
+
+Camron's cross-check of app.astroport.fi revealed 'active' persists after
+voting ends until finalization (props with Jul-ended votes still 'active').
+Card semantics corrected: LIVE = active AND end in future; past-end active
+props show an orange **VOTE ENDED — awaiting finalization** badge, keep
+their heuristic flags, but no longer claim to be votable. The #30 saga in
+full: same submitter's #29 was rejected 89.95% against (community caught
+it); #30 was the quiet retry — 2 voters, 100% for, 0.014% turnout, vote
+ended Jul 31, presumably pending quorum failure at finalization. Exactly
+the attack pattern the 3.68 flags were built for, one governance over.
+Gate 55/55.
+
+## Rev 3.68 — 2026-08-04 — governance auto-flags · clear PASSED/REJECTED (Camron)
+
+Motivated by a real attack class: buy tokens → post a fund-transfer prop →
+pass it on tiny turnout before anyone looks. Cards now carry HEURISTIC
+auto-flags (never accusations, disclosed as such): **moves funds** (msgs
+scan for bank/send/transfer/spend/recipient), **minimal description**
+("Proposal N" titles / empty or duplicated desc), **tiny turnout** (<1% of
+total power). A LIVE prop that moves funds with minimal description or
+tiny turnout gets a red **Auto-flag** banner naming the pattern and
+telling visitors to verify and vote; flagged live props sort first.
+Status badges become unambiguous: LIVE amber / PASSED green / REJECTED
+red / EXPIRED gray. CAPA-governance slot removed — none exists; ampCAPA
+is it. At build time the heuristic fires on a REAL live proposal:
+Astroport #30 ("Proposal 30", 580k USDC bank-send, 2 voters, 0.014%
+turnout) — the exact pattern, caught by the exact feature, same day it
+was requested.
+
+Gate 51/51: real #30 trips review with both flags + turnout; benign
+detailed prop stays clean; badge mapping; banner copy; zero har-pending.
+
+## Rev 3.67 — 2026-08-04 — X feed in News (embed + honest fallback)
+
+Latest-posts section in the News tab: account pills for @The_AllianceDAO,
+@phoenix_dir, @eris_protocol, @TheLionDAO, @PixeLionsDAO; X embedded
+timeline (7-post limit, dark, chrome-stripped). X's read API is paid-only
+(~$200/mo) so v1 rides X's free widget — which X sometimes refuses to
+render for logged-out visitors; after 6s without a rendered iframe the
+section degrades to clean per-account link cards, disclosed in-UI. Upgrade
+paths (no page change): cron-fed tla-core/social/current.json behind a
+funded X API key, or a curated relay file. Gate 49/49.
+
+## Rev 3.66 — 2026-08-04 — Astroport Assembly adapter (HAR-verified) · Votion epoch-view sourced
+
+**Astroport Assembly live in News**: tRPC getAllProposals adapter
+(HAR-verified shape — status 'active' = live, power-weighted Yes/No of
+cast, endTimestamp countdown when present, graceful absence on
+CORS/outage). Eight governances now tracked. **CAPA gov still pending**:
+its HAR captured only staking queries — re-capture with the PROPOSALS
+LIST view open.
+
+**Votion epoch-view SOURCED, build queued next session** (context-bounded
+deferral, not a data gap): votion.money HAR reveals
+backend.erisprotocol.com /votion/liquidity-alliance/{vault}/optimization —
+per-vault, per-gauge: votingOptions[{pool, votingPower, usdIncentives}],
+activeVoted allocation %, and diff{totalDeviation, isWorthChanging,
+currentExpectedRewards, optimizedRewards, rewardLoss, message} at period
+197. That is the complete "current vs next allocation + incentive
+context" dataset, pre-computed, across six vaults (ampluna/arbluna ×
+1/12/max). Next build: Votion-TVL chart tab becomes the vote-optimization
+view — grouped current-vs-optimal bars per pool with USD-incentive
+context and the worth-changing verdicts, Votion total VP with Δ% above.
+
+Gate 47/47: astroCard pinned on the HAR sample (live, Yes 100% of cast
+power, no false countdown; executed → not live); har-pending count drops
+to 1 (CAPA).
+
+## Rev 3.65 — 2026-08-04 — all 7 DAODAO governances wired (HAR-verified addresses)
+
+WATCHED_DAOS filled from Camron's HAR captures: aDAO, aDAO Council,
+Phoenix Directive, ampCAPA, Lion DAO, Pixellions, Pixellions Council — all
+live via direct LCD contract queries (dao-core → proposal modules →
+reverse proposals; chain truth, independent of DAODAO's indexer). News tab
+now tracks all seven; default-tab law applies across them. Astroport
+Assembly + CAPA native gov remain the two har-pending adapters (their gov
+pages still need HAR capture). Gate 45/45 with all seven addresses pinned
+exactly.
+
+## Rev 3.64 — 2026-08-04 — News/Pulse tabs · governance tracker · VP potential line (Camron)
+
+The card becomes two tabs. **Ecosystem News**: governance tracker across
+watched DAOs — each card shows prop number, LIVE badge or status, days
+left, Yes/No % of votes cast, title, description snippet, and a vote link;
+‹ › arrows scroll; live proposals sort first (all of them), otherwise the
+latest prop per governance. **Default-tab law: any live proposal anywhere
+opens News; none opens Pulse.** DAODAO govs query live on-chain (aDAO +
+Council active; Phoenix Directive + ampCAPA slots await dao-core
+addresses); Astroport Assembly + CAPA native gov are labeled har-pending —
+adapters land once Camron captures HARs of those gov pages.
+
+**VP Locked chart gains a second line**: dashed max-potential VP
+(Σ fixed_amount × 10, all locks at 104wk) drawn with the locked line —
+the gap IS the ecosystem's lock-extension headroom (93.1% utilized at
+build). Chart scale spans both lines.
+
+Deferred to next build (needs Eris gauge-page HAR to verify live query
+shapes): vote-optimization epoch view — per-pool current vs next
+allocation with bribe-delta context.
+
+Gate 45/45: all prior pins; propCard exact (2.5d left, 75/20% of cast,
+live/executed flags); defaultTab law; WATCHED_DAOS v2 shape (2 active + 2
+address slots + 2 har-pending); VP potential 08-03 = 31,551,455.34 exact;
+tabs + dashed-potential-line markup.
+
+## Rev 3.63 — 2026-08-04 — decision-grade charts: volume bars · SOLID peg tab · FUEL tab-only (Camron)
+
+Iteration on 3.62 pre-deploy: (1) FUEL becomes a **chart tab only** — stat
+band back to four; the tab is still the only place FUEL price exists
+anywhere. (2) **Volume bars** under the price pane, stock-chart style, with
+per-bar tooltips: TLA TVL bars = TLA-relevant 24h volume across both dexes;
+FUEL bars = LUNA-FUEL pool volume; SOLID bars = both SOLID pools; the
+cumulative-incentives chart gets per-month LUNA-added bars under its
+always-up line. Metrics without a real volume concept (VP Locked, Votion)
+honestly show none. (3) **SOLID peg tab**: daily SOLID USD from
+price-history with a dashed **$1.00 baseline** — the peg-drift story at a
+glance, with peg-pool volume underneath. Collateral ratio NOT included:
+no Solid Protocol state capture exists yet — queued as a new capture
+stream rather than faked. Page order stands: pulse on top, NFT + DAO
+content follows.
+
+Gate 39/39: all prior pins carried; FUEL-tab-not-tile asserted; TLA volume
+08-03 $52,246.60 exact; LUNA-FUEL $49.45; SOLID pools $428.92; volume
+null-safety; SOLID peg 08-03 = 1.0026065786247902 exact; baseline +
+bars-legend strings.
+
+## Rev 3.62 — 2026-08-04 — pulse ABOVE tiles · FUEL price · live-proposal alerts (Camron)
+
+Superseded 3.61 pre-deploy (same-day iteration on the live 3.60 render).
+Three additions per Camron review: (1) **Pulse moves to the top** — directly
+under the ticker banner, above the nav tile grid; the state of the alliance
+is now the first thing the page says. (2) **FUEL price tile + chart** — FUEL
+lives in NO price product and exactly ONE pool (LUNA-FUEL, concentrated,
+$42.8k): reserve-implied mark, explicitly labeled approximate, joined
+against price-history LUNA USD for the daily chart. The landing page is the
+only place FUEL price is shown anywhere. (3) **Live-proposal alert strip**
+above the stat band: watched DAODAO DAOs are queried live (dao-core →
+proposal modules → reverse proposals, open only); each alert links to the
+DAO's proposals page and dismisses persistently (localStorage) until it
+closes; strip vanishes when nothing is live. aDAO + Council addresses
+prefilled; Phoenix Directive / Lion DAO / Capapult slots labeled in
+WATCHED_DAOS for address paste. Stat band grows to 5 tiles.
+
+Gate 32/32: all 3.61 pins carried; placement asserted (pulse-card precedes
+the tile grid div); FUEL 08-03 reserve-implied === $0.002238094136824423
+exact from committed fixtures; null-safety; openProposalsOf filters
+open-only with dao/id/title; WATCHED_DAOS shape (2 prefilled + 3 labeled
+slots); reserve-implied labeling string.
+
+## Rev 3.61 — 2026-08-04 — PULSE COMMUNITY REDESIGN (per Camron review of 3.60 live)
+
+3.60's tile read like an analyst changelog — dash-heavy rows at wide windows,
+a valueless bribe count, a red delta as the page's opening statement. 3.61
+leads with the STATE of the alliance in a hero stat band: **TLA Liquidity**
+($2.4M), **Voting Power Locked** (29.4M vAMP · 203 wallets — units RESOLVED:
+member-data wallet-sum 29.38M vs gauge 30.40M, ratio 0.967, cross-product
+consistent; the old ~1.3M banner figure is a different quantity, audit note
+updated), **Voter Incentives all-time** (440,625 LUNA · 10,022 bribes · 32
+bribers · since Aug 2024 · +9.8k other-asset legs), **Gauge Epoch** (#196 ·
+28 incentivized pools). Delta rows below now resolve missing window
+endpoints to the NEAREST REAL capture with the actual span disclosed
+(amber Δnd chip) — real endpoints only, never interpolated. Bribes row is
+USD-valued at current prices (dust shows honestly as <$1; Aug's 35 adds =
+$7.79 — the 3.60 count was masking near-zero value). Charts: TLA TVL,
+VP Locked (new daily series), Votion TVL, and cumulative all-time LUNA
+incentives (monthly, always-up). VP-renewed metric dropped.
+
+Gate 26/26: provenance (original + 3 anchored edits byte-identical), carried
+3.60 pins, plus VP Locked 08-03 = 29,383,364.51 / 08-02 = 29,361,824.02;
+all-time 10,022 adds / 440,624.943495 LUNA / 32 bribers; 28 active pools
+p196; window USD $7.7917 exact with 35/0 priced/unpriced; cumulative
+monotonic; year-boundary month spans.
+
 ## Rev 3.60 — 2026-08-04 — ECOSYSTEM PULSE (SPEC-landing-pulse v1) + rev-footer law
 
 **Pulse tile** above the fold: window pills 24h/48h/7d/14d/30d (default 48h),
