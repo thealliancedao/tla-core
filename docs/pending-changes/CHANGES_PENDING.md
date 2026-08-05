@@ -1,3 +1,60 @@
+## 2026-08-05 — 🎯 PRIORITY LOCK (Camron): backfill-completion readiness + community polish
+
+Walk ETA ~Thursday evening (block 21,481,530; ~5.6M remaining at ~82k/hr).
+Announcement #1 (thank-you + live platform) goes out now with the
+"history lands Thursday" tease; Announcement #2 fires on completion day.
+**TOP PRIORITY: when the last manifest lands, the site must light up the
+same day — everything below is ordered to make completion day
+button-presses, not builds.**
+
+### COMPLETION-DAY RUNBOOK (execute in order when walk finishes)
+1. Registry-backfill derive pass over hole-era raw (81-entry capture
+   registry) → events stores fill (tla-flows, dex-liquidity, tla-voting
+   attribution, NFT streams).
+2. FORCE_ROLLUPS full rebuild → PD lights up on the bribers board + PD
+   popup column; "Bribes this epoch" row loses its "PD not incl."
+   disclaimer once pd-bribes feeds the total.
+3. Re-run board gates against FILLED data — specific cells: PD all-time
+   gross ≥ 427,877 LUNA including prop-250's corrected ELEVEN-leg
+   38,155.099199 (chain-truth lock, backfill-fixtures.json).
+4. Byte-verify sweep → Announcement #2: "18 months of history, live."
+
+### PRE-POSITION THIS WEEK (blockers for the runbook — do FIRST)
+1. **pd-bribes v1.2.0 FINAL COMMIT + FORCE_ROLLUPS smoke** on current
+   data — pending since before this sprint; without it step 2 above
+   can't integrate PD. Do not wait for the walk.
+2. **votion-positions ORG-PORT to platform-crons** (provenance-gate
+   pattern per network-and-prices) — kills the pulse Votion "—"; the
+   v1.1 fix was delivered-not-committed and lands in the org repo only.
+3. **astro epoch-roller epoch-1 fallback**: commit the 2026-07-20
+   delivered patch (small paste, still outstanding).
+4. **Pricing cutover** (24h parallel-run mark passed): legacy-field
+   comparison (EURE differs = the fix) → repoint 5 consumers
+   (capture-engine ~L59, nfts/adao, portfolio-assembler, tla-stats
+   CONFIG, nft-inventory) → retire legacy Render job → strip the 2
+   LEGACY_REPO_RAW fallbacks. Note 03:05 run: coingecko_bulk transient
+   failure absorbed cleanly (EURE held $1.15 astroport_only) — design
+   working.
+
+### COMMUNITY POLISH PASS (today's builds, fresh-eyes items)
+- Mobile render check: pulse stat band, News cards, chart width on
+  ~380px; X-embed real-world behavior (screenshot decides embed vs
+  link-card path).
+- Chart edge cases: single-point series, first-page-load race between
+  stats/rows/chart, back-paging past a stream's first capture.
+- Copy pass on tooltips/disclosures for community (not analyst) reading.
+- Known cosmetic: rev-footer greps clean; no TEST labels anywhere
+  (member-portfolio verified production-clean 2026-08-05).
+
+### PARKED (post-completion sprint — NOT this week)
+SPEC-portfolio-pnl (full P&L needs walk + classifyNftTx v2 + state
+sampler), Votion epoch view (endpoints recorded in index-log Rev 3.66),
+network-and-prices v3.1 sibling checks, Phase-2 per-pool attribution,
+raw-parts compaction decision (~1.3GB repo at walk end — decide archive
+repo vs prune-after-derive BEFORE announcement #2 traffic).
+
+---
+
 ## 2026-08-04 — SESSION: NEXT-SESSION LIST CLEARED · pricing in org repo · EURE fixed
 
 **All five items from the 08-03 NEXT SESSION list are DONE:**
