@@ -1,3 +1,58 @@
+## 2026-08-04 — SESSION: NEXT-SESSION LIST CLEARED · pricing in org repo · EURE fixed
+
+**All five items from the 08-03 NEXT SESSION list are DONE:**
+① byte-verify sweep ✅ (both 08-03 pastes landed byte-identical)
+② **simulator-v2 SHIPPED** — slippage.html Rev 2.0 (gate 24/24 live fixtures):
+zap planner ported from tla-stats T2.7 with full-captured-universe routing
+upgrade, wallet selector + ?wallet= deep link, lazy member feeds, rev-footer
+law established (REV consts → #page-rev; new changelog home
+docs/changelogs/slippage-log.md). ③ **price-mark audit CLOSED** — does not
+reproduce; all deep xyk references within ±2%; concentrated-pool trap named
+as doctrine (AUDIT-eris-apr-pricing.md §2026-08-03/04). ④ astro 08-02 daily:
+ACCEPTED as-is (06:01 window, disclosed not repaired — see
+SPEC-landing-pulse honesty rules). ⑤ astro daily cron confirmed resumed
+(08-04 captured on dex-data-1.3.1).
+
+**Pricing now lives in the ORG stack** (repo law: defipatriot pricing repos
+are inspiration-only): `platform-crons/network-and-prices` **3.0.1** deployed
+on Render (hourly :01), publishing to `tla-core/network-and-prices/`.
+Provenance-gated port (byte-identical to legacy + 16 declared edits, gate
+25/25) + PHASE 6.5 PRICE CANARY (xyk-implied cross-check, concentrated
+excluded by doctrine, SS refs unverified, never flips finals).
+**EURE INCIDENT closed same-day**: registry cgId pointed at EUROe (wrong
+coin, collapsed, $0.51 stale); flagged_mismatch resolver demoted the correct
+Astroport price and shipped $0.5128 as final (~2.24× understatement
+platform-wide). Fixed 3.0.1 → cgId 'monerium-eur-money-2' (CG migration
+trap: '-old' slug kept the clean API id). Verified in production 17:01 UTC:
+EURE $1.15, direct_match, delta −0.17%. Census of all 27 tokens: EURE was
+the only identity error; 12 direct_match self-verifying, 6 calculated
+immune, WETH/WBNB sibling-verified ≈1.00, STATOM/STLUNA ratios plausible,
+INJ canary-covered hourly. **OSMO ($0.0283) + SWTH ($0.000153) need a
+30-second manual CG eyeball (Camron)** — only two tokens with zero watchers.
+
+**PENDING (in order):**
+1. **Parallel-run cutover** (network-and-prices): tonight 23:xx run must show
+   `↪ ratio-history migrated from legacy repo` + daily archive; ~08-05 run
+   the README comparison (EURE will differ from legacy = the fix, not
+   drift); then repoint 5 consumers (capture-engine.js ~L59, nfts/adao,
+   portfolio-assembler, tla-stats CONFIG.networkPricesUrl, nft-inventory
+   URLs), retire legacy Render job, strip the 2 LEGACY_REPO_RAW fallbacks.
+2. **SPEC-landing-pulse** (this delivery, sibling file) — awaiting Camron
+   approval, then build index.html tile+chart per spec.
+3. **network-and-prices v3.1** (parked until cutover done): sibling
+   consistency checks (WETH≈ETH, WBNB≈BNB, STATOM/ATOM + STLUNA/LUNA ratio
+   bands) + resolver doctrine (delta >50% → hold last-good + loud flag, no
+   auto-pick — identity-or-death, not staleness). Legacy hand-listed LST
+   market-address warnings (arbLUNA/bLUNA "single-pool") retire with the
+   legacy divergence block at the same time.
+4. Walk continues self-chaining (chunk 2 stacking at last check); PD stays
+   absent from bribers board until gap backfill completes or its next bribe.
+5. Standing queue unchanged below: SPEC-portfolio-pnl, classifyNftTx v2,
+   historical STATE sampler, Credia stream, VP tile audit, cron retire pass,
+   November token rollover, publish-retry hardening, dao-tla Member Stats.
+
+---
+
 ## 🚀 2026-08-03 (EVENING) — build sprint landed · walk chaining · announcement track
 
 SHIPPED + VERIFIED live (codeload): member-portfolio (P1.6 live claimable
