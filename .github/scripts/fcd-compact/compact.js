@@ -57,7 +57,15 @@ function ghReqOnce(method, host, apiPath, body, accept, rawBuffer) {
   return new Promise((resolve, reject) => {
     const opts = { hostname: host, path: apiPath, method, headers: { 'User-Agent': 'fcd-compact', 'Accept': accept || 'application/vnd.github+json' } };
     if (TOKEN && host === 'api.github.com') opts.headers['Authorization'] = `Bearer ${TOKEN}`;
-    if (body) opts.headers['Content-Type'] = 'application/json';
+    let payload = null;
+    if (body) {
+      payload = Buffer.from(JSON.stringify(body));
+      opts.headers['Content-Type'] = 'application/json';
+      // GitHub's API drops CHUNKED request bodies on DELETE (observed live:
+      // prune's first DELETE got 422 "message/sha weren't supplied" despite a
+      // written body). Explicit Content-Length forces a non-chunked body.
+      opts.headers['Content-Length'] = payload.length;
+    }
     const req = https.request(opts, (res) => {
       if (res.statusCode >= 301 && res.statusCode <= 302 && res.headers.location) {
         const u = new URL(res.headers.location);
@@ -78,7 +86,7 @@ function ghReqOnce(method, host, apiPath, body, accept, rawBuffer) {
       });
     });
     req.on('error', reject);
-    if (body) req.write(JSON.stringify(body));
+    if (payload) req.write(payload);
     req.end();
   });
 }
