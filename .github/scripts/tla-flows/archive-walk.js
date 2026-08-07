@@ -108,13 +108,37 @@ async function getBlockResults(N) {
 }
 
 // ---------------------------------------------------------------- github
-function ghReq(method, apiPath, body, accept) {
+function ghReqOnce(method, apiPath, body, accept) {
   return new Promise((resolve, reject) => {
     const opts = { hostname: 'api.github.com', path: apiPath, method, headers: { 'User-Agent': 'tla-archive-walk', 'Authorization': `Bearer ${GITHUB_TOKEN}`, 'Accept': accept || 'application/vnd.github+json' } };
     if (body) opts.headers['Content-Type'] = 'application/json';
     const req = https.request(opts, res => { let d = ''; res.on('data', c => d += c); res.on('end', () => { if (res.statusCode >= 200 && res.statusCode < 300) { try { resolve(JSON.parse(d)); } catch { resolve(d); } } else { const e = new Error(`GitHub ${method} ${apiPath}: ${res.statusCode} ${String(d).slice(0, 140)}`); e.statusCode = res.statusCode; reject(e); } }); });
     req.on('error', reject); if (body) req.write(JSON.stringify(body)); req.end();
   });
+}
+// HARDENING (2026-08-06, live kill at chunk 17810676: run died on a GitHub
+// call right after part-00022 committed — no manifest, chain broken at 52.6%).
+// The RPC side already retried (rpc(), 4×); the GitHub side retried nothing
+// but 409. This wrapper retries TRANSIENT failures only — network errors
+// (no statusCode), 5xx, 429, and 403 secondary-rate-limit — with exponential
+// backoff. 4xx semantics (404 for getJson/exists, 409 for putContent's
+// sha-conflict loop) pass through UNCHANGED on the first throw.
+const GH_TRIES = Number(process.env.GH_TRANSIENT_TRIES || 5);
+async function ghReq(method, apiPath, body, accept) {
+  let last;
+  for (let a = 1; a <= GH_TRIES; a++) {
+    try { return await ghReqOnce(method, apiPath, body, accept); }
+    catch (e) {
+      last = e;
+      const sc = e.statusCode;
+      const transient = !sc || sc >= 500 || sc === 429 || (sc === 403 && /rate limit/i.test(e.message));
+      if (!transient || a === GH_TRIES) throw e;
+      const wait = Math.min(60000, 1500 * Math.pow(2, a - 1));
+      console.log(`  \u26a0 GitHub transient (${sc || String(e.message).slice(0, 50)}) \u2014 retry ${a}/${GH_TRIES - 1} in ${(wait / 1000).toFixed(1)}s`);
+      await sleep(wait);
+    }
+  }
+  throw last;
 }
 async function getJson(p) { try { const d = await ghReq('GET', `/repos/${GITHUB_REPO}/contents/${p}?ref=${GITHUB_BRANCH}`, null, 'application/vnd.github.raw'); return { data: typeof d === 'string' ? JSON.parse(d) : d }; } catch (e) { if (e.statusCode === 404) return { data: null }; throw e; } }
 async function exists(p) { try { await ghReq('GET', `/repos/${GITHUB_REPO}/contents/${p}?ref=${GITHUB_BRANCH}`); return true; } catch (e) { if (e.statusCode === 404) return false; throw e; } }
