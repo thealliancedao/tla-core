@@ -1,0 +1,46 @@
+# fcd-compact — ONE-OFF, manual dispatch only, IN-PLACE (no new repos).
+# Gzips the frozen FCD archive parts inside tla-core: ~2.24GB of
+# uncompressed JSON (72% of the working tree) down to roughly ~300MB,
+# same folders, same filenames + .gz — the same storage convention the
+# walk's raw parts already use.
+#
+# TWO PHASES with a human gate between them:
+#   phase=compress (default): writes verified .json.gz siblings.
+#                             DELETES NOTHING. Re-runs skip existing .gz.
+#   phase=prune:              run only after reading
+#                             archive/fcd/compaction-report.json — deletes
+#                             each original ONLY after its .gz is fetched
+#                             and proven to decompress byte-identical.
+name: fcd-compact
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: 'compress (safe, default) or prune (after reading the report)'
+        required: true
+        type: choice
+        default: compress
+        options:
+          - compress
+          - prune
+permissions:
+  contents: write
+concurrency:
+  group: fcd-compact
+  cancel-in-progress: false
+jobs:
+  compact:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts/fcd-compact
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: fcd compact
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PHASE: ${{ inputs.phase }}
+        run: node .github/scripts/fcd-compact/compact.js
