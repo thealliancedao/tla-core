@@ -128,7 +128,24 @@ async function putFile(p, buf, msg) {
 }
 
 async function deleteFile(p, sha, msg) {
-  return api('DELETE', `/repos/${REPO}/contents/${encodeURI(p)}`, { message: msg, sha, branch: BRANCH });
+  // 409 here is a BRANCH-head race, not a data problem: the archive walk is
+  // committing raw parts to the same branch every few minutes, and every
+  // prune is its own commit (observed live at 154/166: "is at <head> but
+  // expected <head>"). Retry with backoff; on each retry re-confirm the
+  // file's own blob sha is unchanged — FCD is frozen, so any change is a
+  // hard stop.
+  for (let a = 1; a <= 6; a++) {
+    try { return await api('DELETE', `/repos/${REPO}/contents/${encodeURI(p)}`, { message: msg, sha, branch: BRANCH }); }
+    catch (e) {
+      if (e.statusCode !== 409 || a === 6) throw e;
+      await sleep(1500 * a);
+      let cur = null;
+      try { cur = await api('GET', `/repos/${REPO}/contents/${encodeURI(p)}?ref=${BRANCH}`); }
+      catch (g) { if (g.statusCode === 404) return { already_gone: true }; throw g; }
+      if (cur && cur.sha !== sha) fail(`${p}: file sha changed mid-prune (${String(cur.sha).slice(0, 8)} != ${sha.slice(0, 8)}) — frozen archive must not change; refusing`);
+      console.log(`  \u26a0 branch-head race on delete (${a}/5) \u2014 retrying ${p}`);
+    }
+  }
 }
 
 async function main() {
