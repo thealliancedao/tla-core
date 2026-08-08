@@ -41,14 +41,22 @@ function blobSha(buf) { return crypto.createHash('sha1').update(`blob ${buf.leng
 function decideMap(dex, srcPath) {
   if (/^data\/heartbeat\.json$/.test(srcPath)) return { action: 'skip', reason: 'live product — org job owns heartbeats' };
   if (/^data\/current[^/]*\.json$/.test(srcPath)) return { action: 'skip', reason: 'live product — org job owns current' };
+  // rolling-window files regenerate daily — live products, not history
+  if (/^(data\/)?(day-\d+|6-day-avg)\.csv$/.test(srcPath)) return { action: 'skip', reason: 'rolling-window live product' };
   if (dex === 'astroport' && /^astroport\/astroport-epoch-\d+\.json$/.test(srcPath))
     return { action: 'copy', dest: `dex-data/astroport/epochs/${srcPath.split('/').pop()}` };
   if (/^data\/daily\/[^/]+$/.test(srcPath))
     return { action: 'copy', dest: `dex-data/${dex}/snapshots/daily/${srcPath.split('/').pop()}` };
-  if (dex === 'skeletonswap' && /^data\/weekly-avg\/[^/]+$/.test(srcPath))
-    return { action: 'copy', dest: `dex-data/skeletonswap/weekly-avg/${srcPath.split('/').pop()}` };
+  // weekly-avg CSVs exist for BOTH dexes (v1.0.1 — first run left astro's 13 unmapped)
+  if (/^data\/weekly-avg\/[^/]+$/.test(srcPath))
+    return { action: 'copy', dest: `dex-data/${dex}/weekly-avg/${srcPath.split('/').pop()}` };
   if (dex === 'skeletonswap' && /^data\/monthly[^/]*\/[^/]+$/.test(srcPath))
     return { action: 'copy', dest: `dex-data/skeletonswap/monthly/${srcPath.split('/').pop()}` };
+  // ss daily-history CSVs live in monthly backup folders (v1.0.1 — 148 files,
+  // Jan–Aug 2026). Kept in a distinct daily-csv/ dir: they're legacy CSV
+  // format, not the org job's daily JSON — never mixed into snapshots/daily/.
+  if (dex === 'skeletonswap' && /^data\/[a-z]+_backup\/\d{4}-\d{2}-\d{2}\.csv$/.test(srcPath))
+    return { action: 'copy', dest: `dex-data/skeletonswap/daily-csv/${srcPath.split('/').pop()}` };
   return { action: 'unmapped' };
 }
 
