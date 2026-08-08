@@ -127,6 +127,8 @@ async function destShaOf(p) {
 
 async function putFile(p, buf, msg) {
   const body = { message: msg, content: buf.toString('base64'), branch: BRANCH };
+  const existing = await destShaOf(p);   // updates (e.g. slice-report.json on re-runs) need the current sha
+  if (existing) body.sha = existing;
   for (let a = 1; a <= 6; a++) {
     try { return await api('PUT', `/repos/${DEST_REPO}/contents/${encodeURI(p)}`, body); }
     catch (e) {
