@@ -1,0 +1,31 @@
+# dex-slice — ONE-OFF, manual dispatch. Strip #2 step 1: copies the legacy
+# dex repos' HISTORY (astroport epoch files + dailies, ss weekly-avg/monthly
+# + dailies) into tla-core's org dex-data tree, blob-sha verified, so the
+# site can later be repointed with zero chart history lost.
+# COPY ONLY: never touches the source repos. Org-produced files always win
+# on collisions (existing destinations are skipped, never overwritten).
+# Review dex-data/slice-report.json — especially its 'unmapped' list —
+# before any legacy service suspension or repo deletion.
+name: dex-slice
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: dex-slice
+  cancel-in-progress: false
+jobs:
+  slice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts/dex-slice
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: slice legacy dex history into org tree
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: node .github/scripts/dex-slice/slice.js
