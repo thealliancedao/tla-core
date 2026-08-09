@@ -1202,6 +1202,11 @@ async function walk() {
         writeRunStatus('halt');
         process.exit(1);
     }
+    // Full-depth SUCCESS must also overwrite the walk-start 'continue', or the
+    // self-chain re-dispatches victory laps until the hop cap (observed live
+    // 2026-08-09: gate PASSED, chain re-dispatched anyway). complete→stop,
+    // halt→stop, crash→continue-resume: now every outcome terminates correctly.
+    writeRunStatus('complete');
     console.log('\n✅ BACKFILL COMPLETE — §10 fixtures verbatim. Next (E3): rollup + P&L rebuilds, then spec §7 gates.');
 }
 
