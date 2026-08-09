@@ -1154,8 +1154,15 @@ async function walk() {
 
     const writeStatus = (state) => { try { fs.writeFileSync('/tmp/backfill-status.json', JSON.stringify({ state, windows: WINDOWS_DONE, entryErrors })); } catch {} };
     if (WALK_FLOOR != null) {
-        const sliced = registry.contracts.filter(e => Number(e.staged_floor_done || Infinity) <= Math.max(WALK_FLOOR, 0)).length;
-        const remaining = registry.contracts.filter(e => !(Number(e.staged_floor_done || Infinity) <= Math.max(WALK_FLOOR, 0)) && !blocked.has(e.address)).length;
+        // An entry harvested to FULL depth (done=true, cursor at target) has by
+        // definition completed any staged slice above the floor. Without this,
+        // a staged pass over an already-complete registry livelocks: the
+        // per-entry loop skips done entries (never stamping staged_floor_done)
+        // while this counter demands the stamp — observed live 2026-08-09,
+        // 16 hops × 0 windows before manual cancel.
+        const sliceDone = (e) => e.done === true || Number(e.staged_floor_done || Infinity) <= Math.max(WALK_FLOOR, 0);
+        const sliced = registry.contracts.filter(sliceDone).length;
+        const remaining = registry.contracts.filter(e => !sliceDone(e) && !blocked.has(e.address)).length;
         checkpoint(`registry-backfill: staged pass (floor ${WALK_FLOOR}) checkpoint`);
         writeStatus(remaining === 0 ? 'complete' : 'continue');
         console.log(`\n${remaining === 0 ? '✅ STAGED PASS COMPLETE' : '⏸ STAGED PASS'} (WALK_FLOOR=${WALK_FLOOR}): ${sliced}/${registry.contracts.length} entries have completed their serviceable slice${remaining ? `; ${remaining} remain — self-chain continues` : ''}.`);
