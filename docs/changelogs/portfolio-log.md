@@ -1,5 +1,13 @@
 # Member Portfolio Changelog
 
+---
+
+## 2026-08-09 — Rev 2.4 — asset + pricing source migration (no behavior change)
+
+Included in the site-wide grand repoint v1: pricing reads → org feed
+(2026-08-07 cutover, byte-verified) and asset URLs → /assets/... self-hosted
+in the (now org-owned) site repo. P1.8 logic untouched — verified preserved
+in the shipped file.
 This is the change history for `member-portfolio.html` (per-member portfolio tracker).
 Newest revisions on top. Times are UTC.
 

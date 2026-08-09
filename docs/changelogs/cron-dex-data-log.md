@@ -1,5 +1,21 @@
 # cron-dex-data — changelog
 
+---
+
+## 2026-08-09 — 1.4.0 — epochs-astroport FOLD (strip #2): legacy producer ported whole
+
+Legacy astroport-snapshot ported verbatim into dex-data/epochs-astroport.js,
+running as an isolated tail of the org job (index.js hook, kill-switch
+EPOCHS_ASTROPORT=0; failure never fails core snapshots). Publishes epoch
+files, rolling day-1..7 + 6-day-avg, weekly CSVs (year now dynamic), and the
+daily-CSV substrate into tla-core dex-data/astroport/, CONTINUING dex-slice
+history. Roller is stateless (epoch = floor((now−2022-10-31)/7d)+1). First
+run: 61 TLA-relevant pools, 36 charts, 6 products, 23.1s. PARITY vs legacy
+epoch-197: 36/36 pools, identical schemas; both TVL outliers resolved in
+ORG'S favor by independent cross-check (legacy captured LUNA-WBTC at $38 vs
+real ~$108K — legacy bug; org arbLUNA exact-matched the core snapshot). Kill
+license banked: repoint site readers → suspend astroport-snapshot → archive
+repo. Distinct heartbeat: dex-data/astroport/epochs/heartbeat.json.
 Owner: `platform-crons/dex-data/` (Render job `org-dex-data`, hourly). Writes
 `tla-core/dex-data/`. Revisions before this file existed (1.0.0 build,
 1.1.0 bucket-truth) are recorded in CHANGES_PENDING / audit blocks.

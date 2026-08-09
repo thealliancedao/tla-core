@@ -1,5 +1,15 @@
 # TLA Stats Changelog
 
+---
+
+## 2026-08-09 — Org cutover: pricing feed + asset self-hosting (data layer only)
+
+Same two migrations as index (see index-log 2026-08-09): 2 pricing URL swaps →
+tla-core/network-and-prices; asset URLs → /assets/.... Rendering code
+untouched. NOTE for next session: epoch/weekly/rolling reads still point at
+astroport-pool-data_2026 / ss-pool-data_2026 — the dex reader-repoint (to
+tla-core dex-data/astroport/epochs etc.) is queued behind the SS fold; legacy
+dex crons stay running until then (repoint → suspend → archive law).
 This is the change history for `tla-stats.html` (the Terra Liquidity Alliance public dashboard).
 Newest revisions on top. Times are UTC.
 

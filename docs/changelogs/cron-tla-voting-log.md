@@ -1,5 +1,23 @@
 # cron-tla-voting — changelog
 
+---
+
+## 2026-08-09 — E2 COMPLETE (§10 gate 7/7) + registry-backfill terminal-state fixes
+
+Walk reached final height 21,481,530 a day early; registry confirmed already
+at full depth from prior E2 passes. Four fixes shipped to
+registry-backfill.js while closing: (1) staged-livelock — done=true entries
+now satisfy the staged counter (16 zero-window hops observed before fix);
+(2) attributed_total fixtures support window_to (pd-prop-247 frozen at its
+2026-08-02 measurement, 389,721.856283, after the gate correctly caught a NEW
+41,298.31-LUNA PD placement executed 09:29Z the same morning — capture and
+pd-bribes agreed to the microLUNA, 469,175.268802 all-time / 21 placements);
+(3) gate failure writes status 'halt' (workflow stops — deterministic
+failures no longer self-chain); (4) success writes 'complete' (no victory-lap
+re-dispatch). Final gate: both 2025-08-26 bribes VERBATIM, prop-250 = 11 legs
+38,155.099199, prop-247 = 178 events exact, solid-june + flows-v3 ×3 OK.
+Lesson recorded: workflow runs pin the commit AT DISPATCH — after code fixes,
+cancel all queued Bot successors and dispatch fresh.
 Voting event capture: votes, locks, bribes, rewards.
 Seed: `tla-core/.github/scripts/tla-voting/` (Action) · Forward: `platform-crons/tla-voting/` (Render `org-tla-voting`)
 Spec: `docs/pending-changes/SPEC-tla-voting.md`

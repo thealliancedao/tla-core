@@ -1,5 +1,17 @@
 # Index Page Changelog
 
+---
+
+## 2026-08-09 — Org cutover: pricing feed + asset self-hosting (grand repoint v1)
+
+Two source migrations, no visual changes intended. (1) Pricing: all 5 legacy
+network-and-prices-data_2026 reads → tla-core/network-and-prices (current,
+heartbeat, ratio-history, dailies); parallel-feed comparison passed (worst
+shared-token deviation 0.74%; org prices 7 tokens legacy nulled; canary
+active). (2) Assets: every image/planet/token-logo/nft-metadata URL → root-
+absolute /assets/... served from this repo (site repo transferred to
+thealliancedao; assets consolidated + sha-verified). Punch list (pre-broken
+before AND after): BNB logo.png, logo_stamp_primary.png, atom.png, astro.png.
 This is the change history for `index.html` (the dashboard / homepage).
 Newest revisions on top. Times are UTC.
 

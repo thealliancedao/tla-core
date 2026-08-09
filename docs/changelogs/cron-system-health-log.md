@@ -1,5 +1,15 @@
 # cron-system-health — changelog
 
+---
+
+## 2026-08-09 — network-and-prices row → org feed; per-row owner support
+
+Monitor table gains an optional owner field (rows may point at org repos;
+default stays defipatriot). network-and-prices row now watches
+thealliancedao/tla-core network-and-prices/heartbeat.json (cutover
+2026-08-07 ✓). Owner flows through both result builders and data_repo_url.
+Standing rule: each strip moves/retires its monitor row in the same paste;
+the legacy monitor itself dies with the last legacy cron.
 Owner: `platform-crons/system-health/` (Render job `org-system-health`,
 hourly). Writes `tla-core/system-health/`. Layer 3, chain-free: reads only
 committed tla-core files; reports, never repairs.
