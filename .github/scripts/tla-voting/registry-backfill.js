@@ -660,7 +660,13 @@ function evalFixtures(fixturesDoc, events) {
             if (bad.length) failures.push(`${fx.id}: ${bad.join('; ')}`);
             else report.push({ fixture: fx.id, status: 'OK', events: hits.length, total_raw: String(total) });
         } else if (fx.kind === 'attributed_total') {
-            const hits = events.filter(e => e.type === fx.type && e.briber === fx.briber && e.tx_hash !== fx.exclude_tx);
+            // Optional window_to (ISO ts, exclusive): attributed_total fixtures are
+            // all-time sums, which can NEVER stay locked while the briber remains
+            // active — observed live 2026-08-09: PD placed a 41,298.31-LUNA bribe at
+            // 09:29Z, the capture caught it within hours, and the gate correctly
+            // flunked the stale 2026-08-02 lock. Freezing the window verifies the
+            // measured slice forever instead of chasing a moving target.
+            const hits = events.filter(e => e.type === fx.type && e.briber === fx.briber && e.tx_hash !== fx.exclude_tx && (!fx.window_to || String(e.timestamp) < fx.window_to));
             const raw = hits.reduce((s, e) => s + (e.coins || []).filter(c => c.denom === fx.denom).reduce((a, c) => a + Number(c.amount), 0), 0);
             const human = raw / Math.pow(10, fx.decimals);
             if (Math.abs(human - fx.total_human) > fx.tolerance) failures.push(`${fx.id}: attributed ${human} outside ${fx.total_human}±${fx.tolerance}`);

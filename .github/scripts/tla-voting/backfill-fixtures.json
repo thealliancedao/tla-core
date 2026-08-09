@@ -1,0 +1,153 @@
+{
+ "schemaVersion": 1,
+ "kind": "backfill-fixtures",
+ "spec": "docs/pending-changes/SPEC-capture-registry-backfill.md §10",
+ "note": "Completion-gate assertions for the E2 registry backfill (registry-backfill.js). exact_event fixtures MUST be recovered VERBATIM — every asserted field byte-equal — or the job fails loudly. Wallet addresses of individuals are never labeled here; the tx hash IS the identity (privacy doctrine). | v2 (2026-07-31): + flows_record fixtures from DeFi_Patriot's 8-tx live test matrix (blocks 22,163,785-896) — post-walk assertions that the E2 re-walk upgraded the walker-era records to <<FLOWS CLASSIFIER v3>> with the new fields intact.",
+ "fixtures": [
+  {
+   "id": "e2-wbtc-bribe-2025-08-26",
+   "kind": "exact_event",
+   "note": "DeFi_Patriot hole-era bribe #1 (chainscope-verified 2026-07-30, spec §10). 0.00280192 wBTC on LUNA-WBTC, bluechip gauge, linear span e148→e151. fee_funds MUST hold the 10-LUNA add_bribe fee OUT of coins — the manager forwards it to the PD DAO core as fee income; it must never be attributed as a PD bribe. AMENDED-TO-TRUTH (full-depth recovery 2026-08-02): native bribes ride the bribed coin in tx funds, so fee_funds = [bribe coin, 10-LUNA fee]; the doctrine assert (fee stays OUT of coins) held byte-exact.",
+   "tx_hash": "D08804E15F5CCB9C834A786450D9347B67008B84DD68DBF94D2524925455BB04",
+   "type": "bribe_add",
+   "expect": {
+    "height": 17129670,
+    "timestamp": "2025-08-26T19:12:19Z",
+    "gauge": "bluechip",
+    "pool": "cw20:terra1wdzdltygkgqyuvggnqnxsny9vhfyex92kzaz6zkued2wvp7nvxpsv739js",
+    "epoch_start": 148,
+    "epoch_end": 151,
+    "coins": [
+     {
+      "denom": "native:ibc/88386AC48152D48B34B082648DF836F975506F0B57DBBFC10A54213B1BF484CB",
+      "amount": "280192"
+     }
+    ],
+    "fee_funds": [
+     {
+      "denom": "native:ibc/88386AC48152D48B34B082648DF836F975506F0B57DBBFC10A54213B1BF484CB",
+      "amount": "280192"
+     },
+     {
+      "denom": "native:uluna",
+      "amount": "10000000"
+     }
+    ],
+    "briber_is_wallet": true
+   }
+  },
+  {
+   "id": "e2-atom-bribe-2025-08-26",
+   "kind": "exact_event",
+   "note": "DeFi_Patriot hole-era bribe #2 (chainscope-verified 2026-07-30, spec §10). 6.7 ATOM on LUNA-ATOM, bluechip gauge, span e148→e148. Same fee_funds doctrine assert. AMENDED-TO-TRUTH (2026-08-02): same native-funds finding as the wBTC fixture.",
+   "tx_hash": "89522902862D1F2CBC535FEE21AA7F4841690B8266554C23B341FCC04907D6C9",
+   "type": "bribe_add",
+   "expect": {
+    "height": 17129791,
+    "timestamp": "2025-08-26T19:24:10Z",
+    "gauge": "bluechip",
+    "pool": "cw20:terra19xrvvkq5607xudcxvw444yycjz6e3vk3l8p633z68k0vv5q09wnsa9q2qt",
+    "epoch_start": 148,
+    "epoch_end": 148,
+    "coins": [
+     {
+      "denom": "native:ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+      "amount": "6700000"
+     }
+    ],
+    "fee_funds": [
+     {
+      "denom": "native:ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+      "amount": "6700000"
+     },
+     {
+      "denom": "native:uluna",
+      "amount": "10000000"
+     }
+    ],
+    "briber_is_wallet": true
+   }
+  },
+  {
+   "id": "pd-prop-250",
+   "kind": "tx_event_set",
+   "note": "PD governance bribe, proposal 250. CHAIN-RECOVERED TRUTH (staged walk 2026-08-01): ELEVEN add_bribe legs, gross 38,155.099199 LUNA — one MORE than the previously locked figure (10 / 34,763.534826 net); the delta is exactly a second 3,391.564373-LUNA leg duplicating an existing amount, and the walk census shows NO refund/removal event class on the manager, so the earlier manual tally most likely collapsed two identical adjacent adds. PENDING: DeFi_Patriot re-counts the legs on chainscope; if 11 confirms, this stands as chain truth (amended-to-truth doctrine, never loosened). Collision-aware msg_index promotion is what kept the duplicate pairs alive.",
+   "tx_hash": "402AE7B14451C9C46612DBD5342FC722A8562B2900AB35973081082B66FAAAA7",
+   "type": "bribe_add",
+   "count": 11,
+   "denom": "native:uluna",
+   "total_raw": "38155099199",
+   "briber": "terra1k8ug6dkzntczfzn76wsh24tdjmx944yj6mk063wum7n20cwd7lxq4lppjg",
+   "briber_source": "dao_attr"
+  },
+  {
+   "id": "pd-prop-247",
+   "kind": "attributed_total",
+   "note": "PD DAO core — ALL governance-bribe LUNA outside prop-250's tx, WITHIN the frozen window ending 2026-08-03T00:00:00Z (the 2026-08-02 full-depth measurement: 389,721.856283 LUNA). Windowed 2026-08-09 after the gate correctly caught a NEW 41,298.31-LUNA PD placement executed that morning (09:29Z) — capture agreed with pd-bribes v1.2.0 to the microLUNA (469,175.268802 all-time incl. prop-250, 21 placements). Open-ended all-time locks can never survive an active briber; the frozen window verifies the measured slice forever. Chainscope spot-check of 2-3 recovered PD txs still welcome (amend-to-truth doctrine).",
+   "type": "bribe_add",
+   "briber": "terra1k8ug6dkzntczfzn76wsh24tdjmx944yj6mk063wum7n20cwd7lxq4lppjg",
+   "exclude_tx": "402AE7B14451C9C46612DBD5342FC722A8562B2900AB35973081082B66FAAAA7",
+   "denom": "native:uluna",
+   "decimals": 6,
+   "total_human": 389721.856283,
+   "tolerance": 0.01,
+   "window_to": "2026-08-03T00:00:00Z"
+  },
+  {
+   "id": "solid-june-capa",
+   "kind": "briber_events",
+   "note": "Solid Protocol current wallet — three 1M-CAPA placements, June 2026 (spec §2.5 named-wallet verification; recollection-based amounts per §7 — if chain truth differs the run report prints the recovered events and this fixture is amended to chain truth, never loosened silently).",
+   "type": "bribe_add",
+   "briber": "terra1jlpfg4gnmflvjedx9cerrkjs72gmv57as0yhw0",
+   "denom": "cw20:terra1t4p3u8khpd7f8qzurwyafxt648dya6mp6vur3vaapswt6m24gkuqrfdhar",
+   "per_event_amount": "1000000000000",
+   "min_count": 3,
+   "window_from": "2026-06-01",
+   "window_to": "2026-07-01"
+  },
+  {
+   "id": "flows-v3-multiflow",
+   "kind": "flows_record",
+   "min_schema": 3,
+   "note": "Test tx DCA53591 (2026-07-31): non-amp unstake + amp re-stake in ONE tx — the v2 one-flow-per-tx bug this matrix exposed. Post-walk the record must carry ALL THREE flows (wallet unstake + wallet amp re-stake + the vault\\u2019s internal bucket leg \\u2014 real-response-verified via the starscream HAR capture) with the amp rate fields.",
+   "tx_hash": "DCA53591AAAD50EE2AF16803DCD6C00F74EDD4751AA6028CEBF1EA542854C564",
+   "assert": {
+    "flows.length": 3,
+    "flows.0.type": "withdraw",
+    "flows.0.mechanism": "non_amplified",
+    "flows.1.type": "deposit",
+    "flows.1.mechanism": "amplified",
+    "flows.1.bond_amount": "20268565",
+    "flows.1.bond_share": "4707941",
+    "flows.1.bond_share_adjusted": "4706408",
+    "flows.2.mechanism": "non_amplified"
+   }
+  },
+  {
+   "id": "flows-v3-provide",
+   "kind": "flows_record",
+   "min_schema": 3,
+   "note": "Test tx 82FBE584: zap-in — provide_liquidity both-sides truth + share minted must ride the flows record (zap post-value with zero pair-walk dependency).",
+   "tx_hash": "82FBE58432C93E6FDF650E34AF7477FDDC00FCB86B9B80DFD2D4A1FE33366E08",
+   "assert": {
+    "provides.length": 1,
+    "provides.0.share": "20268568",
+    "provides.0.assets.length": 2,
+    "provides.0.assets.0.amount": "5097943",
+    "provides.0.assets.1.amount": "124842627"
+   }
+  },
+  {
+   "id": "flows-v3-withdrawliq",
+   "kind": "flows_record",
+   "min_schema": 3,
+   "note": "Test tx 29537FA7: amp unstake + unwrap — amplp burn (rate leg) + refund both-sides + withdrawn share.",
+   "tx_hash": "29537FA7ACAC9BD8C26FBD105241186EFC2C14BFC8CAC70EC07762CC57E1586A",
+   "assert": {
+    "flows.0.amplp_burned": "10883935",
+    "withdraw_liqs.0.share": "46857382",
+    "withdraw_liqs.0.refund_assets.length": 2
+   }
+  }
+ ]
+}
