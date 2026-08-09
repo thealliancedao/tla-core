@@ -1193,6 +1193,13 @@ async function walk() {
     if (failures.length) {
         console.error('\n❌ §10 FIXTURE GATE FAILED:\n  ' + failures.join('\n  '));
         console.error('Recovered data is committed (never-shrink-safe); the gate failing means capture is still incomplete or wrong — investigate before E3.');
+        // A fixture-gate failure is DETERMINISTIC: re-running the identical code
+        // against the identical store re-fails identically. Without this halt the
+        // walk-start 'continue' status survives into the self-chain step and the
+        // chain retries a hopeless gate until the hop cap (observed 2026-08-09:
+        // stale-fixture failure re-dispatched itself). 'halt' + windows tells the
+        // chain to stop and summon a human.
+        writeRunStatus('halt');
         process.exit(1);
     }
     console.log('\n✅ BACKFILL COMPLETE — §10 fixtures verbatim. Next (E3): rollup + P&L rebuilds, then spec §7 gates.');
