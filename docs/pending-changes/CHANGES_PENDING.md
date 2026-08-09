@@ -1,57 +1,178 @@
-## 2026-08-05 — 🎯 PRIORITY LOCK (Camron): backfill-completion readiness + community polish
+## 2026-08-09 — 🎯 PRIORITY LOCK (Camron): FULL ORG MIGRATION TO DONE, then announcement
 
-Walk ETA ~Thursday evening (block 21,481,530; ~5.6M remaining at ~82k/hr).
-Announcement #1 (thank-you + live platform) goes out now with the
-"history lands Thursday" tease; Announcement #2 fires on completion day.
-**TOP PRIORITY: when the last manifest lands, the site must light up the
-same day — everything below is ordered to make completion day
-button-presses, not builds.**
+**Definition of done (Camron, verbatim intent):** (1) org repos are the ONLY
+repos with anything in them; personal repos fully DELETED. (2) changelogs +
+system-health rows point only at real org jobs. (3) old Render jobs DELETED
+(suspend is not done). (4) org repos audited clean — completed specs/one-off
+workflows retired (walk, supervisor, fcd-compact, dex-slice, registry-backfill
+all = finished scaffolding). (5) SOAK: jobs run untouched for days; audit that
+history accrues as designed. (6) THEN announcement prep — one shot; every
+number people will scrutinize verified (gate #0) before it ships.
 
-### COMPLETION-DAY RUNBOOK (execute in order when walk finishes)
-1. Registry-backfill derive pass over hole-era raw (81-entry capture
-   registry) → events stores fill (tla-flows, dex-liquidity, tla-voting
-   attribution, NFT streams).
-2. FORCE_ROLLUPS full rebuild → PD lights up on the bribers board + PD
-   popup column; "Bribes this epoch" row loses its "PD not incl."
-   disclaimer once pd-bribes feeds the total.
-3. Re-run board gates against FILLED data — specific cells: PD all-time
-   gross ≥ 427,877 LUNA including prop-250's corrected ELEVEN-leg
-   38,155.099199 (chain-truth lock, backfill-fixtures.json).
-4. Byte-verify sweep → Announcement #2: "18 months of history, live."
+### STATE OF THE WORLD (end of 2026-08-09 mega-session — all VERIFIED, not believed)
+- **E2 COMPLETE, §10 gate 7/7.** Walk finished (final height 21,481,530).
+  Fixtures: both 2025-08-26 bribes VERBATIM; pd-prop-250 = 11 legs
+  38,155.099199; pd-prop-247 windowed (window_to 2026-08-03T00:00:00Z) = 178
+  events 389,721.856283 exact; solid-june + flows-v3 ×3 OK. Gate initially
+  failed because PD placed a NEW 41,298.31-LUNA bribe 2026-08-09 09:29Z —
+  capture caught it same-day; pd-bribes now 21 placements, 469,175.268802
+  all-time (store agrees to the microLUNA). Open-ended all-time fixtures can
+  never stay locked → window them (evaluator supports window_to).
+- **registry-backfill.js — four fixes ALL COMMITTED:** (a) staged-livelock:
+  sliceDone treats done=true as slice-complete; (b) window_to filter in
+  attributed_total; (c) gate-failure writes status 'halt' (yml stops on halt) —
+  deterministic failures no longer self-chain; (d) success writes 'complete' —
+  no victory-lap loops. Every outcome terminates. Ghost-run lesson: Bot
+  successors pin the commit AT DISPATCH TIME — after fixing code, cancel ALL
+  queued Bot runs and dispatch fresh.
+- **epochs-astroport FOLD LIVE + PARITY GRANTED.** Legacy astroport-snapshot
+  ported whole into platform-crons/dex-data/epochs-astroport.js (roller is
+  STATELESS — epoch = floor((now−2022-10-31)/7d)+1; per-pool epochs rebuild
+  from charts D30 each run). Runs as isolated tail of org-dex-data (kill-switch
+  EPOCHS_ASTROPORT=0). First org run: 61 TLA-relevant pools, 36 charts, all six
+  products into dex-data/astroport/{epochs,daily-csv,rolling,weekly-avg}.
+  Parity vs legacy epoch-197: 36/36 pools, identical schemas/fields; 2 TVL
+  outliers resolved IN ORG'S FAVOR by independent cross-check (org arbLUNA
+  $19,655 exact-matches core snapshot; legacy LUNA-WBTC $38 vs real ~$108K —
+  LEGACY CAPTURE BUG, org is MORE correct). Kill license BANKED; sequencing
+  law: repoint readers → suspend writer → archive → delete. Legacy cron stays
+  running until the reader repoint lands (site still reads legacy epoch files).
+- **Site = org.** Repo TRANSFERRED to thealliancedao (raw URLs auto-redirect);
+  Vercel reconnected + deploy-proven. Assets consolidated: 92 files verified
+  byte-identical under /assets/{images,planets,token-logos,nft-metadata};
+  GRAND REPOINT v1 LIVE: 244 swaps across 26 files → root-absolute /assets/
+  paths (incl. the jsDelivr metadata URL). Punch list (pre-broken BEFORE the
+  repoint, unchanged): BNB logo.png, logo_stamp_primary.png, atom.png,
+  astro.png.
+- **Archived (5):** network-and-prices-data_2026 (+ its Render service
+  suspended), aDAO-Image-Files, aDAO-Image-Planets-Empty, token_logo,
+  nft-metadata. Pricing cutover 13 files byte-verified live (site + 9 crons on
+  tla-core/network-and-prices).
+- **Earlier this week, all closed:** FCD compaction 2,241→113MB
+  (166/166 total-verified vs pre-compaction snapshot); dex-slice 292 history
+  files banked (only 3 READMEs unmapped); walk transient-hardening +
+  walk-supervisor (auto-heal) shipped and battle-tested.
+- **curated/ upload DELIBERATELY REJECTED** (old-data-suspect doctrine): the 3
+  json_storage repos stay alive until each consumer is repointed/replaced —
+  see replacement map below. NEVER migrate their contents.
 
-### PRE-POSITION THIS WEEK (blockers for the runbook — do FIRST)
-1. **pd-bribes v1.2.0 FINAL COMMIT + FORCE_ROLLUPS smoke** on current
-   data — pending since before this sprint; without it step 2 above
-   can't integrate PD. Do not wait for the walk.
-2. **votion-positions ORG-PORT to platform-crons** (provenance-gate
-   pattern per network-and-prices) — kills the pulse Votion "—"; the
-   v1.1 fix was delivered-not-committed and lands in the org repo only.
-3. **astro epoch-roller epoch-1 fallback**: commit the 2026-07-20
-   delivered patch (small paste, still outstanding).
-4. **Pricing cutover** (24h parallel-run mark passed): legacy-field
-   comparison (EURE differs = the fix) → repoint 5 consumers
-   (capture-engine ~L59, nfts/adao, portfolio-assembler, tla-stats
-   CONFIG, nft-inventory) → retire legacy Render job → strip the 2
-   LEGACY_REPO_RAW fallbacks. Note 03:05 run: coingecko_bulk transient
-   failure absorbed cleanly (EURE held $1.15 astroport_only) — design
-   working.
+### DOCTRINES LOCKED THIS SESSION (binding)
+- **One canonical file per series:** deep history MERGED INTO the org file,
+  forward capture APPENDS to it, site reads exactly that. Never old+new+live
+  side-by-side.
+- **Old data is suspect:** keep-merge ONLY machine-captured series whose
+  method survived; DISCARD + re-derive from the E2 store anything
+  method-tainted. Ruled: apr-history = DISCARD (pre-2026-08-02 APR math wrong
+  by construction — correct Eris formula obtained that day); pool-status
+  history = DISCARD/re-derive; aggregator products (tla-snapshot.json,
+  dao-dashboard.json) = DISCARD, no replacement file (site composes live +
+  atomic org products).
+- **Pages define need:** anything no page/spec consumes is remnant — dies
+  unported. The reader-repoint pass IS the needs audit.
+- **Strip combo (proven):** fold → parity → repoint → suspend → archive →
+  delete. Never out of order.
 
-### COMMUNITY POLISH PASS (today's builds, fresh-eyes items)
-- Mobile render check: pulse stat band, News cards, chart width on
-  ~380px; X-embed real-world behavior (screenshot decides embed vs
-  link-card path).
-- Chart edge cases: single-point series, first-page-load race between
-  stats/rows/chart, back-paging past a stream's first capture.
-- Copy pass on tooltips/disclosures for community (not analyst) reading.
-- Known cosmetic: rev-footer greps clean; no TEST labels anywhere
-  (member-portfolio verified production-clean 2026-08-05).
+### NEXT ACTIONS (exact order — start here next session)
+1. **SS fold.** Port cron-scripts/skeletonswap-lp_data/index.js (1,207 lines)
+   into org dex-data like astroport. ⚠ DIFFERENT PARADIGM: publishes via
+   local fs + git add/commit (L231 'git add -f data/weekly-avg/'), 3 Render
+   modes (ss-pool-daily/weekly/monthly). Convert publishes to the
+   contents-API pattern (epochs-astroport's pushToGithub is the template).
+   Weekly writer L777-895 (epoch-keyed); DIRS at L55. Continue sliced trees:
+   dex-data/skeletonswap/{weekly-avg,monthly,daily-csv,rolling}. Also triage
+   daily-csv/ (convert-to-org-daily-JSON-and-merge vs discard) per method
+   inspection.
+2. **Dex reader-repoint bundle** (site): tla-stats.html CONFIG
+   astroportEpochBaseUrl (~L2636) + sourceUrlFallbackFn ×2 (~L2788, ~L8031) +
+   direct fetches (~L3596) → tla-core/main/dex-data/astroport/epochs;
+   index.html epoch/daily/weekly + ss refs → org trees. Gate: zero refs to
+   astroport-pool-data_2026 / ss-pool-data_2026 site-wide; every new URL
+   fetched 200 in-gate.
+3. **Kills:** suspend astroport-snapshot + ss-pool-daily/weekly/monthly;
+   archive astroport-pool-data_2026 + ss-pool-data_2026; system-health rows
+   move in the same paste. (Delete archived repos after quiet week.)
+4. **tla-snapshot strip:** forward emitters into dex-data (history.js):
+   pool-status daily via gauge_infos(next) 1%-of-bucket rule (port the rule
+   from tla-snapshot.js ONLY) + apr-history via the CORRECT Eris formula
+   (displayed = aprToApy(incentiveApr×0.92) + tradingApr − take; incentive
+   compounded, others linear). Old series discarded. 8 reader files: live tier
+   untouched; fallback URLs → atomic org products via lib/adao-live-data.js
+   adapters (NOT per-page). Then suspend tla-snapshot + dao-dashboard, archive
+   tla-snapshot-data_2026.
+5. **json_storage replacements:** tla_pd_bribes.json →
+   tla-voting/pd-bribes/current.json (adapter); tla_known_tokens.json →
+   token-catalog; members/registry CSVs → DAODAO live + member-data (incl.
+   platform-crons adao fallback URL); epoch_1-300_date.json → tiny emitter
+   folded into org-tla-voting (deterministic epoch math); props JSONs → props
+   emitter fold; tla_docs.json → site repo content. Then archive all 3 repos.
+6. **Remaining strips:** member family (tla-locks, tla-participants,
+   tla-vp-holders, adao-positions, adao-allies) → member-data folds; shadow
+   defipatriot/tla-core (contracts→token-catalog verify, fuel→tla-core/fuel)
+   slice+kill; ampcapa/backing/chain-registry triage (pages-define-need);
+   nft-inventory→org nfts parity; bribes-history→tla-voting;
+   marketplace→nfts; system-health legacy dies with last legacy cron;
+   cron-scripts archived when empty.
+7. **Cleanups:** Render deletions; org workflow retirement (walk, supervisor,
+   fcd-compact, dex-slice, registry-backfill → disable+delete); pending-changes
+   spec purge (completed specs out); CHANGES_PENDING rewritten to only-pending.
+8. **SOAK** (days, hands off) → audit accrual. 9. **E3:** FORCE_ROLLUPS,
+   board gates (PD ≥469,175.27 now — fixture note), gate #0 reconciliation
+   sweep, byte-verify → **Announcement #2.**
 
-### PARKED (post-completion sprint — NOT this week)
-SPEC-portfolio-pnl (full P&L needs walk + classifyNftTx v2 + state
-sampler), Votion epoch view (endpoints recorded in index-log Rev 3.66),
-network-and-prices v3.1 sibling checks, Phase-2 per-pool attribution,
-raw-parts compaction decision (~1.3GB repo at walk end — decide archive
-repo vs prune-after-derive BEFORE announcement #2 traffic).
+### PENDING-CHANGES SPEC DISPOSITIONS (this session — Camron deletes via UI)
+COMPLETE — DELETE from pending-changes (work verified done):
+- PLAN-archive-window-walk.md (walk reached final height 21,481,530)
+- SPEC-capture-registry-backfill.md (E2 complete, §10 gate 7/7)
+- BACKFILL-AUDIT.md (superseded by E2 completion + this board)
+REVIEW → LIKELY RETIRE next session (old-mindset candidates, confirm no live dependency first):
+- SPEC-grading-and-dex-data.md (the OLD grading system Camron flagged — dex
+  capture now owned by org dex-data + the fold; verify nothing cites it, retire)
+- AUDIT-eris-apr-pricing.md (its finding is now doctrine — correct APR formula
+  + apr-history discard; fold the conclusion into ecosystem-knowledge, retire the audit)
+- PROBES-*.md (point-in-time probes — retire any whose questions are answered)
+STAYS (still pending/future): SPEC-portfolio-pnl, SPEC-landing-pulse,
+SPEC-distributions-capture, SPEC-lp-apr, SPEC-pd-directive-watch,
+SPEC-platform-doctrine, SPEC-price-history-format, SPEC-adao-*, SPEC-bribe-runway,
+SPEC-portfolio-epoch-ledger, SPEC-portfolio-roundtrip-pnl, SPEC-registry-extensions-pnl,
+SOURCE-AUDIT-DRAFT.
+
+### CHANGELOG SWEEP LAW (added 2026-08-09 after a miss)
+End-of-session commit audit now REQUIRES enumerating docs/changelogs/ and
+appending an entry to EVERY log whose subject was touched — pages AND crons —
+at each delivery, single home tla-core/docs/changelogs/. Claude's visibility
+is fetch-only (nothing ambient): session start must LIST directories being
+worked in, never assume their contents.
+
+### CARRIED FACTS (grounding — do not re-derive)
+- **LOST-DELIVERABLE RECOVERY (new, from spec status sweep):** three builds
+  are GATED but never committed — bribe-runway v1 (9/9), portfolio-epoch-
+  ledger, portfolio-pnl Phase A. Locate the files or rebuild from their specs
+  before their strips/announcement depend on them.
+- **json_storage collapse:** docs-root twins CONFIRMED (epoch dates, staking
+  APR, docs content already in tla-core) — step 5 shrinks to page repoints +
+  per-file freshness decision. portfolio-roundtrip-pnl now UNBLOCKED (walk
+  done).
+- **READ FIRST every session: docs/REPO-CATALOG.md** (the map — what is
+  where, who writes/reads it) + TLA-CORE-STORAGE-DESIGN.md (reconcile catalog
+  vs original design, VERIFY). docs/curated/ = hand-maintained cron INPUTS
+  (already exists — the aborted curated/{adao,tla,tla-ext} plan is DEAD).
+- **VERIFY before json_storage step:** docs-root epoch_1-300_date.json +
+  staking-apr.csv + tla-docs-content.json may ALREADY be the org twins —
+  if site-consumable, step 5 collapses to page repoints.
+- Epoch math: genesis 2022-10-31T00:00:00Z, 7d, +1 index. Weekly filename
+  ${yyyy}-epoch-${N}.csv (year now dynamic). Org epoch heartbeat:
+  dex-data/astroport/epochs/heartbeat.json (cron id dex-epochs-astroport).
+- org current.json: meta+pools[276], fields tvl_usd/volume_24h_usd/…,
+  tla_relevant flag. Epoch file schema v2, 36 TLA pools, per-pool epochs[].
+- Render 'Updated' column = CONFIG age, NOT last-run (legacy fleet runs on
+  schedule regardless — verified via heartbeat runIds).
+- GitHub API landmines (all embedded in shipped tools): chunked
+  DELETE/PUT bodies dropped → Content-Length; DELETE needs sha; update-PUT
+  needs sha; 409 = branch race (walk shares branch) → backoff-retry;
+  runs pin commit at dispatch.
+- votion-positions org coverage: verify platform-crons/votion
+  holders/curated products fully cover, then close that pre-position item.
+- November: Render token rollover (all expire end-2026).
 
 ---
 
@@ -2301,3 +2422,4 @@ The deving.zone outage exposed how a single third-party JSON endpoint hanging mi
 - **Rev 0.10 (2026-06-02)**: 10 systemic catalog fixes (self-referential vault detection, Stage 5/6/7 cascade, source coverage transparency)
 
 Phase 0 LOCKED IN as of 2026-06-06 after Rev 0.16 deploy.
+
