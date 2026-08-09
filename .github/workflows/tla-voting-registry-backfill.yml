@@ -137,6 +137,7 @@ jobs:
           HOP=${{ inputs.hop || 0 }}
           echo "state=$STATE windows=$WINDOWS hop=$HOP"
           if [ "$STATE" = "complete" ]; then echo "✅ pass complete — chain ends"; exit 0; fi
+          if [ "$STATE" = "halt" ]; then echo "⛔ halted (deterministic failure — e.g. fixture gate) — chain ends, human needed"; exit 0; fi
           if [ "$HOP" -ge 40 ]; then echo "⚠ hop cap (40) reached — chain ends, inspect logs"; exit 0; fi
           if [ "$STATE" != "continue" ] && [ "$WINDOWS" = "0" ]; then echo "⚠ no progress and no continue-signal (crash before first window) — chain ends to avoid a crash loop"; exit 0; fi
           echo "↻ re-dispatching hop $((HOP+1))"
