@@ -80,14 +80,20 @@ number people will scrutinize verified (gate #0) before it ships.
    dropped (pages-define-need). Parity: weekly BYTE-IDENTICAL to legacy under
    corrected label; monthly numeric-identical + period bounds now populated
    (legacy wrote empty). See cron-dex-data-log 1.5.0.
-   1b. **⚠ NEW (gate-proven): SS weekly relabel one-off.** ENTIRE legacy SS
-   weekly-avg series is labeled +1 vs canonical docs/epoch_1-300_date.json
-   (legacy "2026-epoch-197.csv" holds Jul 27–Aug 2 = canonical 196). One-off:
-   shift every sliced weekly-avg filename + period label -1 (each file's own
-   period_start/period_end columns verify the true window mechanically).
-   RUN BEFORE first fold-enabled Render run, so the series is internally
-   consistent when org starts writing canonical labels. Epoch joins
-   (bribes/rewards vs TVL) misalign by a week until this lands.
+   1b. **SS weekly relabel one-off.** ✅ BUILT + GATED 20/20 (2026-08-10) —
+   COMMIT + DISPATCH PENDING. .github/scripts/ss-weekly-relabel/relabel.js +
+   workflows/ss-weekly-relabel.yml. Three-era ruling (gate-proven on live
+   tree): 187–196 verifiable-mislabeled → relabel to 186–195; 168–181
+   unverifiable old schema (W-labels inside epoch-named files, frozen
+   177–179 rows) → archive verbatim to weekly-avg/legacy-unverified/, never
+   relabeled; 197 canonical (org) untouched; rebuild trust-gated (window ≥
+   2026-05-18) = exactly canonical 196 from dailies via the LIVE fold's
+   buildWeekly (no-third-copy); + daily gap-fill 2026-08-08/09 from legacy
+   repo. Pre-trust epochs stay honestly absent. RUN ORDER (human gate between
+   each): dispatch phase=report → review relabel-report.json → apply →
+   verify → prune → disable+delete workflow. Post-prune tree: canonical
+   186–197 + legacy-unverified/. Reader-repoint note: SS weekly history
+   starts at canonical 186.
    1c. **⚠ NEW: astroport fold weekly-window bug.** epochs-astroport's
    accumulating weekly writes CURRENT-day rows into the prev-epoch file
    (astroport weekly-avg/2026-epoch-197.csv shows period 2026-08-10 — outside
