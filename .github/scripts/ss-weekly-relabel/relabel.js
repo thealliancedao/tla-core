@@ -44,6 +44,7 @@
 // =============================================================================
 
 const https = require('https');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
@@ -135,7 +136,25 @@ let fetchRaw = async function fetchRawImpl(repo, repoPath) {
 // tla-core read inside the phases goes through the contents API (same backend
 // as the writes/deletes → strongly consistent). The raw CDN remains only for
 // the LEGACY repo and the fold-module source, where staleness is harmless.
+// READ-YOUR-OWN-WRITES SHADOW (dispatch #5 lesson): even the contents API can
+// briefly serve a just-deleted file — NO remote re-read is trustworthy
+// immediately after our own mutation. Every successful push/delete records the
+// new truth here; state reads consult the shadow first and only fall through
+// to the API for paths this run hasn't touched. Cross-run resume is safe:
+// settled state (minutes old) reads correctly from the API.
+const shadow = new Map(); // repoPath -> content string | null (deleted)
+
+// git blob sha1 of content as GitHub computes it: sha1("blob <len>\0" + bytes).
+// The contents-API PUT response includes content.sha == this — comparing it to
+// our locally computed value is SERVER-VERIFIED storage of the exact bytes,
+// immune to all read-lag (replaces fetch-back verification entirely).
+function gitBlobSha1(content) {
+  const buf = Buffer.from(content);
+  return crypto.createHash('sha1').update(`blob ${buf.length}\0`).update(buf).digest('hex');
+}
+
 let fetchRepoFile = async function fetchRepoFileImpl(repoPath) {
+  if (shadow.has(repoPath)) return shadow.get(repoPath);
   for (let attempt = 1; attempt <= 4; attempt++) {
     const r = await httpRequest(
       `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodeURI(repoPath)}?ref=${GITHUB_BRANCH}`,
@@ -172,7 +191,16 @@ let pushFile = async function pushFileImpl(repoPath, content, message) {
       method: 'PUT', headers: apiHeaders(),
       body: JSON.stringify({ message, content: Buffer.from(content).toString('base64'), branch: GITHUB_BRANCH, ...(sha ? { sha } : {}) }),
     });
-    if (r.status === 200 || r.status === 201) { console.log(`  ✅ pushed ${repoPath}`); return true; }
+    if (r.status === 200 || r.status === 201) {
+      const storedSha = (() => { try { return JSON.parse(r.body).content.sha; } catch { return null; } })();
+      const localSha = gitBlobSha1(content);
+      if (storedSha !== localSha) {
+        throw new Error(`push ${repoPath}: stored blob sha ${storedSha} != local ${localSha} — storage verification failed`);
+      }
+      shadow.set(repoPath, content);
+      console.log(`  ✅ pushed ${repoPath} (blob sha server-verified)`);
+      return true;
+    }
     if (r.status === 409 || r.status === 422 || r.status >= 500) {
       await new Promise(res => setTimeout(res, 400 * attempt)); continue;
     }
@@ -193,7 +221,7 @@ let deleteFile = async function deleteFileImpl(repoPath, message) {
       method: 'DELETE', headers: apiHeaders(),
       body: JSON.stringify({ message, sha, branch: GITHUB_BRANCH }),
     });
-    if (r.status === 200) { console.log(`  🗑  deleted ${repoPath}`); return true; }
+    if (r.status === 200) { shadow.set(repoPath, null); console.log(`  🗑  deleted ${repoPath}`); return true; }
     if (r.status === 409 || r.status === 422 || r.status >= 500 || r.status === 0) {
       console.log(`  ↻ delete retry ${attempt} (HTTP ${r.status}) ${repoPath}`);
       await new Promise(res => setTimeout(res, 500 * attempt + Math.floor(Math.random() * 400)));
@@ -421,15 +449,13 @@ async function phaseApply() {
 
     if (original === null) throw new Error(`source vanished: ${e.name}`);
     const relabeled = relabelCsv(original, e.oldLabel, e.newLabel);
+    // Transform verification BEFORE push (tamper-trap on our own transform);
+    // storage verification happens inside pushFile via server blob sha.
+    const check = rowsMatchModuloLabel(original, relabeled);
+    if (!check.ok) throw new Error(`transform verify failed for ${e.relabelTo}: ${check.why}`);
     await pushFile(target, relabeled, `🏷 relabel ${e.name} → ${e.relabelTo} (canonical; window ${e.period_start}..${e.period_end})`);
-    if (!DRY_RUN) {
-      const back = await fetchRepoFile(target);
-      if (back === null) throw new Error(`verify failed for ${e.relabelTo}: not visible via contents API after push (push succeeded — re-dispatch apply to resume)`);
-      const check = rowsMatchModuloLabel(original, back);
-      if (!check.ok) throw new Error(`verify failed for ${e.relabelTo}: ${check.why}`);
-      console.log(`  ✔ verified ${e.relabelTo} (rows match original modulo label)`);
-    }
-    await deleteFile(sourcePath, `🏷 relabel-move: delete ${e.name} (row-verified twin ${e.relabelTo} exists)`);
+    console.log(`  ✔ ${e.relabelTo}: transform row-verified + storage blob-sha verified`);
+    await deleteFile(sourcePath, `🏷 relabel-move: delete ${e.name} (verified twin ${e.relabelTo} exists)`);
   }
 
   // (a2) archive unverifiable old-schema files verbatim (never-shrink; the
@@ -442,12 +468,7 @@ async function phaseApply() {
     if (existing === original) { console.log(`  ↷ ${e.name} already archived — skip`); continue; }
     if (existing) throw new Error(`collision: ${target} exists with different content — manual review`);
     await pushFile(target, original, `📦 archive unverifiable ${e.name} (old schema, window unknowable) verbatim`);
-    if (!DRY_RUN) {
-      const back = await fetchRepoFile(target);
-      if (back === null) throw new Error(`byte-verify failed: ${target} not visible via contents API after push`);
-      if (back !== original) throw new Error(`byte-verify failed: ${target} content differs`);
-      console.log(`  ✔ byte-verified archive ${target}`);
-    }
+    console.log(`  ✔ archive ${target}: byte identity server-verified via blob sha`);
   }
 
   // (b) daily gap-fill from legacy (verbatim, byte-verified)
@@ -457,12 +478,7 @@ async function phaseApply() {
     if (!content) throw new Error(`legacy daily vanished: ${g.legacyPath}`);
     const target = `${DAILY_DIR}/${g.date}.csv`;
     await pushFile(target, content, `📥 gap-fill daily ${g.date} from legacy (verbatim)`);
-    if (!DRY_RUN) {
-      const back = await fetchRepoFile(target);
-      if (back === null) throw new Error(`byte-verify failed: ${target} not visible via contents API after push`);
-      if (back !== content) throw new Error(`byte-verify failed: ${target} content differs`);
-      console.log(`  ✔ byte-verified ${target}`);
-    }
+    console.log(`  ✔ gap-fill ${target}: byte identity server-verified via blob sha`);
   }
 
   // (c) rebuild missing canonical epochs via the LIVE fold module
@@ -524,6 +540,7 @@ module.exports = { main, _test: {
   epochOf, epochLabel, relabelCsv, rowsMatchModuloLabel, parseCSV,
   findRebuildCandidates, classifyWeeklyFiles, findDailyGaps,
   fetchRepoFile: (...a) => fetchRepoFile(...a),
+  gitBlobSha1,
   phaseApply, phasePrune, phaseReport,
   // Gate-only IO stubbing (in-memory repo simulation).
   __setIO(over) {
