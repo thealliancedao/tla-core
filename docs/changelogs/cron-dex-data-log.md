@@ -38,6 +38,74 @@ trusted files) + legacy-unverified/ (13 archived) + relabel-report.json.
 Site note for the reader-repoint pass: SS weekly history now starts at
 canonical 186 (mid-May 2026); earlier epochs are honestly absent.
 
+**Fifth-dispatch fix (2026-08-10) — READ-YOUR-OWN-WRITES SHADOW + SERVER
+BLOB-SHA VERIFICATION:** dispatch #5 proved even the contents API can briefly
+serve a just-deleted file (target 195 read back the deleted original) — no
+remote re-read is trustworthy immediately after our own mutation, period. Two
+structural changes: (1) an in-process shadow overlay — every successful
+push/delete records the new truth; all state reads consult it first, so the
+chain never re-reads its own mutations from any remote; (2) post-push
+fetch-back verification REPLACED by comparing the contents-API PUT response's
+content.sha (git blob sha of the stored bytes, server-computed) against the
+locally computed sha1 — storage verification that is stronger than fetch-back
+and immune to all read lag (unit-verified against `git hash-object` exactly).
+Relabel transform verification moved BEFORE push. Workflow bumped to Node 24
+(runner deprecation). Static gate 32/32... [dispatch #5 also banked 192–194;
+remaining: originals 195–196]. LAW ADDENDUM: read-your-own-writes requires a
+local shadow — never re-fetch state this run has mutated, from ANY endpoint.
+
+**Fourth-dispatch fix (2026-08-10):** deleteFile lacked the 409 branch-race
+retry that pushFile already had — the live cron fleet advanced main between
+sha fetch and DELETE (dispatch #4 banked 187–191 then aborted on 192's
+delete). deleteFile now retries 5× with fresh sha per attempt + jittered
+backoff on 409/422/5xx, per the established branch-race doctrine. Gates
+rewritten as STATE-INVARIANTS (probe live at run time; assert structural
+truths — zero anomalies, 13 unverifiable, mislabeled→canonical−1 mapping,
+ok-window==name, final tree 186–197) instead of pinned counts that expire
+each dispatch. Static 26/26, chain 14/14 from the live mid-chain state.
+
+**Third-dispatch fix (2026-08-10) — CONSISTENCY LAW:** the raw CDN
+(raw.githubusercontent) provides neither read-after-write nor
+read-after-delete consistency — dispatch #3 deleted original 187 (resume,
+correct), then read target 187 via the CDN, which still served the deleted
+file → collision abort. All tla-core reads inside the phases now go through
+the contents API (Accept: application/vnd.github.raw — same backend as the
+writes/deletes, strongly consistent); the CDN remains only for the legacy
+repo and the fold-module source, where staleness is harmless. Dead CDN retry
+helper removed. Chain gate re-run against the post-#3 live state (186
+canonical, 187 gone, 188–196 intact) with a TRIPWIRE stub proving zero CDN
+reads of the data repo anywhere in phase code: 14/14. Static gate 26/26.
+LAW FOR ALL FUTURE ONE-OFFS + CRONS: any script whose next action depends on
+its own just-written or just-deleted repo state must read that state via the
+contents API, never the raw CDN.
+
+**Second-dispatch fix (2026-08-10) — apply is now a CHAIN MOVE:** the
+shift-by-one series means every relabel target name except the lowest is
+occupied by the NEXT mislabeled original, so "write everything in apply,
+delete everything in prune" was structurally impossible (second dispatch
+aborted on the 188→187 collision, correctly and loudly). Apply now processes
+ascending by canonical target and deletes each original ONLY in the same
+iteration, immediately after its row-verified twin exists —
+copy-verify-then-kill enforced per file mechanically. Rebuild runs after the
+chain (which frees its name). Resume-safe (a target existing with the same
+window is a completed copy: re-verified, original deleted, chain continues)
+and idempotent. Prune now = delete the 13 archived old-schema originals
+(each re-verified byte-for-byte against its legacy-unverified/ copy) + a
+final-tree assertion that everything remaining classifies canonical.
+**Chain gate 14/14**: full apply→apply→prune simulated end-to-end against an
+in-memory repo seeded from the REAL live mid-chain state (186 written,
+originals intact) — chain windows correct, verify-before-delete ordering
+proven, idempotency (zero new writes/deletes on re-run), tamper-trap prune
+refusal, final tree exactly canonical 186–197. Static gate 25/25.
+
+**First-dispatch fix (2026-08-10):** apply's post-push verification hit raw-CDN
+visibility lag — a just-created file can 404 on raw.githubusercontent for
+several seconds, and the verify coerced that null into empty content →
+spurious "header mismatch" abort (the push itself was correct; apply is
+idempotent and resumes). All five verify/prune fetch-backs now retry with
+backoff (8×4s) and explicitly distinguish not-yet-visible from content
+mismatch (silent-coercion doctrine). Gate extended to 25/25.
+
 **Gate: 20/20 on the LIVE tree** (canonical math vs epoch registry; era
 classification of all 24 real files; relabel transform on real epoch-196
 content row-verified + tamper-detected + anchor-throw; rebuild set exactly
