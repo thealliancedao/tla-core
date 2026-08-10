@@ -119,8 +119,9 @@ number people will scrutinize verified (gate #0) before it ships.
    mixed rows) UNHEALABLE from this API — decide at step-2 reader map:
    remnant if unconsumed; else taint-note or archive-pre-194.
 2. **Dex reader-repoint bundle.** ✅ BUILT + GATED (2026-08-10) — COMMIT
-   PENDING. Four pages patched data-layer-only (tla-stats Rev 3.1 +
-   tla-stats-legacy + index Rev 3.71 + dao_tla_deposits Rev 2.4): all dex
+   PENDING. Pages patched data-layer-only (tla-stats Rev T3.4 +
+   index Rev 3.71 + dao_tla_deposits Rev 2.4; tla-stats-legacy.html RETIRED
+   — zero inbound links, remnant per pages-define-need): all dex
    bases/heartbeats/day-N reads → tla-core org trees; ssMonthBackupFolder
    removed (flat dated SS dailies); canonical SS weekly labels fix the
    silent week-stale display with zero logic changes. GATES: zero legacy
