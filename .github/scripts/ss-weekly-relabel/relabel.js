@@ -119,6 +119,22 @@ async function fetchRaw(repo, repoPath) {
   return r.status === 200 ? r.body : null;
 }
 
+// Post-push verification fetch: a JUST-CREATED file can 404 on the raw CDN for
+// several seconds. Retry with backoff and NEVER coerce not-yet-visible (null)
+// into empty content — the caller must distinguish 'not visible' from
+// 'content mismatch' (silent-coercion doctrine).
+async function fetchRawWithRetry(repo, repoPath, { attempts = 8, delayMs = 4000 } = {}) {
+  for (let i = 1; i <= attempts; i++) {
+    const body = await fetchRaw(repo, repoPath);
+    if (body !== null) return body;
+    if (i < attempts) {
+      console.log(`  … ${repoPath} not visible on raw CDN yet (attempt ${i}/${attempts}) — waiting`);
+      await new Promise(r => setTimeout(r, delayMs));
+    }
+  }
+  return null;
+}
+
 async function listDir(dir) {
   if (dir === WEEKLY_DIR && WEEKLY_LIST_FILE) return fs.readFileSync(WEEKLY_LIST_FILE, 'utf8').trim().split('\n').map(s => path.basename(s.trim()));
   if (dir === DAILY_DIR && DAILY_LIST_FILE) return fs.readFileSync(DAILY_LIST_FILE, 'utf8').trim().split('\n').map(s => path.basename(s.trim()));
@@ -362,8 +378,9 @@ async function phaseApply() {
     const relabeled = relabelCsv(original, e.oldLabel, e.newLabel);
     await pushFile(target, relabeled, `🏷 relabel ${e.name} → ${e.relabelTo} (canonical; window ${e.period_start}..${e.period_end})`);
     if (!DRY_RUN) {
-      const back = await fetchRaw(GITHUB_REPO, target);
-      const check = rowsMatchModuloLabel(original, back || '');
+      const back = await fetchRawWithRetry(GITHUB_REPO, target);
+      if (back === null) throw new Error(`verify failed for ${e.relabelTo}: not visible on raw CDN after retries (push succeeded — re-dispatch apply to resume)`);
+      const check = rowsMatchModuloLabel(original, back);
       if (!check.ok) throw new Error(`verify failed for ${e.relabelTo}: ${check.why}`);
       console.log(`  ✔ verified ${e.relabelTo} (rows match original modulo label)`);
     }
@@ -380,8 +397,9 @@ async function phaseApply() {
     if (existing) throw new Error(`collision: ${target} exists with different content — manual review`);
     await pushFile(target, original, `📦 archive unverifiable ${e.name} (old schema, window unknowable) verbatim`);
     if (!DRY_RUN) {
-      const back = await fetchRaw(GITHUB_REPO, target);
-      if (back !== original) throw new Error(`byte-verify failed: ${target}`);
+      const back = await fetchRawWithRetry(GITHUB_REPO, target);
+      if (back === null) throw new Error(`byte-verify failed: ${target} not visible on raw CDN after retries (push succeeded — re-dispatch apply to resume)`);
+      if (back !== original) throw new Error(`byte-verify failed: ${target} content differs`);
       console.log(`  ✔ byte-verified archive ${target}`);
     }
   }
@@ -394,8 +412,9 @@ async function phaseApply() {
     const target = `${DAILY_DIR}/${g.date}.csv`;
     await pushFile(target, content, `📥 gap-fill daily ${g.date} from legacy (verbatim)`);
     if (!DRY_RUN) {
-      const back = await fetchRaw(GITHUB_REPO, target);
-      if (back !== content) throw new Error(`byte-verify failed: ${target}`);
+      const back = await fetchRawWithRetry(GITHUB_REPO, target);
+      if (back === null) throw new Error(`byte-verify failed: ${target} not visible on raw CDN after retries (push succeeded — re-dispatch apply to resume)`);
+      if (back !== content) throw new Error(`byte-verify failed: ${target} content differs`);
       console.log(`  ✔ byte-verified ${target}`);
     }
   }
@@ -426,7 +445,7 @@ async function phasePrune() {
   let pruned = 0;
   for (const e of archived) {
     const original = await fetchRaw(GITHUB_REPO, `${WEEKLY_DIR}/${e.name}`);
-    const copy = await fetchRaw(GITHUB_REPO, `${UNVERIFIED_DIR}/${e.name}`);
+    const copy = await fetchRawWithRetry(GITHUB_REPO, `${UNVERIFIED_DIR}/${e.name}`);
     if (!copy) throw new Error(`refusing to prune ${e.name}: archive copy missing (run apply first)`);
     if (copy !== original) throw new Error(`refusing to prune ${e.name}: archive copy differs from original`);
     await deleteFile(`${WEEKLY_DIR}/${e.name}`, `🗑 prune old-schema ${e.name} (byte-verified in legacy-unverified/)`);
@@ -434,7 +453,7 @@ async function phasePrune() {
   }
   for (const e of doomed) {
     const original = await fetchRaw(GITHUB_REPO, `${WEEKLY_DIR}/${e.name}`);
-    const twin = await fetchRaw(GITHUB_REPO, `${WEEKLY_DIR}/${e.relabelTo}`);
+    const twin = await fetchRawWithRetry(GITHUB_REPO, `${WEEKLY_DIR}/${e.relabelTo}`);
     if (!twin) throw new Error(`refusing to prune ${e.name}: canonical twin ${e.relabelTo} missing (run apply first)`);
     const check = rowsMatchModuloLabel(original, twin);
     if (!check.ok) throw new Error(`refusing to prune ${e.name}: twin mismatch — ${check.why}`);
@@ -453,7 +472,7 @@ async function main() {
   throw new Error(`unknown phase '${PHASE}' (report|apply|prune)`);
 }
 
-module.exports = { main, _test: { epochOf, epochLabel, relabelCsv, rowsMatchModuloLabel, parseCSV, findRebuildCandidates, classifyWeeklyFiles, findDailyGaps } };
+module.exports = { main, _test: { epochOf, epochLabel, relabelCsv, rowsMatchModuloLabel, parseCSV, findRebuildCandidates, classifyWeeklyFiles, findDailyGaps, fetchRawWithRetry } };
 if (require.main === module) main()
   .then(() => process.exit(0))
   .catch((e) => { console.error('❌', e.message); console.error(e.stack); process.exit(1); });
