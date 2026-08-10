@@ -2,6 +2,54 @@
 
 ---
 
+## 2026-08-10 — 1.5.0 — epochs-skeletonswap FOLD (strip #3): legacy SS producer ported whole
+
+Legacy cron-scripts/skeletonswap-lp_data (1,207 lines) ported into
+dex-data/epochs-skeletonswap.js, running as an isolated tail of org-dex-data
+after the astroport fold (index.js hook, kill-switch EPOCHS_SKELETONSWAP=0;
+failure never fails core snapshots). Capture logic VERBATIM (pools_list.json
+metadata + network-and-prices pricing with all SS symbol aliases + ampROAR
+LST derivation + direct LCD {"pool":{}} reserves + fingerprint freshness).
+Publish converted git-clone/push → contents API with 409-sha retry; state
+converted local-fs → deterministic raw fetches (stateless; gap-honest).
+Products into tla-core dex-data/skeletonswap/: daily-csv/<date>.csv,
+rolling/day-1..7 + 6-day-avg + heartbeat.json, weekly-avg/<yyyy>-epoch-<N>
+(previous completed epoch, self-healing daily), monthly/<yyyy-mm> (1st UTC).
+Yearly mode dropped (pages-define-need; no yearly file in sliced tree).
+
+**GATE-PROVEN DISCOVERY — legacy weekly series mislabeled +1:** every legacy
+SS weekly file is stamped one epoch AHEAD of the canonical registry
+(docs/epoch_1-300_date.json): legacy "2026-epoch-197.csv" holds Jul 27–Aug 2
+= canonical epoch 196 (legacy stamped run-time epoch on the prior week's
+data). Org labels canonically. Parity gate: org epoch-196 aggregate is
+BYTE-IDENTICAL (sorted rows) to legacy's epoch-197 file under the corrected
+label. Cross-product joins (bribes/rewards per epoch vs TVL per epoch) would
+have misaligned by a full week under the legacy convention.
+**Deploy prereq:** one-off relabel of sliced weekly-avg files (shift -1)
+BEFORE enabling the fold — queued in CHANGES_PENDING. Related: astroport
+fold's accumulating weekly writes CURRENT-day rows into the prev-epoch file
+(epoch-197.csv shows period 2026-08-10, outside epoch 197's true window) —
+separate fix queued.
+
+**Org-wins fix #2:** monthly period_start/period_end now populated from the
+weekly rows' own bounds (legacy wrote them empty — it looked for a `date`
+column weekly files don't have). Everything else numerically identical:
+monthly 2026-07 parity gate clean vs the legacy sliced file.
+
+**Gate: mock 32/32** on real fixtures (real org SS snapshot epoch-198 as
+chain stub — ATOM-LUNA reserves verbatim + TVL hand-recomputed from the live
+pricing feed to the cent; real sliced dailies/weeklies fetched by the module
+itself for weekly + monthly parity; freshness state machine fresh→
+suspicious→stuck→reset; kill-switch + isolation + astroport-tail-untouched
+wiring checks). Honest nulls preserved: volume_24h/7d + apr_7d written empty
+(no trustworthy source post-warlock), unpriced pools get empty TVL, never
+faked. New heartbeat product: dex-data/skeletonswap/rolling/heartbeat.json —
+system-health FRESHNESS_MAP row needed at next system-health touch.
+
+Kill sequence once committed + first Render run verified: repoint site SS
+readers → suspend ss-pool-daily/weekly/monthly → archive ss-pool-data_2026
+→ delete after quiet week (strip combo).
+
 ## 2026-08-09 — 1.4.0 — epochs-astroport FOLD (strip #2): legacy producer ported whole
 
 Legacy astroport-snapshot ported verbatim into dex-data/epochs-astroport.js,
