@@ -2,6 +2,34 @@
 
 ---
 
+## 2026-08-10 — astro-daily-bank EXECUTED ✅ — 88/88, series depth restored
+
+All 88 legacy astroport dailies banked (2026-05-12..2026-08-08), every push
+blob-sha server-verified; four concurrent-cron 409 branch races auto-retried
+and recovered; the single overlap (08-09) skipped org-wins. Tree verified:
+all five spot dates 200 across all three schema eras, including 2026-08-05
+— the one URL that 404'd in the repoint gate. The Pools-tab chart depth is
+fully restored the moment the site repoint deploys. RETIRE the
+astro-daily-bank workflow + script (finished scaffolding; step-7 sweep
+catches it otherwise). With this, dex history (astro epochs JSONs + dailies
++ canonical weeklies; SS dailies + canonical weeklies) lives entirely in
+tla-core — the legacy dex repos hold NOTHING the org lacks, which is the
+step-3 kill precondition.
+
+## 2026-08-10 — astro-daily-bank ONE-OFF built (step-2 continuity) — three-era census
+
+Banks the 89 legacy astroport dailies (2026-05-12..08-09) into tla-core
+dex-data/astroport/daily-csv so the Pools-tab charts keep depth after the
+repoint and the history survives the legacy repo's deletion. Gate-proven
+era census: 11-col (05-12..13) → 15-col (05-14..16) → 20-col (05-17..) —
+the site reader is era-tolerant BY DESIGN (header-keyed parse + pool_name||
+pool, tvl_usd??astroport_tvl_usd fallbacks), so ALL eras bank verbatim into
+the one canonical dated series; only UNKNOWN header shapes are refused
+loudly. Additive-only + org-wins (existing dates skipped untouched: fold's
+08-09/08-10); every push server-verified via blob sha; org state via
+contents API. Gate 6/6. Run: dispatch report → review plan (expect ~87 to
+bank, 2 skips) → apply → retire workflow.
+
 ## 2026-08-10 — 1c EXECUTED ✅ — astroport weekly healed (194–197 bucket-direct)
 
 Heal run verified from the tree: weekly-avg 194/195/196/197 all carry true
