@@ -2,6 +2,22 @@
 
 ---
 
+## 2026-08-10 — ss-weekly-relabel EXECUTED ✅ — SS weekly series canonical (strip #3 prereq 1b DONE)
+
+All three phases completed and independently verified: weekly-avg/ = exactly
+canonical 2026-epoch-186..197, every filename matching its own window per the
+canonical registry (spot-verified 186/190/195/196/197); 13 old-schema files
+preserved verbatim in weekly-avg/legacy-unverified/ (originals 404); dailies
+2026-08-08/09 gap-filled from legacy; canonical 196 rebuilt 7/7 from dailies.
+Epoch-197 currently 5/7 has_gaps=true and self-heals on the fold's next
+daily run (its missing dailies now exist). Every mutation across all phases
+was server-verified (blob sha) with verified-twin-before-delete throughout.
+The ss-weekly-relabel workflow + script are FINISHED SCAFFOLDING — disable
+and delete both (queued for the step-7 retirement sweep if not done now).
+Downstream: SS weekly epoch numbers now join correctly against
+tla-voting/distributions and the epoch registry; site reader-repoint (step 2)
+should read weekly history as starting at canonical 186.
+
 ## 2026-08-10 — ss-weekly-relabel ONE-OFF built (strip #3 prereq 1b) — three-era series ruling
 
 One-off (tla-core .github/scripts/ss-weekly-relabel + workflow, three
