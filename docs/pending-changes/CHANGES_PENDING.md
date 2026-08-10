@@ -101,13 +101,23 @@ number people will scrutinize verified (gate #0) before it ships.
    verify → prune → disable+delete workflow. Post-prune tree: canonical
    186–197 + legacy-unverified/. Reader-repoint note: SS weekly history
    starts at canonical 186.
-   1c. **⚠ NEW: astroport fold weekly-window bug.** epochs-astroport's
-   accumulating weekly writes CURRENT-day rows into the prev-epoch file
-   (astroport weekly-avg/2026-epoch-197.csv shows period 2026-08-10 — outside
-   epoch 197's true Aug 3–9 window). Fix to the same
-   fetch-prev-epoch-dated-dailies pattern the SS fold uses; audit existing
-   astroport weekly files' period columns for the same +1/window taint while
-   in there.
+   1c. **astroport weekly bucket-direct.** ✅✅ EXECUTED + VERIFIED
+   (2026-08-10). 194–197 healed (true windows, bucket-direct, zero mixed
+   rows), 193 coverage-skipped, pre-194 untouched. REMOVE
+   ASTRO_WEEKLY_BACKFILL env. Riders queued: time-aware freshness for both
+   folds (run-count stuck threshold false-alarms on trigger bursts); nap
+   coverage for 5 SS symbols (MOAR/wSOL/dATOM/rSWTH/wKWEEN). Pre-194 mixed
+   rows (38, sparse pools) decided at step-2 reader map. Audit found 51 fallback-mixed rows
+   across 13/14 files + capture-day windows + a frozen zero (LUNA-arbLUNA
+   ep197). Weekly now bucket-direct (no fallback, honest no-data rows, true
+   epoch windows, early-Monday guard); values proven verbatim vs real chart
+   buckets, zero regressions vs live. HEAL (corrected 1.6.1 —
+   D90 REJECTED by charts endpoint, deep heal impossible): remove
+   ASTRO_CHART_RANGE, keep ASTRO_WEEKLY_BACKFILL=1, deploy latest, trigger
+   once (expect "backfill: 2 reachable" + coverage skips + green capture),
+   then remove the env. Heals 194–196(+197). Files 184–193 (38 sparse-pool
+   mixed rows) UNHEALABLE from this API — decide at step-2 reader map:
+   remnant if unconsumed; else taint-note or archive-pre-194.
 2. **Dex reader-repoint bundle** (site): tla-stats.html CONFIG
    astroportEpochBaseUrl (~L2636) + sourceUrlFallbackFn ×2 (~L2788, ~L8031) +
    direct fetches (~L3596) → tla-core/main/dex-data/astroport/epochs;
