@@ -149,14 +149,31 @@ number people will scrutinize verified (gate #0) before it ships.
    tla-stats Pools tab healthy; ANY legacy-URL error = unarchive/resume in
    one click. After quiet week → DELETE the two repos + the four Render
    jobs (step-7 sweep).
-4. **tla-snapshot strip:** forward emitters into dex-data (history.js):
-   pool-status daily via gauge_infos(next) 1%-of-bucket rule (port the rule
-   from tla-snapshot.js ONLY) + apr-history via the CORRECT Eris formula
-   (displayed = aprToApy(incentiveApr×0.92) + tradingApr − take; incentive
-   compounded, others linear). Old series discarded. 8 reader files: live tier
-   untouched; fallback URLs → atomic org products via lib/adao-live-data.js
-   adapters (NOT per-page). Then suspend tla-snapshot + dao-dashboard, archive
-   tla-snapshot-data_2026.
+4. **tla-snapshot strip:**
+   4a. **pool-status emitter.** ✅ BUILT + GATED 12/12 (2026-08-10) — COMMIT
+   PENDING. dex-data/history.js (permanent, kill-switch HISTORY=0) + index.js
+   tail + README law amendment. 100% rule parity on real gauge state.
+   Findings banked (cron-dex-data-log 1.7.0): product status string is
+   'voted_but_below_threshold'; legacy silently dropped a ~2.22M-VP ACTIVE
+   single-bucket gauge entry (org surfaces it — inspect first run's
+   current.json to identify it); two LPs are gauged in TWO buckets — 4b
+   adapters must key (bucket, pool_id).
+   4b. **APR emitter + reader decomposition + kills — DECISIONS FIRST:**
+   (a) alliance reward_weights source — pick one: [1] hand-calibrated
+   registry file (legacy method, + drift canary vs annual rewards sanity),
+   [2] live /terra/alliances probe on BOTH public LCDs (legacy claims
+   firewalled at its provider — probe before committing), [3] archive-
+   endpoint capture into a registry (during-archive-access queue synergy).
+   (b) TLA-staked TVL denominator — [1] gauge total_staked_balances ×4 +
+   org pricing (lean), [2] port legacy staked machinery (heavy, avoid).
+   Then: apr-history emitter (formula: displayed = aprToApy(incentiveApr ×
+   0.92) + tradingApr − take; incentive compounded, others linear; gate =
+   cross-validate computed displayed APR vs the live legacy snapshot's
+   captured per-pool values, which were Eris-UI-reconciled). Then 8 reader
+   files: live tier untouched, fallback URLs → atomic org products via
+   lib/adao-live-data.js adapters (NOT per-page; key pools by
+   bucket+pool_id). Then suspend tla-snapshot + dao-dashboard Render jobs,
+   archive tla-snapshot-data_2026.
 5. **json_storage replacements:** tla_pd_bribes.json →
    tla-voting/pd-bribes/current.json (adapter); tla_known_tokens.json →
    token-catalog; members/registry CSVs → DAODAO live + member-data (incl.
