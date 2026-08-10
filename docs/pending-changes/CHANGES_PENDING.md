@@ -118,12 +118,23 @@ number people will scrutinize verified (gate #0) before it ships.
    then remove the env. Heals 194–196(+197). Files 184–193 (38 sparse-pool
    mixed rows) UNHEALABLE from this API — decide at step-2 reader map:
    remnant if unconsumed; else taint-note or archive-pre-194.
-2. **Dex reader-repoint bundle** (site): tla-stats.html CONFIG
-   astroportEpochBaseUrl (~L2636) + sourceUrlFallbackFn ×2 (~L2788, ~L8031) +
-   direct fetches (~L3596) → tla-core/main/dex-data/astroport/epochs;
-   index.html epoch/daily/weekly + ss refs → org trees. Gate: zero refs to
-   astroport-pool-data_2026 / ss-pool-data_2026 site-wide; every new URL
-   fetched 200 in-gate.
+2. **Dex reader-repoint bundle.** ✅ BUILT + GATED (2026-08-10) — COMMIT
+   PENDING. Four pages patched data-layer-only (tla-stats Rev 3.1 +
+   tla-stats-legacy + index Rev 3.71 + dao_tla_deposits Rev 2.4): all dex
+   bases/heartbeats/day-N reads → tla-core org trees; ssMonthBackupFolder
+   removed (flat dated SS dailies); canonical SS weekly labels fix the
+   silent week-stale display with zero logic changes. GATES: zero legacy
+   dex-repo refs site-wide; 11/11 constructed URLs fetched 200 (astro
+   dailies pre-08-09 pending bank). PREREQ one-off: astro-daily-bank
+   ✅✅ EXECUTED 88/88 blob-verified (2026-08-10) — RETIRE workflow+script.
+   Legacy dex repos now hold NOTHING the org lacks = step-3 kill
+   precondition MET.
+   RIDERS QUEUED: (a) re-enable SS pools in the tla-stats bucket chart —
+   the May-2026 freeze exclusion is now unblocked (org fold chain-truth);
+   rendering decision, separate paste. (b) astroport weekly-avg pre-194
+   mixed rows: reader map answer = tla-stats reads epochs JSONs + SS weekly
+   CSVs, NOT astroport weekly-avg CSVs → those files are REMNANT-tier;
+   fold keeps writing canonical ones; pre-194 cleanup optional at step 7.
 3. **Kills:** suspend astroport-snapshot + ss-pool-daily/weekly/monthly;
    archive astroport-pool-data_2026 + ss-pool-data_2026; system-health rows
    move in the same paste. (Delete archived repos after quiet week.)
