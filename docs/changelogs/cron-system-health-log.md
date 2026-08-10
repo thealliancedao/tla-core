@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-08-10 — 1.0.1 — fold-series freshness rows (strip step 3, same paste as the legacy dex kills)
+
+FRESHNESS_MAP +2: dex-astroport-series (dex-data/astroport/epochs/
+heartbeat.json) and dex-skeletonswap-series (dex-data/skeletonswap/rolling/
+heartbeat.json), ts=capturedAt, max_age_h=6 — these fold products are what
+the site reads post-repoint (Rev 3.1/3.71), so their staleness is now a
+first-class violation. Mock fixtures added for both (real capturedAt shape);
+mock gate 33/33. Ships in the SAME paste as: suspend Render
+astroport-snapshot + ss-pool-daily/weekly/monthly, archive
+astroport-pool-data_2026 + ss-pool-data_2026 (strip combo: repoint done →
+suspend → archive → quiet week → delete).
+
 ## 2026-08-09 — network-and-prices row → org feed; per-row owner support
 
 Monitor table gains an optional owner field (rows may point at org repos;
