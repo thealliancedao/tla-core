@@ -2,6 +2,88 @@
 
 ---
 
+## 2026-08-10 — 1c EXECUTED ✅ — astroport weekly healed (194–197 bucket-direct)
+
+Heal run verified from the tree: weekly-avg 194/195/196/197 all carry true
+epoch windows, tier=bucket-direct, used/expected=19/36 pools-semantics, and
+ZERO mixed-epoch rows; the coverage guard skipped 193 with its reason logged;
+190 (and all pre-194 files) untouched by design. Remove
+ASTRO_WEEKLY_BACKFILL=1 from Render (heal is one-time; the fold keeps
+refreshing the previous epoch bucket-direct every run from here).
+
+Two riders observed in the run logs, queued (not bugs in this delivery):
+1. **Freshness false-alarm:** both folds reported dataFreshness=stuck after
+   3 manual triggers within ~18 minutes — STUCK_THRESHOLD counts RUNS, a
+   legacy assumption from daily cadence. On a quiet DEX, identical reserves
+   across close-together runs is normal. Make freshness TIME-aware (stuck =
+   identical for >N hours, not >N runs) in both folds; until then, a stuck
+   heartbeat right after manual trigger bursts is a known benign state
+   (self-resets on the next real data change).
+2. **SS pricing coverage:** the SS fold honestly nulls 5 pools every run
+   (MOAR, wSOL, dATOM, rSWTH, wKWEEN absent from network-and-prices) —
+   ~$?K of SS TVL permanently uncounted. nap coverage question for the
+   step-7 audit, not a dex-data bug.
+
+## 2026-08-10 — 1.6.1 — D90 REJECTED by charts endpoint; backfill full-coverage guard
+
+The heal run with ASTRO_CHART_RANGE=D90 failed ALL 36 pool chart fetches:
+HTTP 400 enum rejection (captured in epoch-198.json fetchErrors). The old
+"D90 is valid" note applied to pools.getAll, NOT charts.*; the charts
+endpoint takes no date offsets, so epochs older than the D30 window are
+UNREACHABLE via this API — the deep heal is impossible, permanently. The
+early-Monday guard + backfill correctly wrote nothing during the failed run
+(no garbage; daily/heartbeat carried fetch_ok=false honestly and self-heal
+hourly). 1.6.1: (a) env comment corrected — D30 is the only known-valid
+range, override is for supervised probing only; (b) FULL-COVERAGE GUARD —
+backfill only rewrites epochs whose whole window sits inside the chart
+range, because a partially-covered bucket (epoch 193 under D30) has fewer
+points than the file on disk and rewriting would degrade it. Heal scope is
+therefore epochs 194–196 (+197 as the normal target): repairs 13 of the 51
+mixed rows incl. both worst files (196, 197). Files 184–193 (38 mixed rows,
+sparse-pool substitutions only; majors verified value-correct) are
+UNHEALABLE from this API — flagged for the step-2 reader map: if no page
+consumes astroport weekly-avg they're remnant-tier anyway; if a page does,
+the honest options are a taint-note column or archiving pre-194 like SS's
+legacy-unverified. Gate 15/15 (D30 coverage math [194,195,196] proven).
+HEAL RERUN (Camron): REMOVE ASTRO_CHART_RANGE from Render, keep
+ASTRO_WEEKLY_BACKFILL=1, deploy latest commit, trigger once — expect
+"weekly backfill: 2 reachable" (+ skips logged for uncovered epochs) and a
+green 36-pool capture — then remove the backfill env.
+
+## 2026-08-10 — 1.6.0 — epochs-astroport weekly BUCKET-DIRECT (queue item 1c)
+
+Audit of all 14 astroport weekly files (gate-proven): filenames/labels/epoch
+columns agree and values are Astroport's own per-epoch bucket aggregates —
+BUT the pickLastCompleteEpoch tier fallback silently substituted OLDER epochs
+for sparse pools in 51 rows across 13 files, window metadata was the capture
+day (not the epoch), and at least one pool (LUNA-arbLUNA epoch 197) froze a
+zero when its chart points hadn't landed at write time.
+
+Fix: weekly is now BUCKET-DIRECT — every row comes from the pool's chart
+bucket for exactly the target epoch (previous completed); pools without the
+bucket get honest zero-point rows (tier='no-data'), never an older epoch.
+Window columns = the epoch's true dates from canonical math; meta semantics
+documented inline (used = pools with liquidity points, expected = pool
+count). Early-Monday guard: if no pool has the bucket yet, the weekly write
+is skipped and self-heals next run. Daily refresh means zero-freezes repair
+themselves as chart points land. pickLastCompleteEpoch removed (dead).
+
+**ONE-TIME HEAL (Camron, after commit):** on Render org-dex-data set
+ASTRO_WEEKLY_BACKFILL=1 and ASTRO_CHART_RANGE=D90, trigger once, verify the
+log line "weekly backfill: N reachable completed epochs" and that the logged
+bucket reach spans ~185–197, then REMOVE both envs (normal runs stay D30).
+This rewrites every reachable weekly file bucket-direct, repairing the mixed
+rows + metadata. epoch-184 likely sits at/beyond D90 reach — whatever the
+log shows unhealed stays flagged in CHANGES_PENDING pending the step-2
+reader map (pages-define-need).
+
+**Gate 12/12 on the REAL epoch-198 snapshot** (36 pools with real chart
+buckets): every row label/epoch/window correct for target 197; values equal
+the buckets verbatim; live-file cross-check shows 24/25 matching and the one
+divergence is exactly a live zero-freeze now repaired, zero regressions;
+early-Monday guard returns null on stripped buckets; range env-wiring
+verified. SS fold untouched; index.js untouched (same main() interface).
+
 ## 2026-08-10 — ss-weekly-relabel EXECUTED ✅ — SS weekly series canonical (strip #3 prereq 1b DONE)
 
 All three phases completed and independently verified: weekly-avg/ = exactly
