@@ -135,9 +135,19 @@ number people will scrutinize verified (gate #0) before it ships.
    mixed rows: reader map answer = tla-stats reads epochs JSONs + SS weekly
    CSVs, NOT astroport weekly-avg CSVs → those files are REMNANT-tier;
    fold keeps writing canonical ones; pre-194 cleanup optional at step 7.
-3. **Kills:** suspend astroport-snapshot + ss-pool-daily/weekly/monthly;
-   archive astroport-pool-data_2026 + ss-pool-data_2026; system-health rows
-   move in the same paste. (Delete archived repos after quiet week.)
+3. **Kills.** ✅ PASTE BUILT (2026-08-10) — system-health 1.0.1 (+2
+   fold-series freshness rows, mock 33/33) ships with the kills. CAMRON
+   CLICKS after committing: Render SUSPEND astroport-snapshot +
+   ss-pool-daily + ss-pool-weekly + ss-pool-monthly (suspend, not delete —
+   one-click rollback during quiet week); GitHub ARCHIVE
+   astroport-pool-data_2026 + ss-pool-data_2026 (Settings → Danger Zone →
+   Archive; read-only, reversible). Also retire finished scaffolding in the
+   same sweep: delete .github/workflows/{ss-weekly-relabel,astro-daily-bank}
+   .yml + .github/scripts/{ss-weekly-relabel,astro-daily-bank}/. QUIET WEEK
+   until 2026-08-17: watch index dex tiles + system-health page stay green,
+   tla-stats Pools tab healthy; ANY legacy-URL error = unarchive/resume in
+   one click. After quiet week → DELETE the two repos + the four Render
+   jobs (step-7 sweep).
 4. **tla-snapshot strip:** forward emitters into dex-data (history.js):
    pool-status daily via gauge_infos(next) 1%-of-bucket rule (port the rule
    from tla-snapshot.js ONLY) + apr-history via the CORRECT Eris formula
