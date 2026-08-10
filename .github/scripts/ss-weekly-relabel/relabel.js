@@ -18,17 +18,25 @@
 //            daily gap-fill candidates (dates missing from org daily-csv that
 //            exist in the legacy repo) and rebuild candidates (canonical
 //            epochs with no file but with dailies). WRITES ONLY THE REPORT.
-//   apply  → (a) relabel: write each mislabeled file under its canonical name
-//            with the period label column corrected — content otherwise
-//            VERBATIM, verified row-by-row after push; (b) gap-fill dailies
-//            from the legacy repo (byte-verified after push); (c) rebuild
-//            missing canonical epochs using the LIVE fold module's own
-//            buildWeekly (fetched from platform-crons at runtime — the
-//            no-third-copy rule: aggregation math is never reimplemented
-//            here). NO DELETIONS in this phase.
-//   prune  → delete each mislabeled ORIGINAL, but only after re-verifying its
-//            canonical twin exists and matches it row-for-row modulo the label.
-//            Refuses loudly otherwise.
+//   apply  → (a) CHAIN-MOVE relabels, ascending by canonical target: because
+//            the series shifts -1, every target name except the lowest is
+//            occupied by the NEXT mislabeled original — so each iteration
+//            writes the relabeled twin, row-verifies it, and ONLY THEN deletes
+//            its original, freeing the next iteration's target name.
+//            Copy-verify-then-kill is enforced per file, mechanically; the
+//            chain cannot delete anything whose verified twin doesn't exist.
+//            (a2) archive unverifiable old-schema files verbatim (deletion of
+//            those originals deferred to prune); (b) gap-fill dailies from
+//            the legacy repo (byte-verified); (c) rebuild missing canonical
+//            epochs — AFTER the chain, which frees their names — using the
+//            LIVE fold module's own buildWeekly (no-third-copy).
+//            Resume-safe: a target that already exists with the SAME window is
+//            a completed copy from a prior run — it is re-verified and its
+//            original (if still present) deleted; the chain continues.
+//   prune  → delete the archived old-schema ORIGINALS, each only after
+//            re-verifying its legacy-unverified/ copy byte-for-byte, then
+//            assert the final tree is fully canonical. Refuses loudly on any
+//            mismatch.
 //
 // Scope guard: only dex-data/skeletonswap/{weekly-avg,daily-csv}/ paths are
 // ever written or deleted. Monthly files are untouched (filenames are
@@ -114,16 +122,16 @@ function apiHeaders() {
   return { Authorization: `token ${GITHUB_TOKEN}`, Accept: 'application/vnd.github.v3+json' };
 }
 
-async function fetchRaw(repo, repoPath) {
+let fetchRaw = async function fetchRawImpl(repo, repoPath) {
   const r = await httpRequest(`https://raw.githubusercontent.com/${repo}/${GITHUB_BRANCH}/${repoPath}?cb=${Date.now()}`);
   return r.status === 200 ? r.body : null;
-}
+};
 
 // Post-push verification fetch: a JUST-CREATED file can 404 on the raw CDN for
 // several seconds. Retry with backoff and NEVER coerce not-yet-visible (null)
 // into empty content — the caller must distinguish 'not visible' from
 // 'content mismatch' (silent-coercion doctrine).
-async function fetchRawWithRetry(repo, repoPath, { attempts = 8, delayMs = 4000 } = {}) {
+let fetchRawWithRetry = async function fetchRawWithRetryImpl(repo, repoPath, { attempts = 8, delayMs = 4000 } = {}) {
   for (let i = 1; i <= attempts; i++) {
     const body = await fetchRaw(repo, repoPath);
     if (body !== null) return body;
@@ -133,15 +141,15 @@ async function fetchRawWithRetry(repo, repoPath, { attempts = 8, delayMs = 4000 
     }
   }
   return null;
-}
+};
 
-async function listDir(dir) {
+let listDir = async function listDirImpl(dir) {
   if (dir === WEEKLY_DIR && WEEKLY_LIST_FILE) return fs.readFileSync(WEEKLY_LIST_FILE, 'utf8').trim().split('\n').map(s => path.basename(s.trim()));
   if (dir === DAILY_DIR && DAILY_LIST_FILE) return fs.readFileSync(DAILY_LIST_FILE, 'utf8').trim().split('\n').map(s => path.basename(s.trim()));
   const r = await httpRequest(`https://api.github.com/repos/${GITHUB_REPO}/contents/${dir}?ref=${GITHUB_BRANCH}&per_page=1000`, { headers: apiHeaders() });
   if (r.status !== 200) throw new Error(`listDir ${dir}: HTTP ${r.status} ${r.body.slice(0, 200)}`);
   return JSON.parse(r.body).map(e => e.name);
-}
+};
 
 async function getSha(repoPath) {
   const r = await httpRequest(`https://api.github.com/repos/${GITHUB_REPO}/contents/${repoPath}?ref=${GITHUB_BRANCH}`, { headers: apiHeaders() });
@@ -149,7 +157,7 @@ async function getSha(repoPath) {
   return JSON.parse(r.body).sha;
 }
 
-async function pushFile(repoPath, content, message) {
+let pushFile = async function pushFileImpl(repoPath, content, message) {
   if (DRY_RUN) { console.log(`  [dry-run] would push ${repoPath}`); return true; }
   for (let attempt = 1; attempt <= 4; attempt++) {
     const sha = await getSha(repoPath);
@@ -164,9 +172,9 @@ async function pushFile(repoPath, content, message) {
     throw new Error(`push ${repoPath}: HTTP ${r.status} ${r.body.slice(0, 200)}`);
   }
   throw new Error(`push ${repoPath}: retries exhausted`);
-}
+};
 
-async function deleteFile(repoPath, message) {
+let deleteFile = async function deleteFileImpl(repoPath, message) {
   if (DRY_RUN) { console.log(`  [dry-run] would DELETE ${repoPath}`); return true; }
   const sha = await getSha(repoPath);
   if (!sha) throw new Error(`delete ${repoPath}: file not found`);
@@ -177,7 +185,7 @@ async function deleteFile(repoPath, message) {
   if (r.status !== 200) throw new Error(`delete ${repoPath}: HTTP ${r.status} ${r.body.slice(0, 200)}`);
   console.log(`  🗑  deleted ${repoPath}`);
   return true;
-}
+};
 
 // -----------------------------------------------------------------------------
 // CSV
@@ -364,17 +372,37 @@ async function phaseApply() {
   const anomalies = weekly.filter(e => e.class === 'anomaly');
   if (anomalies.length) throw new Error(`refusing: ${anomalies.length} anomalies unresolved: ${anomalies.map(a => a.name).join(', ')}`);
 
-  // (a) relabel
-  for (const e of weekly.filter(x => x.class === 'mislabeled')) {
+  // (a) CHAIN-MOVE relabels — ascending by canonical target. Target k is
+  // occupied by original k+1 until that original's own move deletes it, so
+  // ascending order guarantees each target is free (or already-completed)
+  // when its turn comes. Delete-original happens ONLY after the twin is
+  // row-verified in the same iteration.
+  const chain = weekly.filter(x => x.class === 'mislabeled')
+    .sort((a, b) => a.canonicalEpoch - b.canonicalEpoch);
+  for (const e of chain) {
     const target = `${WEEKLY_DIR}/${e.relabelTo}`;
+    const sourcePath = `${WEEKLY_DIR}/${e.name}`;
+    const original = await fetchRaw(GITHUB_REPO, sourcePath);
     const existing = await fetchRaw(GITHUB_REPO, target);
-    const original = await fetchRaw(GITHUB_REPO, `${WEEKLY_DIR}/${e.name}`);
-    if (!original) throw new Error(`source vanished: ${e.name}`);
-    if (existing) {
+
+    if (existing !== null) {
       const { rows } = parseCSV(existing);
-      if (rows[0]?.period_start === e.period_start) { console.log(`  ↷ ${e.relabelTo} already canonical — skip`); continue; }
-      throw new Error(`collision: ${e.relabelTo} exists with different window (${rows[0]?.period_start}) — manual review`);
+      if (rows[0]?.period_start === e.period_start) {
+        // Completed copy from a prior run — verify, delete original, continue.
+        if (original !== null) {
+          const check = rowsMatchModuloLabel(original, existing);
+          if (!check.ok) throw new Error(`resume verify failed for ${e.relabelTo}: ${check.why}`);
+          await deleteFile(sourcePath, `🏷 relabel-move: delete ${e.name} (row-verified twin ${e.relabelTo} exists)`);
+          console.log(`  ↷ ${e.relabelTo} already written — original verified + deleted (resume)`);
+        } else {
+          console.log(`  ↷ ${e.relabelTo} already canonical, original gone — skip (resume)`);
+        }
+        continue;
+      }
+      throw new Error(`collision: ${e.relabelTo} exists with unexpected window (${rows[0]?.period_start}, wanted ${e.period_start}) — manual review`);
     }
+
+    if (original === null) throw new Error(`source vanished: ${e.name}`);
     const relabeled = relabelCsv(original, e.oldLabel, e.newLabel);
     await pushFile(target, relabeled, `🏷 relabel ${e.name} → ${e.relabelTo} (canonical; window ${e.period_start}..${e.period_end})`);
     if (!DRY_RUN) {
@@ -384,6 +412,7 @@ async function phaseApply() {
       if (!check.ok) throw new Error(`verify failed for ${e.relabelTo}: ${check.why}`);
       console.log(`  ✔ verified ${e.relabelTo} (rows match original modulo label)`);
     }
+    await deleteFile(sourcePath, `🏷 relabel-move: delete ${e.name} (row-verified twin ${e.relabelTo} exists)`);
   }
 
   // (a2) archive unverifiable old-schema files verbatim (never-shrink; the
@@ -439,28 +468,30 @@ async function phaseApply() {
 async function phasePrune() {
   console.log('=== PHASE: prune (delete mislabeled originals; twin-verified per file) ===');
   const weekly = await classifyWeeklyFiles();
-  const doomed = weekly.filter(e => e.class === 'mislabeled');
+  const leftoverMislabeled = weekly.filter(e => e.class === 'mislabeled');
+  if (leftoverMislabeled.length) {
+    throw new Error(`refusing: ${leftoverMislabeled.length} mislabeled files remain (${leftoverMislabeled.map(e => e.name).join(', ')}) — re-dispatch apply; its chain-move handles them`);
+  }
   const archived = weekly.filter(e => e.class === 'unverifiable');
-  if (!doomed.length && !archived.length) { console.log('nothing to prune — series already canonical.'); return; }
+  if (!archived.length) { console.log('nothing to prune — series already canonical.'); }
   let pruned = 0;
   for (const e of archived) {
     const original = await fetchRaw(GITHUB_REPO, `${WEEKLY_DIR}/${e.name}`);
+    if (original === null) { console.log(`  ↷ ${e.name} already gone — skip`); continue; }
     const copy = await fetchRawWithRetry(GITHUB_REPO, `${UNVERIFIED_DIR}/${e.name}`);
     if (!copy) throw new Error(`refusing to prune ${e.name}: archive copy missing (run apply first)`);
     if (copy !== original) throw new Error(`refusing to prune ${e.name}: archive copy differs from original`);
     await deleteFile(`${WEEKLY_DIR}/${e.name}`, `🗑 prune old-schema ${e.name} (byte-verified in legacy-unverified/)`);
     pruned++;
   }
-  for (const e of doomed) {
-    const original = await fetchRaw(GITHUB_REPO, `${WEEKLY_DIR}/${e.name}`);
-    const twin = await fetchRawWithRetry(GITHUB_REPO, `${WEEKLY_DIR}/${e.relabelTo}`);
-    if (!twin) throw new Error(`refusing to prune ${e.name}: canonical twin ${e.relabelTo} missing (run apply first)`);
-    const check = rowsMatchModuloLabel(original, twin);
-    if (!check.ok) throw new Error(`refusing to prune ${e.name}: twin mismatch — ${check.why}`);
-    await deleteFile(`${WEEKLY_DIR}/${e.name}`, `🗑 prune mislabeled ${e.name} (canonical twin ${e.relabelTo} verified)`);
-    pruned++;
+  // Final-tree assertion: everything left in weekly-avg/ (excluding the
+  // legacy-unverified subfolder) must classify 'ok'.
+  const finalState = await classifyWeeklyFiles();
+  const nonCanonical = finalState.filter(e => e.class !== 'ok');
+  if (nonCanonical.length) {
+    throw new Error(`final tree NOT canonical: ${nonCanonical.map(e => `${e.name}(${e.class})`).join(', ')}`);
   }
-  console.log(`\n✅ pruned ${pruned} mislabeled files — series is canonical.`);
+  console.log(`\n✅ pruned ${pruned} old-schema originals — weekly-avg tree is fully canonical (${finalState.length} files, all ok).`);
 }
 
 // -----------------------------------------------------------------------------
@@ -472,7 +503,20 @@ async function main() {
   throw new Error(`unknown phase '${PHASE}' (report|apply|prune)`);
 }
 
-module.exports = { main, _test: { epochOf, epochLabel, relabelCsv, rowsMatchModuloLabel, parseCSV, findRebuildCandidates, classifyWeeklyFiles, findDailyGaps, fetchRawWithRetry } };
+module.exports = { main, _test: {
+  epochOf, epochLabel, relabelCsv, rowsMatchModuloLabel, parseCSV,
+  findRebuildCandidates, classifyWeeklyFiles, findDailyGaps,
+  fetchRawWithRetry: (...a) => fetchRawWithRetry(...a),
+  phaseApply, phasePrune, phaseReport,
+  // Gate-only IO stubbing (in-memory repo simulation).
+  __setIO(over) {
+    if (over.fetchRaw) fetchRaw = over.fetchRaw;
+    if (over.fetchRawWithRetry) fetchRawWithRetry = over.fetchRawWithRetry;
+    if (over.listDir) listDir = over.listDir;
+    if (over.pushFile) pushFile = over.pushFile;
+    if (over.deleteFile) deleteFile = over.deleteFile;
+  },
+} };
 if (require.main === module) main()
   .then(() => process.exit(0))
   .catch((e) => { console.error('❌', e.message); console.error(e.stack); process.exit(1); });
