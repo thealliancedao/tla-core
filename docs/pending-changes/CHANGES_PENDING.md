@@ -73,15 +73,28 @@ number people will scrutinize verified (gate #0) before it ships.
   delete. Never out of order.
 
 ### NEXT ACTIONS (exact order — start here next session)
-1. **SS fold.** Port cron-scripts/skeletonswap-lp_data/index.js (1,207 lines)
-   into org dex-data like astroport. ⚠ DIFFERENT PARADIGM: publishes via
-   local fs + git add/commit (L231 'git add -f data/weekly-avg/'), 3 Render
-   modes (ss-pool-daily/weekly/monthly). Convert publishes to the
-   contents-API pattern (epochs-astroport's pushToGithub is the template).
-   Weekly writer L777-895 (epoch-keyed); DIRS at L55. Continue sliced trees:
-   dex-data/skeletonswap/{weekly-avg,monthly,daily-csv,rolling}. Also triage
-   daily-csv/ (convert-to-org-daily-JSON-and-merge vs discard) per method
-   inspection.
+1. **SS fold.** ✅ BUILT + GATED 32/32 (2026-08-10) — DEPLOY PENDING COMMIT.
+   Delivered: dex-data/epochs-skeletonswap.js + index.js tail hook
+   (kill-switch EPOCHS_SKELETONSWAP=0). Capture verbatim; publish converted
+   to contents API; state converted to deterministic raw fetches; yearly
+   dropped (pages-define-need). Parity: weekly BYTE-IDENTICAL to legacy under
+   corrected label; monthly numeric-identical + period bounds now populated
+   (legacy wrote empty). See cron-dex-data-log 1.5.0.
+   1b. **⚠ NEW (gate-proven): SS weekly relabel one-off.** ENTIRE legacy SS
+   weekly-avg series is labeled +1 vs canonical docs/epoch_1-300_date.json
+   (legacy "2026-epoch-197.csv" holds Jul 27–Aug 2 = canonical 196). One-off:
+   shift every sliced weekly-avg filename + period label -1 (each file's own
+   period_start/period_end columns verify the true window mechanically).
+   RUN BEFORE first fold-enabled Render run, so the series is internally
+   consistent when org starts writing canonical labels. Epoch joins
+   (bribes/rewards vs TVL) misalign by a week until this lands.
+   1c. **⚠ NEW: astroport fold weekly-window bug.** epochs-astroport's
+   accumulating weekly writes CURRENT-day rows into the prev-epoch file
+   (astroport weekly-avg/2026-epoch-197.csv shows period 2026-08-10 — outside
+   epoch 197's true Aug 3–9 window). Fix to the same
+   fetch-prev-epoch-dated-dailies pattern the SS fold uses; audit existing
+   astroport weekly files' period columns for the same +1/window taint while
+   in there.
 2. **Dex reader-repoint bundle** (site): tla-stats.html CONFIG
    astroportEpochBaseUrl (~L2636) + sourceUrlFallbackFn ×2 (~L2788, ~L8031) +
    direct fetches (~L3596) → tla-core/main/dex-data/astroport/epochs;
