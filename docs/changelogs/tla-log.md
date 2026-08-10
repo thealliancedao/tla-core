@@ -2,6 +2,30 @@
 
 ---
 
+## Rev T3.4 — 2026-08-10 — DEX reader repoint to org trees (strip step 2)
+
+Data-layer only (CONFIG + fetch URL surface; rendering untouched). All four
+dex bases now read tla-core: astroportEpochBaseUrl → dex-data/astroport/
+epochs; ssWeeklyAvgBaseUrl → dex-data/skeletonswap/weekly-avg (CANONICAL
+labels — the legacy +1 mislabel meant this page was silently showing
+week-stale SS epoch averages; the 2026-08-10 relabel + this repoint fix the
+display with zero selection-logic changes, since lastCompleteEpoch was
+already canonical); astroportDailyBaseUrl → astroport/daily-csv;
+ssDailyBaseUrl → skeletonswap/daily-csv (flat dated files —
+ssMonthBackupFolder helper removed with its builder line). Health sourceUrls
++ astro fallbackFn → org heartbeats/epochs. Stale May-2026 comments updated
+(coverage caveats; SS-frozen note — the freeze is FIXED, SS re-enable in the
+bucket chart queued as a separate rendering decision). Gate: zero
+legacy-dex-repo refs site-wide; every constructed URL fetched 200 live
+(astro dailies pre-08-09 pending the astro-daily-bank one-off).
+tla-stats-legacy.html RETIRED in the same round: zero inbound links
+site-wide (grep-proven), the data-layer transform it existed to reference is
+long-proven — pages-define-need says remnant. Footer-rev note: this page's
+footer AUTO-DERIVES from this log's top `## Rev TX.Y — date` header (static
+span is only the pre-JS default) — entries MUST use that header format or
+the footer silently shows the previous rev (which is how the 08-10 entry
+briefly displayed T3.3).
+
 ## 2026-08-09 — Org cutover: pricing feed + asset self-hosting (data layer only)
 
 Same two migrations as index (see index-log 2026-08-09): 2 pricing URL swaps →
