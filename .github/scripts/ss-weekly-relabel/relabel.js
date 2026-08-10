@@ -183,15 +183,25 @@ let pushFile = async function pushFileImpl(repoPath, content, message) {
 
 let deleteFile = async function deleteFileImpl(repoPath, message) {
   if (DRY_RUN) { console.log(`  [dry-run] would DELETE ${repoPath}`); return true; }
-  const sha = await getSha(repoPath);
-  if (!sha) throw new Error(`delete ${repoPath}: file not found`);
-  const r = await httpRequest(`https://api.github.com/repos/${GITHUB_REPO}/contents/${repoPath}`, {
-    method: 'DELETE', headers: apiHeaders(),
-    body: JSON.stringify({ message, sha, branch: GITHUB_BRANCH }),
-  });
-  if (r.status !== 200) throw new Error(`delete ${repoPath}: HTTP ${r.status} ${r.body.slice(0, 200)}`);
-  console.log(`  🗑  deleted ${repoPath}`);
-  return true;
+  // Same 409 branch-race retry as pushFile: the live cron fleet commits to
+  // this repo constantly, so main can advance between our sha fetch and the
+  // DELETE. Re-fetch the sha each attempt and back off with jitter.
+  for (let attempt = 1; attempt <= 5; attempt++) {
+    const sha = await getSha(repoPath);
+    if (!sha) throw new Error(`delete ${repoPath}: file not found`);
+    const r = await httpRequest(`https://api.github.com/repos/${GITHUB_REPO}/contents/${repoPath}`, {
+      method: 'DELETE', headers: apiHeaders(),
+      body: JSON.stringify({ message, sha, branch: GITHUB_BRANCH }),
+    });
+    if (r.status === 200) { console.log(`  🗑  deleted ${repoPath}`); return true; }
+    if (r.status === 409 || r.status === 422 || r.status >= 500 || r.status === 0) {
+      console.log(`  ↻ delete retry ${attempt} (HTTP ${r.status}) ${repoPath}`);
+      await new Promise(res => setTimeout(res, 500 * attempt + Math.floor(Math.random() * 400)));
+      continue;
+    }
+    throw new Error(`delete ${repoPath}: HTTP ${r.status} ${r.body.slice(0, 200)}`);
+  }
+  throw new Error(`delete ${repoPath}: retries exhausted (persistent branch race)`);
 };
 
 // -----------------------------------------------------------------------------
