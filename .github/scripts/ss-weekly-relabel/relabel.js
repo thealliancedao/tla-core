@@ -127,21 +127,28 @@ let fetchRaw = async function fetchRawImpl(repo, repoPath) {
   return r.status === 200 ? r.body : null;
 };
 
-// Post-push verification fetch: a JUST-CREATED file can 404 on the raw CDN for
-// several seconds. Retry with backoff and NEVER coerce not-yet-visible (null)
-// into empty content — the caller must distinguish 'not visible' from
-// 'content mismatch' (silent-coercion doctrine).
-let fetchRawWithRetry = async function fetchRawWithRetryImpl(repo, repoPath, { attempts = 8, delayMs = 4000 } = {}) {
-  for (let i = 1; i <= attempts; i++) {
-    const body = await fetchRaw(repo, repoPath);
-    if (body !== null) return body;
-    if (i < attempts) {
-      console.log(`  … ${repoPath} not visible on raw CDN yet (attempt ${i}/${attempts}) — waiting`);
-      await new Promise(r => setTimeout(r, delayMs));
-    }
+// CONSISTENCY LAW (learned the hard way, dispatches #1 and #3): the raw CDN
+// (raw.githubusercontent) provides NEITHER read-after-write NOR
+// read-after-delete consistency — just-created files 404 and just-deleted
+// files keep serving for several seconds, cache-busters notwithstanding. The
+// chain-move's correctness depends on reading true repo state, so EVERY
+// tla-core read inside the phases goes through the contents API (same backend
+// as the writes/deletes → strongly consistent). The raw CDN remains only for
+// the LEGACY repo and the fold-module source, where staleness is harmless.
+let fetchRepoFile = async function fetchRepoFileImpl(repoPath) {
+  for (let attempt = 1; attempt <= 4; attempt++) {
+    const r = await httpRequest(
+      `https://api.github.com/repos/${GITHUB_REPO}/contents/${encodeURI(repoPath)}?ref=${GITHUB_BRANCH}`,
+      { headers: { ...apiHeaders(), Accept: 'application/vnd.github.raw' } }
+    );
+    if (r.status === 200) return r.body;
+    if (r.status === 404) return null;
+    if (attempt < 4) { console.log(`  ↻ api read retry ${attempt} (HTTP ${r.status}) ${repoPath}`); await new Promise(res => setTimeout(res, 500 * attempt)); continue; }
+    throw new Error(`api read ${repoPath}: HTTP ${r.status} ${r.body.slice(0, 120)}`);
   }
   return null;
 };
+
 
 let listDir = async function listDirImpl(dir) {
   if (dir === WEEKLY_DIR && WEEKLY_LIST_FILE) return fs.readFileSync(WEEKLY_LIST_FILE, 'utf8').trim().split('\n').map(s => path.basename(s.trim()));
@@ -244,7 +251,7 @@ async function classifyWeeklyFiles() {
     const m = name.match(/^(\d{4})-epoch-(\d+)\.csv$/);
     if (!m) { entries.push({ name, class: 'anomaly', why: 'unrecognized filename' }); continue; }
     const nameEpoch = parseInt(m[2], 10);
-    const content = await fetchRaw(GITHUB_REPO, `${WEEKLY_DIR}/${name}`);
+    const content = await fetchRepoFile(`${WEEKLY_DIR}/${name}`);
     if (!content) { entries.push({ name, class: 'anomaly', why: 'unfetchable' }); continue; }
     const { rows } = parseCSV(content);
     const ps = rows[0]?.period_start, pe = rows[0]?.period_end;
@@ -382,8 +389,8 @@ async function phaseApply() {
   for (const e of chain) {
     const target = `${WEEKLY_DIR}/${e.relabelTo}`;
     const sourcePath = `${WEEKLY_DIR}/${e.name}`;
-    const original = await fetchRaw(GITHUB_REPO, sourcePath);
-    const existing = await fetchRaw(GITHUB_REPO, target);
+    const original = await fetchRepoFile(sourcePath);
+    const existing = await fetchRepoFile(target);
 
     if (existing !== null) {
       const { rows } = parseCSV(existing);
@@ -406,8 +413,8 @@ async function phaseApply() {
     const relabeled = relabelCsv(original, e.oldLabel, e.newLabel);
     await pushFile(target, relabeled, `🏷 relabel ${e.name} → ${e.relabelTo} (canonical; window ${e.period_start}..${e.period_end})`);
     if (!DRY_RUN) {
-      const back = await fetchRawWithRetry(GITHUB_REPO, target);
-      if (back === null) throw new Error(`verify failed for ${e.relabelTo}: not visible on raw CDN after retries (push succeeded — re-dispatch apply to resume)`);
+      const back = await fetchRepoFile(target);
+      if (back === null) throw new Error(`verify failed for ${e.relabelTo}: not visible via contents API after push (push succeeded — re-dispatch apply to resume)`);
       const check = rowsMatchModuloLabel(original, back);
       if (!check.ok) throw new Error(`verify failed for ${e.relabelTo}: ${check.why}`);
       console.log(`  ✔ verified ${e.relabelTo} (rows match original modulo label)`);
@@ -418,16 +425,16 @@ async function phaseApply() {
   // (a2) archive unverifiable old-schema files verbatim (never-shrink; the
   // original is deleted only in prune, after this copy is byte-verified again)
   for (const e of weekly.filter(x => x.class === 'unverifiable')) {
-    const original = await fetchRaw(GITHUB_REPO, `${WEEKLY_DIR}/${e.name}`);
+    const original = await fetchRepoFile(`${WEEKLY_DIR}/${e.name}`);
     if (!original) throw new Error(`source vanished: ${e.name}`);
     const target = `${UNVERIFIED_DIR}/${e.name}`;
-    const existing = await fetchRaw(GITHUB_REPO, target);
+    const existing = await fetchRepoFile(target);
     if (existing === original) { console.log(`  ↷ ${e.name} already archived — skip`); continue; }
     if (existing) throw new Error(`collision: ${target} exists with different content — manual review`);
     await pushFile(target, original, `📦 archive unverifiable ${e.name} (old schema, window unknowable) verbatim`);
     if (!DRY_RUN) {
-      const back = await fetchRawWithRetry(GITHUB_REPO, target);
-      if (back === null) throw new Error(`byte-verify failed: ${target} not visible on raw CDN after retries (push succeeded — re-dispatch apply to resume)`);
+      const back = await fetchRepoFile(target);
+      if (back === null) throw new Error(`byte-verify failed: ${target} not visible via contents API after push`);
       if (back !== original) throw new Error(`byte-verify failed: ${target} content differs`);
       console.log(`  ✔ byte-verified archive ${target}`);
     }
@@ -441,8 +448,8 @@ async function phaseApply() {
     const target = `${DAILY_DIR}/${g.date}.csv`;
     await pushFile(target, content, `📥 gap-fill daily ${g.date} from legacy (verbatim)`);
     if (!DRY_RUN) {
-      const back = await fetchRawWithRetry(GITHUB_REPO, target);
-      if (back === null) throw new Error(`byte-verify failed: ${target} not visible on raw CDN after retries (push succeeded — re-dispatch apply to resume)`);
+      const back = await fetchRepoFile(target);
+      if (back === null) throw new Error(`byte-verify failed: ${target} not visible via contents API after push`);
       if (back !== content) throw new Error(`byte-verify failed: ${target} content differs`);
       console.log(`  ✔ byte-verified ${target}`);
     }
@@ -476,9 +483,9 @@ async function phasePrune() {
   if (!archived.length) { console.log('nothing to prune — series already canonical.'); }
   let pruned = 0;
   for (const e of archived) {
-    const original = await fetchRaw(GITHUB_REPO, `${WEEKLY_DIR}/${e.name}`);
+    const original = await fetchRepoFile(`${WEEKLY_DIR}/${e.name}`);
     if (original === null) { console.log(`  ↷ ${e.name} already gone — skip`); continue; }
-    const copy = await fetchRawWithRetry(GITHUB_REPO, `${UNVERIFIED_DIR}/${e.name}`);
+    const copy = await fetchRepoFile(`${UNVERIFIED_DIR}/${e.name}`);
     if (!copy) throw new Error(`refusing to prune ${e.name}: archive copy missing (run apply first)`);
     if (copy !== original) throw new Error(`refusing to prune ${e.name}: archive copy differs from original`);
     await deleteFile(`${WEEKLY_DIR}/${e.name}`, `🗑 prune old-schema ${e.name} (byte-verified in legacy-unverified/)`);
@@ -506,12 +513,12 @@ async function main() {
 module.exports = { main, _test: {
   epochOf, epochLabel, relabelCsv, rowsMatchModuloLabel, parseCSV,
   findRebuildCandidates, classifyWeeklyFiles, findDailyGaps,
-  fetchRawWithRetry: (...a) => fetchRawWithRetry(...a),
+  fetchRepoFile: (...a) => fetchRepoFile(...a),
   phaseApply, phasePrune, phaseReport,
   // Gate-only IO stubbing (in-memory repo simulation).
   __setIO(over) {
     if (over.fetchRaw) fetchRaw = over.fetchRaw;
-    if (over.fetchRawWithRetry) fetchRawWithRetry = over.fetchRawWithRetry;
+    if (over.fetchRepoFile) fetchRepoFile = over.fetchRepoFile;
     if (over.listDir) listDir = over.listDir;
     if (over.pushFile) pushFile = over.pushFile;
     if (over.deleteFile) deleteFile = over.deleteFile;
