@@ -80,8 +80,15 @@ number people will scrutinize verified (gate #0) before it ships.
    dropped (pages-define-need). Parity: weekly BYTE-IDENTICAL to legacy under
    corrected label; monthly numeric-identical + period bounds now populated
    (legacy wrote empty). See cron-dex-data-log 1.5.0.
-   1b. **SS weekly relabel one-off.** ✅ BUILT + GATED 20/20 (2026-08-10) —
-   COMMIT + DISPATCH PENDING. .github/scripts/ss-weekly-relabel/relabel.js +
+   1b. **SS weekly relabel one-off.** ✅✅ EXECUTED + VERIFIED (2026-08-10).
+   weekly-avg/ = canonical 186–197 (windows spot-verified vs registry), 13
+   old-schema files archived verbatim in legacy-unverified/, dailies
+   2026-08-08/09 gap-filled, canonical 196 rebuilt 7/7; 197 self-heals on
+   next fold run. RETIRE: delete .github/workflows/ss-weekly-relabel.yml +
+   .github/scripts/ss-weekly-relabel/ (finished scaffolding). Five
+   dispatch-hardening laws banked in cron-dex-data-log (branch-race retry on
+   DELETE; contents-API-not-CDN for repo state; read-your-own-writes shadow;
+   server blob-sha storage verification; state-invariant gates). .github/scripts/ss-weekly-relabel/relabel.js +
    workflows/ss-weekly-relabel.yml. Three-era ruling (gate-proven on live
    tree): 187–196 verifiable-mislabeled → relabel to 186–195; 168–181
    unverifiable old schema (W-labels inside epoch-named files, frozen
