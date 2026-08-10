@@ -2,6 +2,41 @@
 
 ---
 
+## 2026-08-10 — 1.7.0 — history.js forward emitter: pool-status (strip step 4a)
+
+NEW PERMANENT module (not a fold): lean org-native gauge capture — the ONLY
+thing ported from the 1,744-line legacy tla-snapshot is the 1%-of-bucket
+rule + pool_id resolver, per the queue's scoping. Every run:
+gauge_infos(next) ×4 → per-pool VP/pct/status + deprecated cross-ref from
+the ORG astroport snapshot (tri-state: null when cross-ref absent, never
+guessed). Products: dex-data/pool-status/{current.json, daily/<date>.json,
+heartbeat.json}. Old legacy series DISCARDED by doctrine. Isolated tail of
+org-dex-data after the SS fold; kill-switch HISTORY=0. README placement law
+amended in the same paste (history.js = stated permanent home).
+
+**Gate 12/12 — 100% RULE PARITY on the real gauge state** (67 pools
+reconstructed from the live legacy snapshot via gauge_pool_id): status
+identical on every pool, pct_of_bucket exact to 1e-9, bucket VPs exact.
+Three findings while gating:
+1. **Legacy comment drift:** legacy SOURCE says 'voted_but_inactive'; its
+   PRODUCT emits 'voted_but_below_threshold'. Org emits the product string
+   (readers match on it).
+2. **Legacy silently DROPS a gauge entry:** single-bucket bucket_vp exceeds
+   its published pools by 2,224,744,760,187 raw VP (~2.22M VP human, ~8.3%
+   of the bucket — ACTIVE-sized) — counted in legacy's denominator, absent
+   from its pool list. Org keeps such entries as first-class honest pools
+   (resolver-null name). CHECK the first Render run's current.json to see
+   what this entry actually is.
+3. **Same LP gauged in TWO buckets is real** (two cases, bluechip+single) —
+   any reader keying pools by pool_id alone will collapse them; key by
+   (bucket, pool_id). Noted for the 4b adapter work.
+
+**4b (NOT built, decisions pending — see CHANGES_PENDING):** APR-history
+emitter blocked on (a) alliance reward_weights sourcing (legacy hardcoded
+hand-calibrated explorer values) and (b) the TLA-staked-TVL denominator
+sourcing. Plus the fallback-adapter decomposition for the 8 reader files +
+the tla-snapshot/dao-dashboard kills.
+
 ## 2026-08-10 — astro-daily-bank EXECUTED ✅ — 88/88, series depth restored
 
 All 88 legacy astroport dailies banked (2026-05-12..2026-08-08), every push
