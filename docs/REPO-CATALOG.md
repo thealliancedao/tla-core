@@ -1,17 +1,37 @@
 # REPO-CATALOG — what is where, why, who writes it, who reads it
-Built 2026-08-09 from ACTUAL READS (not memory). Maintenance law: every
-structural change updates this file in the same paste. Claude's visibility is
-FETCH-ONLY — read this + CHANGES_PENDING at session start; list dirs, never
-assume.
+Built 2026-08-09 from ACTUAL READS (not memory); tenant repos reconciled same
+day. Maintenance law: every structural change updates this file in the same
+paste. Claude's visibility is FETCH-ONLY — read this + CHANGES_PENDING at
+session start; list dirs, never assume.
 
-## The five org repos
+## The five org repos (the permanent platform)
 | Repo | Role |
 |---|---|
-| tla-core | ALL data (live+history) + docs + one-off Actions |
-| platform-crons | org Render job code (the only running code, target) |
+| tla-core | ALL shared TLA data (live+history) + docs + one-off Actions |
+| platform-crons | org Render job code (the only running code, target) — tenant-agnostic: a cron takes a tenant ID and writes to that tenant's repo |
 | aDAO-links-site | site: pages, lib/, /assets (self-hosted, migrated 2026-08-09) |
+| nft-collections | per-COLLECTION NFT tenant data (one folder per collection) |
+| dao-originations | per-DAO governance + treasury tenant data (one folder per DAO) |
+
+## Migration-era repos (NOT part of the five — dying/undecided)
+| Repo | Status |
+|---|---|
 | website-adao-core (defipatriot) | chat-bootstrap (PROJECT_KNOWLEDGE) + site-runtime logs — migrate/retire decision pending |
 | cron-scripts (defipatriot) | DYING: legacy fleet; strips empty it → archive |
+| defipatriot data repos | deletion pile per strip combo; see CHANGES_PENDING NEXT ACTIONS |
+
+## Tenant repos — contents AS READ 2026-08-09
+**nft-collections** — layout law (README): `<collection>/{metadata, rarity,
+lore, cron-outputs}`; adding a collection = add a folder, nothing else
+restructures. Current: `adao/metadata/all_nfts_metadata.json` +
+`adao/rarity/{adao-rarity-bbl, adao-rarity-intended}.json` (static reference,
+hand/one-off written — no cron writes here yet). Placeholders named:
+Pixel-Lions, TLA-Locks. NOTE: aDAO NFT CRON outputs still write
+tla-core/nfts/adao (org-nft-inventory/flows) — moving them here is a future
+tenant-split decision, not assumed.
+**dao-originations** — layout law (README): `<dao>/{treasury, positions,
+governance}`. Currently README-only. aDAO = reference tenant; Lion-DAO
+placeholder. No writers yet.
 
 ## ORG RENDER CRON CATALOG (module headers + observed heartbeat cadence)
 | Job (Render) | Purpose (its own header) | Writes (tla-core) | Observed cadence* |
@@ -104,3 +124,5 @@ pending vs done → the spec's own status line + CHANGES_PENDING top.
 why → ecosystem-knowledge + the subject's changelog entry.
 chain queries → docs/queries.md FIRST.
 new dir or doc → check this catalog + docs/README for an existing home first.
+tenant repos → nft-collections + dao-originations own per-tenant data; adding
+a tenant = add a folder per the repo's README layout, nothing else restructures.
