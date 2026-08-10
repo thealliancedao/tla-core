@@ -2,6 +2,49 @@
 
 ---
 
+## 2026-08-10 — ss-weekly-relabel ONE-OFF built (strip #3 prereq 1b) — three-era series ruling
+
+One-off (tla-core .github/scripts/ss-weekly-relabel + workflow, three
+human-gated phases report→apply→prune) to make the SS weekly-avg series
+canonical. Ground-truth rule: each file's own period columns; filenames/labels
+corrected FROM them — safe against the mixed state (org-written canonical
+epoch-197 classifies 'ok', untouched).
+
+**Era census (gate-proven on the live tree, 24 files):**
+- **187–196 (10): VERIFIABLE, mislabeled +1** → relabel to canonical 186–195
+  (label column rewritten, content verbatim, row-verified after push).
+- **168–181 (13): UNVERIFIABLE old schema** — no period bounds, pool_id
+  column, W-format labels INSIDE epoch-named files (renamed at least once
+  already), frozen identical rows in the 177–179 era (warlock-stale). Window
+  unknowable + method-tainted → archived VERBATIM to
+  weekly-avg/legacy-unverified/ (never-shrink), never relabeled, never
+  counted as coverage.
+- **197 (1): canonical** (org fold) — untouched.
+- **182–186 + 170: missing** — the frozen/broken era; no dailies exist either.
+
+**Rebuild policy (trust-gated):** only canonical epochs with window start ≥
+2026-05-18 (the legacy cron's post-warlock architecture fix) rebuild from
+dailies — rebuilding pre-trust epochs would launder warlock-era tainted
+dailies into canonical-looking files. Result: rebuild = exactly canonical 196
+(Jul 27–Aug 2, 7/7 dailies; its data was in legacy-197, overwritten by the
+org fold's canonical 197). Pre-trust epochs stay HONESTLY ABSENT.
+Also in apply: daily gap-fill 2026-08-08/09 verbatim from the legacy repo
+(byte-verified), after which the fold self-heals epoch-197 to 7/7.
+Rebuild uses the LIVE fold module's own buildWeekly fetched from
+platform-crons at runtime (no-third-copy).
+
+**Post-prune expected tree:** weekly-avg/ = canonical 2026-epoch-186..197 (12
+trusted files) + legacy-unverified/ (13 archived) + relabel-report.json.
+Site note for the reader-repoint pass: SS weekly history now starts at
+canonical 186 (mid-May 2026); earlier epochs are honestly absent.
+
+**Gate: 20/20 on the LIVE tree** (canonical math vs epoch registry; era
+classification of all 24 real files; relabel transform on real epoch-196
+content row-verified + tamper-detected + anchor-throw; rebuild set exactly
+[196]; legacy gap-fill sources confirmed reachable). Run order: dispatch
+report → review relabel-report.json → apply → verify → prune → disable+delete
+the workflow (finished scaffolding).
+
 ## 2026-08-10 — 1.5.0 — epochs-skeletonswap FOLD (strip #3): legacy SS producer ported whole
 
 Legacy cron-scripts/skeletonswap-lp_data (1,207 lines) ported into
