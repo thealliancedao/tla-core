@@ -2,6 +2,30 @@
 
 ---
 
+## 2026-08-11 — 3.0.1 — shared capture-engine repointed (P1 first-run fix)
+
+First org run of the P1 folds failed identically in both modules:
+`network-and-prices.json required — aborting`. Cause: the SHARED
+`lib/capture-engine.js` in platform-crons still pointed at
+`defipatriot/network-and-prices-data_2026` — a repo that is now **deleted
+(404)** — and at the frozen legacy `tla-snapshot-data_2026`. The folds
+themselves were fine: the run showed org catalog roster 155 aDAO members,
+DAO DAO indexer 155, PFPK 44 names, 442 locks → 203 unique holders, all
+before the shared loader aborted.
+
+Fix (org repo, no dying-repo edits): both constants → org products —
+`network-and-prices/current.json` (verified: carries `token_prices` 27 +
+`lst_ratios`, the only two fields the engine reads) and
+`member-data/tla-snapshot/current.json` (the fold's own output; the legacy
+copy is frozen and its repo is slated for deletion).
+
+Gate 4/4: zero defipatriot URLs remain in the engine; both org products live
+and carrying the exact consumed fields.
+
+LESSON: a shared lib in the ORG repo can still carry legacy URLs. When a
+legacy data repo is deleted, grep `platform-crons/lib/` too — not just the
+cron modules and the site.
+
 ## 2026-08-11 — 3.0.0 — P1: adao-positions + tla-participants FOLDED (frozen-source emergency)
 
 Both legacy jobs were FAILING and their products FROZEN since 2026-08-09 while
