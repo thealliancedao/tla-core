@@ -2,6 +2,37 @@
 
 ---
 
+## Rev 3.76 — 2026-08-11 — full org cutover: NFT/backing/votion/bribes repoint + health registry
+
+Every legacy data reference on this page is now org or a deliberate dead
+fallback. Repointed: NFT inventory (v2/* → `nfts/adao/snapshots/*`), NFT day
+state (per-day files → `state-history/{yyyy}/{mm}.json`, days keyed by date),
+NFT sales (manual `nft-sales-YYYY.json` → chain-backfilled `sales-history` /
+`sales-enriched`, 1,221 sales back to 2023-12), backing (per-day files → the
+merged canonical `backing-history.json`), staking APR, adao props →
+dao-originations, and all five health heartbeats.
+
+**Two structural adapters** (the repoint alone would have silently produced
+empty charts):
+- `backingRowFor(date)` — the retired backing cron wrote one file per day; the
+  org series is ONE file with `rows[]`. Fetch once, index by date. Also fixed
+  `fetchBackingCronHistory` which read `idx.history` (legacy) → now
+  `idx.rows || idx.history`. This is why the backing-per-NFT chart popups and
+  the avg-daily-gain tile were empty.
+- `stateRowFor(date)` — NFT day-state is monthly-keyed org-side; fetch each
+  month once, cache, return the day. Verified live: 120 backing rows,
+  10 state days in 2026/08.
+
+**Health registry corrected for the folds:** +`tla-participants` (new org
+product, all lock holders); `adao-positions` weekly → **hourly** (it now runs
+inside org-member-data — the weekly thresholds would have hidden a day-long
+outage); `bribes-history` daily → hourly and relabelled "Voting & Bribes"
+(org-tla-voting captures ~15min). All 9 sources verified live and fresh.
+
+Known dead fallbacks retained (they fail gracefully and are already guarded):
+`tla-data-epoch-N-end` / `tla-ext-epoch-N-end` walk-backs — dao-dashboard is
+the primary path and the legacy epoch cron stopped at 185.
+
 ## 2026-08-09 — Org cutover: pricing feed + asset self-hosting (grand repoint v1)
 
 Two source migrations, no visual changes intended. (1) Pricing: all 5 legacy

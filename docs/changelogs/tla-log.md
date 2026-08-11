@@ -2,6 +2,34 @@
 
 ---
 
+## Rev T3.9 — 2026-08-11 — every legacy source repointed to org (15 refs → 0)
+
+CONFIG + health tiles fully org. Drop-in swaps: docs, known-tokens base,
+NFT/marketplace heartbeats. **Four shape adapters** where org differs (a blind
+repoint would have fed the page unparseable data):
+- bribes: month file is a LIST of harvests → take the latest, expose
+  `.active_bribes` (its buckets are byte-identical to the legacy entries)
+- pd-bribes: chain placements → the legacy epoch-window shape
+  `buildBribesIndex()` consumes; only real fields mapped, nothing invented
+- known tokens: org token-catalog keys BY ADDRESS → flattened to the
+  `{cw20:addr → NAME}` map the page expects
+- allies: retired cron → participants `.members` exposed as `.allies`
+- votion: one canonical `snapshots/current.json` replaces the per-epoch files
+  and their epoch-boundary 404 fallback dance
+
+**Two sources RETIRED rather than migrated** (per the trust rule): the FUEL
+index (no org series — FUEL falls back to the pool-derived price in
+network-and-prices) and `tla_ext_historical_*` (hand-corrected
+`staging_4day_corrected` with missing=zero volume). Both are `null` with
+guarded fetches.
+
+⚠ **Known empty sections until 23:xx UTC daily:** "Is TLA Liquidity Growing?"
+and "Pool Health & Exit Risk" both need `pool-status-history.json`, and the
+APR views need `apr-history.json`. Those rollups were folded into
+org-member-data and only run after the daily archive is written — the panels
+say so honestly rather than rendering fake trends. They populate on the first
+23:xx run and need two epochs of history for trends.
+
 ## Rev T3.4 — 2026-08-10 — DEX reader repoint to org trees (strip step 2)
 
 Data-layer only (CONFIG + fetch URL surface; rendering untouched). All four
