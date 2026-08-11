@@ -158,22 +158,60 @@ number people will scrutinize verified (gate #0) before it ships.
    single-bucket gauge entry (org surfaces it — inspect first run's
    current.json to identify it); two LPs are gauged in TWO buckets — 4b
    adapters must key (bucket, pool_id).
-   4b. **APR emitter + reader decomposition + kills — DECISIONS FIRST:**
-   (a) alliance reward_weights source — pick one: [1] hand-calibrated
-   registry file (legacy method, + drift canary vs annual rewards sanity),
-   [2] live /terra/alliances probe on BOTH public LCDs (legacy claims
-   firewalled at its provider — probe before committing), [3] archive-
-   endpoint capture into a registry (during-archive-access queue synergy).
-   (b) TLA-staked TVL denominator — [1] gauge total_staked_balances ×4 +
-   org pricing (lean), [2] port legacy staked machinery (heavy, avoid).
-   Then: apr-history emitter (formula: displayed = aprToApy(incentiveApr ×
-   0.92) + tradingApr − take; incentive compounded, others linear; gate =
-   cross-validate computed displayed APR vs the live legacy snapshot's
-   captured per-pool values, which were Eris-UI-reconciled). Then 8 reader
-   files: live tier untouched, fallback URLs → atomic org products via
-   lib/adao-live-data.js adapters (NOT per-page; key pools by
-   bucket+pool_id). Then suspend tla-snapshot + dao-dashboard Render jobs,
-   archive tla-snapshot-data_2026.
+   4a. ⚠ SUPERSEDED BY 4b (2026-08-10 audit) — history.js emits a strict
+   SUBSET of the fold's snapshot (same gauge queries/rule/resolver) and no
+   page reads pool-status/*. DELETE dex-data/history.js + index.js hook (in
+   the 4b paste); delete tla-core dex-data/pool-status/ tree at step 7.
+   Lesson: before building any new capture, diff its output fields against
+   existing org products AND against anything queued to be folded.
+   4b. ✅ BUILT + GATED 22/22 (2026-08-10) — COMMIT + DEPLOY PENDING. See
+   cron-member-data-log 2.0.0 (new log). Deliverables: platform-crons
+   member-data/{tla-snapshot.js,index.js} + tla-stats Rev T3.5 (2 URLs).
+   RENDER (Camron): org-member-data schedule → HOURLY + env
+   MEMBER_CENSUS_HOUR=<old schedule's UTC hour> → deploy latest → trigger →
+   verify member-data/tla-snapshot/current.json has RESOLVED NAMES → commit
+   site → tiles heal. POST-DEPLOY PARITY (parallel-run): diff live org vs
+   live legacy snapshot on staked_in_tla_usd/lp_health/rewards (stub gaps) →
+   then suspend legacy tla-snapshot job → archive repo after quiet period.
+   (ORIGINAL 4b plan follows for reference:)
+   4b-ORIG. **tla-snapshot FOLD (org-pure — REPLACES the bridge + decomposition
+   plan, per Camron 2026-08-10: no fixes land in dying repos, ever).** Port
+   the legacy tla-snapshot cron (1,744 lines) into platform-crons/member-data
+   as a fold tail (member-data = the catalog's VP-layer FOLD ABSORBER),
+   writing tla-core member-data/tla-snapshot/{current.json, heartbeat.json}
+   with the SAME output contract (page keeps its parsing; one URL repoint).
+   INPUT SWAP TABLE (every source → org, each with a shape gate like the
+   astro bridge gate):
+     chain gauges/staked/distributions → unchanged (LCD direct)
+     prices                            → network-and-prices/current.json (org)
+     astroport cross-ref               → dex-data/astroport/epochs (org fold;
+                                         gate-proven shape-compatible 4/4)
+     skeletonswap day-N                → dex-data/skeletonswap/rolling (org)
+     bribes current/history            → tla-voting/pd-bribes/current.json +
+                                         bribe-state (org) — shape-gate
+     votion                            → votion/ org products — shape-gate
+   Rewards-model constants (hand-calibrated alliance weights) port AS-IS with
+   their calibration note — the correct-formula APR emitter remains a
+   SEPARATE later item (decisions (a)/(b) below unchanged, now non-blocking).
+   Gate: mock on real fixtures + PARITY of the org snapshot vs the live
+   legacy snapshot (names resolved, statuses, VP, buckets; known-divergences
+   documented like the SS/astro folds). Then: repoint the 8 reader files'
+   tla-snapshot/dao-dashboard URLs → org product; suspend tla-snapshot +
+   dao-dashboard Render jobs; archive tla-snapshot-data_2026 (kill
+   precondition: org fold verified on Render + page green).
+   ⚠ INTERIM STATE: tla-stats leaderboard tiles are DEGRADED (raw-id names,
+   empty vol/liq boards) until this fold deploys — root cause: step-3 kills
+   froze the legacy cron's name source (cron→cron dependency invisible to
+   the site reader map — LESSON: before suspending any legacy job, grep the
+   other legacy crons' configs for its repo). The one-line legacy bridge
+   built 2026-08-10 was REJECTED on principle (fix in a dying repo) and is
+   NOT committed.
+   4b-APR (unchanged, decisions first, non-blocking):
+   (a) alliance reward_weights source — [1] hand-calibrated registry +
+   drift canary, [2] live /terra/alliances probe on both public LCDs,
+   [3] archive-endpoint capture.
+   (b) TLA-staked TVL denominator — [1] gauge total_staked_balances + org
+   pricing (lean), [2] port legacy staked machinery (avoid).
 5. **json_storage replacements:** tla_pd_bribes.json →
    tla-voting/pd-bribes/current.json (adapter); tla_known_tokens.json →
    token-catalog; members/registry CSVs → DAODAO live + member-data (incl.
