@@ -2,6 +2,37 @@
 
 ---
 
+## 2026-08-10 — 2.1.0 — rollups folded + daily archive bank (repo-DELETION prereqs)
+
+Killing the legacy job needs everything it PRODUCES to exist in org, not just
+the snapshot. Audit of tla-snapshot-data_2026 found the two rollups are NOT
+frozen (regenerating hourly) and the daily archive feeds both them and the
+page's epoch-boundary baseline. Folded in the same paste:
+- apr-history-rollup.js + pool-status-history-rollup.js — verbatim; only
+  repo→tla-core, daily dir→member-data/tla-snapshot/daily, OUT_PATH→
+  member-data/tla-snapshot/{apr-history,pool-status-history}.json, exports.
+  Orchestrator runs them AFTER the snapshot fold and only when the daily
+  archive was written (23:xx UTC) or FORCE_ROLLUPS=1 — their input only
+  changes once a day. Kill-switch ROLLUPS=0; skipped if the snapshot failed.
+- tla-snapshot-daily-bank one-off (.github/scripts + workflow): banks the 90
+  dated daily archives (2026-05-13..08-10) into member-data/tla-snapshot/
+  daily/ so the 15-epoch rollup history carries over unbroken. Filter proven
+  on the real listing: 90 dated kept, all 60 dao-dashboard-*.json dropped.
+  Additive-only, org-wins, blob-sha verified. Gate 5/5.
+
+Site: ALL tla-snapshot-family readers repointed — tla-stats (Rev T3.6, 5
+URLs), index (Rev 3.72, heartbeat ×2 + dated-daily base), test.html,
+member-portfolio.html, lib/adao-live-data.js.
+
+⚠ **REPO DELETION IS BLOCKED BY dao-dashboard, NOT by tla-snapshot.** The
+same legacy repo hosts a SECOND producer (dao-dashboard.json + daily/
+dao-dashboard-*.json) written by the separate dao-dashboard Render job, read
+by index.html ×2, dao_treasury.html ×2, dao_tla_deposits.html ×2. After this
+paste the tla-snapshot job + its Render job can be suspended and its products
+are fully org-side, but the REPO must stay until dao-dashboard is folded too
+(next item). Suspending tla-snapshot alone is safe — dao-dashboard writes its
+own files and doesn't read tla-snapshot's.
+
 ## 2026-08-10 — 2.0.0 — HOURLY orchestrator + tla-snapshot FOLD (strip 4b, org-pure)
 
 org-member-data becomes the VP layer's fold absorber in practice: the Render
