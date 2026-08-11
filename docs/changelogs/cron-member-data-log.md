@@ -2,6 +2,36 @@
 
 ---
 
+## 2026-08-11 — 3.0.2 — P1 folds LIVE; stray participants daily path fixed
+
+First successful org run (19:39–19:40 UTC): tla-participants captured
+**203/203 portfolios, 0 per-member errors**; adao-positions captured
+**155/155 members + treasury + council**, published weekly/epoch-198 and the
+daily archive. Verified in the tree: positions {current, members, heartbeat,
+weekly/epoch-198, daily/2026-08-11} and participants {current, participants,
+heartbeat} all 200.
+
+Two path defects found by auditing the run log against the tree (the log is
+not the truth — the tree is):
+1. **tla-participants daily archive wrote to a ROOT `data/daily/<date>.json`**
+   in tla-core (one publish line was missed in the fold). Now
+   `member-data/participants/daily/<date>.json`. **Delete the stray
+   `data/daily/2026-08-11.json` and the empty `data/` folder from tla-core.**
+2. Three console lines printed `data/…` while publishing to the correct org
+   paths — cosmetic but misleading during exactly this kind of audit. Fixed.
+
+Gate 4/4: zero publishes to root `data/`, all participant publishes under
+member-data/participants, positions under member-data/positions, log strings
+match real paths.
+
+Data notes from the run (not defects): 442 locks → 203 unique holders; PFPK
+55/44 names resolved; zluna→LUNA 1.476946; 6 at-risk LP positions across 17
+members; `bribes-history: 0 bribe providers from 0 records` — the org
+pd-bribes derive returns placements, and participants' provider discovery
+expects a different shape; participant set is unaffected (lock holders ∪
+providers = 203 either way) but the provider leg is currently a no-op —
+queued for the pd-bribes adapter pass.
+
 ## 2026-08-11 — 3.0.1 — shared capture-engine repointed (P1 first-run fix)
 
 First org run of the P1 folds failed identically in both modules:
