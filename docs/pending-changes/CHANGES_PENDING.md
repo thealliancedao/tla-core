@@ -164,6 +164,20 @@ number people will scrutinize verified (gate #0) before it ships.
    the 4b paste); delete tla-core dex-data/pool-status/ tree at step 7.
    Lesson: before building any new capture, diff its output fields against
    existing org products AND against anything queued to be folded.
+   4b+. **Rollups + archive bank + full reader repoint** ✅ BUILT + GATED
+   (2026-08-10, cron-member-data-log 2.1.0): both rollups folded (archive-hour
+   gated, ROLLUPS=0), tla-snapshot-daily-bank one-off (90 files, gate 5/5),
+   5 site files repointed (tla-stats T3.6, index 3.72, test, member-portfolio,
+   adao-live-data). RUN: commit → bank report→apply → commit site → suspend
+   legacy tla-snapshot Render job. ⚠ DO NOT DELETE THE REPO YET.
+   4c. **dao-dashboard fold — THE LAST BLOCKER on deleting
+   tla-snapshot-data_2026.** Same repo hosts dao-dashboard.json +
+   daily/dao-dashboard-*.json (60 files) from the separate dao-dashboard
+   Render job; readers: index.html ×2, dao_treasury.html ×2,
+   dao_tla_deposits.html ×2. Fold it into org (likely member-data or a
+   dao-originations tenant home — decide from what it captures), bank its 60
+   dailies, repoint those 6 readers, suspend its job, THEN delete the repo +
+   both jobs.
    4b. ✅ BUILT + GATED 22/22 (2026-08-10) — COMMIT + DEPLOY PENDING. See
    cron-member-data-log 2.0.0 (new log). Deliverables: platform-crons
    member-data/{tla-snapshot.js,index.js} + tla-stats Rev T3.5 (2 URLs).
