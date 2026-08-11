@@ -29,6 +29,19 @@ inside org-member-data — the weekly thresholds would have hidden a day-long
 outage); `bribes-history` daily → hourly and relabelled "Voting & Bribes"
 (org-tla-voting captures ~15min). All 9 sources verified live and fresh.
 
+**NFT Marketplace tiles fixed (same paste):** the v2 pipeline fetched
+`listing-history.json` and `broken-at.json` UNGUARDED — both 404'd org-side,
+the throw killed the whole pipeline, and Atrium sat on "Loading pipeline
+data..." with every marketplace total blank. Two fixes: each optional input
+now fails to null independently, and six genuinely-missing files were migrated
+into the org tree rather than left behind in a dying repo — `listing-history`
+(3,291 listing lifecycles back to 2023), `broken-at` (1,093 break events with
+tx hashes), `atrium-sales`, `boost-sales`, `luna-usd-daily` (1,473 points),
+`bluna-usd-daily` (281). The first two are FROZEN one-time chain backfills
+(built 2026-08-04 / 2026-06-11), not live series — exactly the merge-don't-
+abandon case. The org NFT cron keeps writing the live half
+(listing-first-seen, sales-enriched, nfts, summary).
+
 Known dead fallbacks retained (they fail gracefully and are already guarded):
 `tla-data-epoch-N-end` / `tla-ext-epoch-N-end` walk-backs — dao-dashboard is
 the primary path and the legacy epoch cron stopped at 185.
