@@ -2,6 +2,41 @@
 
 ---
 
+## 2026-08-11 — 3.0.0 — P1: adao-positions + tla-participants FOLDED (frozen-source emergency)
+
+Both legacy jobs were FAILING and their products FROZEN since 2026-08-09 while
+six live site files still read them — including `lib/adao-live-data.js`, which
+every page loads. The site was presenting 2-day-old portfolio data as current.
+
+Folded verbatim into member-data (the VP/member absorber), running hourly in
+the same orchestrator, participants BEFORE positions (positions consumes the
+participant discovery), each isolated with kill-switches ADAO_POSITIONS=0 /
+TLA_PARTICIPANTS=0.
+
+Input swaps (the only non-verbatim edits):
+- member roster: `adao_json_storage/members.csv` → **org address-catalog**
+  (slug adao). The catalog already held 155/157 of them — the CSV was a
+  duplicate identity layer. Output shape kept identical so downstream is
+  untouched. (2 catalog-missing addresses queued for the curated input.)
+- pd-bribes history: `bribes-data_2026` → `tla-voting/pd-bribes/current.json`
+- self-reads (cached members, last-good current, heartbeat) → org paths
+
+Products: `member-data/positions/{current,members,heartbeat}.json` +
+`weekly/epoch-{n}.json` + `daily/{date}.json`;
+`member-data/participants/{current,participants,heartbeat}.json`.
+
+Site: 21 reader lines repointed across index (3.74), tla-stats (T3.8),
+test.html, slippage.html, member-portfolio.html, lib/adao-live-data.js —
+**zero frozen-source references remain site-wide**.
+
+Gate 11/11: both modules load in the real repo layout (capture-engine +
+config resolve from member-data/); publish paths org-only; self-reads org;
+roster from catalog with no members.csv fetch; zero live legacy URLs;
+orchestrator ordering + isolation.
+
+KILL after first successful org run + page check: suspend Render
+`adao-positions` and `tla-participants`; archive both data repos.
+
 ## 2026-08-10 — 2.1.0 — rollups folded + daily archive bank (repo-DELETION prereqs)
 
 Killing the legacy job needs everything it PRODUCES to exist in org, not just
