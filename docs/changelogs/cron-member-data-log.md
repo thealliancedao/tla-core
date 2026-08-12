@@ -2,6 +2,33 @@
 
 ---
 
+## 2026-08-11 — 4.0.0 — dao-dashboard FOLDED: the last legacy producer is dead
+
+The final cron writing to `defipatriot/tla-snapshot-data_2026` is now org-side.
+Verbatim logic (706 lines); only edits: inputs swapped to org products
+(legacy tla-snapshot.json -> the org fold's own `member-data/tla-snapshot/
+current.json`; Staking APR csv -> `docs/staking-apr.csv`, byte-identical),
+publish -> `member-data/dao-dashboard/{current.json, daily/<date>.json}`,
+branch-race retry added to its single-shot publisher, and `module.exports
+{main}` so it runs inside org-member-data hourly (after tla-snapshot, which
+it consumes; isolated, `DAO_DASHBOARD=0` disables).
+
+Output contract UNCHANGED (`{meta, dashboard, token_prices}` with treasury,
+tla_deposits, unclaimed_rewards, vote_rewards, rebase, alliances) — the three
+consumer pages each moved one URL, no parsing changes.
+
+Site: index (Rev 3.77), dao_treasury, dao_tla_deposits repointed. The daily
+archive path changed shape too — legacy wrote `data/daily/dao-dashboard-
+DATE.json` (prefixed, shared folder); org writes `daily/DATE.json` in its own
+tree, so index gained a `DD_DAILY_BASE` constant rather than reusing the
+tla-snapshot daily base.
+
+**With this, `tla-snapshot-data_2026` has no remaining producers or readers.**
+After one verified org run + a page check, suspend the legacy dao-dashboard
+Render job (if any survives) and DELETE the repo. Remaining site references to
+legacy repos are dead epoch-end fallbacks (`tla-data-epoch-N-end`,
+`tla-ext-epoch-N-end`) that already fail gracefully, plus one image link.
+
 ## 2026-08-11 — 3.0.2 — P1 folds LIVE; stray participants daily path fixed
 
 First successful org run (19:39–19:40 UTC): tla-participants captured
