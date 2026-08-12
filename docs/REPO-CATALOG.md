@@ -117,6 +117,18 @@ series → satisfied by the dex-extension plan) · SPEC-grading-and-dex-data
 (OLD grading system, Camron-flagged remnant — retire after confirming no live
 citation) · CHANGES_PENDING (the queue).
 
+## SITE SHARED LIBS (added 2026-08-12 — read before touching any page)
+| File | Role |
+|---|---|
+| `lib/cron-registry.js` | **Single source of truth for platform health.** All 17 org products: schedule, heartbeat path, owning Render job, what it powers. index, tla-stats and transparency-hub ALL derive from it. Adding a cron = one entry here. |
+| `lib/site-footer.js` | One footer for every page (socials, links, rev + changelog, live health dot linking to the transparency hub). |
+| `lib/adao-live-data.js` | Live chain reads shared across pages (`window.aDAOLive`). |
+
+**Law:** never hardcode a cron list in a page again. Both duplicate registries
+(index + tla-stats) drifted until healthy jobs rendered red; they are now
+derived. Freshness and FINDINGS are separate — a product reporting
+`status:"violation"` is that job working, and must not turn a dot red.
+
 ## Search guidance
 who writes → grep platform-crons for the path; heartbeat runIds name writers.
 who reads → grep aDAO-links-site + cron-scripts (reader map = migration list).
