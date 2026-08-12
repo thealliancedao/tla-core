@@ -17,7 +17,7 @@ builtAt). Value curve absent by design until the archive state sampler
 already commits all of `tla-flows/pnl/`.
 Home: `tla-core/docs/pending-changes/`
 
-## 1. Goal (in Camron's words)
+## 1. Goal (in the owner's words)
 
 "Build profiles for each member we track, go back to the first epoch in TLA;
 at the start of every epoch take all the inflows and outflows to figure out

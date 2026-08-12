@@ -1,6 +1,6 @@
 # SPEC — PD Directive Watch (pd-bribes product + accountability page)
 
-Status: DRAFT (Camron 2026-08-02) · Owner: capture derive in `platform-crons/tla-flows`
+Status: DRAFT (DeFi_Patriot 2026-08-02) · Owner: capture derive in `platform-crons/tla-flows`
 (or rider on tla-voting rollups), page in `aDAO-links-site` · Spec-first per doctrine —
 no code before this is committed and the plan is approved.
 

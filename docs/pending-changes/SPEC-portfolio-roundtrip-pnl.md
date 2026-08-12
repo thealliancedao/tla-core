@@ -3,7 +3,7 @@
 Status: **SPEC 2026-08-03 — blocked on classifier v4 re-walk (ARCHIVE-WINDOW
 DEPENDENT, see §5)** · Owner: capture layer first, then derive, then site
 
-## 1. What Camron asked for (the contract)
+## 1. What DeFi_Patriot asked for (the contract)
 
 Per LP, per round trip: what went in and its value THAT day; what came out
 and its value THAT day; the delta. Sum the trips per pool; sum the pools.
@@ -20,7 +20,7 @@ sides) or a withdraw's refund assets. Those amounts exist in the chain tx
 logs (`provide_liquidity` emits the provided assets; `withdraw_liquidity`
 emits `refund_assets`; zap-out emits the exit swap legs) — the classifier
 simply doesn't capture them. Without them, entries beyond zaps and ALL
-exits are unvalued, which is exactly the hole Camron is pointing at
+exits are unvalued, which is exactly the hole DeFi_Patriot is pointing at
 ($3,358 "measured in" vs a reality far larger).
 
 ## 3. Classifier v4 — fields to add (then re-walk)
@@ -42,7 +42,7 @@ existing events gain fields, never lose them. Two-run byte-identity gate +
 per-event leg spot-checks against chainscope pastes (one FCD-era, one
 hole-era, one walker-era tx).
 
-## 3b. Path matrix + lot semantics (Camron 2026-08-03 — "cover as much as possible")
+## 3b. Path matrix + lot semantics (DeFi_Patriot 2026-08-03 — "cover as much as possible")
 
 - **Partial exits**: FIFO lots consume PROPORTIONALLY — pulling 25% three
   months in closes 25% of the oldest lot(s) at that day's exit value; the

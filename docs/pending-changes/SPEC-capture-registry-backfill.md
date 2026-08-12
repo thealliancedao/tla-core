@@ -58,7 +58,7 @@ ONE archive pass that recovers every stream at once — walk-once doctrine:
    `<<FLOWS CLASSIFIER v2>>`) so the hole is filled at v2 quality and never
    re-walked.
 5. **Named-wallet verification**: PD's two known txs; Solid `…s0yhw0`'s June
-   CAPA placements; DeFi_Patriot's wBTC/ATOM-pool bribes (dates from Camron —
+   CAPA placements; DeFi_Patriot's wBTC/ATOM-pool bribes (dates from DeFi_Patriot —
    if they predate 2025-01-07 they're an FCD-era classifier miss instead and
    get chased by txhash in E0).
 
@@ -88,7 +88,7 @@ Adding a contract later = append + run the same job; the registry IS the
 per registry contract across the hole. Orders of magnitude cheaper: total tx
 count across these contracts for 17 months is thousands, not millions.
 
-- **Access (decision item E1, Camron):** requires an archive node with tx
+- **Access (decision item E1, DeFi_Patriot):** requires an archive node with tx
   index over heights 13.74M–21.48M. publicnode prunes; the frozen FCD ends at
   the hole's left edge. Options: rented archive RPC (days, cheapest), a
   synced-from-snapshot self-run archive, or a data-lake provider. The job is
@@ -132,7 +132,7 @@ placement event within the pot's epoch span in the stream; violations surface
 in `system-health` as `POT_WITHOUT_PLACEMENT`. Expected initially: the known
 hole-era pots (annotated as such via a hole-span allowlist). Then: silence =
 capture verified; a new alert = walker bug caught by the system instead of by
-a user's memory. This converts today's "Camron notices missing bribes" into a
+a user's memory. This converts today's "DeFi_Patriot notices missing bribes" into a
 monitored invariant.
 
 ## 7. Acceptance gates (before the backfill is called done)
@@ -157,7 +157,7 @@ monitored invariant.
   2026-07-22** (reconcile.js patched; POT_WITHOUT_PLACEMENT with
   never_captured vs no_current_placement_event classes) · flows classifier
   v2 (forward) · `tla-voting/capture-registry.json` COMMITTED.
-- **E1 (Camron):** pick archive access; drop endpoint in Render env.
+- **E1 (owner):** pick archive access; drop endpoint in Render env.
 - **E2:** registry job runs (Action or Render one-off; long-running →
   resumable either way), cursors advancing per contract.
 - **E3:** merge → mock gate → rollup + P&L rebuilds → §7 gates.

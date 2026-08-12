@@ -15,7 +15,7 @@
 
 
 Status: 2026-08-03 · Access CONFIRMED LIVE · This document is the walk's
-contract: nothing starts until Camron blesses the field list, and nothing
+contract: nothing starts until DeFi_Patriot blesses the field list, and nothing
 re-walks twice for a forgotten field.
 
 ## 0. THE INSURANCE POLICY (headline recommendation)
@@ -37,9 +37,9 @@ only one thing from this plan, it is this.
 | 2 | tla-flows | LP/amp token transfers between wallets invisible | v4 `transfer_in/out` events |
 | 3 | tla-flows | 4,949 claims have user=null | resolve recipient from the coin-transfer leg |
 | 4 | tla-flows | tx GAS never captured — a real user cost | per-event `fee: {amount, denom}` from auth_info |
-| 5 | tla-voting/locks | some legs `args_unknown:true` (amounts missing); NO lock-exit (post-unlock withdraw) events; NO lock-NFT transfer events in the type census | lock classifier v2: full arg decode + exit + transfer_nft legs — locks are capital in/out and tradeable NFTs; both are P&L paths AND the "TLA lock NFTs" ally collection. **CONFIRMED REAL (Camron 2026-08-03): lock NFTs list AND sell on Boost + Atrium ("Liquidity Alliance Lock #N", historical Boost sales on record, Camron personally bought an early low-number lock from another user and helped Atrium test their lock listings) — so the walk captures lock-NFT marketplace SALE + payment legs on both venues, same classifyNftTx v2 machinery as the ADAO collection.** |
+| 5 | tla-voting/locks | some legs `args_unknown:true` (amounts missing); NO lock-exit (post-unlock withdraw) events; NO lock-NFT transfer events in the type census | lock classifier v2: full arg decode + exit + transfer_nft legs — locks are capital in/out and tradeable NFTs; both are P&L paths AND the "TLA lock NFTs" ally collection. **CONFIRMED REAL (DeFi_Patriot 2026-08-03): lock NFTs list AND sell on Boost + Atrium ("Liquidity Alliance Lock #N", historical Boost sales on record, DeFi_Patriot personally bought an early low-number lock from another user and helped Atrium test their lock listings) — so the walk captures lock-NFT marketplace SALE + payment legs on both venues, same classifyNftTx v2 machinery as the ADAO collection.** |
 | 6 | tla-voting | PD's own bribe txs sit in known capture gaps; claim_coverage has a hole | voting-events gap backfill through the hole era, same walk |
-| 7 | nfts | mint/sale PAYMENT legs uncaptured for the walker era | classifyNftTx v2 + ADAO collection re-walk (mint USD cost for every token in circulation — Camron Q1) |
+| 7 | nfts | mint/sale PAYMENT legs uncaptured for the walker era | classifyNftTx v2 + ADAO collection re-walk (mint USD cost for every token in circulation — DeFi_Patriot Q1) |
 | 8 | prices | WHALE/CAPA-era legs unpriced (CoinGecko holes) | state sampler doubles as an implied-price oracle: sampled pool reserves give a stated-method price for ANY pool-listed token at any sampled height |
 
 ## 2. Historical STATE sampler — full scope (one sampler, many consumers)
@@ -54,14 +54,14 @@ confirmed) · gauge staked-in-TLA totals per pool (share histories).
 Probe `state_depth` first; record the sampling manifest (which heights
 answered) as data.
 
-## 3. Optional streams (cheap while walking — Camron may strike)
+## 3. Optional streams (cheap while walking — DeFi_Patriot may strike)
 
 - aDAO treasury operational bank sends (grants/payments) → a treasury-flows
   stream completing the treasury P&L profile beyond DeFi positions.
 - Escrow/rewards distribution legs to NFT stakers (partially captured
   already — verify field completeness, same census method).
 
-## 4. Pixel Lions — DEFERRED from this walk (Camron 2026-08-03)
+## 4. Pixel Lions — DEFERRED from this walk (DeFi_Patriot 2026-08-03)
 
 PL is STRUCK from this walk's scope. It gets its OWN dedicated backfill
 AFTER the main backfills complete, with an independent window that runs
@@ -71,10 +71,10 @@ history is on another chain and is not recoverable by any phoenix walk;
 completeness claims stop at the migration boundary, honestly. Inclusion in
 the platform is the commitment.
 
-## 4b. Lock-exit LIVE EXPERIMENT (Camron, runs in parallel)
+## 4b. Lock-exit LIVE EXPERIMENT (owner: runs in parallel)
 
 Nobody on the team has actually withdrawn a matured lock — the exit
-mechanics are unverified. Camron starts a ~1-week test lock NOW; at
+mechanics are unverified. DeFi_Patriot starts a ~1-week test lock NOW; at
 maturity he withdraws it, and that tx becomes the classifier's lock-exit
 fixture (exact contract, action names, and asset legs from a controlled,
 known-answer transaction). The v4 lock classifier's exit path is written

@@ -1,7 +1,7 @@
 # SPEC — lp-apr (real LP yield on member-portfolio)
 
 Status: **DRAFT — for approval** · Evidence session 2026-07-23
-Problem (Camron's screenshots, verified): the LP card's "APR" is dex-side only
+Problem (the owner's screenshots, verified): the LP card's "APR" is dex-side only
 (LUNA-ASTRO on-chain fee_apr 0.85%; feed shows 5% from a pre-split dex figure)
 while the DOMINANT yield — TLA reward emissions — is absent entirely; single-
 side pools show "—" (no dex APR exists). Eris shows 71.23% base / 100.30%
@@ -66,7 +66,7 @@ breakdown on hover; †-tooltip retired. Org-side derive product only if v1
 proves the model (avoid premature cron work).
 
 
-## 7. APR-convention reconciliation (OPEN — evidence 2026-07-31, Camron's side-by-side)
+## 7. APR-convention reconciliation (OPEN — evidence 2026-07-31, the owner's side-by-side)
 
 Our figure (snapshot `approx_apr_pct`) = annual emissions USD ÷ **TLA-staked $**.
 Eris's display divides by something near **whole-pool depth with a fee

@@ -1,9 +1,9 @@
 # SPEC — Landing Pulse (index.html recent-changes tile + 30-point chart)
 
-Status: DRAFT for approval · Author: Claude + Camron · 2026-08-04
+Status: DRAFT for approval · Author: Claude + DeFi_Patriot · 2026-08-04
 Owner page: `defipatriot/aDAO-links-site/index.html` · Changelog: `docs/changelogs/index-log.md`
 Doctrine anchors: mixed-granularity honesty rule · dashboard tiles = LIVE feeds
-where live exists, cron products for history · rev-footer law (Camron
+where live exists, cron products for history · rev-footer law (DeFi_Patriot
 2026-08-03) applies to index.html from this delivery forward.
 
 ## Purpose
@@ -42,7 +42,7 @@ better than a synthetic daily).
 4. Capture-window jitter is disclosed, not repaired. Known instance:
    `dex-data/astroport/snapshots/daily/2026-08-02.json` was captured 06:01
    UTC (pre-outage run filled the date slot; normal slot ~23:00). DECISION
-   (Camron delegation, 2026-08-04): accepted as-is — real captures beat
+   (DeFi_Patriot delegation, 2026-08-04): accepted as-is — real captures beat
    reconstructed ones; the tile tolerates ±day-fraction jitter and the file
    meta carries `generated_at` for anyone who cares.
 

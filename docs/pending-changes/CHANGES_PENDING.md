@@ -1,6 +1,6 @@
-## 2026-08-09 — 🎯 PRIORITY LOCK (Camron): FULL ORG MIGRATION TO DONE, then announcement
+## 2026-08-09 — 🎯 PRIORITY LOCK (owner): FULL ORG MIGRATION TO DONE, then announcement
 
-**Definition of done (Camron, verbatim intent):** (1) org repos are the ONLY
+**Definition of done (owner, verbatim intent):** (1) org repos are the ONLY
 repos with anything in them; personal repos fully DELETED. (2) changelogs +
 system-health rows point only at real org jobs. (3) old Render jobs DELETED
 (suspend is not done). (4) org repos audited clean — completed specs/one-off
@@ -181,7 +181,7 @@ number people will scrutinize verified (gate #0) before it ships.
    4b. ✅ BUILT + GATED 22/22 (2026-08-10) — COMMIT + DEPLOY PENDING. See
    cron-member-data-log 2.0.0 (new log). Deliverables: platform-crons
    member-data/{tla-snapshot.js,index.js} + tla-stats Rev T3.5 (2 URLs).
-   RENDER (Camron): org-member-data schedule → HOURLY + env
+   RENDER (owner): org-member-data schedule → HOURLY + env
    MEMBER_CENSUS_HOUR=<old schedule's UTC hour> → deploy latest → trigger →
    verify member-data/tla-snapshot/current.json has RESOLVED NAMES → commit
    site → tiles heal. POST-DEPLOY PARITY (parallel-run): diff live org vs
@@ -189,7 +189,7 @@ number people will scrutinize verified (gate #0) before it ships.
    then suspend legacy tla-snapshot job → archive repo after quiet period.
    (ORIGINAL 4b plan follows for reference:)
    4b-ORIG. **tla-snapshot FOLD (org-pure — REPLACES the bridge + decomposition
-   plan, per Camron 2026-08-10: no fixes land in dying repos, ever).** Port
+   plan, per the owner 2026-08-10: no fixes land in dying repos, ever).** Port
    the legacy tla-snapshot cron (1,744 lines) into platform-crons/member-data
    as a fold tail (member-data = the catalog's VP-layer FOLD ABSORBER),
    writing tla-core member-data/tla-snapshot/{current.json, heartbeat.json}
@@ -246,13 +246,13 @@ number people will scrutinize verified (gate #0) before it ships.
    board gates (PD ≥469,175.27 now — fixture note), gate #0 reconciliation
    sweep, byte-verify → **Announcement #2.**
 
-### PENDING-CHANGES SPEC DISPOSITIONS (this session — Camron deletes via UI)
+### PENDING-CHANGES SPEC DISPOSITIONS (this session — DeFi_Patriot deletes via UI)
 COMPLETE — DELETE from pending-changes (work verified done):
 - PLAN-archive-window-walk.md (walk reached final height 21,481,530)
 - SPEC-capture-registry-backfill.md (E2 complete, §10 gate 7/7)
 - BACKFILL-AUDIT.md (superseded by E2 completion + this board)
 REVIEW → LIKELY RETIRE next session (old-mindset candidates, confirm no live dependency first):
-- SPEC-grading-and-dex-data.md (the OLD grading system Camron flagged — dex
+- SPEC-grading-and-dex-data.md (the OLD grading system DeFi_Patriot flagged — dex
   capture now owned by org dex-data + the fold; verify nothing cites it, retire)
 - AUDIT-eris-apr-pricing.md (its finding is now doctrine — correct APR formula
   + apr-history discard; fold the conclusion into ecosystem-knowledge, retire the audit)
@@ -333,7 +333,7 @@ EURE $1.15, direct_match, delta −0.17%. Census of all 27 tokens: EURE was
 the only identity error; 12 direct_match self-verifying, 6 calculated
 immune, WETH/WBNB sibling-verified ≈1.00, STATOM/STLUNA ratios plausible,
 INJ canary-covered hourly. **OSMO ($0.0283) + SWTH ($0.000153) need a
-30-second manual CG eyeball (Camron)** — only two tokens with zero watchers.
+30-second manual CG eyeball (owner)** — only two tokens with zero watchers.
 
 **PENDING (in order):**
 1. **Parallel-run cutover** (network-and-prices): tonight 23:xx run must show
@@ -342,7 +342,7 @@ INJ canary-covered hourly. **OSMO ($0.0283) + SWTH ($0.000153) need a
    drift); then repoint 5 consumers (capture-engine.js ~L59, nfts/adao,
    portfolio-assembler, tla-stats CONFIG.networkPricesUrl, nft-inventory
    URLs), retire legacy Render job, strip the 2 LEGACY_REPO_RAW fallbacks.
-2. **SPEC-landing-pulse** (this delivery, sibling file) — awaiting Camron
+2. **SPEC-landing-pulse** (this delivery, sibling file) — awaiting DeFi_Patriot
    approval, then build index.html tile+chart per spec.
 3. **network-and-prices v3.1** (parked until cutover done): sibling
    consistency checks (WETH≈ETH, WBNB≈BNB, STATOM/ATOM + STLUNA/LUNA ratio
@@ -368,13 +368,13 @@ tla-stats votion-fallback revision. Walk self-chains (~450k/chunk,
 time-budget adaptive, endpoint leak fixed + logs scrubbed).
 
 FOUND VIA HAR/console sweep: astro daily cron down 08-02/03 (Astroport
-outage per Camron, self-heals; the two missed dailies recoverable later
+outage per the owner, self-heals; the two missed dailies recoverable later
 from Astroport charts history — queued gap-fill); votion flip-day 404
 (fixed site-side); "PD Rankings: 0 pools" console line (cosmetic legacy
 section — investigate); July-20 astro epoch fallback confirmed ALREADY
 LIVE (stale pending-item cleared).
 
-ANNOUNCEMENT GATE (Camron): walk completes (~4-5 days) → final
+ANNOUNCEMENT GATE (owner): walk completes (~4-5 days) → final
 tla-flows-pnl fold + FORCE_ROLLUPS re-home of gap-recovered PD txs +
 stale known_gaps closure → QA pass → announce.
 
@@ -422,8 +422,8 @@ wallet-transfers unrecoverable from the contract-scoped corpus.
 
 ## 🚀 2026-08-03 (FINAL) — WALK PLAN LOCKED · commit set minimized · clock starts
 
-Camron blessed the walk. Final scope adjustments: **lock-NFT marketplace
-sales CONFIRMED real** (Boost + Atrium venues, historical sales, Camron's
+DeFi_Patriot blessed the walk. Final scope adjustments: **lock-NFT marketplace
+sales CONFIRMED real** (Boost + Atrium venues, historical sales, the owner's
 own early-number purchase) → in scope with payment legs; **lock-exit live
 experiment** started (1-week test lock → matured-withdraw tx becomes the
 classifier fixture); **Pixel Lions DEFERRED** to its own deeper-window
@@ -454,7 +454,7 @@ the org daily archive (running since 2026-07-16)**.
 
 **Wrong-repo catch (recorded per doctrine).** A votion daily-archive rider
 was first drafted against the retired `defipatriot/cron-scripts`
-votion-positions cron — caught by Camron, discarded. Root cause: the "Votion
+votion-positions cron — caught by DeFi_Patriot, discarded. Root cause: the "Votion
 daily forfeit" urgency came from the stale 2026-07-16 UI-DATA-READINESS G2
 entry plus a 404 on the OLD personal feed's daily path; org-votion has in
 fact been daily-archiving since 2026-07-16. Lesson reinforced: **check the
@@ -473,14 +473,14 @@ personal repos receive nothing new, ever.**
 **Retire candidate:** the personal `votion-positions` cron on Render — the
 portfolio page was its last site consumer; org-votion covers the capture
 (better VP math, hub-rate pricing, daily archive). Retire per parallel-run
-doctrine once Camron confirms no other consumer remains.
+doctrine once DeFi_Patriot confirms no other consumer remains.
 
 **Still reading personal feeds — org successors DON'T exist yet** (kept
 alive per parallel-run doctrine; migrations are their own queued builds):
 participants / adao-positions current + daily (G1 position-layer extension of
 member-data), allies (G8), tla-snapshot (G5 pool-status/apr rollups).
 
-**✅ DONE 2026-08-03: `tla-flows-pnl` rebuild ran (Camron dispatched).**
+**✅ DONE 2026-08-03: `tla-flows-pnl` rebuild ran (DeFi_Patriot dispatched).**
 754 wallets / 116,499 events (was 555 / 36,243); DAO-wide fees $35,898,
 zap inputs $2.23M, claimed yield 15.6M LUNA ≈ $2.45M usd@event. Fixture
 wallet: 320/132/105 events, fees $128.56 (was $36.55), 7,707.7 LUNA
@@ -535,14 +535,14 @@ pending, ampCAPA gov row — if the derived sibling addresses come up empty
 for wallets known to hold ATOM, that's the coin-type-330 derivation caveat:
 use the new "link address" affordance.
 
-**Floor-consumer audit complete (Camron 2026-08-03)** — table in
+**Floor-consumer audit complete (DeFi_Patriot 2026-08-03)** — table in
 index-log. Two further fixes shipped in index.html: the headline Unbroken
 Floor tile (was BBL-only — now the lowest non-broken listing across
 BBL+Boost+Atrium) and the NFT mcap mark (midpoint → conservative min).
 Remaining queued: wire the dormant backing-vs-floor chart floor layer to
 org floor-history; live member-portfolio.html retires on promotion.
 
-**PRE-WALK COMPLETENESS SWEEP DONE (Camron: "make sure we get it all") —
+**PRE-WALK COMPLETENESS SWEEP DONE (owner: "make sure we get it all") —
 master checklist committed as `PLAN-archive-window-walk.md`.** The sweep
 found the events-without-costs disease in FOUR more places (lock legs with
 args_unknown + missing lock exits/transfers; user-null claims; gas never
@@ -553,7 +553,7 @@ access tragedies. Field-completeness census thresholds gate the walk
 itself. Pixel Lions doctrine recorded: phoenix-era scope only (Classic-era
 history is on another chain — stated, not chased).
 
-**✅ ARCHIVE ACCESS CONFIRMED LIVE (Camron 2026-08-03). Build order for
+**✅ ARCHIVE ACCESS CONFIRMED LIVE (DeFi_Patriot 2026-08-03). Build order for
 the access window — in priority, each gated before the next:**
 1. **Classifier v4 + full re-walk** (SPEC-portfolio-roundtrip-pnl §3 —
    token legs on every provide/withdraw/zap-out + LP-transfer events).
@@ -572,14 +572,14 @@ the access window — in priority, each gated before the next:**
    marketplace lists them). Walk them while the archive lives; supporting
    those who support us is the point.
 
-**aDAO treasury profile (Camron Q3): viewable NOW** — the treasury's full
+**aDAO treasury profile (DeFi_Patriot Q3): viewable NOW** — the treasury's full
 position record was already captured (feed: "aDAO Treasury",
 terra1sffd…3m5vzm, ~$13K) but the portfolio page never surfaced it; fixed
 this delivery (merged into the registry + a welcome-screen chip). Note the
 UNMINTED 5,828 sit with the mint wallet, not the treasury — an "unminted
 tier" line for DAO-wallet views is queued alongside the round-trip work.
 
-**(answered) prior decision flag:** The round-trip P&L Camron specced (SPEC-portfolio-roundtrip-pnl,
+**(answered) prior decision flag:** The round-trip P&L DeFi_Patriot specced (SPEC-portfolio-roundtrip-pnl,
 in this ZIP) is blocked on a classifier-v4 re-walk: verified against raw
 events — provides and withdrawals carry NO underlying token amounts today
 (units + action names only), so exits and direct entries are unvaluable
@@ -615,7 +615,7 @@ tokens incl. FUEL + ATOM** (token-catalog effective-first fix's first daily run
 confirmed working) · live test.html = T2.6. **Epoch flipped 196→197 at
 2026-08-03T00:00Z mid-session** — day-1 fallbacks engaged for review.
 
-**test.html Rev T2.6→T3 (cumulative, staged, pending Camron's live review):**
+**test.html Rev T2.6→T3 (cumulative, staged, pending the owner's live review):**
 Pool Health reorg (DEX tags Astro-blue/Skeleton-orange on all rows incl. member
 mode, chip diet → funder tags to hover+drill, sticky column header, bucket
 net-flow figures) · **waterfall shift view** (ghost outline at locked-in size +
@@ -638,7 +638,7 @@ DeFi_Patriot acceptance wallet for member flows). HONESTY: the T2.6 98-suite
 was session-local and lost with that sandbox — suite reconstructed to the same
 surfaces + T3 coverage; extend-never-reset resumes from 99. ampCAPA LCD leg is
 stubbed in-gate (schema-exact per ampcapa-tool queries) — **live verification =
-Camron selects an affected wallet** (current fixture pair shows six wallets with
+DeFi_Patriot selects an affected wallet** (current fixture pair shows six wallets with
 an ampCAPA row and ~zero receipt balance: Rebel_Defi et al.).
 
 ### QUEUED (new this session)
@@ -648,7 +648,7 @@ an ampCAPA row and ~zero receipt balance: Rebel_Defi et al.).
 - [ ] **adao-positions cron rider:** capture each member's ampCAPA gov-module
   receipt balance (list_stakers sweep) so the page's live read gains a cron
   fallback + the archives carry the position.
-- [ ] **Rankings-tab retirement** — Camron's call, not taken unilaterally.
+- [ ] **Rankings-tab retirement** — the owner's call, not taken unilaterally.
 - [ ] Parked ideas (offered, untriaged): VP-composition stacked epoch chart ·
   epoch clock ribbon · Bribe-ROI ($/VP) column on Pool Health · full zap matrix
   on slippage.html.
@@ -732,7 +732,7 @@ file + changelogs + specs.
 fix-or-retire · bribe_ledger >100% cap-and-explain · freeze/retire legacy
 `tla_pd_bribes.json` (unreachable fallback now) · price-history append token
 count verify (next daily) · **NEXT SESSION: tla-stats LOWER HALF build** (then
-test.html→live promotion after Camron's review) · PD Watch page views 1–4
+test.html→live promotion after the owner's review) · PD Watch page views 1–4
 (spec committed, product live, view 4 gated on SS /api/pools).
 
 ## ✅ 2026-08-02 (2) — APR/PRICING REPAIRS DEPLOYED & FORMULA-VALIDATED · R3a QUEUED
@@ -807,7 +807,7 @@ figure RETIRED). Eris APR/pricing audit CLOSED → `AUDIT-eris-apr-pricing.md`
 (arbLUNA 2.2× understatement root-caused: missing LST hub-rate link; Eris
 shows APY not APR). Deep remainder (Jan 2025→Jun 2026) honestly open in the
 registry; Eris archive ask sent (they run their own phoenix node — preflight
-probe of phoenix-lcd/rpc.erisprotocol.com queued for Camron's machine).
+probe of phoenix-lcd/rpc.erisprotocol.com queued for the owner's machine).
 
 **Next-session queue (priority order):** (1) walker WATCH rider — new streams
 are frozen-forward at walk head, free retention window ticking; (2)
@@ -822,7 +822,7 @@ harness); (5) E3: rollups over new data → build-pnl → portfolio card v2
 
 ## 🔧 2026-07-31 (3) — E2 EXTENSIONS: FULL-PICTURE P&L CAPTURE BUILT & GATED 8/8 (SPEC-registry-extensions-pnl v2)
 
-Portfolio audit → approved extensions → live 8-tx test matrix (Camron,
+Portfolio audit → approved extensions → live 8-tx test matrix (owner:
 blocks 22,163,785–896) → built. Batch: **platform-crons** flows v3
 (multi-flow fix + amp rate curve + both-sides liquidity) + aux-classifiers
 (Votion/pairs/NFT + mergeKeyed); **tla-core** registry v2 (54 entries),
@@ -891,7 +891,7 @@ append in docs/changelogs/ at each delivery, not batched at chat end.**
   manager's FUTURE pots (head→+26 until empty) → `tla-voting/bribe-state/runway.json`.
   v1.1 funders overlay: per-pool payer tags from ATTRIBUTED events spanning the
   present — classes dex (4 bucket addrs) / pd / project (registry subtype) /
-  user; `has_unattributed` whenever pots exceed events. Chain-verified: Camron's
+  user; `has_unattributed` whenever pots exceed events. Chain-verified: the owner's
   LUNA-SOLID = [user · thru e200] `has_unattributed:false` (first fully
   accounted pool); a 2nd bribe of his surfaced (52.57 SOLID e194→195).
   Incident: `readBribeEvents` was try-local → hoisted (one failed run, isolated).
@@ -924,7 +924,7 @@ claims-yield line; phase-aware footer. All committed.
 **APR CONVENTION (the recurring fight) — status:** SPEC-lp-apr §7 has the
 evidence table (ours = emissions ÷ TLA-staked; Eris lower, per-depth+fees; no
 held denominator fits all pools — matches CRON-FIXES-BRIEF §2.10's June
-conclusion). Backend endpoint disproven live (5 NestJS 404s pasted by Camron)
+conclusion). Backend endpoint disproven live (5 NestJS 404s pasted by DeFi_Patriot)
 ⇒ client-side computation confirmed. **Fix path (needs no user input): fetch
 liquidity-hub HTML server-side → bundle URL → extract Eris's formula from
 their own JS → implement vs mapped contracts → validate vs BOTH ground-truth
@@ -932,7 +932,7 @@ tables (§2.10 19-pool + §7 4-pool) → publish `eris_apr_pct`.** Interim:
 tooltips state our definition explicitly. Session opener: "eris apr".
 
 **Process:** page gates must assert SPECIFIC values in SPECIFIC cells — a
-generic "some % renders" stayed green through a broken APR; Camron's
+generic "some % renders" stayed green through a broken APR; the owner's
 screenshots were the detector twice. End-of-session commit audit remains
 doctrine (caught the never-committed chips page).
 
@@ -975,7 +975,7 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 
 ## 🔶 2026-07-23 — SPEC-lp-apr (queued, evidence in hand): the LP APR column omits TLA rewards
 
-- **Diagnosis (Camron's screenshots + dex-data verify):** card shows 5% / —
+- **Diagnosis (the owner's screenshots + dex-data verify):** card shows 5% / —
   where Eris shows 71.23% base / 100.30% boosted / 68.40% single. The feed's
   `pool_apr_pct` is DEX-side only (LUNA-ASTRO fee_apr on-chain: 0.85%; the
   TLA reward emissions — the dominant yield — are absent; single-side pools
@@ -1169,7 +1169,7 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 - **`tla-voting/capture-registry.json` COMMITTED** — 9 entries (manager,
   controller, escrow, 4 tribute contracts, PD core, flows-hubs placeholder
   blocked on classifier v2), cursors at hole floor 13,737,811.
-- Still blocking: **E1 archive access (Camron)** + his wBTC/ATOM bribe dates.
+- Still blocking: **E1 archive access (owner)** + his wBTC/ATOM bribe dates.
   Next build: E0c contract-source event enumeration + flows classifier v2,
   then the E2 job itself (transport-agnostic, plug in the endpoint).
 
@@ -1178,7 +1178,7 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
 ## 🔴 2026-07-22 (late) — GAP SURVEY: the hole is the story · SPEC-capture-registry-backfill DRAFTED
 
 - **Full per-token bribe-attribution survey run (committed data):** 12 tokens
-  show the same hole-era gap Camron spotted in CAPA — LUNA 1.0%, CAPA 5.7%
+  show the same hole-era gap DeFi_Patriot spotted in CAPA — LUNA 1.0%, CAPA 5.7%
   (18.8M CAPA ≈ $20K unattributed), ASTRO 20.2%, ROAR 22.4%, ampLUNA/USDC
   ~57%, five ibc tokens at 0%. SOLID/WHALE/ampROAR/MOAR ~100% complete. The
   ledger has been measuring the missing mass all along; boards honestly show
@@ -1201,8 +1201,8 @@ Last cleared: **2026-06-07** (post NFT inventory Rev B deploy). Rev 0.16 catalog
   idempotent merge), recovering bribes+votes+locks+flows(v2) at once,
   walk-once doctrine. E0 items need NO archive: over-attribution netting fix,
   POT_WITHOUT_PLACEMENT watchdog, flows classifier v2 forward. **E1 blocks on
-  Camron: choose archive-node access** (rented archive RPC recommended).
-- Awaiting from Camron: rough dates (or txhashes) of his wBTC/ATOM-pool
+  DeFi_Patriot: choose archive-node access** (rented archive RPC recommended).
+- Awaiting from DeFi_Patriot: rough dates (or txhashes) of his wBTC/ATOM-pool
   bribes — 2025 ⇒ hole (backfill recovers); pre-2025-01-07 ⇒ FCD-era
   classifier miss, chased separately in E0.
 

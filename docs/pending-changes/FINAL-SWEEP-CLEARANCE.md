@@ -39,7 +39,7 @@ don't merge.)
 `terra1k8ug6dkzntcz…` (Phoenix Directive **DAO**) appear in no org config.
 The other five I flagged earlier (Atrium, BBL, Boost, Enterprise staking, aDAO
 treasury contract) **were already in `platform-crons/nfts/adao/index.js`** — I
-had looked in the wrong place. Camron was right.
+had looked in the wrong place. DeFi_Patriot was right.
 
 ## D. DELETE — nothing of value (reversed from the first pass)
 | Repo | Why it dies |
@@ -51,7 +51,7 @@ had looked in the wrong place. Camron was right.
 | `tla-chain-registry` | 5 of 7 curated files identical to org; the other 2, org is a strict superset (24 vs 21, 14 vs 2) with zero legacy-only entries. |
 | `adao-positions-data_2026`, `tla-participants-data_2026` | Folded + verified: 203/203 and 155/155 captured org-side. |
 | `bribes-data_2026` | Org `tla-voting/bribe-state` covers 2026/05–08; pd-bribes derive replaces the hand file. |
-| `votion-data_2026` | Camron: old method was website copy-paste — unverifiable by construction. Org votion is har-file/chain-derived. Delete outright. |
+| `votion-data_2026` | DeFi_Patriot: old method was website copy-paste — unverifiable by construction. Org votion is har-file/chain-derived. Delete outright. |
 | `marketplace-data_2026`, `ampcapa-data_2026`, `fuel-data_2026` | Single-page tools. Decide per page: retire the page or rebuild org-side. No data worth carrying. |
 | `system-health-data_2026` | Org `system-health/current.json` live. |
 | `cron-scripts` | Every surviving module is folded or superseded. READMEs archived under B if wanted. |

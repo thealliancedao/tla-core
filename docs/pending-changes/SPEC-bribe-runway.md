@@ -1,7 +1,7 @@
 # SPEC — bribe-runway (bribe expiry & renewal visibility)
 
 Status: **v1 CAPTURE BUILT & GATED 9/9 2026-07-30 — deploy pending commit;
-UI card next session** · Origin: Camron 2026-07-30 — LPs and voters should
+UI card next session** · Origin: DeFi_Patriot 2026-07-30 — LPs and voters should
 see that a pool's bribes are funded ahead ("safe to add liquidity"), and
 bribers (him, Solid, PD) should see when THEIR bribes run out.
 
@@ -11,7 +11,7 @@ head+CAP (26) until pots go empty ⇒ per-pool, per-token funded runway from
 STATE TRUTH — which INCLUDES unattributed hole-era bribes (Solid's CAPA
 batches, PD), so the feature works fully pre-E2. Payers stay unnamed (events'
 job). Linear bribes taper per period; `per_period` shows the shape, never
-just a cliff date. Proof-by-fixture: Camron's own July LUNA-SOLID bribe
+just a cliff date. Proof-by-fixture: the owner's own July LUNA-SOLID bribe
 (e193→e200 span) reproduces as `last_funded_period: 200, epochs_left: 5`.
 
 ## v1 shipped (platform-crons)
