@@ -99,7 +99,7 @@ state, live-gated (26 xyk pools, hot/exclusion replays).
 
 ## Rev T3.2 — 2026-08-03 — PD split epoch-flip fix (T2.7) + zap-in multiplier mode (T2.7b)
 
-**T2.7b — Zap planner grow-to-N× (Camron's spec):** Zap-in gains a preset
+**T2.7b — Zap planner grow-to-N× (the owner's spec):** Zap-in gains a preset
 row (1.25× · 1.5× · 1.75× · 2× · 3× · 4× · 5×, plus "$" returning to the
 fixed-amount mode). In multiplier mode each HELD pool shows the dollar add
 needed to reach the target multiple ((N−1) × current position, +$ shown per
@@ -108,7 +108,7 @@ selected source asset (LUNA/USDC/SOLID/any listed). Pools the wallet
 doesn't hold are excluded — multiplying an empty position is meaningless.
 Positions under $1 skipped.
 
-**T2.7c — dollar cost on zap-in rows (Camron's spec):** every zap-in and
+**T2.7c — dollar cost on zap-in rows (the owner's spec):** every zap-in and
 multiplier row now shows the estimated dollars lost to price impact at
 that exact size next to the % grade ("~$9.30 lost"), same math as the
 full simulator's lost figure — the % finally answers "is it worth it?"
@@ -147,7 +147,7 @@ T3 build). Gate: the full T3 suite re-run on the edited file + new
 assertions — **104/104**.
 
 - **"TEST T3" staging badge removed** — promotion leftover.
-- **Unlock Runway card** (Camron's exit-pressure request), between the
+- **Unlock Runway card** (the owner's exit-pressure request), between the
   leader boards and the vote waterfall: VP scheduled to unlock over the next
   8 weeks from non-auto-max locks across the tracked electorate. Headline =
   ≤4-epoch VP total + share of tracked VP; 8 week-bucket bars (weeks 1–4
@@ -161,7 +161,7 @@ assertions — **104/104**.
 
 ## Rev T3 (test.html staging) — 2026-08-03
 
-Lower-half rebuild (Camron's six review items, 2026-08-02), staged cumulatively
+Lower-half rebuild (the owner's six review items, 2026-08-02), staged cumulatively
 on `/test.html` on top of T2.6, pending live review + promotion. One file.
 
 - **Pool Health reorganized:** every row now carries a **DEX tag** (Astro blue /

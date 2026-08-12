@@ -3,7 +3,7 @@
 This is the change history for `slippage.html` (the public trade-cost
 simulator + zap planner). Newest revisions on top. Times are UTC.
 
-**Rev-footer law (Camron 2026-08-03):** every revision bumps `REV` /
+**Rev-footer law (DeFi_Patriot 2026-08-03):** every revision bumps `REV` /
 `REV_DATE` at the top of the page script, and the footer renders them via
 `#page-rev` — the live page always tells you which rev it is without
 opening this log. Bump both constants on every change, no matter how

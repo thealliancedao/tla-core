@@ -63,7 +63,7 @@ This file also covers cross-cutting site changes that affect multiple pages — 
 
 ---
 
-## Rev 3.70 — 2026-08-04 — Bribes this epoch row (Camron: "$3 can't be right")
+## Rev 3.70 — 2026-08-04 — Bribes this epoch row (owner: "$3 can't be right")
 
 The $3 was right but answered the wrong question (newly-ADDED bribes in
 48h, dust-bot era). New row answers the intuitive one: **Bribes this
@@ -79,7 +79,7 @@ platform-crons (the delivered-not-committed v1.1 fix — kills the Votion
 
 ## Rev 3.69 — 2026-08-04 — Astroport status semantics fix (site-verified)
 
-Camron's cross-check of app.astroport.fi revealed 'active' persists after
+the owner's cross-check of app.astroport.fi revealed 'active' persists after
 voting ends until finalization (props with Jul-ended votes still 'active').
 Card semantics corrected: LIVE = active AND end in future; past-end active
 props show an orange **VOTE ENDED — awaiting finalization** badge, keep
@@ -90,7 +90,7 @@ ended Jul 31, presumably pending quorum failure at finalization. Exactly
 the attack pattern the 3.68 flags were built for, one governance over.
 Gate 55/55.
 
-## Rev 3.68 — 2026-08-04 — governance auto-flags · clear PASSED/REJECTED (Camron)
+## Rev 3.68 — 2026-08-04 — governance auto-flags · clear PASSED/REJECTED (owner)
 
 Motivated by a real attack class: buy tokens → post a fund-transfer prop →
 pass it on tiny turnout before anyone looks. Cards now carry HEURISTIC
@@ -148,7 +148,7 @@ to 1 (CAPA).
 
 ## Rev 3.65 — 2026-08-04 — all 7 DAODAO governances wired (HAR-verified addresses)
 
-WATCHED_DAOS filled from Camron's HAR captures: aDAO, aDAO Council,
+WATCHED_DAOS filled from the owner's HAR captures: aDAO, aDAO Council,
 Phoenix Directive, ampCAPA, Lion DAO, Pixellions, Pixellions Council — all
 live via direct LCD contract queries (dao-core → proposal modules →
 reverse proposals; chain truth, independent of DAODAO's indexer). News tab
@@ -157,7 +157,7 @@ Assembly + CAPA native gov remain the two har-pending adapters (their gov
 pages still need HAR capture). Gate 45/45 with all seven addresses pinned
 exactly.
 
-## Rev 3.64 — 2026-08-04 — News/Pulse tabs · governance tracker · VP potential line (Camron)
+## Rev 3.64 — 2026-08-04 — News/Pulse tabs · governance tracker · VP potential line (owner)
 
 The card becomes two tabs. **Ecosystem News**: governance tracker across
 watched DAOs — each card shows prop number, LIVE badge or status, days
@@ -167,7 +167,7 @@ latest prop per governance. **Default-tab law: any live proposal anywhere
 opens News; none opens Pulse.** DAODAO govs query live on-chain (aDAO +
 Council active; Phoenix Directive + ampCAPA slots await dao-core
 addresses); Astroport Assembly + CAPA native gov are labeled har-pending —
-adapters land once Camron captures HARs of those gov pages.
+adapters land once DeFi_Patriot captures HARs of those gov pages.
 
 **VP Locked chart gains a second line**: dashed max-potential VP
 (Σ fixed_amount × 10, all locks at 104wk) drawn with the locked line —
@@ -183,7 +183,7 @@ live/executed flags); defaultTab law; WATCHED_DAOS v2 shape (2 active + 2
 address slots + 2 har-pending); VP potential 08-03 = 31,551,455.34 exact;
 tabs + dashed-potential-line markup.
 
-## Rev 3.63 — 2026-08-04 — decision-grade charts: volume bars · SOLID peg tab · FUEL tab-only (Camron)
+## Rev 3.63 — 2026-08-04 — decision-grade charts: volume bars · SOLID peg tab · FUEL tab-only (owner)
 
 Iteration on 3.62 pre-deploy: (1) FUEL becomes a **chart tab only** — stat
 band back to four; the tab is still the only place FUEL price exists
@@ -204,10 +204,10 @@ Gate 39/39: all prior pins carried; FUEL-tab-not-tile asserted; TLA volume
 null-safety; SOLID peg 08-03 = 1.0026065786247902 exact; baseline +
 bars-legend strings.
 
-## Rev 3.62 — 2026-08-04 — pulse ABOVE tiles · FUEL price · live-proposal alerts (Camron)
+## Rev 3.62 — 2026-08-04 — pulse ABOVE tiles · FUEL price · live-proposal alerts (owner)
 
 Superseded 3.61 pre-deploy (same-day iteration on the live 3.60 render).
-Three additions per Camron review: (1) **Pulse moves to the top** — directly
+Three additions per the owner review: (1) **Pulse moves to the top** — directly
 under the ticker banner, above the nav tile grid; the state of the alliance
 is now the first thing the page says. (2) **FUEL price tile + chart** — FUEL
 lives in NO price product and exactly ONE pool (LUNA-FUEL, concentrated,
@@ -227,7 +227,7 @@ exact from committed fixtures; null-safety; openProposalsOf filters
 open-only with dao/id/title; WATCHED_DAOS shape (2 prefilled + 3 labeled
 slots); reserve-implied labeling string.
 
-## Rev 3.61 — 2026-08-04 — PULSE COMMUNITY REDESIGN (per Camron review of 3.60 live)
+## Rev 3.61 — 2026-08-04 — PULSE COMMUNITY REDESIGN (per the owner review of 3.60 live)
 
 3.60's tile read like an analyst changelog — dash-heavy rows at wide windows,
 a valueless bribe count, a red delta as the page's opening statement. 3.61
@@ -279,7 +279,7 @@ $2,393,738.07; Votion 08-03 $31,498.74 with 08-01 null; VP renewed
 61,432.05; 35 bribe_adds in 08-01..04; July window 0), schema-evolution
 honesty, Total-VP absence, and jitter-disclosure strings asserted.
 
-## 2026-08-03 (2) — site-wide floor-consumer audit (Camron) + two index fixes
+## 2026-08-03 (2) — site-wide floor-consumer audit (owner) + two index fixes
 
 Audited every floor-price consumer across the site after the valuation-policy
 catch. Findings:
@@ -299,7 +299,7 @@ catch. Findings:
 
 - Per-tier marketplace floors read "$50.00 × 17", implying 17 listings AT
   the floor — the count is actually ALL listings in that tier on that
-  marketplace, floor = the lowest of them (Camron's catch). Relabeled to
+  marketplace, floor = the lowest of them (the owner's catch). Relabeled to
   "from $50.00 · 17 listed" with a hover stating the semantics exactly.
   No math changed.
 

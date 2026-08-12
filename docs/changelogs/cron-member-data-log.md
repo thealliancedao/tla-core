@@ -177,7 +177,7 @@ stubbed): verify POST-DEPLOY by diffing live org current.json vs live legacy
 tla-snapshot.json on staked_in_tla_usd / lp_health / rewards during the
 parallel-run window, then kill.
 
-**SUPERSEDES 4a (pool-status/history.js):** the audit (Camron's "check we
+**SUPERSEDES 4a (pool-status/history.js):** the audit (the owner's "check we
 don't already have this") found the fold's snapshot contains EVERY field
 history.js emits — same gauge queries, same 1% rule, same resolver — while
 history.js contains nothing the fold lacks. Two org jobs classifying the same
