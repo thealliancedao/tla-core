@@ -5,6 +5,68 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 6.2 — 2026-08-19 — Atrium everywhere, listing prices, and the listings showcase
+
+**Atrium was captured by the cron but invisible in the UI.** The Listed filter
+offered only Boost/Both/BBL, so ~17 live Atrium listings could not be seen. An
+audit found **11 more places** it was missing: card badge stack (an
+Atrium-only listing produced NO badges), detail view (said "In Wallet"), wallet
+stats and wallet Listed filter, map holder stats, system name map, snapshot
+tool stats, status filter count. All now driven by one `MARKETPLACES` registry,
+so a fourth marketplace cannot be missed piecemeal again.
+
+**Marketplace chips replace the 3-position slider.** A slider cannot express
+three venues, and cannot express "BBL + Boost but not Atrium" at all. Chips
+toggle independently, show live counts, hide a marketplace with zero listings,
+and refuse to let the user switch them all off (which would silently show
+nothing).
+
+**Listing prices now render** — the cron had captured `price_display`,
+`price_token_symbol` and `price_usd` all along and nothing consumed them. Cards
+show e.g. `2,500 bLUNA` with `$191.53`. Price sorting sorts on **USD**, not raw
+amount: 125 SOLID vs 2,500 bLUNA is meaningless numerically. Unlisted NFTs sort
+LAST in both directions rather than masquerading as $0, and the one
+marketplace-owned listing with no ask says "No price set", not "$0".
+
+**Listings showcase (new).** Pick up to 10 listed NFTs and export a
+social-ready PNG: adaptive grid (1×1 → 5×2), art, id, marketplace, real ask +
+USD, and a footer total that only sums listings which HAVE a USD price and says
+so when some do not. Built on the existing `generateShareImage` foundation
+(same canvas, same blob download that already works on mobile).
+
+**Post options** — rank/rarity, days listed, vs floor, marketplace, full link.
+- **vs floor is TIER-AWARE**: measured against the NFT's OWN tier floor
+  (broken / unbroken / Phoenix). This matters enormously — the broken floor is
+  $9.80 while the unbroken floor is $73.52, so a blended comparison was wildly
+  wrong. If a tier has no other listing (Phoenix: zero today) the line is
+  omitted rather than borrowing another tier's number.
+- **Days listed uses CHAIN TRUTH.** First implementation used
+  listing-first-seen, which records when the CRON first observed a listing —
+  that series began 2026-08-17, so every tile showed an identical "2d+".
+  `listing-history.json` carries `create_tx`, `from_height` and a real
+  `from_ts` per listing; the OPEN segment (to_ts null) is the live listing.
+  **64 of 65 match, with real ages up to 705 days.** Rendered as years/months
+  past 60 days ("1.9yr listed"). Listings created after the backfill's
+  2026-08-04 build fall back to first-seen and keep a "+" lower-bound marker.
+
+**Logo fixed in BOTH post generators.** Each had independently-written sizing
+that constrained WIDTH only, so the tall aDAO arrow computed a height larger
+than the header band and rendered clipped/bleeding. Both now fit by whichever
+axis binds first, with margin inside the band, and share one `POST_LOGO_URL`
+(the site header logo).
+
+**Other:** + picker moved to bottom-right (top-left is the eye, top-right the
+badges) and the eye now hides the price pill and picker too — it exists to show
+the ART with nothing on it. Status filters open by default. Atrium URLs
+corrected to the real format (`atrium.markets/atrium/<contract>/<id>`); the
+earlier guess would have 404'd.
+
+⚠ **STAR MAP IS DEAD CODE.** `nft-explorer-index.html` defines only
+collection / analytics / wallet — the map view was removed in Rev 4.13. ~750
+lines (L3855–L4604) remain unreachable, with live functions interleaved.
+Deliberately NOT removed here: it needs its own focused pass with browser
+verification, not an untested deletion.
+
 ## Rev 6.1 — 2026-07-17
 ### What changed (nft-explorer-app.js)
 - **aDAO custody wallets pinned on the Holder Leaderboard** (community request):

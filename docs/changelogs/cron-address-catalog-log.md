@@ -5,6 +5,18 @@ DAO wallets, members, ally collections). Session-level beats, newest first.
 
 ---
 
+## 2026-08-19 — publisher retry (job was dying after publishing its data)
+
+This cron was SINGLE-SHOT and died on a 409 branch race — but only on
+`heartbeat.json`, which it writes LAST. So `current.json` and the daily
+snapshot published fine while the run exited 1. The visible symptom was a
+heartbeat ~93h stale next to data ~21h old: **data newer than its own
+heartbeat is the signature of a publisher dying at the end of a run.**
+
+Now retries 409/422/5xx with a fresh sha per attempt and jittered backoff.
+Non-retryable statuses (401/404) still fail fast. Runs daily, so the fix
+proves itself on the next scheduled run.
+
 ## 2026-06-26 (~04:00 UTC) — v1: address-catalog live
 
 Audited and deployed the first cron of the new org pipeline as `org-address-catalog`.

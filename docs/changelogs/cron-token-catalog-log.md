@@ -6,6 +6,17 @@ the real hurdles and breakthroughs, not every keystroke. Newest first.
 
 ---
 
+## 2026-08-19 — retry now covers transient 5xx
+
+This cron already retried 409/422 but threw immediately on anything else, so a
+transient GitHub **503** ("No server is currently available") killed a run
+outright on 2026-08-17. GitHub 5xx is neither our fault nor permanent — it is
+now retried on the same path.
+
+Also: the site's health registry had this job as HOURLY when it is a
+self-escalating discovery cron running roughly every 5–6h, so a perfectly
+healthy job displayed "RUN PENDING". Corrected in `lib/cron-registry.js`.
+
 ## 2026-06-26 (~05:00–08:30 UTC) — v1: discovery → identity → verification
 
 A long build session. Took token-catalog from nothing to a working WORTH layer

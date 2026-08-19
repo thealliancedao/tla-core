@@ -2,6 +2,57 @@
 
 ---
 
+## Rev 3.80 — 2026-08-19 — floor tile corrected, shared health registry, Atrium complete
+
+**The floor tile was wrong, and the cause was a stale source I introduced.**
+Atrium's CURRENT listings were read from `listing-history.json` filtered to
+`outcome:'active'`. That file is the FROZEN one-time backfill (builtAt
+2026-08-04) migrated during the strip — its active flags were 15 days stale, so
+delisted NFTs still counted. Concretely it kept #2852 at 50 SOLID alive, which
+dragged the headline Unbroken Floor to $50 when the true floor was $73.52, and
+inflated Atrium's count from 17 to 19. Current listings now come from
+`nfts.json` (the LIVE inventory, ~15 min). listing-history keeps its real job —
+HISTORY (lifecycles, listing start times) — not "what is listed right now".
+**Law: a frozen backfill may answer "what happened", never "what is true now".**
+
+**The $77 → $50 flash was two writers on one element.** A BBL-only path wrote
+the tile, then the cross-marketplace override rewrote it moments later. The
+BBL-only value is now explicitly provisional ("BBL only · checking other
+venues…") and the cross-venue writer marks itself authoritative
+(`dataset.crossMpFloor`) so it cannot be clobbered.
+
+**Floor tile contract, restated:** show the TRUE floor in USD across every
+marketplace, to be read against backing. WHERE that floor lives is the
+marketplace tiles' job below. Broken listings are EXCLUDED deliberately — they
+forfeited their backing claim, so pricing backing against a broken ask compares
+two different assets. Today: backing $9.53 vs unbroken floor $73.52 = 13%
+covered; including the lone broken ask at $9.80 would read a misleading 97%.
+The subtext now names only the venues that actually reported.
+
+**Shared health registry.** index no longer owns a private cron list —
+`CRON_REGISTRY` derives from `lib/cron-registry.js`, shared with tla-stats and
+transparency-hub. Corrections it exposed: `adao-positions` was still described
+as WEEKLY after being folded into the hourly member-data job (a day-long outage
+would have shown green); `bribes-history` was daily when org-tla-voting captures
+every ~15 min; seven products nobody monitored were added (dao-dashboard,
+tla-flows, dao-governance, nft-analytics, nft-flows, token-catalog,
+address-catalog). token-catalog was later corrected from hourly to ~6h — a
+healthy job was reading "RUN PENDING".
+
+**Freshness ≠ findings.** A product reporting `status:"violation"` (system-health
+flagging an invariant) is that job WORKING. Conflating them turned healthy jobs
+red. Findings are surfaced separately and never colour the dot. Result: 94% →
+100% confidence with zero real problems.
+
+**Footer dot fixed twice.** First the CSS vocabulary (index keys off
+`fresh|warning|stale`; the script was setting `ok|watch|degraded`, so no
+selector matched and every dot stayed red). Then the shared footer for pages
+without Tailwind, which needed scoped CSS and a Font Awesome fallback.
+
+**Atrium completed:** real logo in its marketplace tile (with lettered
+fallback), and its "View" link had been missing the `/atrium/` path segment —
+it would have 404'd.
+
 ## Rev 3.76 — 2026-08-11 — full org cutover: NFT/backing/votion/bribes repoint + health registry
 
 Every legacy data reference on this page is now org or a deliberate dead

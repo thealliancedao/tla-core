@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-08-19 — 4.0.1 — publisher hardening across all folds
+
+**All three publishers were single-shot** and one died mid-run on a 409
+("is at <sha> but expected <sha>"): twelve org jobs write to tla-core, so main
+advances between the sha read and the PUT. tla-snapshot's was worst — it
+silently returned `false` on a race, so a LOST WRITE looked like a successful
+run. All now retry 5× with a FRESH sha per attempt and jittered backoff.
+
+Also fixed: tla-participants' daily archive wrote to a ROOT
+`data/daily/<date>.json` in tla-core (one publish line missed in the fold), and
+three console lines printed `data/…` while publishing correctly — misleading
+during exactly the audit that caught it. **The run log is not the truth; the
+tree is.**
+
 ## 2026-08-11 — 4.0.0 — dao-dashboard FOLDED: the last legacy producer is dead
 
 The final cron writing to `defipatriot/tla-snapshot-data_2026` is now org-side.

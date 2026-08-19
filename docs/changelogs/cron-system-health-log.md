@@ -2,6 +2,20 @@
 
 ---
 
+## 2026-08-19 — 1.0.2 — consumer-side law: a violation means this job is WORKING
+
+`system-health.html` now reads this product instead of the retired legacy file,
+via an adapter mapping `{invariants, meta}` onto the page's existing
+`{overall, counts, attention, systems}` contract — no rendering changes.
+Mapping: violation → down, **skipped → info (a skipped check is NOT a
+failure)**, confidence = ok / (ok + violations) with skipped excluded so a
+not-yet-running check cannot drag the score down.
+
+**Important for every consumer:** this cron reporting `status:"violation"`
+means it FOUND something — the job is healthy. Treating that as the cron being
+unhealthy made a job that runs every ~19 minutes render as "LATE" and turned
+every footer dot red across the site.
+
 ## 2026-08-10 — 1.0.1 — fold-series freshness rows (strip step 3, same paste as the legacy dex kills)
 
 FRESHNESS_MAP +2: dex-astroport-series (dex-data/astroport/epochs/

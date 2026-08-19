@@ -2,6 +2,21 @@
 
 ---
 
+## Rev T3.12 — 2026-08-19 — footer unified with index; local health modal removed
+
+The Cron Health modal is gone. Every page links to the transparency hub for
+health, so there is ONE place to look and one implementation to maintain.
+`CRON_REGISTRY` derives from `lib/cron-registry.js`; the footer now matches
+index exactly (socials, links, Rev + Changelog, System Health dot, Alliance
+Contact).
+
+Two bugs found while doing it:
+- **"never" timestamps.** This page's fetcher read only a FLAT `capturedAt`, so
+  dao-dashboard and system-health (which carry `meta.generated_at`) rendered
+  "never" despite being fresh. It now honours the registry's `tsPath`.
+- **Everything red.** Its cadences still said weekly/daily for jobs that had
+  moved hourly, so healthy jobs rendered stale.
+
 ## Rev T3.9 — 2026-08-11 — every legacy source repointed to org (15 refs → 0)
 
 CONFIG + health tiles fully org. Drop-in swaps: docs, known-tokens base,
