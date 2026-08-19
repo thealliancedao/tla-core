@@ -72,45 +72,36 @@ number people will scrutinize verified (gate #0) before it ships.
 - **Strip combo (proven):** fold → parity → repoint → suspend → archive →
   delete. Never out of order.
 
-### NEXT ACTIONS (rewritten 2026-08-12 — the migration is DONE; this is cleanup)
+### NEXT ACTIONS (rewritten 2026-08-19 — cleanup, not migration)
 
-**Read `SESSION-STATE.md` first** — it carries the full context, the laws
-learned, and the exact open items with evidence.
+**Read `SESSION-STATE.md` first** — full context, the 13 laws, and every open
+item with its evidence.
 
-1. **Commit `site-footer-fixes.zip`** (built, not yet committed — verified by
-   the absence of `CSS_STATE` in the live lib/site-footer.js). Until it lands
-   the footer health dot is red on every page, the footer renders unstyled on
-   transparency-hub + system-health, and Token Catalog reads "RUN PENDING".
+1. **Confirm `org-address-catalog` goes green on its next daily run.** Its
+   publisher retry is committed; it was dying on a 409 at heartbeat.json (the
+   last file it writes), which is why its data was NEWER than its heartbeat.
 
-2. **Delete the 12 dead personal repos** (nothing reads them; everything
-   irreplaceable was migrated — see FINAL-SWEEP-CLEARANCE.md):
-   tla-snapshot-data_2026, adao-positions-data_2026, tla-participants-data_2026,
-   nft-inventory-data_2026, adao-allies-data_2026, votion-data_2026,
-   bribes-data_2026, backing-data_2026, marketplace-data_2026,
-   system-health-data_2026, cron-scripts, website-adao-core.
+2. **Delete the 10 unreferenced personal repos** (list in SESSION-STATE B).
+   Nothing reads them; everything irreplaceable was migrated first.
 
-3. **tla_json_storage + tla-ext_json_storage**: only DEAD fallbacks reference
-   them (epoch-end walk-backs that already return null cleanly, with
-   dao-dashboard as the primary path). Safe to delete; optionally strip the
-   readers afterwards.
+3. **Delete `tla_json_storage` + `tla-ext_json_storage`.** Only DEAD fallbacks
+   reference them — epoch-end walk-backs that already return null cleanly, with
+   dao-dashboard as the primary path. Strip the readers afterwards if desired.
 
-4. **tla-chain-registry — the one piece of real work left.** tla-catalog.html
-   and tla-chain-queries.html need a TOKEN/CONTRACT/LP catalog; org `catalog/`
-   is an ADDRESS/MEMBER registry. Different domain, so this is an adapter, not
-   a repoint. The token half maps to `token-catalog/snapshots/current.json` +
-   `docs/curated/*`; `amplp_mappings` (65 entries) has no org home yet.
-   ⚠ the legacy file is STILL being written (~24h fresh) — find that producer
-   before deleting the repo.
+4. **tla-chain-registry — the LAST real migration task.** tla-catalog.html and
+   tla-chain-queries.html need a TOKEN/CONTRACT/LP catalog; org `catalog/` is an
+   ADDRESS/MEMBER registry. Different domain = ADAPTER, not repoint. Token half
+   maps to `token-catalog` + `docs/curated`; `amplp_mappings` (65) has no org
+   home yet. ⚠ the legacy file was still fresh (~24h) — find its producer first.
 
-5. **Decide: rebuild or retire** — `fuel-tool.html` (already broken: its data
-   path 404s) and `ampcapa-tool.html` (its cron is dead). Retiring costs
-   nothing; rebuilding means a new org cron each.
+5. **Decide: rebuild or retire** — `fuel-tool.html` (already broken; its data
+   path 404s) and `ampcapa-tool.html` (its cron is dead).
 
-6. **Name-in-git-history decision** (see SESSION-STATE section D): accept,
-   `git filter-repo` + force-push, or recreate. Current files are clean.
+6. **Name-in-git-history decision** (SESSION-STATE D): accept, `git filter-repo`
+   + force-push, or recreate. Current files are clean.
 
-7. **Then the soak + announcement gate** — the original definition of done
-   above, minus the migration steps that are now complete.
+7. **Then the fun stuff**: SPEC-landing-pulse, SPEC-portfolio-pnl, per-pool
+   bribe attribution, and the announcement gate.
 
 ## 2026-08-04 — SESSION: NEXT-SESSION LIST CLEARED · pricing in org repo · EURE fixed
 
