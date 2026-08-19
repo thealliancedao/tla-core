@@ -1,0 +1,200 @@
+{
+  "_meta": {
+    "purpose": "The complete LP-grading rubric. Every weight, curve, threshold, boundary, and lens that produces a published grade lives HERE — edit this file, the next lp-grades run reflects it, no code change. The cron echoes config_version + file sha into every output so each scored snapshot says which rubric produced it.",
+    "spec": "docs/pending-changes/SPEC-lp-grading.md",
+    "laws": [
+      "Weights within any group must sum to 1.0 — the cron HALTS loudly otherwise (a typo must never silently rescale the world).",
+      "A metric with no trustworthy source is null and its weight renormalizes across the remaining metrics — never fabricated.",
+      "Strategic judgment does NOT go in this file — it goes in override files ({discovered, override, value, note}, reason required, needs_dao_prop for weighty premiums). This file is the public rubric; overrides are governed exceptions.",
+      "This is DRAFT v0.1.0 — every number below is a starting position to argue with, several flagged to open decisions D1–D6 in the spec."
+    ]
+  },
+  "config_version": "0.1.0-draft",
+
+  "quality_grade": {
+    "_note": "Quality = A x B, the 'how good is this pool' grade. C is an OVERLAY (see support_gap), not a component here — spec decision D2.",
+    "component_weights": { "trading_quality_A": 0.6, "asset_chain_value_B": 0.4 },
+    "_D1": "A .60 / B .40 is the performance-forward draft; owner to confirm or move toward equality."
+  },
+
+  "trading_quality_A": {
+    "metric_weights": {
+      "depth": 0.3,
+      "utilization": 0.25,
+      "trend": 0.15,
+      "exit_slippage": 0.2,
+      "pool_balance": 0.1
+    },
+    "depth": {
+      "curve": "log10",
+      "usd_floor": 5000,
+      "usd_full_marks": 500000,
+      "_note": "carried from interim grade; log so a 10x depth gap matters more at the thin end"
+    },
+    "utilization": {
+      "full_marks_weekly_turnover": 0.5,
+      "_note": "volume/liquidity; 50%/week turnover = 100. Null where no trustworthy volume source (SkeletonSwap) — renormalizes, never faked."
+    },
+    "trend": {
+      "flat_score": 60,
+      "points_per_pct": 2.0,
+      "_note": "real-liquidity (price-deflated) change over the window; +20% -> 100, -30% -> 0"
+    },
+    "exit_slippage": {
+      "trade_sizes_usd": [1000, 10000, 100000],
+      "impact_grade_bounds_pct": { "full_marks_under": 0.5, "zero_at": 8.0 },
+      "_note": "pool-type-aware: XYK exact; PCL/stable score on the <= bound (their true impact is lower by design)"
+    },
+    "pool_balance": {
+      "full_marks_side_pct_range": [40, 60],
+      "zero_below_side_pct": 15
+    }
+  },
+
+  "asset_chain_value_B": {
+    "sub_weights": {
+      "durability_B1": 0.45,
+      "asset_class_B2": 0.3,
+      "chain_alignment_B3": 0.25
+    },
+    "durability_B1": {
+      "_note": "rebuilt from the legacy confusion-score factors on token-catalog Stage 2; per-pool = weighted mean of underlyings",
+      "metric_weights": { "price_oracle": 0.5, "acquisition": 0.25, "identity_safety": 0.25 },
+      "price_oracle_scores": {
+        "cg_confirmed": 100,
+        "verified_via_bridge": 90,
+        "registry_assigned": 75,
+        "unverified_no_terra_addr": 60,
+        "unknown_state": 50,
+        "no_mapping": 25,
+        "mismatch": 0
+      },
+      "acquisition_class_scores": {
+        "native_terra": 100,
+        "ibc_cosmos_native": 100,
+        "wrapped_disclosed_with_guide": 100,
+        "wrapped_disclosed_no_guide": 70,
+        "wrapped_looks_native_with_guide": 85,
+        "wrapped_looks_native_no_guide": 40,
+        "lp_token": null
+      },
+      "identity_safety_penalties": {
+        "cross_source_name_mismatch": 15,
+        "buy_the_wrong_variant": 25,
+        "shared_base_symbol": 10
+      }
+    },
+    "asset_class_B2": {
+      "_note": "three classes, three fact bases (spec 3.B2). Strategic premiums (e.g. ATOM IBC-hub) are NOT here — they are overrides in asset_value_overrides.json with stated reasons.",
+      "bridged_major": {
+        "market_cap_curve": "log10",
+        "mcap_floor_usd": 50000000,
+        "mcap_full_marks_usd": 100000000000,
+        "ibc_native_bonus_points": 10
+      },
+      "ibc_infrastructure": {
+        "fact_base_score": 60,
+        "_note": "modest floor; the strategic role premium comes from governed overrides, by design"
+      },
+      "native_terra": {
+        "base_score": 50,
+        "is_native_stablecoin_points": 30,
+        "is_governance_token_points": 15,
+        "_note": "never market-cap scored; the native-stable elevation must remain the most transparently justified weight in the rubric"
+      }
+    },
+    "chain_alignment_B3": {
+      "metric": "generated_take_flow",
+      "_D6": "generated flow (take_rate x utilization proxy) vs absolute take-rate — draft picks generated flow",
+      "curve": "log10",
+      "flow_floor_usd_per_epoch": 10,
+      "flow_full_marks_usd_per_epoch": 5000
+    }
+  },
+
+  "support_gap_C": {
+    "_note": "OVERLAY, not part of the quality grade (spec D2). Answers 'does it need you'. All comparisons within-bucket by default (D4).",
+    "within_bucket": true,
+    "baseline": "median_liquidity_per_1m_vp",
+    "underpaid_ratio_cutoff": 1.4,
+    "overweighted_ratio_cutoff": 0.6,
+    "need_score": { "formula": "quality x min(ratio_vs_median, cap)", "ratio_cap": 4.0 },
+    "underdog": {
+      "min_utilization_score": 50,
+      "or_min_trend_pct": 10,
+      "max_vp_vs_bucket_median": 1.0,
+      "min_staked_usd": 5000
+    },
+    "bribe_target": {
+      "max_existing_pot_usd": 5,
+      "min_staked_usd": 10000,
+      "or_min_ratio_vs_median": 1.6
+    },
+    "threshold_risk": { "cliff_vote_pct": 1.0, "at_risk_below_vote_pct": 1.6 },
+    "support_sources_tracked": ["pd_bribes", "adao_votes", "votion_vp", "project_bribes", "other_bribes"]
+  },
+
+  "grade_boundaries": { "A_plus": 90, "A": 80, "B": 70, "C": 55, "D": 40 },
+
+  "caps": {
+    "single_asset_max_score": 88,
+    "_note": "a pool that cannot demonstrate depth/utilization must not outrank pools earning full marks on all metrics"
+  },
+
+  "confidence": {
+    "firm_min_window_epochs": 4,
+    "firm_min_snapshot_ratio": 0.85,
+    "provisional_below_ratio": 0.85,
+    "insufficient_below_ratio": 0.4,
+    "_D3": "4-epoch floor for firm grades is the draft; 6 is the stricter option"
+  },
+
+  "states": {
+    "new_pool_below_epochs": 4,
+    "inactive_carries_last_grade": true,
+    "_note": "new pools are never graded F for lacking history — they publish as state:new, the jump-start candidate list"
+  },
+
+  "lenses": [
+    { "id": "best_for_chain", "label": "Best for the chain", "default": true,
+      "sort": "quality_grade desc",
+      "framing": "voter",
+      "description": "The absolute best pools for Terra and its users — quality (A x B), no opportunity weighting." },
+    { "id": "needs_votes", "label": "Needs votes",
+      "sort": "need_score desc", "filter": "need_score > 0 && state == graded",
+      "framing": "voter",
+      "description": "Deserving and under-supported, within their bucket — where your vote works hardest." },
+    { "id": "underdogs", "label": "Underdogs",
+      "sort": "quality_grade desc", "filter": "underdog == true",
+      "framing": "voter",
+      "description": "Small pools doing real work with below-median support — the discovery list." },
+    { "id": "chain_builders", "label": "Chain builders",
+      "sort": "B3_score desc",
+      "framing": "voter",
+      "description": "Pools generating the most take-rate flow into chain-owned liquidity." },
+    { "id": "traders_choice", "label": "Trader's choice",
+      "sort": "(depth + exit_slippage + utilization)/count desc",
+      "framing": "both",
+      "description": "Best pools for people actually trading — depth, honest exits, real throughput." },
+    { "id": "active_projects", "label": "Active projects",
+      "sort": "utilization desc", "filter": "bucket == 'PROJECT'",
+      "framing": "voter",
+      "description": "Project-bucket pools with the most real activity behind them." },
+    { "id": "new_pools", "label": "New pools",
+      "sort": "first_seen_epoch desc", "filter": "state == 'new'",
+      "framing": "voter",
+      "description": "Too new to grade honestly — the jump-start candidates." },
+    { "id": "bribe_targets", "label": "Bribe targets",
+      "sort": "quality_grade desc", "filter": "bribe_target == true",
+      "framing": "briber",
+      "description": "Quality pools with no pot — a first bribe here has zero competition." },
+    { "id": "at_risk", "label": "At risk",
+      "sort": "vote_pct asc", "filter": "threshold_risk == true",
+      "framing": "voter",
+      "description": "Near the 1% cliff — staked value stops earning if they slip." },
+    { "id": "healthy_to_enter", "label": "Healthy to enter",
+      "sort": "quality_grade desc", "filter": "state != 'inactive'",
+      "framing": "depositor",
+      "description": "The safety view: same quality facts, support-gap de-emphasized — is this a sound pool to LP into?" }
+  ]
+}
