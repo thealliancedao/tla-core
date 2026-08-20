@@ -2,6 +2,37 @@
 
 ---
 
+## Rev G1 — 2026-08-19 — LP Grades tab reads the org lp-grades product; page-side grading retired
+
+The interim page-side grade computation (~200 lines inside `renderLpGrades()`)
+is GONE. The tab now renders `lp-grades/snapshots/current.json` — computed by
+the org lp-grades cron on epoch-aligned trailing windows of COMPLETED epochs,
+per the public rubric in `tla-core/docs/curated/grading_config.json`
+(SPEC-lp-grading.md). Weights shown in the UI come from the product's rubric
+echo, so a config edit changes both the scores AND the labels with zero page
+work.
+
+What the tab gains:
+- **Lenses from the product** — Best for the chain (default), Needs votes,
+  Underdogs, Chain builders, Trader's choice, Active projects, New pools,
+  Bribe targets, At risk, Healthy to enter (depositor framing), plus a local
+  Inactive board (44 pools carrying last-known grades as a safety signal).
+- **Confidence tiers per row** (firm / provisional / low sample) straight from
+  the cron's sample gates — a thin window is never presented as a firm grade.
+- **Component B is finally in the grade** — price-oracle durability,
+  acquisition friction, asset-class rubric, and take-rate contribution to
+  chain-owned liquidity (per-asset breakdown in the detail expander).
+- **Bucket-aware support gap** — the C overlay compares liquidity-per-vote
+  against the pool's own bucket median, not a global one.
+
+Also: `lib/cron-registry.js` gains the `lp-grades` row (daily,
+org-lp-grades), so system-health and every footer now track the new product;
+the grades tab's `data-cron-source` moved from tla-snapshot to lp-grades.
+
+Gate (jsdom, real live product as fixture): 11/11 — row counts match product
+counts per lens, rubric version renders in the chip, confidence chips render,
+unavailable-state message honest when the product is missing.
+
 ## Rev T3.12 — 2026-08-19 — footer unified with index; local health modal removed
 
 The Cron Health modal is gone. Every page links to the transparency hub for
