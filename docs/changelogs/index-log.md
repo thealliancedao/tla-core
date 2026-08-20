@@ -2,6 +2,16 @@
 
 ---
 
+## Hub Rev H2 — 2026-08-20 — Updates tab reads the merged changelogs
+
+The Updates feed parsed CHANGES_PENDING.md, which the 08-19 queue rewrite
+turned into a lean cleanup list — freezing the tab at 08-09 while work
+shipped daily. Updates now merges the real running record
+(docs/changelogs/tla-log, index-log, portfolio-log, cron-lp-grades-log)
+plus the queue for milestone items — newest first, each entry chipped with
+its source; changelog entries default SHIPPED, queue entries BUILDING.
+Functional-gated on the real changelog files: 18 entries parse, T5.x on top.
+
 ## Rev I-A1 — 2026-08-20 — Live Activity reads org streams; collection tabs
 
 The feed showed "No activity in the last 7 days" while 400+ events happened —

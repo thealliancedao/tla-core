@@ -2,6 +2,14 @@
 
 ---
 
+## Rev T5.2 — 2026-08-20 — the missing site-footer include (footer consistency root cause)
+
+tla-stats never loaded /lib/site-footer.js — every other unified page did —
+so it fell through to its LOCAL fallback health logic, whose divergent "Cron
+stale" label could disagree with the transparency hub even when the shared
+registry read healthy (owner screenshot: red footer, hub at 100%). One
+script include; one implementation everywhere, as T3.12 intended.
+
 ## Rev T5.1 — 2026-08-20 — Bribe Runway rehomed as the Runway tile's second tab
 
 The standalone Bribe Runway card broke the Overview grid (tall orphan column

@@ -5,6 +5,12 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 4.14 — 2026-08-20 — shared footer mounted
+
+The explorer now renders the standard site footer (rev · changelog · System
+Health) from lib/site-footer.js — previously its own footer with no health
+dot. Cross-page consistency per the owner's audit.
+
 ## Rev 6.2 — 2026-08-19 — Atrium everywhere, listing prices, and the listings showcase
 
 **Atrium was captured by the cron but invisible in the UI.** The Listed filter

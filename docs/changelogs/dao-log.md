@@ -5,6 +5,14 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 1.7 — 2026-08-20 — Invalid Date fixed; shared footer mounted
+
+- "Updated: Invalid Date" — the page read `exported_at` while dao-governance
+  publishes `exportedAt`. Fallback chain reads both.
+- The page now mounts the shared site footer (rev · changelog · System
+  Health dot from the one registry) — it previously had its own footer with
+  no health signal, part of the cross-page drift the owner flagged.
+
 ## Rev 1.6 — 2026-05-08
 
 Header cleanup, matching the same treatment applied to TLA Stats in Rev 1.15.
