@@ -2,6 +2,20 @@
 
 ---
 
+## Rev I-A4.1 — 2026-08-20 — aggregator scope crash fixed (empty Epoch/Monthly views)
+
+I-A4 called the page-level epoch helpers from a different script scope —
+Epoch/Monthly modes threw at runtime on every metric: empty chart strip,
+stale All Data Points table carried over from the last working render
+(which is why the DAODAO Staked modal displayed LUNA backing rows). Daily
+survived because it only needed the helpers for gap slots. The gate had
+injected the helpers into its harness and so could not catch it.
+aggregateSnapshots is now fully self-contained (own epoch constants), gap
+placeholders for the current partial period cap at today instead of the
+epoch's future end-date, and the gate now evals the function exactly as the
+page scopes it — zero injected helpers — plus real-epoch fixtures for both
+the backing archive shape and the young state-history source. 8/8.
+
 ## Rev I-A4 — 2026-08-20 — uniform 14-slot chart views (owner spec)
 
 aggregateSnapshots rewritten: every view now renders the last 14 CALENDAR
