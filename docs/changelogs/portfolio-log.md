@@ -13,6 +13,22 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev P1.9 — 2026-08-20 — navigation continuity with tla-stats
+
+Member Portfolio looked like a sibling tab on tla-stats but clicking it jumped
+to a page with different chrome: the top-nav swapped aDAO Lore for a
+highlighted Portfolio button, and the tab strip vanished — the tab metaphor
+broke mid-click. Fixed by making both pages present one continuous surface:
+
+- **Top-nav now identical to tla-stats** (Home / NFT Explorer / aDAO Lore /
+  TLA Stats / DAO). The page's location is expressed by the sub-tab strip,
+  not by hijacking a top-nav slot.
+- **The same sub-tab strip renders here**, Member Portfolio active, with
+  Overview / LP Grades / LP Stats / TLA Stats / Docs deep-linking into
+  tla-stats' hash router (#overview, #grades, #pools, #tla, #docs — the
+  router already handled these). Crossing pages now reads as switching tabs.
+- Sticky-bar epoch readout preserved (same #nav-epoch element).
+
 ## Rev 2.2 — 2026-08-03 — LIVENESS PASS (P1.6 + P1.7), production
 
 **P1.6 — live claimable.** The participants feed is a DAILY 03:00 UTC
