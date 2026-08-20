@@ -2,6 +2,29 @@
 
 ---
 
+## Rev I-A3 — 2026-08-20 — tile trend charts read the full archive
+
+Monthly/Epoch chart views sample month-end / epoch-end dates — but the
+assembler only probed the last 45 days, so Monthly showed ONE point while
+backing-history holds 120 daily rows back to April. The assembler now
+additionally probes just the month-end and epoch-end dates back to each
+source's start (a handful of cheap fetches); Daily stays a 45-day window,
+long views fill from the whole archive. Companion producer fix in
+platform-crons (nft cron Rev C.5): the backing-history daily APPENDER was
+never ported in the fold — the series froze at 2026-08-10 with every row
+stamped migrated:. One write-once row per day resumes tonight.
+Known remaining gap (queued): network-and-prices ratio-history.json has
+ZERO rows — its producer never ran org-side; LST-ratio overlays stay empty
+until that producer ships.
+
+## Rev I-A2 — 2026-08-20 — health dot delegation (red-dot root cause)
+
+index's local refreshHealthIndicator computed its own verdict and overwrote
+the shared wireHealth's data-overall — the two setters fought and the local
+legacy-cadenced verdict won: red dot on index while the hub (shared
+registry) read 100%. Fixed with the same delegation as tla-stats T5.2:
+SiteFooter.wireHealth when present, local logic fallback-only.
+
 ## site-footer — 2026-08-20 — Help link added
 
 lib/site-footer.js LINKS now leads with Help (help.html) on every page;

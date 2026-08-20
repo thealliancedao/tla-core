@@ -2,6 +2,68 @@
 
 ---
 
+## Agent v1.4.0 + Rev 1.3 — 2026-08-20 — read_product tool, trust links, rich rendering
+
+- **read_product tool**: the agent can now fetch org data files on demand
+  (whitelisted tla-core prefixes; arrays truncate head+tail so recent events
+  survive) — "who unstaked recently" now reads the actual transfers stream
+  instead of describing where to look. Gated on the real August stream.
+- **Trust-link protocol (rule 10)**: answers cite verifiable sources as
+  links — the exact GitHub file used, chainsco.pe for txs/addresses, the
+  visitor's Member Portfolio for wallets, docs.erisprotocol.com /
+  docs.astroport.fi for protocol mechanics. Full addresses/hashes, never
+  elided.
+- **Rich rendering (both chat surfaces)**: markdown bold/code/links render
+  properly (the raw ** asterisks are gone); terra1 addresses and tx hashes
+  become copyable mono chips with one-tap copy + a chain link. HTML-escape
+  first — injection gated.
+
+## Rev 1.2.1 — 2026-08-20 — cold starts self-heal
+
+Free-tier hosting sleeps when idle; the first question after a quiet spell
+landed mid-wake and showed "unreachable, try again" — twice in a row for the
+owner. Both chat surfaces (drawer + Help page) now wait out the wake and
+retry ONCE automatically (~30s, with a live status line) before conceding —
+and the concession now distinguishes "probably sleeping" from "probably
+down". Always-on hosting ($7/mo) or a free 10-minute /health pinger removes
+the wake entirely; the UI no longer punishes either choice.
+
+## Rev 1.2 + Agent v1.3.0 — 2026-08-20 — in-page help drawer, page context, wallet picker
+
+- **The Help bubble now opens a slide-over DRAWER on the page you're viewing**
+  (owner request: "see the page I was looking at while I write my question").
+  Chat happens beside the content; a "Full help ↗" link reaches the forms/FAQ.
+- **Page context**: every drawer question tells the agent which page + tab the
+  visitor is on (pathname + hash) — the service injects it as visitor_context
+  so answers cater to what's actually on screen.
+- **Wallet picker**: searchable by registered name or address (participants
+  feed, 203 entries, lazy-loaded 39KB), pinned as a chip with ×-to-remove,
+  persisted per browser; the pinned address is sent as its own field and wins
+  over any address in the text — every answer caters to that wallet until
+  removed. Server v1.3.0 accepts {wallet, page}.
+- Same disclaimer (shared acceptance key — accept once anywhere, holds
+  everywhere), same rate nudge, same graceful cold-start message.
+- AGENT_URL now lives in ONE home (lib/site-footer.js); help.html reads it
+  from there.
+- Gated: server context/wallet injection on real data; drawer mechanics
+  (bubble→open, greeting, pin-by-name, persist, remove) in jsdom.
+
+## Rev 1.1 — 2026-08-20 — discoverability + design pass; index dot fixed
+
+- **Site-wide Help bubble**: every page loading lib/site-footer.js now renders
+  a fixed bottom-right Help bubble linking to help.html — one implementation,
+  zero per-page wiring (hidden on help.html itself). Help was buried in the
+  footer link row; now it is one click from anywhere.
+- **Design pass on help.html**: hero banner, suggested-question chips (tap to
+  ask; the wallet chip pre-fills the address pattern), avatar chat bubbles
+  with a typing indicator, and accent-topped cards (cyan/red/amber). Logic
+  untouched — modal, nudge, forms, and gates all as gated.
+- **Index health dot ROOT-CAUSED and fixed** (in index-log too): index's
+  local refreshHealthIndicator never delegated to the shared wireHealth —
+  two setters fought over data-overall and the stricter legacy verdict won,
+  running the dot red while the hub read 100%. Same delegation fix as
+  tla-stats T5.2. One health implementation now truly everywhere.
+
 ## Agent v1.2.1 — 2026-08-20 — respectful-use nudge
 
 The service now reports each visitor's hourly usage with every answer; the
