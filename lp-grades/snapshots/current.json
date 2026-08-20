@@ -1,9 +1,9 @@
 {
  "schemaVersion": 1,
  "cron": "lp-grades",
- "version": "lp-grades-1.0.0",
- "capturedAt": "2026-08-19T23:55:20.857Z",
- "capturedAtUnix": 1787183720857,
+ "version": "lp-grades-1.0.1",
+ "capturedAt": "2026-08-20T01:07:52.464Z",
+ "capturedAtUnix": 1787188072464,
  "epoch": 199,
  "window_epochs": [
   195,
@@ -12,8 +12,8 @@
   198
  ],
  "rubric": {
-  "config_version": "0.1.0-draft",
-  "config_sha": "ee9a8a577a0c",
+  "config_version": "0.2.0-draft",
+  "config_sha": "73c2e6b31c21",
   "quality_weights": {
    "trading_quality_A": 0.6,
    "asset_chain_value_B": 0.4
@@ -36,21 +36,45 @@
    "B": 70,
    "C": 55,
    "D": 40
+  },
+  "advisor": {
+   "_note": "Parameters for the on-page aDAO Vote Advisor + Bribe Planner (Rev G2). The recommendation is a DETERMINISTIC algorithm over the published grades — every parameter here is public so the output is arguable, never hidden opinion. Council judgment always decides; this is the rubric's answer, not an instruction.",
+   "vote": {
+    "chunk_bps": 1000,
+    "_chunk_note": "TLA votes allocate in 10% chunks per bucket (weight_bps multiples of 1000). Each bucket gets the wallet's FULL VP, split across that bucket's pools in these chunks.",
+    "min_quality": 40,
+    "objective": "marginal_need",
+    "_objective_note": "Each 10% chunk goes to the bucket pool with the highest quality x underpaid-ratio, RECOMPUTED after every chunk as our own assigned VP raises the pool's support — so the advisor never piles all chunks on one pool past the point of diminishing need.",
+    "max_per_pool_bps": 5000,
+    "_cap_note": "Diversification cap: no single pool receives more than this share of a bucket's VP, however dominant its marginal need — real voters defend multiple thresholds, and an all-in recommendation would overstate the rubric's confidence. Raise to 10000 to disable."
+   },
+   "bribe": {
+    "presets_usd": [
+     25,
+     50,
+     75,
+     100
+    ],
+    "unit_usd": 25,
+    "min_effective_pot_usd": 25,
+    "max_splits": 4,
+    "_note": "Budget allocates in unit_usd chunks, greedily by need_score with diminishing returns as a pool's planned pot grows; a placement below min_effective_pot_usd is merged upward rather than dust-split. Candidates: graded pools flagged bribe_target or underpaid."
+   }
   }
  },
  "sources": {
-  "token_catalog_at": "2026-08-19T18:01:13.271Z",
-  "snapshot_at": "2026-08-19T23:01:04.314Z",
+  "token_catalog_at": "2026-08-20T00:00:57.140Z",
+  "snapshot_at": "2026-08-20T01:00:35.591Z",
   "ps_history_at": "2026-08-19T23:03:24.581Z",
   "pd_bribes": true,
-  "net_prices_at": "2026-08-19T23:05:15.592Z"
+  "net_prices_at": "2026-08-20T01:05:23.717Z"
  },
  "medians": {
   "liquidity_per_1m_vp_by_bucket": {
-   "stable": 19684.179916110403,
-   "project": 11895.08006549149,
-   "bluechip": 13056.679594065656,
-   "single": 16495.486437923293
+   "stable": 19565.754375740755,
+   "project": 11817.794528262068,
+   "bluechip": 12935.710462609293,
+   "single": 16497.938685749265
   },
   "vp_by_bucket": {
    "stable": 10439001.254863,
@@ -163,10 +187,10 @@
    "gaugeActive": true,
    "vp": 14512851.147902,
    "pct_of_bucket": 52.02708975999879,
-   "staked_usd": 285673.5730910324,
-   "depth_usd": 340183.72500000003,
+   "staked_usd": 283954.8808515378,
+   "depth_usd": 340059.17250000004,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 549.3722559442931,
+   "take_flow_epoch_usd": 546.0670785606496,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -178,25 +202,25 @@
    },
    "scores": {
     "A": {
-     "score": 64.68107473892621,
+     "score": 64.71736010542747,
      "parts": {
       "depth": 91.6,
-      "utilization": 22.2,
+      "utilization": 22.3,
       "trend": 95,
       "exit_slippage": 37,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.11092586198027662,
+     "util_weekly_ratio": 0.11153483753062354,
      "trend_pct": 17.5,
      "slip_bound": true,
-     "slip_worst_pct": 35.9
+     "slip_worst_pct": 35.86
     },
     "B": {
-     "score": 71.4285250055907,
+     "score": 71.40424973851985,
      "parts": {
       "durability_B1": 86.3,
       "asset_class_B2": 55,
-      "chain_alignment_B3": 64.5
+      "chain_alignment_B3": 64.4
      },
      "tokens": [
       {
@@ -259,10 +283,10 @@
    "gaugeActive": true,
    "vp": 7204104.548407,
    "pct_of_bucket": 26.6165053001055,
-   "staked_usd": 176491.25064251228,
+   "staked_usd": 174335.52537870881,
    "depth_usd": null,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 339.4062512356005,
+   "take_flow_epoch_usd": 335.2606257282862,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 0,
@@ -288,11 +312,11 @@
      "slip_worst_pct": null
     },
     "B": {
-     "score": 66.58499072792134,
+     "score": 66.5355525560862,
      "parts": {
       "durability_B1": 78.1,
       "asset_class_B2": 57.5,
-      "chain_alignment_B3": 56.7
+      "chain_alignment_B3": 56.5
      },
      "tokens": [
       {
@@ -314,17 +338,17 @@
      ],
      "flags": []
     },
-    "quality": 66.6
+    "quality": 66.5
    },
    "overlay": {
-    "ratio_vs_bucket_median": 1.49,
+    "ratio_vs_bucket_median": 1.47,
     "balance": "underpaid",
-    "need_score": 98.9,
+    "need_score": 97.5,
     "underdog": false,
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 130.53,
+     "active_pot_usd": 130.83,
      "pd_lifetime": null,
      "pd_leg_count": 0
     }
@@ -355,10 +379,10 @@
    "gaugeActive": true,
    "vp": 11108645.159247,
    "pct_of_bucket": 41.43547550029595,
-   "staked_usd": 271272.00568405516,
-   "depth_usd": 280153.77249999996,
+   "staked_usd": 271297.8138197808,
+   "depth_usd": 280600.3275,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 521.6769340077984,
+   "take_flow_epoch_usd": 521.72656503804,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -370,21 +394,21 @@
    },
    "scores": {
     "A": {
-     "score": 59.06568496070767,
+     "score": 59.08143918682187,
      "parts": {
-      "depth": 87.4,
+      "depth": 87.5,
       "utilization": 6.7,
       "trend": 96.9,
       "exit_slippage": 33.2,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.03342160802127406,
+     "util_weekly_ratio": 0.03338126927579478,
      "trend_pct": 18.5,
      "slip_bound": true,
-     "slip_worst_pct": 39.76
+     "slip_worst_pct": 39.72
     },
     "B": {
-     "score": 72.72043554595376,
+     "score": 72.72081824489402,
      "parts": {
       "durability_B1": 86.3,
       "asset_class_B2": 60,
@@ -413,14 +437,14 @@
     "quality": 64.5
    },
    "overlay": {
-    "ratio_vs_bucket_median": 1.87,
+    "ratio_vs_bucket_median": 1.89,
     "balance": "underpaid",
-    "need_score": 120.6,
+    "need_score": 121.8,
     "underdog": false,
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 38.27,
+     "active_pot_usd": 38.31,
      "pd_lifetime": {
       "native:uluna": 32706.362294
      },
@@ -453,10 +477,10 @@
    "gaugeActive": true,
    "vp": 5385513.368111,
    "pct_of_bucket": 20.065670757428133,
-   "staked_usd": 102408.57891462951,
-   "depth_usd": 775624.3424999999,
+   "staked_usd": 101172.0471714685,
+   "depth_usd": 775370.0449999999,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 196.93957483582602,
+   "take_flow_epoch_usd": 194.56162917590098,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -468,25 +492,25 @@
    },
    "scores": {
     "A": {
-     "score": 59.167125669439685,
+     "score": 59.16235774366403,
      "parts": {
       "depth": 100,
-      "utilization": 7.9,
+      "utilization": 8,
       "trend": 59.8,
-      "exit_slippage": 44.8,
-      "pool_balance": 92.7
+      "exit_slippage": 44.6,
+      "pool_balance": 92.8
      },
-     "util_weekly_ratio": 0.03965595720753415,
+     "util_weekly_ratio": 0.03980399778408024,
      "trend_pct": -0.1,
      "slip_bound": true,
-     "slip_worst_pct": 24.21
+     "slip_worst_pct": 24.42
     },
     "B": {
-     "score": 68.89538839284833,
+     "score": 68.8465197337619,
      "parts": {
       "durability_B1": 93.1,
       "asset_class_B2": 50,
-      "chain_alignment_B3": 48
+      "chain_alignment_B3": 47.8
      },
      "tokens": [
       {
@@ -508,17 +532,17 @@
      ],
      "flags": []
     },
-    "quality": 63.1
+    "quality": 63
    },
    "overlay": {
-    "ratio_vs_bucket_median": 1.6,
+    "ratio_vs_bucket_median": 1.59,
     "balance": "underpaid",
-    "need_score": 100.9,
+    "need_score": 100.1,
     "underdog": false,
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 127.71,
+     "active_pot_usd": 128.03,
      "pd_lifetime": {
       "native:uluna": 105210.066669
      },
@@ -551,10 +575,10 @@
    "gaugeActive": true,
    "vp": 2473574.36158,
    "pct_of_bucket": 9.216192652565852,
-   "staked_usd": 33019.25091504504,
+   "staked_usd": 32615.517641639166,
    "depth_usd": 179411.775,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 63.4985594520097,
+   "take_flow_epoch_usd": 62.72214931084455,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -566,25 +590,25 @@
    },
    "scores": {
     "A": {
-     "score": 62.97147356503744,
+     "score": 62.93239387200797,
      "parts": {
       "depth": 77.7,
       "utilization": null,
       "trend": 60.4,
-      "exit_slippage": 24.2,
+      "exit_slippage": 24.1,
       "pool_balance": 100
      },
      "util_weekly_ratio": null,
      "trend_pct": 0.2,
      "slip_bound": false,
-     "slip_worst_pct": 51.89
+     "slip_worst_pct": 52.19
     },
     "B": {
-     "score": 54.49833544440012,
+     "score": 54.44884488985739,
      "parts": {
       "durability_B1": 71.3,
       "asset_class_B2": 50,
-      "chain_alignment_B3": 29.7
+      "chain_alignment_B3": 29.5
      },
      "tokens": [
       {
@@ -606,12 +630,12 @@
      ],
      "flags": []
     },
-    "quality": 59.6
+    "quality": 59.5
    },
    "overlay": {
     "ratio_vs_bucket_median": 1.12,
     "balance": "balanced",
-    "need_score": 66.9,
+    "need_score": 66.4,
     "underdog": false,
     "bribe_target": true,
     "threshold_risk": false,
@@ -649,10 +673,10 @@
    "gaugeActive": true,
    "vp": 6854081.470327,
    "pct_of_bucket": 25.32329931589534,
-   "staked_usd": 131713.91626169306,
-   "depth_usd": 203142.04499999998,
+   "staked_usd": 131731.1175275535,
+   "depth_usd": 203164.66749999998,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 253.2959928109482,
+   "take_flow_epoch_usd": 253.32907216837214,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -664,7 +688,7 @@
    },
    "scores": {
     "A": {
-     "score": 47.71342420092311,
+     "score": 47.72514048941447,
      "parts": {
       "depth": 80.4,
       "utilization": 7.6,
@@ -672,13 +696,13 @@
       "exit_slippage": 22.6,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.037844422815871075,
+     "util_weekly_ratio": 0.0380551549598715,
      "trend_pct": -6.1,
      "slip_bound": true,
      "slip_worst_pct": 55.18
     },
     "B": {
-     "score": 69.81401832895108,
+     "score": 69.81454365223506,
      "parts": {
       "durability_B1": 86.3,
       "asset_class_B2": 60,
@@ -714,7 +738,7 @@
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 127.71,
+     "active_pot_usd": 128.03,
      "pd_lifetime": {
       "native:uluna": 70829.401143
      },
@@ -747,10 +771,10 @@
    "gaugeActive": true,
    "vp": 2477336.322967,
    "pct_of_bucket": 8.880997808576147,
-   "staked_usd": 45824.3056598132,
+   "staked_usd": 45548.010245012134,
    "depth_usd": 77199.8125,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 88.12366473041001,
+   "take_flow_epoch_usd": 87.59232739425411,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -762,25 +786,25 @@
    },
    "scores": {
     "A": {
-     "score": 49.67827368350755,
+     "score": 49.65327612264269,
      "parts": {
       "depth": 59.4,
       "utilization": null,
       "trend": 45.9,
-      "exit_slippage": 12.7,
+      "exit_slippage": 12.6,
       "pool_balance": 100
      },
      "util_weekly_ratio": null,
      "trend_pct": -7,
      "slip_bound": false,
-     "slip_worst_pct": 74.07
+     "slip_worst_pct": 74.23
     },
     "B": {
-     "score": 64.06669648980257,
+     "score": 64.04236791733388,
      "parts": {
       "durability_B1": 86.3,
       "asset_class_B2": 55,
-      "chain_alignment_B3": 35
+      "chain_alignment_B3": 34.9
      },
      "tokens": [
       {
@@ -843,10 +867,10 @@
    "gaugeActive": false,
    "vp": 4183.703583,
    "pct_of_bucket": 0.015587895323077795,
-   "staked_usd": 12.715030566254407,
+   "staked_usd": 12.55836327390014,
    "depth_usd": 76892.68999999999,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.024451981858181555,
+   "take_flow_epoch_usd": 0.024150698603654118,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -858,18 +882,18 @@
    },
    "scores": {
     "A": {
-     "score": 52.89773795618869,
+     "score": 52.86627229612796,
      "parts": {
       "depth": 59.3,
       "utilization": null,
       "trend": 60,
-      "exit_slippage": 14.3,
+      "exit_slippage": 14.2,
       "pool_balance": 100
      },
      "util_weekly_ratio": null,
      "trend_pct": 0,
      "slip_bound": false,
-     "slip_worst_pct": 71.37
+     "slip_worst_pct": 71.58
     },
     "B": {
      "score": 56.90625,
@@ -901,7 +925,7 @@
     "quality": 54.5
    },
    "overlay": {
-    "ratio_vs_bucket_median": 0.26,
+    "ratio_vs_bucket_median": 0.25,
     "balance": "overweighted",
     "need_score": 0,
     "underdog": false,
@@ -939,10 +963,10 @@
    "gaugeActive": true,
    "vp": 10439001.254863,
    "pct_of_bucket": 37.422753789492994,
-   "staked_usd": 126556.88718733157,
-   "depth_usd": 214460.5375,
+   "staked_usd": 125839.86598334348,
+   "depth_usd": 214723.15500000003,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 243.37862920640688,
+   "take_flow_epoch_usd": 241.99974227566054,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -954,25 +978,25 @@
    },
    "scores": {
     "A": {
-     "score": 44.27152326338621,
+     "score": 44.27274994084314,
      "parts": {
       "depth": 81.6,
       "utilization": 4.6,
       "trend": 30.2,
-      "exit_slippage": 20.5,
+      "exit_slippage": 20.4,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.023208335535582658,
+     "util_weekly_ratio": 0.023244080284754318,
      "trend_pct": -14.9,
      "slip_bound": true,
-     "slip_worst_pct": 59.69
+     "slip_worst_pct": 59.77
     },
     "B": {
-     "score": 68.1533470495147,
+     "score": 68.13049076354645,
      "parts": {
       "durability_B1": 86.3,
       "asset_class_B2": 55,
-      "chain_alignment_B3": 51.4
+      "chain_alignment_B3": 51.3
      },
      "tokens": [
       {
@@ -1035,10 +1059,10 @@
    "gaugeActive": true,
    "vp": 5492865.457032,
    "pct_of_bucket": 20.465649649722014,
-   "staked_usd": 56468.50201053619,
-   "depth_usd": 51952.43,
+   "staked_usd": 55779.120572015716,
+   "depth_usd": 51992.195,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 108.59327309718499,
+   "take_flow_epoch_usd": 107.26753956156868,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -1050,25 +1074,25 @@
    },
    "scores": {
     "A": {
-     "score": 39.67185592388989,
+     "score": 39.647896603149064,
      "parts": {
       "depth": 50.8,
       "utilization": 0.5,
       "trend": 80.5,
-      "exit_slippage": 11.1,
+      "exit_slippage": 11,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.002335555662528063,
+     "util_weekly_ratio": 0.002354026202969497,
      "trend_pct": 10.3,
      "slip_bound": true,
-     "slip_worst_pct": 76.58
+     "slip_worst_pct": 76.81
     },
     "B": {
-     "score": 68.7506778899017,
+     "score": 68.70126455643295,
      "parts": {
       "durability_B1": 93.1,
       "asset_class_B2": 57.5,
-      "chain_alignment_B3": 38.4
+      "chain_alignment_B3": 38.2
      },
      "tokens": [
       {
@@ -1100,7 +1124,7 @@
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 130.53,
+     "active_pot_usd": 130.83,
      "pd_lifetime": null,
      "pd_leg_count": 0
     }
@@ -1131,10 +1155,10 @@
    "gaugeActive": true,
    "vp": 5488484.656911,
    "pct_of_bucket": 20.44932740022161,
-   "staked_usd": 64947.59810753649,
-   "depth_usd": 90206.68999999999,
+   "staked_usd": 64861.78394689313,
+   "depth_usd": 90027.44499999999,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 124.89922712987787,
+   "take_flow_epoch_usd": 124.7341998978714,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -1146,21 +1170,21 @@
    },
    "scores": {
     "A": {
-     "score": 36.22288438197543,
+     "score": 36.20854160626817,
      "parts": {
       "depth": 62.8,
-      "utilization": 1.4,
+      "utilization": 1.5,
       "trend": 27.9,
       "exit_slippage": 14.2,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.007227466854525527,
+     "util_weekly_ratio": 0.007279178812197798,
      "trend_pct": -16.1,
      "slip_bound": false,
-     "slip_worst_pct": 71.61
+     "slip_worst_pct": 71.65
     },
     "B": {
-     "score": 73.06345579728945,
+     "score": 73.05813705194339,
      "parts": {
       "durability_B1": 93.1,
       "asset_class_B2": 70,
@@ -1186,17 +1210,17 @@
      ],
      "flags": []
     },
-    "quality": 51
+    "quality": 50.9
    },
    "overlay": {
-    "ratio_vs_bucket_median": 0.99,
+    "ratio_vs_bucket_median": 1,
     "balance": "balanced",
     "need_score": 0,
     "underdog": false,
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 130.53,
+     "active_pot_usd": 130.83,
      "pd_lifetime": {
       "native:uluna": 4200
      },
@@ -1229,10 +1253,10 @@
    "gaugeActive": true,
    "vp": 1027167.559295,
    "pct_of_bucket": 3.795004722983544,
-   "staked_usd": 16943.62854382544,
+   "staked_usd": 16946.147413239632,
    "depth_usd": 24189.7825,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 32.58390104581816,
+   "take_flow_epoch_usd": 32.58874502546083,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -1255,10 +1279,10 @@
      "util_weekly_ratio": null,
      "trend_pct": 9.3,
      "slip_bound": false,
-     "slip_worst_pct": 89.98
+     "slip_worst_pct": 89.99
     },
     "B": {
-     "score": 61.564341233369575,
+     "score": 61.56493922239499,
      "parts": {
       "durability_B1": 86.3,
       "asset_class_B2": 60,
@@ -1509,10 +1533,10 @@
    "gaugeActive": true,
    "vp": 1448196.822569,
    "pct_of_bucket": 5.350552333673054,
-   "staked_usd": 28178.501324870005,
+   "staked_usd": 27832.560843746756,
    "depth_usd": 33307.9575,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 54.189425624750015,
+   "take_flow_epoch_usd": 53.52415546874377,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -1524,25 +1548,25 @@
    },
    "scores": {
     "A": {
-     "score": 42.92309865834464,
+     "score": 42.88212847982792,
      "parts": {
       "depth": 41.2,
       "utilization": null,
       "trend": 59.7,
-      "exit_slippage": 4.4,
+      "exit_slippage": 4.3,
       "pool_balance": 100
      },
      "util_weekly_ratio": null,
      "trend_pct": -0.2,
      "slip_bound": false,
-     "slip_worst_pct": 85.4
+     "slip_worst_pct": 85.57
     },
     "B": {
-     "score": 59.20434840974496,
+     "score": 59.15465608020476,
      "parts": {
       "durability_B1": 78.1,
       "asset_class_B2": 57.5,
-      "chain_alignment_B3": 27.2
+      "chain_alignment_B3": 27
      },
      "tokens": [
       {
@@ -1567,9 +1591,9 @@
     "quality": 49.4
    },
    "overlay": {
-    "ratio_vs_bucket_median": 1.18,
+    "ratio_vs_bucket_median": 1.16,
     "balance": "balanced",
-    "need_score": 58.3,
+    "need_score": 57.5,
     "underdog": false,
     "bribe_target": true,
     "threshold_risk": false,
@@ -1605,10 +1629,10 @@
    "gaugeActive": true,
    "vp": 1792138.54674,
    "pct_of_bucket": 6.677257964581733,
-   "staked_usd": 21317.63150192586,
-   "depth_usd": 22012.005,
+   "staked_usd": 21153.263190381993,
+   "depth_usd": 21957.33,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 40.995445196011275,
+   "take_flow_epoch_usd": 40.679352289196146,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -1620,25 +1644,25 @@
    },
    "scores": {
     "A": {
-     "score": 35.49532850709828,
+     "score": 35.46637512836407,
      "parts": {
-      "depth": 32.2,
+      "depth": 32.1,
       "utilization": 3.1,
       "trend": 100,
-      "exit_slippage": 0.3,
+      "exit_slippage": 0.2,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.015580120152245455,
+     "util_weekly_ratio": 0.015702208310694226,
      "trend_pct": 25.9,
      "slip_bound": false,
-     "slip_worst_pct": 89.43
+     "slip_worst_pct": 89.51
     },
     "B": {
-     "score": 67.0818929867114,
+     "score": 67.05075538852685,
      "parts": {
       "durability_B1": 93.1,
       "asset_class_B2": 65,
-      "chain_alignment_B3": 22.7
+      "chain_alignment_B3": 22.6
      },
      "tokens": [
       {
@@ -1670,7 +1694,7 @@
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 25.02,
+     "active_pot_usd": 25.05,
      "pd_lifetime": {
       "native:uluna": 8743.301286
      },
@@ -1703,10 +1727,10 @@
    "gaugeActive": false,
    "vp": 31200.940189,
    "pct_of_bucket": 0.11638015025723829,
-   "staked_usd": 0.3286188176055461,
+   "staked_usd": 0.3285915337990116,
    "depth_usd": null,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.0006319592646260503,
+   "take_flow_epoch_usd": 0.0006319067957673301,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 0,
@@ -1799,10 +1823,10 @@
    "gaugeActive": true,
    "vp": 4899528.491912,
    "pct_of_bucket": 18.275342301363327,
-   "staked_usd": 92899.25919176902,
-   "depth_usd": 104787.8575,
+   "staked_usd": 92001.85091198454,
+   "depth_usd": 105086.08499999999,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 178.65242152263272,
+   "take_flow_epoch_usd": 176.92663636920105,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -1814,25 +1838,25 @@
    },
    "scores": {
     "A": {
-     "score": 41.26725112648875,
+     "score": 41.25263607605063,
      "parts": {
       "depth": 66.1,
-      "utilization": 7.3,
+      "utilization": 7.2,
       "trend": 41.7,
-      "exit_slippage": 16.8,
+      "exit_slippage": 16.7,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.03637488154149262,
+     "util_weekly_ratio": 0.03621672151120295,
      "trend_pct": -9.1,
      "slip_bound": true,
-     "slip_worst_pct": 66.78
+     "slip_worst_pct": 67.02
     },
     "B": {
-     "score": 56.4095991263237,
+     "score": 56.3705500989164,
      "parts": {
       "durability_B1": 66.3,
       "asset_class_B2": 50,
-      "chain_alignment_B3": 46.4
+      "chain_alignment_B3": 46.2
      },
      "tokens": [
       {
@@ -1866,7 +1890,7 @@
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 15.96,
+     "active_pot_usd": 16,
      "pd_lifetime": {
       "native:uluna": 30092.088245
      },
@@ -1899,10 +1923,10 @@
    "gaugeActive": true,
    "vp": 3653407.50493,
    "pct_of_bucket": 13.4979912583191,
-   "staked_usd": 56173.76169348751,
-   "depth_usd": 129080.55249999999,
+   "staked_usd": 55878.960548888055,
+   "depth_usd": 129114.14499999999,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 108.0264647951683,
+   "take_flow_epoch_usd": 107.45953951709242,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -1914,7 +1938,7 @@
    },
    "scores": {
     "A": {
-     "score": 44.98699491504768,
+     "score": 44.983168767873764,
      "parts": {
       "depth": 70.6,
       "utilization": 1.3,
@@ -1922,17 +1946,17 @@
       "exit_slippage": 21.1,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.006330762260968894,
+     "util_weekly_ratio": 0.006371329369414489,
      "trend_pct": 0.9,
      "slip_bound": true,
-     "slip_worst_pct": 58.38
+     "slip_worst_pct": 58.46
     },
     "B": {
-     "score": 46.62267969977293,
+     "score": 46.59244080085795,
      "parts": {
       "durability_B1": 51.3,
       "asset_class_B2": null,
-      "chain_alignment_B3": 38.3
+      "chain_alignment_B3": 38.2
      },
      "tokens": [
       {
@@ -1967,7 +1991,7 @@
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 63.85,
+     "active_pot_usd": 64.01,
      "pd_lifetime": {
       "native:uluna": 33347.843632
      },
@@ -2000,10 +2024,10 @@
    "gaugeActive": true,
    "vp": 1123179.866867,
    "pct_of_bucket": 4.184811339133356,
-   "staked_usd": 25301.77472649262,
-   "depth_usd": 28146.34,
+   "staked_usd": 24995.25405895329,
+   "depth_usd": 28169.600000000002,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 48.65725908940889,
+   "take_flow_epoch_usd": 48.06779626721787,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -2015,25 +2039,25 @@
    },
    "scores": {
     "A": {
-     "score": 31.271276737239262,
+     "score": 31.255676370845656,
      "parts": {
       "depth": 37.5,
       "utilization": 0.4,
       "trend": 62.7,
-      "exit_slippage": 2.6,
+      "exit_slippage": 2.5,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.0017964042611476308,
+     "util_weekly_ratio": 0.0019405810376355757,
      "trend_pct": 1.3,
      "slip_bound": true,
-     "slip_worst_pct": 87.29
+     "slip_worst_pct": 87.43
     },
     "B": {
-     "score": 65.52115624155282,
+     "score": 65.47212430274209,
      "parts": {
       "durability_B1": 93.1,
       "asset_class_B2": 57.5,
-      "chain_alignment_B3": 25.5
+      "chain_alignment_B3": 25.3
      },
      "tokens": [
       {
@@ -2055,12 +2079,12 @@
      ],
      "flags": []
     },
-    "quality": 45
+    "quality": 44.9
    },
    "overlay": {
-    "ratio_vs_bucket_median": 1.89,
+    "ratio_vs_bucket_median": 1.88,
     "balance": "underpaid",
-    "need_score": 85.2,
+    "need_score": 84.6,
     "underdog": false,
     "bribe_target": true,
     "threshold_risk": false,
@@ -2096,10 +2120,10 @@
    "gaugeActive": true,
    "vp": 2378960.357513,
    "pct_of_bucket": 8.873571186838323,
-   "staked_usd": 33365.98520994529,
-   "depth_usd": 31347.21,
+   "staked_usd": 33052.38549009704,
+   "depth_usd": 31137.485,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 64.16535617297171,
+   "take_flow_epoch_usd": 63.562279788648155,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -2111,25 +2135,25 @@
    },
    "scores": {
     "A": {
-     "score": 37.63239623277692,
+     "score": 37.594198744317325,
      "parts": {
-      "depth": 39.9,
-      "utilization": 6.1,
+      "depth": 39.7,
+      "utilization": 6.2,
       "trend": 86.9,
-      "exit_slippage": 5.5,
+      "exit_slippage": 5.4,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.030521886290524977,
+     "util_weekly_ratio": 0.031056758972844416,
      "trend_pct": 13.5,
      "slip_bound": false,
-     "slip_worst_pct": 84.17
+     "slip_worst_pct": 84.29
     },
     "B": {
-     "score": 54.63410829427727,
+     "score": 54.596120250196876,
      "parts": {
       "durability_B1": 68.1,
       "asset_class_B2": 55,
-      "chain_alignment_B3": 29.9
+      "chain_alignment_B3": 29.8
      },
      "tokens": [
       {
@@ -2161,7 +2185,7 @@
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 10.64,
+     "active_pot_usd": 10.67,
      "pd_lifetime": {
       "native:uluna": 16136.251249
      },
@@ -2194,10 +2218,10 @@
    "gaugeActive": true,
    "vp": 2210067.782563,
    "pct_of_bucket": 8.243598399770113,
-   "staked_usd": 22763.947901078438,
-   "depth_usd": 26333.8425,
+   "staked_usd": 22558.416063515542,
+   "depth_usd": 26084.3975,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 43.77682288668931,
+   "take_flow_epoch_usd": 43.381569352914504,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -2209,25 +2233,25 @@
    },
    "scores": {
     "A": {
-     "score": 37.80097232672854,
+     "score": 37.74698935735004,
      "parts": {
-      "depth": 36.1,
-      "utilization": 7.2,
+      "depth": 35.9,
+      "utilization": 7.3,
       "trend": 100,
-      "exit_slippage": 0.9,
+      "exit_slippage": 0.8,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.035813312865147676,
+     "util_weekly_ratio": 0.03640624250574025,
      "trend_pct": 55.9,
      "slip_bound": false,
-     "slip_worst_pct": 88.88
+     "slip_worst_pct": 88.98
     },
     "B": {
-     "score": 53.65846254145399,
+     "score": 53.621976580770465,
      "parts": {
       "durability_B1": 69.4,
       "asset_class_B2": 55,
-      "chain_alignment_B3": 23.8
+      "chain_alignment_B3": 23.6
      },
      "tokens": [
       {
@@ -2259,7 +2283,7 @@
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 10.64,
+     "active_pot_usd": 10.67,
      "pd_lifetime": {
       "native:uluna": 9252.491099
      },
@@ -2292,10 +2316,10 @@
    "gaugeActive": true,
    "vp": 471503.067895,
    "pct_of_bucket": 1.7420296750715987,
-   "staked_usd": 5311.658241798186,
+   "staked_usd": 5241.9494906284135,
    "depth_usd": null,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 10.214727388073435,
+   "take_flow_epoch_usd": 10.080672097362335,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 0,
@@ -2318,14 +2342,14 @@
      "util_weekly_ratio": null,
      "trend_pct": -7.8,
      "slip_bound": false,
-     "slip_worst_pct": 97.67
+     "slip_worst_pct": 97.52
     },
     "B": {
-     "score": 52.491715757332095,
+     "score": 52.43857240724108,
      "parts": {
       "durability_B1": 78.1,
       "asset_class_B2": 57.5,
-      "chain_alignment_B3": 0.3
+      "chain_alignment_B3": 0.1
      },
      "tokens": [
       {
@@ -2350,7 +2374,7 @@
     "quality": 43.2
    },
    "overlay": {
-    "ratio_vs_bucket_median": 0.68,
+    "ratio_vs_bucket_median": 0.67,
     "balance": "balanced",
     "need_score": 0,
     "underdog": false,
@@ -2388,10 +2412,10 @@
    "gaugeActive": true,
    "vp": 2262639.121573,
    "pct_of_bucket": 8.43969057827969,
-   "staked_usd": 21331.547066807143,
-   "depth_usd": 24223.7825,
+   "staked_usd": 21161.574870285305,
+   "depth_usd": 24121.8475,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 41.022205897706044,
+   "take_flow_epoch_usd": 40.69533628901021,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -2403,25 +2427,25 @@
    },
    "scores": {
     "A": {
-     "score": 35.832504026193234,
+     "score": 35.80723168234477,
      "parts": {
-      "depth": 34.3,
+      "depth": 34.2,
       "utilization": 4.2,
       "trend": 96.5,
-      "exit_slippage": 0.2,
+      "exit_slippage": 0.1,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.02075931813373296,
+     "util_weekly_ratio": 0.021064275610285395,
      "trend_pct": 18.2,
      "slip_bound": true,
-     "slip_worst_pct": 89.51
+     "slip_worst_pct": 89.56
     },
     "B": {
-     "score": 52.74076809028182,
+     "score": 52.708585735283876,
      "parts": {
       "durability_B1": 71.3,
       "asset_class_B2": 50,
-      "chain_alignment_B3": 22.7
+      "chain_alignment_B3": 22.6
      },
      "tokens": [
       {
@@ -2455,7 +2479,7 @@
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 10.64,
+     "active_pot_usd": 10.67,
      "pd_lifetime": {
       "native:uluna": 10019.958207
      },
@@ -2488,10 +2512,10 @@
    "gaugeActive": true,
    "vp": 966237.496242,
    "pct_of_bucket": 3.6000659821728753,
-   "staked_usd": 10238.072158885832,
-   "depth_usd": 9036.377499999999,
+   "staked_usd": 10173.545110331179,
+   "depth_usd": 9035.627499999999,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 19.688600305549677,
+   "take_flow_epoch_usd": 19.56450982755996,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -2503,25 +2527,25 @@
    },
    "scores": {
     "A": {
-     "score": 31.62949222298043,
+     "score": 31.650762879188825,
      "parts": {
-      "depth": 12.9,
-      "utilization": 14.2,
+      "depth": 12.8,
+      "utilization": 14.3,
       "trend": 94.9,
       "exit_slippage": 0,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.07082834289941296,
+     "util_weekly_ratio": 0.07126457012622014,
      "trend_pct": 17.4,
      "slip_bound": true,
      "slip_worst_pct": 94.73
     },
     "B": {
-     "score": 58.037751133446186,
+     "score": 58.01231669877324,
      "parts": {
       "durability_B1": 86.3,
       "asset_class_B2": 55,
-      "chain_alignment_B3": 10.9
+      "chain_alignment_B3": 10.8
      },
      "tokens": [
       {
@@ -2553,7 +2577,7 @@
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 21.28,
+     "active_pot_usd": 21.34,
      "pd_lifetime": {
       "native:uluna": 28135.691127
      },
@@ -2586,10 +2610,10 @@
    "gaugeActive": true,
    "vp": 1246946.517988,
    "pct_of_bucket": 4.607006794802092,
-   "staked_usd": 16890.24681887175,
-   "depth_usd": 19463.787500000002,
+   "staked_usd": 16685.444818579985,
+   "depth_usd": 19597.862500000003,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 32.481243882445675,
+   "take_flow_epoch_usd": 32.08739388188459,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -2601,25 +2625,25 @@
    },
    "scores": {
     "A": {
-     "score": 28.68871682612663,
+     "score": 28.712379781951007,
      "parts": {
-      "depth": 29.5,
-      "utilization": 1.2,
+      "depth": 29.7,
+      "utilization": 1.1,
       "trend": 68.5,
       "exit_slippage": 0,
-      "pool_balance": 92.7
+      "pool_balance": 92.5
      },
-     "util_weekly_ratio": 0.0058190168774868,
+     "util_weekly_ratio": 0.0057495138360251,
      "trend_pct": 4.3,
      "slip_bound": true,
-     "slip_worst_pct": 93.06
+     "slip_worst_pct": 93.15
     },
     "B": {
-     "score": 61.64539726311765,
+     "score": 61.596321069588534,
      "parts": {
       "durability_B1": 93.1,
       "asset_class_B2": 50,
-      "chain_alignment_B3": 19
+      "chain_alignment_B3": 18.8
      },
      "tokens": [
       {
@@ -2644,14 +2668,14 @@
     "quality": 41.9
    },
    "overlay": {
-    "ratio_vs_bucket_median": 0.82,
+    "ratio_vs_bucket_median": 0.81,
     "balance": "balanced",
     "need_score": 0,
     "underdog": false,
     "bribe_target": false,
     "threshold_risk": false,
     "support": {
-     "active_pot_usd": 10.64,
+     "active_pot_usd": 10.67,
      "pd_lifetime": {
       "native:uluna": 35110.857994
      },
@@ -2684,10 +2708,10 @@
    "gaugeActive": true,
    "vp": 3766014.816484,
    "pct_of_bucket": 14.031645306577309,
-   "staked_usd": 18239.070142728033,
-   "depth_usd": 44610.49250000001,
+   "staked_usd": 18028.112208433584,
+   "depth_usd": 44661.485,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 35.0751348898616,
+   "take_flow_epoch_usd": 34.66944655467997,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -2699,25 +2723,25 @@
    },
    "scores": {
     "A": {
-     "score": 34.05930421681721,
+     "score": 34.04036959813248,
      "parts": {
       "depth": 47.5,
       "utilization": 0.1,
       "trend": 62.5,
-      "exit_slippage": 2,
+      "exit_slippage": 1.8,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.0005428063924029149,
+     "util_weekly_ratio": 0.000542100427656635,
      "trend_pct": 1.3,
      "slip_bound": true,
-     "slip_worst_pct": 87.93
+     "slip_worst_pct": 88.05
     },
     "B": {
-     "score": 52.20446606957336,
+     "score": 52.15766635502809,
      "parts": {
       "durability_B1": 68.1,
       "asset_class_B2": 55,
-      "chain_alignment_B3": 20.2
+      "chain_alignment_B3": 20
      },
      "tokens": [
       {
@@ -2782,10 +2806,10 @@
    "gaugeActive": false,
    "vp": 57263.76479,
    "pct_of_bucket": 0.21335679109268957,
-   "staked_usd": 20.525258089708867,
+   "staked_usd": 20.272916713854244,
    "depth_usd": null,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.03947165017251705,
+   "take_flow_epoch_usd": 0.03898637829587355,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 0,
@@ -2878,10 +2902,10 @@
    "gaugeActive": false,
    "vp": 15878.66188,
    "pct_of_bucket": 0.05866579048759888,
-   "staked_usd": 24.96036089114716,
+   "staked_usd": 24.653555595212882,
    "depth_usd": 1056.855,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.04800069402143685,
+   "take_flow_epoch_usd": 0.04741068383694786,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -2904,7 +2928,7 @@
      "util_weekly_ratio": null,
      "trend_pct": 0,
      "slip_bound": false,
-     "slip_worst_pct": 99.45
+     "slip_worst_pct": 99.46
     },
     "B": {
      "score": 56.90625,
@@ -2936,7 +2960,7 @@
     "quality": 38
    },
    "overlay": {
-    "ratio_vs_bucket_median": 0.1,
+    "ratio_vs_bucket_median": 0.09,
     "balance": "overweighted",
     "need_score": 0,
     "underdog": false,
@@ -2974,10 +2998,10 @@
    "gaugeActive": false,
    "vp": 0.000002,
    "pct_of_bucket": 7.460041239287304e-12,
-   "staked_usd": 2192.3660416645153,
+   "staked_usd": 2192.2441172911376,
    "depth_usd": 3412.5724999999998,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 4.21608854166253,
+   "take_flow_epoch_usd": 4.215854071713727,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -3070,10 +3094,10 @@
    "gaugeActive": false,
    "vp": 48294.555649,
    "pct_of_bucket": 0.1731310516495588,
-   "staked_usd": 11.403381615390284,
+   "staked_usd": 11.332530696689087,
    "depth_usd": 5312.5875,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.0219295800295967,
+   "take_flow_epoch_usd": 0.021793328262863627,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -3096,7 +3120,7 @@
      "util_weekly_ratio": null,
      "trend_pct": 0.1,
      "slip_bound": false,
-     "slip_worst_pct": 97.35
+     "slip_worst_pct": 97.37
     },
     "B": {
      "score": 55.3125,
@@ -3166,10 +3190,10 @@
    "gaugeActive": false,
    "vp": 29604.123652,
    "pct_of_bucket": 0.10612776103139206,
-   "staked_usd": 608.1527298394121,
+   "staked_usd": 604.3967746142589,
    "depth_usd": 2222.91,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 1.169524480460408,
+   "take_flow_epoch_usd": 1.1623014896428057,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -3192,7 +3216,7 @@
      "util_weekly_ratio": null,
      "trend_pct": 0,
      "slip_bound": false,
-     "slip_worst_pct": 98.7
+     "slip_worst_pct": 98.71
     },
     "B": {
      "score": 55.3125,
@@ -3262,10 +3286,10 @@
    "gaugeActive": false,
    "vp": 19181.84268,
    "pct_of_bucket": 0.07146886720525727,
-   "staked_usd": 0.001397034124022758,
+   "staked_usd": 0.0013947783845206288,
    "depth_usd": 420.3625,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.00000268660408465915,
+   "take_flow_epoch_usd": 0.0000026822661240781325,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -3358,10 +3382,10 @@
    "gaugeActive": false,
    "vp": 4857.234096,
    "pct_of_bucket": 0.01809737596033041,
-   "staked_usd": 0.046123729426092684,
+   "staked_usd": 0.04576601885352535,
    "depth_usd": 70.3775,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.00008869947966556286,
+   "take_flow_epoch_usd": 0.00008801157471831799,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -3454,10 +3478,10 @@
    "gaugeActive": true,
    "vp": 1554495.848813,
    "pct_of_bucket": 5.798301569222951,
-   "staked_usd": 5941.847446124862,
+   "staked_usd": 5857.15217573041,
    "depth_usd": 5506.3875,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 11.426629704086272,
+   "take_flow_epoch_usd": 11.263754184096943,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -3480,14 +3504,14 @@
      "util_weekly_ratio": null,
      "trend_pct": 0.2,
      "slip_bound": false,
-     "slip_worst_pct": 97.08
+     "slip_worst_pct": 97.09
     },
     "B": {
-     "score": 45.91148385861668,
+     "score": 45.853730441059206,
      "parts": {
       "durability_B1": 67.5,
       "asset_class_B2": 50,
-      "chain_alignment_B3": 2.1
+      "chain_alignment_B3": 1.9
      },
      "tokens": [
       {
@@ -3552,10 +3576,10 @@
    "gaugeActive": true,
    "vp": 702402.706701,
    "pct_of_bucket": 2.5951185522216833,
-   "staked_usd": 16507.945823993137,
+   "staked_usd": 16507.570391599278,
    "depth_usd": null,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 31.746049661525266,
+   "take_flow_epoch_usd": 31.74532767615246,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 0,
@@ -3581,7 +3605,7 @@
      "slip_worst_pct": null
     },
     "B": {
-     "score": 33.96006810657984,
+     "score": 33.95993740769917,
      "parts": {
       "durability_B1": 42.5,
       "asset_class_B2": null,
@@ -3642,10 +3666,10 @@
    "gaugeActive": false,
    "vp": 6761.867226,
    "pct_of_bucket": 0.025193773032997024,
-   "staked_usd": 0.000911527858320541,
+   "staked_usd": 0.0009003017222096051,
    "depth_usd": 72.0525,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.0000017529381890779636,
+   "take_flow_epoch_usd": 0.0000017313494657877023,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -3738,10 +3762,10 @@
    "gaugeActive": false,
    "vp": 18131.238853,
    "pct_of_bucket": 0.0675544640558932,
-   "staked_usd": 37.65358337497438,
+   "staked_usd": 37.19066735547659,
    "depth_usd": 379.895,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.07241073725956612,
+   "take_flow_epoch_usd": 0.07152051414514729,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -3834,10 +3858,10 @@
    "gaugeActive": true,
    "vp": 387709.737859,
    "pct_of_bucket": 1.389899829251112,
-   "staked_usd": 8044.148181789069,
-   "depth_usd": 13466.574999999999,
+   "staked_usd": 7993.8617304776235,
+   "depth_usd": 13473.462499999998,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 15.469515734209748,
+   "take_flow_epoch_usd": 15.372811020149278,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -3849,7 +3873,7 @@
    },
    "scores": {
     "A": {
-     "score": 17.545138723462166,
+     "score": 17.55221004560933,
      "parts": {
       "depth": 21.5,
       "utilization": 4.4,
@@ -3857,17 +3881,17 @@
       "exit_slippage": 0,
       "pool_balance": 100
      },
-     "util_weekly_ratio": 0.021816629519516316,
+     "util_weekly_ratio": 0.021891436827814068,
      "trend_pct": -36.7,
      "slip_bound": true,
-     "slip_worst_pct": 94.77
+     "slip_worst_pct": 94.78
     },
     "B": {
-     "score": 57.06758358954292,
+     "score": 57.04235702026224,
      "parts": {
       "durability_B1": 86.3,
       "asset_class_B2": 55,
-      "chain_alignment_B3": 7
+      "chain_alignment_B3": 6.9
      },
      "tokens": [
       {
@@ -3889,12 +3913,12 @@
      ],
      "flags": []
     },
-    "quality": 33.4
+    "quality": 33.3
    },
    "overlay": {
     "ratio_vs_bucket_median": 1.05,
     "balance": "balanced",
-    "need_score": 35.2,
+    "need_score": 35.1,
     "underdog": false,
     "bribe_target": false,
     "threshold_risk": true,
@@ -3930,10 +3954,10 @@
    "gaugeActive": true,
    "vp": 452930.042353,
    "pct_of_bucket": 1.6894383972327625,
-   "staked_usd": 5913.762441529709,
+   "staked_usd": 5858.971887695773,
    "depth_usd": 7342.0725,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 11.372620079864825,
+   "take_flow_epoch_usd": 11.26725363018418,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -3956,14 +3980,14 @@
      "util_weekly_ratio": null,
      "trend_pct": -17.4,
      "slip_bound": false,
-     "slip_worst_pct": 96.33
+     "slip_worst_pct": 96.37
     },
     "B": {
-     "score": 47.67367452688664,
+     "score": 47.63623005237738,
      "parts": {
       "durability_B1": 68.1,
       "asset_class_B2": 55,
-      "chain_alignment_B3": 2.1
+      "chain_alignment_B3": 1.9
      },
      "tokens": [
       {
@@ -4026,10 +4050,10 @@
    "gaugeActive": false,
    "vp": 0.467351,
    "pct_of_bucket": 0.0000017412845634517627,
-   "staked_usd": 0.27660266013952817,
+   "staked_usd": 0.27495215993398686,
    "depth_usd": 1.5499999999999998,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.0005319281925760158,
+   "take_flow_epoch_usd": 0.0005287541537192055,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -4122,10 +4146,10 @@
    "gaugeActive": true,
    "vp": 314601.734858,
    "pct_of_bucket": 1.1623372047150462,
-   "staked_usd": 141.71840128065463,
+   "staked_usd": 140.87493226940558,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.272535387078182,
+   "take_flow_epoch_usd": 0.2709133312873184,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -4148,7 +4172,7 @@
      "util_weekly_ratio": null,
      "trend_pct": 0.7,
      "slip_bound": true,
-     "slip_worst_pct": 96.12
+     "slip_worst_pct": 96.15
     },
     "B": {
      "score": 40.5,
@@ -4207,104 +4231,6 @@
    "grade": "F"
   },
   {
-   "gauge_pool_id": "cw20:terra19z7g4fnu529250sdkdmgm9kw4qgwmmqrjas9t24ll84mpd94lxnshf0z2h",
-   "name": "LUNA-arbLUNA",
-   "bucket": "single",
-   "dex": "Astroport",
-   "dex_subtype": "stable",
-   "lp_address": "terra19z7g4fnu529250sdkdmgm9kw4qgwmmqrjas9t24ll84mpd94lxnshf0z2h",
-   "pool_address": "terra16nfwldn9j5xhry2y78gvm3x4vte8vu77zr3ctlan79w5f5aheawqnz7a4f",
-   "is_single": false,
-   "is_ss": false,
-   "gauge_status": "dewhitelisted",
-   "gaugeActive": false,
-   "vp": 26914.097602,
-   "pct_of_bucket": 0.09943764928142165,
-   "staked_usd": 5894.159421172201,
-   "depth_usd": 0,
-   "take_rate": 0.1,
-   "take_flow_epoch_usd": 11.334921963792697,
-   "first_seen_epoch": 184,
-   "sample": {
-    "snapshots_used": 76,
-    "snapshots_expected": 144,
-    "ratio": 0.528,
-    "epochs_covered": 4,
-    "has_gaps": true,
-    "depth_fallback": false
-   },
-   "scores": {
-    "A": {
-     "score": 12.979065228333296,
-     "parts": {
-      "depth": 0,
-      "utilization": null,
-      "trend": 60,
-      "exit_slippage": 0,
-      "pool_balance": 7.3
-     },
-     "util_weekly_ratio": null,
-     "trend_pct": 0,
-     "slip_bound": true,
-     "slip_worst_pct": 98.7
-    },
-    "B": {
-     "score": 57.41031761143269,
-     "parts": {
-      "durability_B1": 93.1,
-      "asset_class_B2": 50,
-      "chain_alignment_B3": 2
-     },
-     "tokens": [
-      {
-       "denom": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
-       "symbol": "arbLUNA",
-       "match": "cg_confirmed",
-       "acquisition_class": "native_terra",
-       "guide": false,
-       "score": 100
-      },
-      {
-       "denom": "uluna",
-       "symbol": "LUNA",
-       "match": "registry_assigned",
-       "acquisition_class": "native_terra",
-       "guide": false,
-       "score": 86.3
-      }
-     ],
-     "flags": []
-    },
-    "quality": 30.8
-   },
-   "overlay": {
-    "ratio_vs_bucket_median": 13.28,
-    "balance": "underpaid",
-    "need_score": 123.2,
-    "underdog": false,
-    "bribe_target": false,
-    "threshold_risk": false,
-    "support": {
-     "active_pot_usd": 0,
-     "pd_lifetime": {
-      "native:uluna": 4200
-     },
-     "pd_leg_count": 3
-    }
-   },
-   "state": "inactive",
-   "confidence": {
-    "tier": "provisional",
-    "snapshots_used": 76,
-    "snapshots_expected": 144,
-    "ratio": 0.528,
-    "epochs_covered": 4,
-    "has_gaps": true,
-    "depth_fallback": false
-   },
-   "grade": "F"
-  },
-  {
    "gauge_pool_id": "native:factory/terra1aa8nurhuk7rwedhjyzptggypuxd3y66qp4nsx6ph240g37esdm7qyheqkd/uLP",
    "name": "ATOM-dATOM",
    "bucket": "single",
@@ -4318,10 +4244,10 @@
    "gaugeActive": false,
    "vp": 7896.793102,
    "pct_of_bucket": 0.029175733644745135,
-   "staked_usd": 8.717483633929112,
+   "staked_usd": 8.669863910376774,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.01676439160370983,
+   "take_flow_epoch_usd": 0.016672815212263027,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -4333,18 +4259,18 @@
    },
    "scores": {
     "A": {
-     "score": 24.412957772365523,
+     "score": 24.38814173484016,
      "parts": {
       "depth": 0,
       "utilization": null,
       "trend": 61.5,
       "exit_slippage": 0,
-      "pool_balance": 90.8
+      "pool_balance": 90.6
      },
      "util_weekly_ratio": null,
      "trend_pct": 0.8,
      "slip_bound": false,
-     "slip_worst_pct": 98.8
+     "slip_worst_pct": 98.81
     },
     "B": {
      "score": 40.5,
@@ -4401,6 +4327,104 @@
    "grade": "F"
   },
   {
+   "gauge_pool_id": "cw20:terra19z7g4fnu529250sdkdmgm9kw4qgwmmqrjas9t24ll84mpd94lxnshf0z2h",
+   "name": "LUNA-arbLUNA",
+   "bucket": "single",
+   "dex": "Astroport",
+   "dex_subtype": "stable",
+   "lp_address": "terra19z7g4fnu529250sdkdmgm9kw4qgwmmqrjas9t24ll84mpd94lxnshf0z2h",
+   "pool_address": "terra16nfwldn9j5xhry2y78gvm3x4vte8vu77zr3ctlan79w5f5aheawqnz7a4f",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 26914.097602,
+   "pct_of_bucket": 0.09943764928142165,
+   "staked_usd": 5821.657651489827,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 11.195495483634282,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 76,
+    "snapshots_expected": 144,
+    "ratio": 0.528,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 12.961107117886286,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": 60,
+      "exit_slippage": 0,
+      "pool_balance": 7.2
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": 0,
+     "slip_bound": true,
+     "slip_worst_pct": 98.72
+    },
+    "B": {
+     "score": 57.360528104337654,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 1.8
+     },
+     "tokens": [
+      {
+       "denom": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
+       "symbol": "arbLUNA",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 30.7
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 13.11,
+    "balance": "underpaid",
+    "need_score": 122.8,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": {
+      "native:uluna": 4200
+     },
+     "pd_leg_count": 3
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 76,
+    "snapshots_expected": 144,
+    "ratio": 0.528,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
    "gauge_pool_id": "cw20:terra1stavsz7hhsw56tngxt6p5xmkm86a9nvgztgvv56wj7q6yceutmwsvrwjdz",
    "name": "LUNA-WHALE",
    "bucket": "project",
@@ -4414,10 +4438,10 @@
    "gaugeActive": false,
    "vp": 501.334722,
    "pct_of_bucket": 0.0018679031660165076,
-   "staked_usd": 0.00012970939792206538,
+   "staked_usd": 0.000128117961988921,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 2.4944114985012576e-7,
+   "take_flow_epoch_usd": 2.463806961325404e-7,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -4510,10 +4534,10 @@
    "gaugeActive": false,
    "vp": 10766.851725,
    "pct_of_bucket": 0.04016057894289582,
-   "staked_usd": 8.026245384532887,
+   "staked_usd": 7.9528500512165206,
    "depth_usd": 575.825,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.015435087277947861,
+   "take_flow_epoch_usd": 0.015293942406185618,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -4606,10 +4630,10 @@
    "gaugeActive": false,
    "vp": 14893.394351,
    "pct_of_bucket": 0.05549070758551065,
-   "staked_usd": 7.355324644878081,
+   "staked_usd": 7.277209208939703,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.014144855086304003,
+   "take_flow_epoch_usd": 0.013994633094114814,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -4704,10 +4728,10 @@
    "gaugeActive": false,
    "vp": 15251.91902,
    "pct_of_bucket": 0.056889972433735204,
-   "staked_usd": 0.870616786457427,
+   "staked_usd": 0.8582984675546421,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.0016742630508796675,
+   "take_flow_epoch_usd": 0.0016505739760666197,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -4804,10 +4828,10 @@
    "gaugeActive": false,
    "vp": 18588.506837,
    "pct_of_bucket": 0.06933551379039699,
-   "staked_usd": 0.0007872575106385473,
+   "staked_usd": 0.000779552958509669,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.0000015139567512279757,
+   "take_flow_epoch_usd": 0.0000014991403048262866,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -4902,10 +4926,10 @@
    "gaugeActive": false,
    "vp": 11799.356977,
    "pct_of_bucket": 0.044011844822746185,
-   "staked_usd": 1.405946822591938,
+   "staked_usd": 1.3883337509764777,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.002703743889599881,
+   "take_flow_epoch_usd": 0.002669872598031688,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -5000,10 +5024,10 @@
    "gaugeActive": false,
    "vp": 391.204858,
    "pct_of_bucket": 0.0014592021868447668,
-   "staked_usd": 0.47736455936238986,
+   "staked_usd": 0.47163105898593943,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.0009180087680045959,
+   "take_flow_epoch_usd": 0.0009069828057421913,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -5098,10 +5122,10 @@
    "gaugeActive": false,
    "vp": 33231.875439,
    "pct_of_bucket": 0.12395558061689943,
-   "staked_usd": 1.855004920960806,
+   "staked_usd": 1.832767060328144,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.003567317155693858,
+   "take_flow_epoch_usd": 0.0035245520390925853,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -5298,10 +5322,10 @@
    "gaugeActive": false,
    "vp": 115595.673001,
    "pct_of_bucket": 0.4270833137451792,
-   "staked_usd": 1816.8802448973584,
+   "staked_usd": 1795.5542293139818,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 3.4940004709564585,
+   "take_flow_epoch_usd": 3.4529889025268883,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -5324,7 +5348,7 @@
      "util_weekly_ratio": null,
      "trend_pct": 0.1,
      "slip_bound": false,
-     "slip_worst_pct": 99.08
+     "slip_worst_pct": 99.09
     },
     "B": {
      "score": 29.330357142857146,
@@ -5359,7 +5383,7 @@
     "quality": 27
    },
    "overlay": {
-    "ratio_vs_bucket_median": 0.95,
+    "ratio_vs_bucket_median": 0.94,
     "balance": "balanced",
     "need_score": 0,
     "underdog": false,
@@ -5399,10 +5423,10 @@
    "gaugeActive": false,
    "vp": 2419.14717,
    "pct_of_bucket": 0.009013404537144496,
-   "staked_usd": 3763.482184629417,
+   "staked_usd": 3717.2225717103966,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 7.237465739671957,
+   "take_flow_epoch_usd": 7.148504945596917,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -5414,7 +5438,7 @@
    },
    "scores": {
     "A": {
-     "score": 13.529829992676103,
+     "score": 13.529829992676104,
      "parts": {
       "depth": 0,
       "utilization": null,
@@ -5425,7 +5449,7 @@
      "util_weekly_ratio": null,
      "trend_pct": 0,
      "slip_bound": true,
-     "slip_worst_pct": 99.04
+     "slip_worst_pct": 99.05
     },
     "B": {
      "score": 47.0625,
@@ -5457,7 +5481,7 @@
     "quality": 26.9
    },
    "overlay": {
-    "ratio_vs_bucket_median": 130.79,
+    "ratio_vs_bucket_median": 130.02,
     "balance": "underpaid",
     "need_score": 107.6,
     "underdog": false,
@@ -5497,10 +5521,10 @@
    "gaugeActive": false,
    "vp": 112072.893037,
    "pct_of_bucket": 0.4180342019311274,
-   "staked_usd": 183.54586886062583,
+   "staked_usd": 181.74463879787206,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.3529728247319728,
+   "take_flow_epoch_usd": 0.3495089207651386,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -5523,7 +5547,7 @@
      "util_weekly_ratio": null,
      "trend_pct": null,
      "slip_bound": true,
-     "slip_worst_pct": 99.74
+     "slip_worst_pct": 99.75
     },
     "B": {
      "score": 42.28125,
@@ -5597,10 +5621,10 @@
    "gaugeActive": true,
    "vp": 1427002.753324,
    "pct_of_bucket": 5.322749694186784,
-   "staked_usd": 467.21073254082165,
+   "staked_usd": 462.62810484659235,
    "depth_usd": 498.28000000000003,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.8984821779631187,
+   "take_flow_epoch_usd": 0.8896694323972931,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -5695,10 +5719,10 @@
    "gaugeActive": false,
    "vp": 24572.12431,
    "pct_of_bucket": 0.09078492303066127,
-   "staked_usd": 37.29555471868471,
+   "staked_usd": 36.96183922567418,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.07172222061285521,
+   "take_flow_epoch_usd": 0.07108046004937343,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -5791,10 +5815,10 @@
    "gaugeActive": false,
    "vp": 0.000015,
    "pct_of_bucket": 5.5419459395528306e-11,
-   "staked_usd": 0.031306479202238884,
+   "staked_usd": 0.031190083782617395,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.000060204767696613245,
+   "take_flow_epoch_usd": 0.0000599809303511873,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -5806,13 +5830,13 @@
    },
    "scores": {
     "A": {
-     "score": 14.923893717356338,
+     "score": 15.047441342550307,
      "parts": {
       "depth": 0,
       "utilization": null,
       "trend": null,
       "exit_slippage": 0,
-      "pool_balance": 89.5
+      "pool_balance": 90.3
      },
      "util_weekly_ratio": null,
      "trend_pct": null,
@@ -5846,7 +5870,7 @@
      ],
      "flags": []
     },
-    "quality": 25.4
+    "quality": 25.5
    },
    "overlay": {
     "ratio_vs_bucket_median": null,
@@ -5887,10 +5911,10 @@
    "gaugeActive": false,
    "vp": 223235.962913,
    "pct_of_bucket": 0.8317460243536381,
-   "staked_usd": 1296.2163994336627,
-   "depth_usd": 5003.405000000001,
+   "staked_usd": 1282.9010539127214,
+   "depth_usd": 5006.8925,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 2.4927238450647358,
+   "take_flow_epoch_usd": 2.467117411370618,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -5902,13 +5926,13 @@
    },
    "scores": {
     "A": {
-     "score": 9.69118631647316,
+     "score": 9.763902071079263,
      "parts": {
       "depth": 0,
       "utilization": 0.1,
       "trend": 60.6,
       "exit_slippage": 0,
-      "pool_balance": 5.8
+      "pool_balance": 6.5
      },
      "util_weekly_ratio": 0.0003863255811534376,
      "trend_pct": 0.3,
@@ -5983,10 +6007,10 @@
    "gaugeActive": false,
    "vp": 14.094726,
    "pct_of_bucket": 0.000052573618608227495,
-   "staked_usd": 7.98123498432466,
+   "staked_usd": 7.917866523715857,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.015348528816008962,
+   "take_flow_epoch_usd": 0.015226666391761264,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -5998,13 +6022,13 @@
    },
    "scores": {
     "A": {
-     "score": 9.493978409522,
+     "score": 9.408902576916526,
      "parts": {
       "depth": 0,
       "utilization": null,
       "trend": null,
       "exit_slippage": 0,
-      "pool_balance": 57
+      "pool_balance": 56.5
      },
      "util_weekly_ratio": null,
      "trend_pct": null,
@@ -6040,12 +6064,12 @@
       "mcap_source_pending:terra1xc7ynq"
      ]
     },
-    "quality": 23.3
+    "quality": 23.2
    },
    "overlay": {
-    "ratio_vs_bucket_median": 43.37,
+    "ratio_vs_bucket_median": 43.43,
     "balance": "underpaid",
-    "need_score": 93.2,
+    "need_score": 92.8,
     "underdog": false,
     "bribe_target": false,
     "threshold_risk": false,
@@ -6081,10 +6105,10 @@
    "gaugeActive": false,
    "vp": 49.785957,
    "pct_of_bucket": 0.0001857026461786922,
-   "staked_usd": 0.0000060889898433431375,
+   "staked_usd": 0.000006041189507509526,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 1.1709595852582957e-8,
+   "take_flow_epoch_usd": 1.1617672129826012e-8,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -6096,13 +6120,13 @@
    },
    "scores": {
     "A": {
-     "score": 8.520017949662876,
+     "score": 8.437531343300067,
      "parts": {
       "depth": 0,
       "utilization": null,
       "trend": null,
       "exit_slippage": 0,
-      "pool_balance": 51.1
+      "pool_balance": 50.6
      },
      "util_weekly_ratio": null,
      "trend_pct": null,
@@ -6179,10 +6203,10 @@
    "gaugeActive": false,
    "vp": 0.000175,
    "pct_of_bucket": 6.465603596144969e-10,
-   "staked_usd": 2.0459079823292303e-9,
+   "staked_usd": 2.022839030784598e-9,
    "depth_usd": 63.795,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 3.934438427556212e-12,
+   "take_flow_epoch_usd": 3.89007505920115e-12,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -6278,10 +6302,10 @@
    "gaugeActive": false,
    "vp": 24266.430151,
    "pct_of_bucket": 0.08965549602851788,
-   "staked_usd": 241.75709840757233,
+   "staked_usd": 239.97367106366264,
    "depth_usd": 0,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.4649174969376392,
+   "take_flow_epoch_usd": 0.46148782896858204,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 76,
@@ -6340,7 +6364,7 @@
    },
    "overlay": {
     "ratio_vs_bucket_median": 0.6,
-    "balance": "balanced",
+    "balance": "overweighted",
     "need_score": 0,
     "underdog": false,
     "bribe_target": false,
@@ -6379,10 +6403,10 @@
    "gaugeActive": true,
    "vp": 1040636.566394,
    "pct_of_bucket": 3.8447677291182853,
-   "staked_usd": 117.18437597356179,
+   "staked_usd": 116.32108457380039,
    "depth_usd": 217.3075,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.22535456917992652,
+   "take_flow_epoch_usd": 0.22369439341115463,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 28,
@@ -6405,7 +6429,7 @@
      "util_weekly_ratio": null,
      "trend_pct": null,
      "slip_bound": false,
-     "slip_worst_pct": 99.88
+     "slip_worst_pct": 99.89
     },
     "B": {
      "score": 22.5,
@@ -6478,10 +6502,10 @@
    "gaugeActive": false,
    "vp": 27840.467671,
    "pct_of_bucket": 0.1028602445097002,
-   "staked_usd": 9.707961097727015,
+   "staked_usd": 9.58861274421461,
    "depth_usd": null,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.018669155957167338,
+   "take_flow_epoch_usd": 0.018439639892720402,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 0,
@@ -6574,10 +6598,10 @@
    "gaugeActive": false,
    "vp": 65181.442677,
    "pct_of_bucket": 0.2408213543853305,
-   "staked_usd": 30.854042172595573,
+   "staked_usd": 30.474726774272604,
    "depth_usd": null,
    "take_rate": 0.1,
-   "take_flow_epoch_usd": 0.05933469648576072,
+   "take_flow_epoch_usd": 0.058605243796678086,
    "first_seen_epoch": 184,
    "sample": {
     "snapshots_used": 0,
