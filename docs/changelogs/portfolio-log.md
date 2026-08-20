@@ -13,6 +13,12 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev P2.0 — 2026-08-20 — canonical VP field migration
+
+12 reads of the retired `display_voting_power_human` migrated to canonical
+`voting_power_human` (SPEC-vp-definition-fix). Fixes the landing tiles that
+showed 0 VP live.
+
 ## Rev P1.9 — 2026-08-20 — navigation continuity with tla-stats
 
 Member Portfolio looked like a sibling tab on tla-stats but clicking it jumped

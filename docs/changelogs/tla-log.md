@@ -2,6 +2,31 @@
 
 ---
 
+## Rev T5 — 2026-08-20 — canonical VP everywhere; Bribe Runway tile; pending-withdrawal board
+
+- **38 stale VP reads migrated across three pages** (tla-stats 22,
+  member-portfolio 12, index 4): SPEC-vp-definition-fix (2026-07-13) retired
+  `display_voting_power_human` in the positions product, but the readers were
+  never migrated — Voting Leaders showed "No data.", the portfolio landing
+  showed "0 VP live". All reads now use canonical `voting_power_human`
+  (total = boost + fixed). Producer was correct; readers caught up.
+- **Bribe Runway tile (Overview)** — surfaces the already-shipped
+  `tla-voting/bribe-state/runway.json` product: per-pool epochs-left with
+  last-epoch red flags, remaining amounts by denom, funders (attribution only
+  where event streams matched — otherwise short address), and the depositor
+  warning the tile exists for: when a pot empties, Votion re-optimizes away.
+  First live reading: 5 pots on their last funded epoch.
+- **Pending-withdrawal board under Unlock Runway** — locks whose end_period
+  passed but were never redeemed (unlocked capital that hasn't come home;
+  already out of the VP race, so a withdrawal here is old news, not new exit
+  pressure). Live: 48 locks, 7.5K ampLUNA + 1.2K bLUNA + 1.2K arbLUNA + 1.1K
+  LUNA. Chain-validated same-day: test locks #1317/#1318 withdrew this
+  morning and age out at the next hourly capture; #1319 stands as the
+  permanent pending fixture.
+- Gate-caught polish: runway denom keys carry the `cw20:` prefix, lp-grades
+  token denoms don't — symbol match now strips the prefix (CAPA renders as
+  CAPA, not a raw address).
+
 ## Rev T4.1 — 2026-08-20 — Overview VP donut restored (both slices, one root cause)
 
 The TLA Total VP donut had collapsed to a single gray "Other 100%" ring. Two
