@@ -89,3 +89,55 @@ known venue still feeds as "transferred" with venue "direct".
   never-shrink). Start the capture ASAP — every day before it ships is a day
   the chart can't show. Chart renders whatever exists, honestly sparse at
   first (mixed-granularity honesty rule).
+
+## 5. Fixture inventory + contract label map (mined 2026-08-20 — owner was right: it was all captured before)
+
+**Held in our own streams (no new txs needed):** 1,259 classified sales
+(prices, denoms, venues Atrium/Boost/BBL, back to 2023-12) · 36 listings + 29
+delistings · 2,223 transfers (send_nft/transfer_nft with from/to/tx/height) ·
+stake/unstake in bulk (700 send_nfts into aDAO DAODAO staking; reverse
+transfers = unstakes) · BBL escrow flows (344 sends) · lock mint/adjust
+(tla-voting/events/locks since 2024) + the §2 withdraw fixtures.
+
+**Label map (recovered from legacy nft-inventory/marketplace-stats/curated —
+now appended to docs/curated/known_contracts.json):**
+- aDAO DAODAO staking: terra1c57ur376szdv8rtes6sa9nst4k536dynunksu8tx5zu4z5u3am6qmvqx47
+- Enterprise NFT staking (real, abandoned; user_stake pagination workaround
+  exists in legacy nft-inventory — PORT IT): terra1e54tcdyulrtslvf79htx4zntqntd4r550cg22sj24r6gfm0anrvq0y8tdv
+- DAO treasury NFT holder (898 broken — NOT Enterprise, was mislabeled once
+  already): terra1h8psjgcsg9fef7w2yv0j6262sfcaszj8vs4tsy3uwla6zwtaspvqrp4l7v
+- Marketplaces: BBL terra1ej4cv98e… (listed/cancel/sale) · Atrium
+  terra15du229… · Boost terra1kj7pasya…
+- pixeLions collection: terra17z7fpaa8kah698xn5tarrcucvualdy4wsztkfc404g3garucpu6qmxp50g
+  (OWNER-CONFIRMED 2026-08-20; second legacy address terra1c690mdr…sh7en is
+  therefore staking/DAO or similar — one contract query at build pins it)
+- TLA Locks collection = the vAMP minter (Boost-only listings)
+
+**Remaining genuine gaps: NONE — all resolved by owner test txs 2026-08-20.**
+
+### 2d. Atrium LISTING (full mechanism) — tx CDD4C53D…B984 (block 22461917)
+`send_nft` on the collection with base64 hook msg decoding to
+`{price:"50000000", payment:{Cw20:{contract_addr: SOLID}}, expires_in_blocks:0}`;
+marketplace emits wasm `list_nft` {listing_id:545, nft_contract, price, seller,
+token_id:4864}. CW20-priced listings and the expiry field confirmed.
+
+### 2e. PRICE ADJUSTMENT — DERIVED, not emitted (answered by owner test)
+Sequence: `cancel_listing` #387 returns token 4864 (tx 727FC7DE…2238, block
+22461904) → same token relists 13 blocks later as NEW listing 545 (§2d).
+Atrium has NO update_price event. **Classifier rule: `price_change` = delist +
+relist PAIR — same token, same seller, short window (≤ ~1h), price differs.**
+The feed shows it as one "price adjusted X → Y" row, deduping the pair. This
+is why the legacy flow summary carried a `price_changes` counter with zero
+events of that type: always meant to be derived.
+
+### 2f. NFT SWITCH — tx FA3CECF1…9E51 (block 22462088)
+Plain `transfer_nft` direct on the collection; venue lives ONLY in the memo:
+`Transferring NFT Via NFTSwitch (https://dapp.nftswitch.xyz)`. No escrow
+contract at all.
+
+**⚠ CAPTURE REQUIREMENT exposed by 2f: the transfers stream schema carries no
+memo field — historical NFT Switch / boostdao venue usage is invisible in the
+archive. The feed's capture MUST record tx memos going forward (classifier v2:
+add `memo` to transfer entries; venue attribution = memo match for
+memo-signing venues, contract match for escrow venues).** Historical direct
+transfers without memo remain venue "direct" honestly.
