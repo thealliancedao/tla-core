@@ -2,6 +2,11 @@
 
 ---
 
+## site-footer — 2026-08-20 — Help link added
+
+lib/site-footer.js LINKS now leads with Help (help.html) on every page;
+help-log.md registered in PAGE_LOG. See help-log.md Rev 1.0.
+
 ## Hub Rev H2 — 2026-08-20 — Updates tab reads the merged changelogs
 
 The Updates feed parsed CHANGES_PENDING.md, which the 08-19 queue rewrite
