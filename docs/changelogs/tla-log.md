@@ -2,6 +2,23 @@
 
 ---
 
+## Rev T4.1 — 2026-08-20 — Overview VP donut restored (both slices, one root cause)
+
+The TLA Total VP donut had collapsed to a single gray "Other 100%" ring. Two
+slices, one diagnosis:
+
+- **aDAO slice**: read the SAME dead field the aDAO Vote column did
+  (`treasury.summary.display_voting_power_human`, nulled when the positions
+  product changed) — both broke together. Now reads
+  `voting.total_voting_power_human` with the old field as fallback.
+  Verified: 841.5K.
+- **Votion slice**: summed per-pool `votion_current_vp` fields the org
+  snapshot never carried (the legacy per-pool votion data was method-tainted
+  and deleted) — zero forever by construction. Now sourced from the org
+  votion product: Σ vaults[].lock_vp_human, the chain-derived lock VP the
+  Votion vaults control. Verified: 7.86M (28.2% of 27.89M total). Per-POOL
+  votion remains honestly unknown until a per-pool vote capture ships.
+
 ## Rev T4 — 2026-08-20 — LP Stats & TLA Stats cleaned to current org data; dead tabs stripped
 
 Full-pipeline audit (jsdom, every org fetch routed to a real tla-core checkout,
