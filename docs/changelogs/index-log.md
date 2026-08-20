@@ -2,6 +2,30 @@
 
 ---
 
+## Rev I-A1 — 2026-08-20 — Live Activity reads org streams; collection tabs
+
+The feed showed "No activity in the last 7 days" while 400+ events happened —
+because it fetched the BBL warlock API through a CORS proxy and rendered only
+BBL auctionHistory: the venue with the LEAST aDAO traffic, invisible to
+Atrium/Boost sales, all listings/cancels, transfers, and lock events. Rewired
+to the org streams (nfts/adao/flows + transfers + tla-voting/events/locks,
+current + previous month): first live render shows 408 events in 7 days.
+
+- Rows: sales with price/venue, listings/delistings, transfers (marketplace
+  escrow legs deduped — the flows stream already tells that story), Staked/
+  Unstaked via the known staking contracts (aDAO DAODAO, Enterprise), and
+  human-labeled lock events (New lock, Merged, Added to, Set auto-max, …).
+  Every row links its tx where the stream carries a hash.
+- Tabs: All / aDAO / TLA Locks live now; Pixel Lions shown disabled with a
+  tooltip until its capture ships (SPEC-activity-feed). Full taxonomy
+  (venue-attributed memos, derived price changes, new-member) lands with that
+  build.
+- "updates nightly" chip: streams roll up ~00:00 UTC — today's actions appear
+  after tonight's rollup. Honest, stated.
+- Seam note: the old wrapper fn (setupActivityFeed) is preserved — an external
+  caller depends on it; the first splice orphaned its brace and the per-script
+  syntax sweep caught it before delivery.
+
 ## Rev 3.80 — 2026-08-19 — floor tile corrected, shared health registry, Atrium complete
 
 **The floor tile was wrong, and the cause was a stale source I introduced.**

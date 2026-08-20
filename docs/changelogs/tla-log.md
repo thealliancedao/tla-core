@@ -2,6 +2,16 @@
 
 ---
 
+## Rev T5.1 — 2026-08-20 — Bribe Runway rehomed as the Runway tile's second tab
+
+The standalone Bribe Runway card broke the Overview grid (tall orphan column
+— owner screenshot). Removed; the Unlock Runway tile is now "Runway" with two
+pills — Unlocks (default) and Bribes — and the bribe view restyled to the
+tile's visual language: left column = epochs-of-funding-left bars (red bar =
+this epoch's cliff, hover lists the pools), right column = soonest-to-empty
+list with amounts, funders, and the last-epoch warning banner. Headline and
+title swap with the tab. Same product, same warnings, layout that belongs.
+
 ## Rev T5 — 2026-08-20 — canonical VP everywhere; Bribe Runway tile; pending-withdrawal board
 
 - **38 stale VP reads migrated across three pages** (tla-stats 22,
