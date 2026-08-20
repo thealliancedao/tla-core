@@ -2,6 +2,39 @@
 
 ---
 
+## Rev T4 — 2026-08-20 — LP Stats & TLA Stats cleaned to current org data; dead tabs stripped
+
+Full-pipeline audit (jsdom, every org fetch routed to a real tla-core checkout,
+every table cell censused) found and fixed:
+
+- **aDAO Vote column was zero on every pool** — `buildAdaoVotesIndex` read
+  `treasury.summary.display_voting_power_human`, which is null on the treasury
+  record; the live field is `voting.total_voting_power_human` (the same one the
+  Vote Advisor uses). Verified fixed: stable pools now show 420.7K each —
+  exactly the treasury's 841,486 VP × its real 50% allocations.
+- **Votion Now / Δ Vote / Votion Next columns RETIRED (fail-honest).** They
+  expected per-pool Votion vote fields no org product carries; the legacy
+  per-pool votion data was the method-tainted website copy-paste already
+  deleted by doctrine. Three headers, three row cells, three footer cells and
+  their helpers removed, with an in-tab note; they return the day a
+  trustworthy per-pool Votion vote capture ships (queued).
+- **Efficiency column (TLA Stats) filled from the canonical source** — the
+  epoch-avg join only covers charted Astroport pools; it now falls back to
+  the lp-grades product's `util_weekly_ratio` (same semantic, computed for
+  every windowed pool; no-third-copy). Remaining blanks are the honest floor:
+  inactive pools + SS/singles where no trustworthy volume exists.
+- **Dead weight stopped executing:** the retired rankings + dao tabs' HTML
+  removed (13.9K chars, unreachable since 2026-07), their load-time render
+  calls removed (this was the "PD Rankings: 0 pools" console line), the
+  placeholder `computePoolScores` (support hardcoded 60) unwired, and the
+  dead four-score flatten reader removed. The interleaved function bodies
+  stay inert pending the dedicated dead-code strip pass (same rule as the
+  star-map block — live helpers like `normalizePoolName` are woven through).
+
+Audit after: every column in both tabs renders real values or an honest
+blank with a stated reason; zero NaN/undefined cells; grades-tab regression
+gate 17/17 unchanged.
+
 ## Rev G2 — 2026-08-19 — aDAO Vote Advisor + Bribe Planner + grading tooltips
 
 Two decision tools land on the LP Grades tab, both DETERMINISTIC algorithms
