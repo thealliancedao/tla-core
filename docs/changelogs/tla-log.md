@@ -2,6 +2,41 @@
 
 ---
 
+## Rev G2 — 2026-08-19 — aDAO Vote Advisor + Bribe Planner + grading tooltips
+
+Two decision tools land on the LP Grades tab, both DETERMINISTIC algorithms
+over the published lp-grades product with every parameter in the public
+rubric's new `advisor` block (config 0.2.0) — the rubric's answer, never
+hidden opinion; council judgment decides.
+
+- **aDAO Vote Advisor.** Reads the treasury's live allocation from the
+  positions product (`voting.votes_per_bucket`, weight_bps) and shows, per
+  bucket: how we vote NOW, what the rubric recommends, and the exact SHIFTS
+  to get there — all in TLA's 10% chunks. The allocator assigns each chunk to
+  the bucket pool with the highest marginal quality × underpaid score,
+  recomputed after every chunk as our own assigned VP raises that pool's
+  support, with a 50% diversification cap per pool (max_per_pool_bps —
+  the first gate run recommended 100% all-in per bucket, mathematically
+  honest but overstating the rubric's confidence; the cap is a public
+  parameter, raise to 10000 to disable). Duplicate pool names across DEXes
+  disambiguate with the venue — the advisor genuinely recommends the
+  SkeletonSwap LUNA-USDC alongside the Astroport one.
+- **Bribe Planner.** Preset $25/$50/$75/$100 or a custom budget: greedy
+  placement by need score with diminishing pull as a pool's planned pot
+  grows — big budgets naturally split (max 4 pools), small ones concentrate;
+  sub-$25 placements merge upward instead of dust-splitting. Each placement
+  carries its why (no existing pot / N× bucket-median liquidity per vote /
+  threshold defense). Gate verified budget conservation at every preset plus
+  a custom $240.
+- **Grading tooltips everywhere.** Lens pills carry their lens description;
+  every grade letter explains itself (quality = A × B with the live rubric's
+  weights, version, and letter boundaries); both advisor panels carry ℹ
+  tooltips stating their exact algorithm and parameters.
+
+Gate (jsdom, real product 1.0.1 + real treasury votes): 18/18 — recommended
+weights are exact 10% chunks summing 100% per bucket, shifts net to zero,
+every budget conserves to the dollar.
+
 ## Rev G1 — 2026-08-19 — LP Grades tab reads the org lp-grades product; page-side grading retired
 
 The interim page-side grade computation (~200 lines inside `renderLpGrades()`)

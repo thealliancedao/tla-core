@@ -26,3 +26,12 @@
   daily, fingerprint-fresh), volume absent-by-honesty (no trustworthy source
   anywhere). SS pools grade on everything except utilization. Owner outreach
   queued: ask SS to expose per-pool volume in the API their own UI reads.
+
+## 2026-08-19 — 1.0.1 — rubric echo carries the advisor block
+- Config 0.2.0: new `advisor` block — vote allocator parameters (chunk_bps 1000
+  per the TLA 10%-chunk law, min_quality 40, max_per_pool_bps 5000
+  diversification cap) and bribe-planner parameters (presets, $25 unit,
+  min-effective-pot merge, max 4 splits). The cron echoes `rubric.advisor`
+  into the product so the page's advisor is driven entirely by the public
+  config.
+- No compute changes; grades identical to 1.0.0 for the same inputs.
