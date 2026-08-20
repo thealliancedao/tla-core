@@ -2,6 +2,18 @@
 
 ---
 
+## Rev I-A4 — 2026-08-20 — uniform 14-slot chart views (owner spec)
+
+aggregateSnapshots rewritten: every view now renders the last 14 CALENDAR
+period slots (14 days / 14 epochs / 14 months), newest on the right, with
+the CURRENT partial period always the newest point (latest captured
+reading — the missing-August bug). Slots before a source existed are
+trimmed from the left; slots inside the archive with a missing metric
+render as gaps, never fabricated zeros. Unit-gated on real-shaped series:
+the actual backing archive shape (Apr start + producer gap 08-11..19 +
+resume today) and the young state-history source (Jul start → honest
+two-slot Monthly).
+
 ## Rev I-A3.1 — 2026-08-20 — April backing restored; chart-view truth documented
 
 - Month-end probing floored at the global per-day EARLIEST (2026-05-13),
