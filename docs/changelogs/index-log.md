@@ -2,6 +2,41 @@
 
 ---
 
+## Rev I-A6 — 2026-08-20 — 18 months of staked-count history RECOVERED (transfers replay)
+
+The deleted legacy repos took the daily staked-count files with them — but
+not the events that produced them. New derivation
+(.github/scripts/state-history-backfill/derive.js): every NFT transfer
+to/from the DAODAO and Enterprise staking contracts, replayed ANCHORED at
+the first org-captured day (2026-07-01), walking deltas backward to
+2025-01-01. Built-in truth test: forward replay across all 50 org-captured
+days reproduces them with worst drift 1 NFT (same-day capture timing) —
+the run refuses to emit above tolerance. 546 derived days land as
+state-history months 2025-01..2026-06, day rows carrying only the proven
+fields + source "derived:transfers-replay-v1"; org months untouched.
+Recovered history: DAODAO 1,160 → 1,631 staked; Enterprise 452 → 403.
+Site: V2 floor opened to 2025-01-01, month-end probing reaches the derived
+era, network-and-prices per-day fetches guarded at their real floor
+(2026-05-13). Gated on the REAL merged series: Monthly now fills all 14
+slots (Jul-2025 → Aug-2026 partial); Epoch 14 weeks. Also: Staking APR now
+reads docs/"Staking APR.csv" — SmartStake's native download name, upload
+as-is forever (source links to SmartStake + the CSV added in the modal);
+DELETE the old docs/staking-apr.csv after pasting (one canonical file).
+
+## Rev I-A5 — 2026-08-20 — view order Daily·Epoch·Monthly (Daily default); APR source link
+
+- Granularity tabs reordered per owner spec; Daily is the default view.
+- Staking APR overlay: source link added in the modal (Secondary Axis row) →
+  tla-core/docs/staking-apr.csv, the org-rescued series (1,485 rows,
+  2022-05-29 → 2026-06-22). Extend it by pencil-editing the CSV; a live LCD
+  sampler (annual_provisions / bonded) is queued to end manual imports.
+- Legacy-data hunt CONCLUDED: all legacy NFT daily repos are already
+  deleted; the surviving tla-ext_json_storage holds LP epochs + the APR csv
+  only — no staked counts. Deep DAODAO/Enterprise staked history is
+  therefore derivable ONLY by replaying stake/unstake events from the org
+  transfers stream (captured to genesis by the archive walk) into
+  state-history rows — booked as the top chart-queue item.
+
 ## Rev I-A4.1 — 2026-08-20 — aggregator scope crash fixed (empty Epoch/Monthly views)
 
 I-A4 called the page-level epoch helpers from a different script scope —
