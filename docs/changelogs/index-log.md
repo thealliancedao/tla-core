@@ -2,6 +2,21 @@
 
 ---
 
+## Rev I-A3.1 — 2026-08-20 — April backing restored; chart-view truth documented
+
+- Month-end probing floored at the global per-day EARLIEST (2026-05-13),
+  cutting April even though backing-history begins 2026-04-13. Month-ends
+  now floor at the oldest single-file source; per-day sources keep their own
+  guards.
+- Measured source floors, so nobody re-diagnoses honest gaps as bugs:
+  backing-history 2026-04-13 → daily · state-history (staked counts)
+  2026-07-01 → daily (their one-point Monthly IS the full archive) ·
+  dao-dashboard daily 2026-06-12 · ratio-history ZERO rows (producer never
+  existed org-side — queued).
+- QUEUED (next session, first item): uniform view slots — each view renders
+  the last 14 period slots (day/epoch/month) with the CURRENT partial period
+  as the newest point (latest captured day); missing metrics render as gaps,
+  never fabricated zeros.
 ## Rev I-A3 — 2026-08-20 — tile trend charts read the full archive
 
 Monthly/Epoch chart views sample month-end / epoch-end dates — but the
