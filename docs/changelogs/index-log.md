@@ -19,6 +19,23 @@
   reaches TLA genesis); Epoch Rewards from gauge distributions. Booked as
   the epoch-band backfill — next session, after reading the store schema.
 
+## Rev I-A10 — 2026-08-21 — calculators PROVEN working (harness-gated); chips corrected
+
+Root cause named by an in-fn try/catch under a Node DOM harness:
+unmintedCount is null until the dashboard fetch lands, and
+null.toLocaleString() threw — silently blanking every output below it.
+Both calculator instances are now fully self-contained (inline price/
+backing resolution, no cross-scope helper calls), null-hardened
+(fail-honest early return — no fake math), and the chart instance wraps
+in try/catch so one bad element can never blank the rest. Harness-gated
+on real fixtures: SOLID 49.75 x 5,828 -> $287K total / $58K backing /
++$229K premium / 5.0x — the owner's exact acceptance case. Chips
+corrected: venue collection floors are typically the CHEAPEST listing
+(= BROKEN), so the BBL/Atrium chips set NFT-Type to Broken to match what
+they fill; a third "Unbroken floor (USD)" chip fills the lowest unbroken
+listing from the Backing/Floor tile. Chips sit on their own wrapped row
+(basis-full) and manual entry always works — chips only pre-fill.
+
 ## Rev I-A8 — 2026-08-20 — band LUNA prices 15/16; chart-modal calculator parity; members booked
 
 - **epoch-band-history luna prices**: the deep source was the tla-snapshot
