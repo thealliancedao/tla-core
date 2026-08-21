@@ -52,3 +52,19 @@ compute, never assume.
 ## When the map has no route
 Say plainly what was checked and what does not exist yet (e.g. per-pool APR
 before E184, member-count history). Never substitute an adjacent object.
+
+## Pricing-artifact cautions (F3, AUDIT-price-artifact-2026-08)
+- If an LST-pair implied price ratio reads ≈1.0 (e.g. bLUNA ≈ LUNA) or a
+  token's price sits far off its neighboring days, SUSPECT A PRICING
+  ARTIFACT: say so plainly and point to the audit — do not narrate the
+  broken number as fact.
+- `price_source` values beginning `f2_repair:` mark corrected historical
+  entries; the original value and evidence live in that file's
+  `_price_corrections` block. Quote the corrected value; cite the block if
+  asked what changed.
+- Repetition is NOT a taint signal: legitimate prices repeat (stLUNA to 9
+  decimals; EURE served flat at 1.14; ATOM revisits cents). Taint is
+  identified by SOURCE MECHANICS (pool-derivation from non-xyk pools) and
+  value-band violations only.
+- FUEL/dATOM/WHALE history before 2026-08-21 is chronically mispriced
+  (Class D, repair pending F2b); WHALE stays null permanently (abandoned).
