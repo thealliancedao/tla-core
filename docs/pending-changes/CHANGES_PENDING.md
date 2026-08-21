@@ -3,12 +3,13 @@
 See cron-member-data-log.md F2b entry. Price audit now closed F1→F3 + F2b.
 
 ### FORWARD CAPTURE QUEUE (owner priority: correct-from-source, dynamic)
-1. **F1.2 tla-snapshot**: when one LP side is unpriced, `total_pool_usd` /
-   `staked_in_tla_usd` / `approx_apr_pct` → null (today: half-pool value,
-   doubled APR). Then re-annotate the 600 WHALE/dATOM null legs in history.
-2. **dATOM pricing from source**: registry `cg:drop-staked-atom` is a frozen
-   venue number. Replace with Drop hub exchange-rate × ATOM (chain-exact,
-   bLUNA method; Neutron LCD state query). Low exposure ($142), high principle.
+1. ~~F1.2 tla-snapshot~~ **SHIPPED** (see cron-member-data-log). Verify on first
+   post-deploy current.json: LUNA-WHALE / wSOL pools staked=null, apr=null.
+   Then: re-annotate the 600 WHALE/dATOM null legs in history to F1.2 semantics.
+2. ~~dATOM from source~~ **SHIPPED** (see cron-network-and-prices-log): Neutron
+   market via existing Astroport metrics; no env needed. Verify first run:
+   `token_prices.DATOM.match_quality` == direct_match (cg_only ⇒ denom wrong,
+   price still right). Drop wind-down noted; dATOM decoupled from ATOM.
 3. Registry identifier-drift sweep (E11/E12 family).
 4. Then: bot audit T2–T10, SPEC sign-offs, SPEC-pd-bribe-drift (now unblocked).
 
