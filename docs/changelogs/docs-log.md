@@ -23,3 +23,17 @@
 - NEW specs in pending-changes: SPEC-governance-props (capture + docs page +
   news feed incl. Forum tab), SPEC-pd-bribe-drift, SPEC-lp-grades-rework;
   plus AUDIT-price-artifact-2026-08 (platform pricing-artifact root cause).
+
+## 2026-08-21 (later) — Solid + Votion chapters (owner mega-intake)
+- REWRITTEN `solid-protocol.md` (was 12 lines): full CDP mechanics from
+  whitepaper v2 (LSD collateral, LTV, liquidation queue, mint-fee model),
+  **audit status = NONE per Solid's own Terms** (first-party close of the
+  hunt), Atrium marketplace incl. the two platform-relevant findings:
+  Alliance NFTs trade there, and **TLA Locks (veLUNA) are a listed
+  collection** — lock ownership can change hands; lock tracking must not
+  assume minting wallet still owns a lock.
+- NEW `votion.md`: docs-sourced advisor scope (LA + Hydro, Eris-hosted
+  docs) + vault channel; optimizer algorithm/cadence/fees explicitly
+  UNPUBLISHED — Bribe Planner response model stays labeled as a model.
+- facts appended: solid ×4, votion ×3. AUDITS.md + FOUNDATIONS-SOURCES.md
+  updated (Solid closed, Votion boundary set).
