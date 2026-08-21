@@ -42,3 +42,30 @@
   final restored, legacy address absent. Registry incident index: E11
   (EURe wrong coin) → E12 (ASTRO wrong token, same failure family:
   identifier drift after a migration).
+
+## 2026-08-21 — dATOM repointed to its real market: Astroport Neutron (registry v3.0.2)
+- **Finding reversed mid-delivery, on evidence.** F2b read CG's dATOM as a
+  "frozen venue number" because it sat at $2.62 for 7 weeks while ATOM moved
+  25%. Owner-sourced facts corrected that: Drop Protocol is in WIND-DOWN
+  (Medium 2025-11-13; no token, redemptions on a departing team), and CG's
+  venue table shows USDC.N/DATOM on Astroport NEUTRON at ~$89K/day — a real
+  market. dATOM is simply DECOUPLED from ATOM: the peg arb no longer works.
+  So (a) the pre-July CG history was still venue-flipping (par-proxy, jumps)
+  → the F2b history null STANDS; (b) the forward source must be the market,
+  NOT hub-rate × ATOM (backing ≠ price for an unredeemable derivative) — the
+  hub plan drafted earlier today was withdrawn before commit.
+- **Change (one registry entry):** `DATOM.astroportAddresses` → neutron-1
+  tokenfactory denom under the admin CG lists, `preferChain: 'neutron-1'`;
+  the phoenix-1 ATOM-dATOM pool ($132/day, CG-flagged stale) is REMOVED from
+  the entry so a Neutron miss cannot fall back to it. CG `drop-staked-atom`
+  stays as the cross-check (it tracks the same venue).
+- **Visible-failure design:** the Neutron denom could not be verified from the
+  sandbox (metrics fixture is phoenix-only). Gate proves both branches on
+  today's live values: Neutron hit → `astroport`/neutron-1/`direct_match`;
+  Neutron miss → `cg_only`, no Terra-pool fallback. 28/28 other tokens
+  identical to main. OWNER: first run after commit, check
+  `token_prices.DATOM.match_quality` — `direct_match` = denom right;
+  `cg_only` = denom wrong (price still correct via CG; fix the denom).
+- Doctrine note: "from the source" for an LST normally means hub rate × base
+  (bLUNA). When the protocol can't honor redemptions, the market is the
+  source. Recorded in PRICING-DOCTRINE follow-up.

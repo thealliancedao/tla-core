@@ -313,3 +313,19 @@ pool-status forward series + the APR emitter item).
 - Report: `f2-repair-report.json` now scope A+B+C+D+APR, 970 corrections.
   Closes AUDIT-price-artifact-2026-08 Class D. Not touched: current.json,
   heartbeat.json (cron-owned).
+
+## 2026-08-21 — tla-snapshot F1.2: unpriced side ⇒ null pool value (not half)
+- `buildLpHealth`: if ANY side of an LP has no price, `total_pool_usd` is null
+  and `balance_ratio_pct` is [null,null]. Previously the priced side alone was
+  summed, so the pool carried half its value → `staked_in_tla_usd` halved →
+  `approx_apr_pct` doubled (F2b finding; LUNA-WHALE 4.5M% APR). Downstream is
+  unchanged code: null total → staked null → APR null → excluded from TVL.
+- Pass-2 refresh still keys on null `usd_value`; Stage-3 derivation reads
+  `_basics` (amounts), not the total — xyk derivation unaffected.
+- Replay gate over today's live current.json (67 pools): 59 fully-priced pools
+  produce byte-identical lp_health; 6 unpriced pools go honest-null (4 were
+  half-valued: LUNA-WHALE, LUNA-wSOL, LUNA-wSOL.wh, one unnamed SS pool — ~$12
+  staked total leaves TVL). 0 fails. LCD is walled from the sandbox, so
+  live-fire verification = compare first post-deploy current.json.
+- Follow-up (queued): re-annotate the 600 WHALE/dATOM null legs in history to
+  the same semantics so dailies match forward capture.
