@@ -2,6 +2,24 @@
 
 ---
 
+## Rev T5.4 — 2026-08-21 — arb strip: corpses out (matches the simulator)
+
+The Overview arb strip and slippage.html's radar disagreed: the strip showed
+"1 divergence · ampROAR-ROAR (Skeleton Swap) vs unnamed pool terra1hqq6…
+(unlisted) · 15.66% apart" while the simulator said "all quiet". Root cause:
+the strip reads the gauge-set snapshot, which still carries drained migration
+corpses (dex:null, address-named — that one is the old ampROAR-ROAR Astroport
+pair); the simulator builds from the DEX crons' own pool lists, where corpses
+never exist. The strip's filter only excluded concentrated/stable, so corpses
+passed. Fix: additionally require a named DEX (`if (!p.dex) continue`).
+Replayed over the live snapshot: both phantom arbs gone (ampROAR-ROAR and a
+USDC-USDt vs unlisted), 6 real cross-DEX pairs still compared, radar quiet —
+identical to the simulator. Skeleton Swap pools (dex_subtype:null, xyk by
+construction) stay in. One line; rendering untouched.
+Noted for later: the largest remaining gap (WETH|WSTETH 23.6%) pairs an SS
+wETH pool with an Astroport WETH.axl pool — two bridges under one symbol.
+Pattern ≠ identity; the grouping key should include the denom. Queued.
+
 ## Rev T5.3 — 2026-08-20 — epoch-band history: 16 epochs backfilled (Active Pools, TLA TVL)
 
 The band popups said "more history will appear as epochs are tracked" over a

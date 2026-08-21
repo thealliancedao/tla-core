@@ -2,6 +2,26 @@
 
 ---
 
+## Agent v1.8.1 — 2026-08-21 — battery T2–T10 graded; rule 13 (reading discipline)
+
+Graded against fresh main (positions, runway, band, apr/pool-status post-F2b,
+state-history, Votion, distributions): T2 pass (smoothed the E187→E188 cliff),
+T3 exact, T4 numbers exact / prose wrong (per-asset counts, "expires" for an
+already-expired lock), T5 exact (said 9 pools at 2 epochs; product 12), T6
+pass (treasury vs Votion trap handled), T7 pass, T8 honest (broken
+CHANGES_PENDING link), T9 partial (ignored LUNA price as a reward force; mixed
+apr-history staked_usd_avg with pool-status staked_usd unlabeled), T10 FAIL
+(reported period 97 as latest; entries run 96→198 — positional read).
+Bonus: the arb-radar question exposed a SITE bug (tla-log Rev T5.4) and the
+agent misread "best ~$210 → ~$15.88 net" as $210 profit.
+Patches: SYSTEM_RULES rule 13 — latest = max(period) never positional; three
+forces on USD APR incl. LUNA price; name the staked field; lock end_period vs
+current epoch ⇒ "expired"; arb card size→profit semantics; corpse pools;
+correct doc paths. DATA-MAP: worked example corrected ($7.3K was E191; now
+E192 $8.4K pool-status, LUNA force added, field named), distributions "96 →
+current, latest = max", F2b/F1.2 pricing state, new Arb-radar/unlisted-pools
+section. Prompt-cache note: rules are the uncached block; corpus unchanged.
+
 ## Rev 1.4 + Agent v1.7.0 — 2026-08-21 — real chat window, triaged forms, mobile pass
 
 - **The chat is a chat window now** (owner request): fixed-height shell — log
