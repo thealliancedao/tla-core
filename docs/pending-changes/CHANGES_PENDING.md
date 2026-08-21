@@ -1,3 +1,15 @@
+## 2026-08-21 (night) — bot audit T2–T10 DONE; arb strip fixed; SPEC-unified-header drafted
+
+- Battery graded 6 pass / 2 partial / 1 fail; agent v1.8.1 rule 13 + DATA-MAP
+  patches shipped (help-log). tla-stats Rev T5.4 (tla-log).
+- **NEW SPEC awaiting owner sign-off: `SPEC-unified-header.md`** — one header +
+  footer across all core pages, global address picker (typeahead, last-4
+  lookup, sorts), header on transparency-hub + help. Build only after sign-off.
+- Queued small: arb grouping key by denom (WETH vs WETH.axl); strip quiet-state
+  wording ("below round-trip cost" is wrong when profit<$1 is depth-limited).
+- Verify next cron runs: F1.2 nulls in tla-snapshot current.json; DATOM
+  match_quality in network-and-prices current.json.
+
 ## 2026-08-21 (late) — F2b SHIPPED; audit Class D closed
 
 See cron-member-data-log.md F2b entry. Price audit now closed F1→F3 + F2b.
