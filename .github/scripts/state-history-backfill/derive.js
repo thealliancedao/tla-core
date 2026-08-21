@@ -28,6 +28,7 @@ const ROOT = process.env.LOCAL_DATA_DIR || '.';
 const OUT = process.argv[2] || './out';
 const DAODAO = 'terra1c57ur376szdv8rtes6sa9nst4k536dynunksu8tx5zu4z5u3am6qmvqx47';
 const ENTERPRISE = 'terra1e54tcdyulrtslvf79htx4zntqntd4r550cg22sj24r6gfm0anrvq0y8tdv';
+const TREASURY = 'terra1sffd4efk2jpdt894r04qwmtjqrrjfc52tmj6vkzjxqhd8qqu2drs3m5vzm';
 const ANCHOR_DATE = '2026-07-01';
 
 function readJson(p) { return JSON.parse(fs.readFileSync(p, 'utf8')); }
@@ -43,9 +44,10 @@ for (const y of fs.readdirSync(tDir).sort()) {
       const date = String(e.timestamp || '').slice(0, 10);
       if (!date) continue;
       const to = e.to || e.recipient, fr = e.from || e.sender;
-      const d = deltas.get(date) || { dao: 0, ent: 0 };
+      const d = deltas.get(date) || { dao: 0, ent: 0, tre: 0 };
       if (to === DAODAO) d.dao++; if (fr === DAODAO) d.dao--;
       if (to === ENTERPRISE) d.ent++; if (fr === ENTERPRISE) d.ent--;
+      if (to === TREASURY) d.tre = (d.tre || 0) + 1; if (fr === TREASURY) d.tre = (d.tre || 0) - 1;
       if (d.dao || d.ent || deltas.has(date)) deltas.set(date, d);
       evCount++;
     }
@@ -60,7 +62,7 @@ for (const y of fs.readdirSync(shDir).sort()) {
   for (const mf of fs.readdirSync(path.join(shDir, y)).sort()) {
     const m = readJson(path.join(shDir, y, mf));
     for (const [date, row] of Object.entries(m.days || {})) {
-      if (row.daodao_staked_count != null) captured.set(date, { dao: row.daodao_staked_count, ent: row.enterprise_staked_count });
+      if (row.daodao_staked_count != null) captured.set(date, { dao: row.daodao_staked_count, ent: row.enterprise_staked_count, tre: row.treasury_held_count });
     }
   }
 }
@@ -73,7 +75,7 @@ console.log(`anchor ${ANCHOR_DATE}: DAODAO ${anchor.dao}, Enterprise ${anchor.en
 // capture runs mid-day, so compare each captured day against BOTH the prior
 // close and that day's close and take the better match (a same-day event
 // after capture time is not a derivation error).
-let dao = anchor.dao, ent = anchor.ent, worst = 0, worstDay = '';
+let dao = anchor.dao, ent = anchor.ent, tre = anchor.tre, worst = 0, worstDay = '', treWorst = 0;
 const capDays = [...captured.keys()].sort();
 for (let i = capDays.indexOf(ANCHOR_DATE) + 1; i < capDays.length; i++) {
   const day = capDays[i], prevClose = { dao, ent };
@@ -83,20 +85,23 @@ for (let i = capDays.indexOf(ANCHOR_DATE) + 1; i < capDays.length; i++) {
   while (cur < end) {
     cur = new Date(cur.getTime() + 86400000);
     const dd = deltas.get(cur.toISOString().slice(0, 10));
-    if (dd) { dao += dd.dao; ent += dd.ent; }
+    if (dd) { dao += dd.dao; ent += dd.ent; tre += (dd.tre || 0); }
   }
   const got = captured.get(day);
+  if (got.tre != null) treWorst = Math.max(treWorst, Math.abs(tre - got.tre));
   const errClose = Math.abs(dao - got.dao) + Math.abs(ent - got.ent);
   const errPrev = Math.abs(prevClose.dao - got.dao) + Math.abs(prevClose.ent - got.ent);
   const err = Math.min(errClose, errPrev);
   if (err > worst) { worst = err; worstDay = day; }
 }
-console.log(`truth test across ${capDays.length} captured days: worst drift ${worst}${worstDay ? ' on ' + worstDay : ''}`);
+console.log(`truth test across ${capDays.length} captured days: staked worst drift ${worst}${worstDay ? ' on ' + worstDay : ''}; treasury worst drift ${treWorst}`);
+const treOk = treWorst <= 2;
+if (!treOk) console.log('treasury drift exceeds tolerance — treasury_held_count will NOT be emitted (staked fields unaffected)');
 if (worst > 2) { console.error('REFUSING to emit: drift exceeds tolerance — the event set is incomplete for the captured era.'); process.exit(1); }
 
 // ---- 4) backward walk: absolute counts for the pre-capture era --------------
 const series = new Map(); // date -> {dao, ent} end-of-day
-let bDao = anchor.dao, bEnt = anchor.ent;
+let bDao = anchor.dao, bEnt = anchor.ent, bTre = anchor.tre;
 // anchor is a capture on 07-01; treat 06-30 close as anchor minus 07-01 deltas? No:
 // captured value on 07-01 reflects state at capture time; end-of-06-30 = anchor
 // minus any 07-01 deltas that happened BEFORE capture. Tolerance ±2 covers this;
@@ -105,9 +110,9 @@ let cur = new Date('2026-06-30T00:00:00Z');
 const floor = new Date('2025-01-01T00:00:00Z');
 while (cur >= floor) {
   const ds = cur.toISOString().slice(0, 10);
-  series.set(ds, { dao: bDao, ent: bEnt });
+  series.set(ds, { dao: bDao, ent: bEnt, tre: bTre });
   const dd = deltas.get(ds);
-  if (dd) { bDao -= dd.dao; bEnt -= dd.ent; }
+  if (dd) { bDao -= dd.dao; bEnt -= dd.ent; bTre -= (dd.tre || 0); }
   cur = new Date(cur.getTime() - 86400000);
 }
 console.log(`derived ${series.size} days; 2025-01-01 close: DAODAO ${series.get('2025-01-01').dao}, Enterprise ${series.get('2025-01-01').ent}`);
@@ -117,11 +122,13 @@ const byMonth = new Map();
 for (const [date, v] of series) {
   const ym = date.slice(0, 7);
   if (!byMonth.has(ym)) byMonth.set(ym, {});
-  byMonth.get(ym)[date] = {
+  const row = {
     daodao_staked_count: v.dao,
     enterprise_staked_count: v.ent,
-    source: 'derived:transfers-replay-v1',
+    source: 'derived:transfers-replay-v1.1',
   };
+  if (treOk && v.tre != null) row.treasury_held_count = v.tre;
+  byMonth.get(ym)[date] = row;
 }
 for (const [ym, days] of byMonth) {
   const [y, m] = ym.split('-');
