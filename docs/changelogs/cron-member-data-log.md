@@ -263,3 +263,53 @@ pool-status forward series + the APR emitter item).
 - This closes AUDIT-price-artifact-2026-08 Phases F1→F2-B. Remaining: F2b
   chronic trio (FUEL via astroport daily-csv, dATOM via drop-staked-atom
   history, WHALE null forever) and F3 agent/docs cautions.
+
+## 2026-08-21 — F2b: Class-D chronic trio repaired + F2-A APR reconcile + rollups re-derived
+- **FUEL** (100 dailies): priced from `docs/pending-changes/F2B-fuel-price-series.json`
+  (astroport LUNA-FUEL `assets_json`, the token's only market). 5 gap days
+  (05-13..16, 08-02) bridged by nearest clean fixture day, tagged
+  `f2_repair:nearest_clean_fixture(...)`. Pool-derived FUEL had run ~6% low.
+- **WHALE** (400 legs, 4 pools): `price_usd`/`usd_value` null — abandoned,
+  no trusted feed (owner). Stays null forever.
+- **dATOM** (200 legs, 2 pools): null. The CG `drop-staked-atom` 100-day
+  history was pulled, ratioed day-by-day against the dailies' `direct` ATOM,
+  and REJECTED at gate: par-proxy 05-14..05-28 (ratio ≈1.00), identity flips
+  05-29/06-19/06-27, then pinned $2.62±1% for seven weeks while ATOM moved
+  $1.60→$1.22→$1.50. Repairing from it would replace a phantom with a
+  phantom (the 07-22 lesson). Evidence: `F2B-datom-cg-series-REJECTED.json`.
+  Forward consequence: registry `cg:drop-staked-atom` feeds the same frozen
+  number into current.json — queued for chain-exact Drop-hub-rate × ATOM
+  (bLUNA method). Owner: "not that popular or supported; revisit if needed."
+- **Null semantics mirror the live F1 cron exactly** (verified against
+  today's current.json LUNA-WHALE): unpriced side → usd_value null,
+  total_pool_usd = priced side only, ratio [null,100], staked/APR re-derived.
+  ⚠ This means a half-valued pool ⇒ staked halves, APR doubles (ATOM-dATOM
+  E184 3,659%→7,318%; LUNA-WHALE already 2.8M%→5.6M%). Consistent with the
+  cron, but the cron's rule is not factual → **F1.2 queued: one unpriced
+  side ⇒ total/staked/APR null**, then a one-line re-annotate pass here.
+  Exposure today $142 + $9 + $0.
+- **F2-A gap found by the gate, fixed here:** F2-A repaired
+  `staked_in_tla_usd` on 128 legs / 29 days but left `rewards.approx_apr_pct`
+  computed from the phantom staked. `apr-history-rollup.js` reads that field
+  directly (L181), so Phase-B's apr-history still averaged phantom-era APRs
+  on the very pools the audit was opened about. Reconciled to the live
+  formula (`annual_emissions_usd / staked × 100`), each leg annotated as a
+  companion `_price_corrections` entry (`field: approx_apr_pct`, method
+  `apr_reconciled_to_repaired_staked`). Example 05-31 LUNA-stLUNA 26.26%→43.47%.
+- **Gate 15 invariant classes, 0 fails, 100/100 files:** non-price layer
+  byte-identical to main (JS-repr-exact writer — Python's default float repr
+  would have churned ~200 unrelated bytes/file), amounts + depth_usd
+  untouched, lp_health/staked/APR arithmetic self-consistent, totals and
+  bucket TVL = Σ pools, prior A/B/C entries verbatim, correction count =
+  pool_derived legs. Net TLA TVL delta over the period +$7,121.
+- **Rollups re-derived via LIVE modules** (Phase-B recipe, no-third-copy):
+  baseline run over unrepaired dailies reproduced main byte-for-byte
+  (ex generatedAt) — the 32/133 `_invariants` entries (corpse candidates,
+  SS staked>depth) pre-exist on main, delta 0. apr-history: 14 pools moved,
+  all 16 epochs (FUEL ≤2pt/epoch; stLUNA E193 38.9→50.1%; bLUNA-LUNA E189
+  45.5→43.8%). pool-status: same pools, staked/px/source fields.
+  epoch-band: 16 tla_tvl leaves (≤$1.3K) + 3 luna_price leaves on E197–199
+  from the n&p daily feed having moved since this morning's derive (not F2b).
+- Report: `f2-repair-report.json` now scope A+B+C+D+APR, 970 corrections.
+  Closes AUDIT-price-artifact-2026-08 Class D. Not touched: current.json,
+  heartbeat.json (cron-owned).
