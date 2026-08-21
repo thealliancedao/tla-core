@@ -236,3 +236,17 @@ pool-status forward series + the APR emitter item).
 - Verified from first production F1 run: guard refusing correctly,
   honest nulls where phantoms used to be, INJ/SWTH/WETH still deriving
   from legitimate xyk pools.
+
+## 2026-08-21 — F2 Phase A: historical price repair (Classes A+B+C)
+- 29 dailies repaired, 142 corrections (A:84 outage phantoms, B:2 bLUNA
+  parity, C:56 EURE frozen window), gate 8/8, zero skips. Amounts untouched —
+  price layer only; totals delta-adjusted; every file carries a
+  `_price_corrections` audit block; run report published beside the data.
+- Gate findings folded back into the audit doc: ATOM was never frozen
+  (CG cent-rounding revisits 2.04) — claim corrected, ATOM untouched; and
+  legitimate prices DO repeat, so detection uses source mechanics + value
+  bands, never repetition. Two-phase taint-set design prevents a poisoned
+  value from sourcing a repair (caught live: 07-22 near-corruption).
+- Deferred: F2b Class-D chronic (FUEL via astroport daily-csv, dATOM via CG
+  history, WHALE null forever) and Phase B rollup re-runs (matrix rows
+  E187/189/193–196/199 still infected until re-derived).
