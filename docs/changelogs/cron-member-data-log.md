@@ -227,3 +227,12 @@ pool-status forward series + the APR emitter item).
   clean prior → flagged stale carry. Effect on dailies: non-xyk-derived
   symbols (FUEL/WHALE/dATOM…) now resolve null instead of phantom until
   proper feed entries land (F2 round) — honest blank beats manufactured price.
+
+## 2026-08-21 — tla-snapshot F1.1: live-fire fixes
+- Pass-2 stats reset restored `prev_daily` counter (live log showed
+  "undefined prev-daily carry" — the reset literal predated F1).
+- Refusal log deduped: each non-xyk pool now logs once, not once per
+  enrichment pass (first live run printed 74 lines for ~40 unique pools).
+- Verified from first production F1 run: guard refusing correctly,
+  honest nulls where phantoms used to be, INJ/SWTH/WETH still deriving
+  from legitimate xyk pools.
