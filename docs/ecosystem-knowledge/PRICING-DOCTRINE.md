@@ -57,3 +57,19 @@ A thin/broken pool can never override a chain-derived price.
 ## Current state (2026-06-14, verified live)
 All Tier-2 LSTs use `calculated-eris` (LUNA × chain ratio) as final. ampCAPA/ampROAR
 are hub-only (no reliable cross-check exists; that's fine — derived is best-available).
+
+## Pattern notes from the 2026-08 price-artifact audit (F3)
+- **Reserve ratio ≠ price by design** for concentrated (EMA-oracle) and
+  stable (1:1-target) pools — now enforced in code (tla-snapshot Stage-3
+  guard). Only constant-product (xyk) reserves may imply a price.
+- **Identifier drift after migrations** is a recurring failure family:
+  E11 (EURe priced from the wrong CG coin) and E12 (ASTRO priced from the
+  legacy pre-Neutron cw20). Registry addresses must be re-verified against
+  chain reality after any token migration; a future token-catalog sweep
+  should test every registry identifier.
+- **Absence must be loud**: a token silently missing from a feed is an
+  invitation to derive fiction. Feeds now carry prior values forward flagged
+  `stale`/`carried_forward`, capped at 7 days, then an honest null.
+- **Repairs are labeled, never silent**: historical corrections carry
+  `f2_repair:` sources and in-file `_price_corrections` audit blocks —
+  write-once honored by annotation, not overwrite-and-forget.
