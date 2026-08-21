@@ -1,3 +1,50 @@
+## 2026-08-21 — FOUNDATIONS ARC + SESSION DELIVERY (data-dump digest; commit set staged)
+
+**Committed in this delivery (see docs-log.md + help-log.md):** help rework
+(help.html Rev 1.4, drawer full-screen sheet, server v1.7.0 triage modes,
+battery), foundations docs (FOUNDATIONS-SOURCES, AUDITS, phoenix-directive
+chapter + facts, terra-depeg-and-fork), governance seed (122 props verbatim),
+three new specs, AUDIT-price-artifact-2026-08.
+
+### CHAIN-TRUTH FACTS LOCKED THIS SESSION
+- PD treasury deployed: terra16st8yf…qye0me5 (prop #4822; rw 0.14 fixed —
+  founding doc said 10%; chain wins). Built by Eris in contracts-ve3,
+  SCV-audited (commits in facts file).
+- TLA founding arc on-chain: #4813→#4816→#4817 (3× MsgCreateAlliance,
+  604800s reward-growth interval = weekly cadence in chain config)→#4822→
+  #4823→#4844 (PoL 30M LUNA)→#4847 (WBTC removal).
+- x/alliance take_rate = 0 at creation on all TLA + PD virtual tokens; the
+  TLA-context "take rate" = Eris hub ampLP yearly_take_rate. NEVER say "the
+  take rate" unqualified. (2 MsgUpdateAlliance props unchecked.)
+- Fees→bribes: NOT core Astroport (maker→xASTRO); IS a program commitment
+  (Astroport team 50% of Terra revenue share → Astro Wars bribes, per PoL
+  thread).
+- PoL multisig owns 100% of USDC-ampLUNA PCL + 80.8% of LUNA-ampLUNA PCL —
+  label as community POL in dashboards, not member liquidity.
+- Solid/Votion/SkeletonSwap/Credia: NO audit at SCV or Oak (2026-08-21).
+  Solid audit awaited from owner.
+
+### OPEN QUEUE (priority order proposed)
+1. **F1 forward price fix** (AUDIT-price-artifact §4) — build next; no owner
+   input needed. F2 historical repair AFTER owner supplies FUEL/dATOM/WHALE
+   spot prices (+ stLUNA≈$0.077, stATOM≈$2.91 confirms).
+2. **Foundations intake build**: facts extraction for remaining chapters,
+   wire new .md files into help-agent CORPUS_SOURCES, queued reads (WBTC
+   forum thread → #4847 context; 2 PD treasury reports; 2 MsgUpdateAlliance
+   props; Agora airdrop-logic thread; alliance + alliance-nft-collection
+   repo deep reads).
+3. **SPEC-governance-props build**: GitHub Action (chain props + forum
+   /latest.json server-side; forum has NO CORS — browser polling impossible),
+   docs catalog page w/ TLA-lineage badges, index news Forum tab.
+   3 owner sign-off questions in spec.
+4. **SPEC-lp-grades-rework**: awaiting owner sign-off (3 questions; esp.
+   flip-threshold display comfort). Build order §3 chips → §1 advisor →
+   §2 planner v2 → §4 PD strip (facts-only until F2).
+5. **SPEC-pd-bribe-drift**: blocked on F2 (no drift math on tainted USD).
+6. Battery T2–T10 grading as owner pastes; then rules/DATA-MAP patch round
+   (LST-ratio≈1.0 tripwire caution + worked-example fix).
+7. Announcement draft + epoch-band phase 2 (original item 3, untouched).
+
 ## 2026-08-09 — 🎯 PRIORITY LOCK (owner): FULL ORG MIGRATION TO DONE, then announcement
 
 **Definition of done (owner, verbatim intent):** (1) org repos are the ONLY
