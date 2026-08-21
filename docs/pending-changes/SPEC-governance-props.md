@@ -1,12 +1,17 @@
 # SPEC — Terra Governance Props: capture, catalog, news feed
 
 **Status:** DRAFT for owner approval · opened 2026-08-21 (owner HAR data-dump)
-**Seed:** `governance/props/seed-2026-08-21.json` — 122 props verbatim
+**Seed:** `governance/props/luna-seed-2026-08-21.json` — 122 props verbatim
 (66 passed / 56 rejected, IDs 349–4849), extracted from the owner's Chainscope
 HAR. ID gaps are deposit-period props that never reached voting — the catalog
 states this so gaps read as truth. Endpoint proven by the HAR: standard
 **`/cosmos/gov/v1/proposals`** (Chainscope uses cosmosrescue + publicnode;
 ours can use `terra-lcd.publicnode.com` — same paths, no auth).
+
+**Naming convention (owner, 2026-08-21):** chain-governance series carry the
+`luna-` prefix (`luna-seed-*.json`, capture writes `luna-history.json`) so
+future prop sources (forum topics, DAO-level governance, other chains) can
+sit beside them under their own prefixes without ambiguity.
 
 ## 1. Capture (new small product: `org-gov-props`)
 - Daily GitHub Action in tla-core (one-off-style, not a Render cron — low
@@ -14,7 +19,7 @@ ours can use `terra-lcd.publicnode.com` — same paths, no auth).
   1,2,3,4,5 (seed only had 2/3/4 — deposit-period and failed are cheap adds)
   with `pagination.limit=200&pagination.reverse=true` (newest first; full
   backfill already in the seed).
-- **Prior-verbatim / write-once:** merge into `governance/props/history.json`
+- **Prior-verbatim / write-once:** merge into `governance/props/luna-history.json`
   keyed by id; a prop's record updates only while status is non-final
   (deposit/voting → tally moves); once PASSED/REJECTED/FAILED the record
   freezes. Heartbeat + entries:null-vs-[] discipline as everywhere.
@@ -34,7 +39,7 @@ ours can use `terra-lcd.publicnode.com` — same paths, no auth).
   #4830, #4836 (community TLA-governance attempts).
 
 ## 3. News feed hook (index)
-- Index news module reads `governance/props/history.json` (cron fallback) or
+- Index news module reads `governance/props/luna-history.json` (cron fallback) or
   live LCD (primary, per tiles-live doctrine): surface (a) any prop in
   status 1/2 (deposit/voting) with days remaining, (b) newly-final props
   since last visit. Newest-id watermark in sessionStorage.
