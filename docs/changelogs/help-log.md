@@ -229,3 +229,11 @@ New help.html, linked from every page's shared footer:
   error message routes to the always-working report form.
 - lib/site-footer.js: Help link added to LINKS on every page; help-log
   registered.
+
+## 2026-08-21 — server v1.8.0: foundations corpus intake
+- CORPUS_SOURCES +8: skeletonswap, solid-protocol, votion, phoenix-directive,
+  terra-liquidity-alliance, terra-depeg-and-fork, AUDITS registry, and
+  FOUNDATIONS-SOURCES index — the bot now answers protocol questions from the
+  primary-source chapters (incl. Solid's first-party unaudited disclosure and
+  the PD 20% self-cap) instead of pretrained memory. All under the 20K
+  per-source cap; est. cost impact ~+1¢/question (owner-acknowledged).
