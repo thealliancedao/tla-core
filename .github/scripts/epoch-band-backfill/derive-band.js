@@ -29,11 +29,19 @@ for(const ep of ps.epochs){
   }
   let date=dateOf(ep); let luna=null;
   if(date&&date>='2026-05-13'){
-    // np daily has retention gaps — walk back up to 3 days for the nearest capture
-    for(let b=0;b<4&&luna==null;b++){
-      const d2=new Date(Date.parse(date+'T00:00:00Z')-b*86400000).toISOString().slice(0,10);
+    // price chain: np daily (15-day retention) → tla-snapshot daily
+    // totals.rewards.luna_price_used (full archive since 2026-05-13),
+    // walking back up to 3 days for the nearest capture.
+    const today=new Date().toISOString().slice(0,10);
+    const startDate = date>today ? today : date;   // current epoch ends in the future — price from the latest capture
+    for(let b=0;b<6&&luna==null;b++){
+      const d2=new Date(Date.parse(startDate+'T00:00:00Z')-b*86400000).toISOString().slice(0,10);
       const f=path.join(ROOT,'network-and-prices/daily',d2+'.json');
       if(fs.existsSync(f)){ try{const np=JSON.parse(fs.readFileSync(f,'utf8')); luna=(np.luna_market&&(np.luna_market.usd_price??np.luna_market.price_usd))??null;}catch(e){} }
+      if(luna==null){
+        const g=path.join(ROOT,'member-data/tla-snapshot/daily',d2+'.json');
+        if(fs.existsSync(g)){ try{const sn=JSON.parse(fs.readFileSync(g,'utf8')); luna=sn.totals?.rewards?.luna_price_used??null;}catch(e){} }
+      }
     }
   }
   // band's Active Pools tile = astro + SS (Single-asset pools excluded there);
