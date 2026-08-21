@@ -37,3 +37,10 @@
   UNPUBLISHED — Bribe Planner response model stays labeled as a model.
 - facts appended: solid ×4, votion ×3. AUDITS.md + FOUNDATIONS-SOURCES.md
   updated (Solid closed, Votion boundary set).
+
+## 2026-08-21 (late) — F3: pricing-artifact cautions into agent docs
+- DATA-MAP: artifact-suspicion rule (LST ratio ≈1.0 / off-neighbor prices),
+  `f2_repair:` + `_price_corrections` reading guide, repetition-is-not-taint
+  lesson, Class-D chronic warning. PRICING-DOCTRINE: reserve≠price
+  enforcement note, identifier-drift family (E11/E12), loud-absence and
+  labeled-repair principles. Closes AUDIT-price-artifact-2026-08 F1→F3.
