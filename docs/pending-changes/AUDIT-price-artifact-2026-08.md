@@ -85,6 +85,12 @@ Affected staked: USDC-EURe (~$271K) + LUNA-EURe (~$127K) ≈ **$397K ≈ 21% of
 TLA TVL**, mispriced on the EURe leg by ~55% → band TVL understated roughly
 $100K/day across the window; matrix rows E195–E196 carry it. ATOM pinned at
 exactly 2.04 across 2026-05-13→~26 is the same class, small impact.
+**CORRECTION (2026-08-21, F2 gate finding):** the ATOM claim was a misread —
+raw scan shows ATOM moving daily (2.06, 1.93, 2.04, 2.05…); it merely
+revisits 2.04 because CoinGecko rounds ATOM to cents. ATOM is CLEAN; no
+repair applied. Lesson recorded: legitimate prices DO repeat (stLUNA repeats
+to 9 decimals across clean days) — repetition is not a taint signal; only
+Class-A source mechanics and value-band violations are.
 
 ### 2.5 Chronic Stage-3 tokens (Class D)
 Present in **all 100 dailies**: FUEL ← LUNA-FUEL (**concentrated**),
@@ -161,6 +167,19 @@ verified during this audit via ratio-history and are correct.
 
 - 2026-08-21 · Root cause established; this document opened. Evidence §2
   reproduced against tla-core@main pulled 2026-08-21.
+- 2026-08-21 · F1 + F1.1 + E12 shipped and live-verified (see cron logs).
+- 2026-08-21 · **F2 Phase A COMPLETE**: 29 dailies repaired, 142 corrections
+  (A:84, B:2, C:56), gate 8/8, zero skips. Methods: bLUNA chain-exact
+  ratio×LUNA; stLUNA/stATOM nearest-clean ratio-carry; CG-set nearest-clean
+  price; EURE band rule. Two-phase taint-set design (the 07-22 lesson: a
+  poisoned value can never source a repair). Every file carries
+  `_price_corrections`; report at member-data/tla-snapshot/f2-repair-report.json.
+  Class D (FUEL/dATOM/WHALE chronic) deferred to F2b: FUEL from our own
+  astroport daily-csv `assets_json` prices, dATOM via `drop-staked-atom`
+  history, WHALE stays null (abandoned, owner). Phase B (re-run apr-history /
+  pool-status / epoch-band rollups over repaired dailies, dual-checkout
+  one-off per no-third-copy) still pending — matrix rows E187/189/193–196/199
+  remain infected until then.
 - (pending) F1 shipped + gated · (pending) F2 corrections applied, before/
   after table here · (pending) owner external price confirmations · (pending)
   matrices re-derived, band deltas recorded.
