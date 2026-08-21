@@ -2,6 +2,22 @@
 
 ---
 
+## Rev T5.3 — 2026-08-20 — epoch-band history: 16 epochs backfilled (Active Pools, TLA TVL)
+
+The band popups said "more history will appear as epochs are tracked" over a
+two-point (prev+current) design — no store existed. Now one does:
+epoch-band-history.json, derived from the snapshot matrices
+(pool-status-history active+staked_usd per pool per epoch, E184–199) with
+BAND-IDENTICAL semantics, gated against the live tile at E199: 28 pools
+(A20+S8) and $1.83M match exactly. The history modal seeds Active Pools
+(all/Astro/SS splits) and TLA TVL from it; the live prev/current pair stays
+authoritative for the newest epochs. Honest exclusions, stated in the
+product: APR averages (the matrix apr basis reads 323% where the band
+computes 47% — a confident wrong number stays unshipped), Epoch
+Rewards/Bribes (different sources; booked), and LUNA price beyond
+network-and-prices' 15-day retention (2 of 16 rows; older show --,
+deeper price history booked).
+
 ## Rev T5.2 — 2026-08-20 — the missing site-footer include (footer consistency root cause)
 
 tla-stats never loaded /lib/site-footer.js — every other unified page did —

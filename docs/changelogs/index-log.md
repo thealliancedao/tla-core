@@ -2,6 +2,46 @@
 
 ---
 
+## 2026-08-20 — tla-ext rescue + epoch-band backfill plan (tla-stats)
+
+- **RESCUE (paste before deleting tla-ext_json_storage!)**: the legacy repo's
+  irreplaceable epoch-era data copied verbatim into
+  docs/archive-2026-08/tla-ext-rescue/ — tla_ext_historical{,_2025,_2026}
+  (LP epoch data, epochs 141–166), nine tla-ext-epoch-{165..185}-end
+  snapshots, tla_pd_bribes, tla_metadata. Once this lands, deleting the
+  personal repo loses nothing.
+- **tla-stats band popups** ("more history will appear as epochs are
+  tracked"): the store is real and correctly starting at E199 — but deep
+  backfill is now proven possible: Active Pools / TLA TVL / avg APRs from
+  the org astroport per-epoch files (E184→now, 16 epochs on disk) plus the
+  rescued ext historicals + epoch-end files (E141–166, bridging toward the
+  fold); Epoch Bribes from the tla-voting bribe streams (FCD re-derive
+  reaches TLA genesis); Epoch Rewards from gauge distributions. Booked as
+  the epoch-band backfill — next session, after reading the store schema.
+
+## Rev I-A7 — 2026-08-20 — treasury-held history (drift ZERO); calculator modernized; trend queue
+
+- **derive.js v1.1**: treasury wallet added to the transfers replay — truth
+  test across the org-captured era: worst drift 0. treasury_held_count now
+  carries 18 months of history: exactly 898, unmoved since Jan 2025 — a flat
+  line, but a chain-verifiable one. Fail-honest rule built in: if treasury
+  drift ever exceeds tolerance on a rerun, that field is withheld while
+  staked fields still emit.
+- **Market Value Calculator**: SOLID added to the denomination list (top —
+  Atrium prices in SOLID; conversion fail-honest at 0 if no SOLID price is
+  cached); one-tap "BBL floor" / "Atrium floor" chips fill the live floor
+  from the marketplace cards already on the page (same number, zero
+  refetch); Atrium link added beside Backbone/Boost.
+- **Trend backfills triaged for next session**: DAO TLA VP history —
+  derivable by replaying the treasury's lock events (tla-voting/events,
+  full history) with weekly boost-decay slope math; capture-gap rows before
+  the VP fields joined dao-dashboard are honest. Unminted backing deep
+  history — needs mint-event replay (unminted count) × backing-history;
+  fills to Apr-2026 immediately, deeper when mint capture lands. DAO
+  members — dd carries the count since 06-12; distinct-holder derivation
+  from inventory snapshots gives the deep series; tracked as a first-class
+  metric per owner.
+
 ## Rev I-A6 — 2026-08-20 — 18 months of staked-count history RECOVERED (transfers replay)
 
 The deleted legacy repos took the daily staked-count files with them — but
