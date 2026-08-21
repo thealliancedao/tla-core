@@ -18,7 +18,7 @@
 - NEW `ecosystem-knowledge/terra-depeg-and-fork.md` — sourced depeg/rebirth
   chapter (Nansen, NBER w31160, prop 1623, genesis docs; SOLID-vs-UST
   contrast; archived Agora registered).
-- NEW `governance/props/seed-2026-08-21.json` — 122 gov props verbatim
+- NEW `governance/props/luna-seed-2026-08-21.json` — 122 gov props verbatim
   (owner HAR); TLA/PD founding arc chain-verified (#4813→#4847).
 - NEW specs in pending-changes: SPEC-governance-props (capture + docs page +
   news feed incl. Forum tab), SPEC-pd-bribe-drift, SPEC-lp-grades-rework;
