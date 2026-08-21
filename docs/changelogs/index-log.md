@@ -19,6 +19,29 @@
   reaches TLA genesis); Epoch Rewards from gauge distributions. Booked as
   the epoch-band backfill — next session, after reading the store schema.
 
+## Rev I-A8 — 2026-08-20 — band LUNA prices 15/16; chart-modal calculator parity; members booked
+
+- **epoch-band-history luna prices**: the deep source was the tla-snapshot
+  dailies (totals.rewards.luna_price_used, full archive since 2026-05-13) —
+  price chain now np-daily → snapshot-daily with nearest-day walkback and a
+  cap-at-today rule for the current epoch. Coverage 15/16; E184 ends
+  2026-05-11, two days before the archive exists — its "--" is the true
+  floor, not a gap to chase.
+- **Chart-modal calculator parity**: the Unminted popup carries its OWN
+  calculator instance (different element ids) that the I-A7 pass missed —
+  it now matches the main one: SOLID in the list, live BBL/Atrium floor
+  chips (useLiveFloor targets whichever calculator asked), SOLID price
+  path, Atrium beside Backbone/Boost in the links row.
+- **DAO Members trend**: measured conclusion — NO daily member-count field
+  exists in any product (dao-dashboard dashboard carries none); the tile's
+  155 is computed live. Trending it requires a capture rider (member-count
+  daily into dao-dashboard) — booked as such; no chart can honestly ship
+  before the data exists.
+- Unminted history status: July 31 remains the only complete month-end
+  (org unminted_count begins 07-01; backing resumes nightly as of tonight
+  → the Aug partial point appears on its own). Deeper unminted requires the
+  mint-event replay — queued with the epoch-band rewards/bribes work.
+
 ## Rev I-A7 — 2026-08-20 — treasury-held history (drift ZERO); calculator modernized; trend queue
 
 - **derive.js v1.1**: treasury wallet added to the transfers replay — truth
