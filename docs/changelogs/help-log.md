@@ -2,6 +2,95 @@
 
 ---
 
+## Rev 1.4 + Agent v1.7.0 — 2026-08-21 — real chat window, triaged forms, mobile pass
+
+- **The chat is a chat window now** (owner request): fixed-height shell — log
+  fills, composer pins to the bottom. The composer is an auto-growing
+  textarea (2 rows → 200px, scrolls beyond) so a long question stays fully
+  readable before sending; 16px font (the iOS threshold below which focusing
+  an input zooms the page). Desktop: Enter sends, Shift+Enter wraps. Touch:
+  Enter wraps, the button sends — thumbs expect the return key to make a
+  newline.
+- **Report/Request run THROUGH the assistant first** (owner request): the
+  form's primary button is now "Run it past the assistant" — it feeds a
+  structured question into the chat in a triage mode. Server v1.7.0 accepts
+  `mode: report|request`; the addendum rides as a third system block AFTER
+  the cached corpus (triage shares the prompt cache with normal chat) with a
+  900-token cap. Report mode verifies the claim against the live record and
+  classifies KNOWN CAUSE / PLAUSIBLE FAULT / CANNOT VERIFY; request mode
+  triages ALREADY EXISTS / ALREADY QUEUED / DATA EXISTS, SMALL BUILD / NEEDS
+  NEW CAPTURE / CONFLICTS WITH DOCTRINE — teaching the constraint instead of
+  silently rejecting. Every triage ends with a `---DRAFT---` block the page
+  extracts into a filing card: "File on GitHub with this analysis" opens the
+  prefilled issue with the triage attached — reports arrive PRE-INVESTIGATED.
+  The direct GitHub links stay under each form (quiet secondary path) because
+  filing must keep working with the assistant asleep, rate-walled, or capped.
+- **Mobile pass** (owner direction — mobile treated as its own shape, not a
+  squeezed desktop): the site-wide help drawer becomes a FULL-SCREEN sheet on
+  ≤640px viewports, sliding up from the bottom at 100dvh (the address-bar and
+  keyboard-safe unit) with thumb-sized close/send; desktop keeps the 400px
+  beside-the-content slide-over. One drawer, two shapes. The drawer composer
+  is the same 16px auto-growing textarea. On help.html the chat runs 70dvh on
+  phones, suggestion chips become a horizontal scroll row, buttons go
+  full-width, and cards already stack single-column.
+- Triage conversations are single-shot (the service holds no thread history)
+  — the form carries full context so one shot usually lands; threaded triage
+  is a queued follow-up.
+- Gated: server mode plumbing 10/10 with mocked upstream (block order, cache
+  position, 900/600 caps, invalid-mode fallback); help.html 14/14 in jsdom
+  (composer, autogrow cap, chips scroll, both triage payloads, draft
+  extraction + strip + GitHub prefill with triage footer, plain-chat has no
+  mode, direct path alive); drawer 12/12 (panel vs sheet by viewport, Enter
+  semantics by pointer type, dvh sheet, downward close, page context).
+
+## Battery v1.0 — 2026-08-20 — verification battery (10 graded questions)
+
+The agent gets interviewed: a 10-question battery spanning the data map, each
+graded against ground truth computed independently from a fresh tla-core pull
+(2026-08-20: band E199, runway period 198, positions current). Coverage: APR
+decomposition on a second pool (bLUNA-LUNA — the INVERSE story: staked fell
+55%, VP flat, APR rose), TLA TVL trend, NFT staked-count history to Jan-2025,
+wallet lookup (9 locks / VP 1,317,638 — the record moved from the old 11-lock
+fixture after the lock-withdraw), bribe runway (19 pools, mostly 1–2 epochs),
+rule-11 ranking bait ("second-largest after aDAO" — FALSE: Votion ≈7.88M vs
+aDAO ≈0.84M, ~9x larger; pass = shown arithmetic or refusal), the wrong-object
+trap (sink ≠ pair), out-of-map honesty (E150 APR must not exist), the xASTRO
+regression, and distributions routing (history.json, NOT events/).
+
+Two surfaces, one battery: a browser harness running the agent's exact brain
+replica (same rules, corpus, tools, model — session artifact), and
+`help-agent/test-battery.js` against the live /ask endpoint for deploy parity.
+Auto-graders keyword-gated 20/20 on canned pass/fail pairs before delivery;
+REVIEW verdicts mean "needs a human read", never "failed". Numeric truths are
+dated in-file; structural checks (rule-11, wrong-object, out-of-map, routing)
+don't go stale. Note: a full battery spends the service's default 10/hour rate
+allowance — run from a quiet IP or raise RATE_PER_HOUR for the window.
+
+## Agent v1.6.0 — 2026-08-20 — data-map grounding, surgical reads, comparative discipline
+
+_(Entry appended one delivery late — the code shipped 2026-08-20; recorded here
+from the committed server.js so the log matches the repo.)_
+
+- **Rule 11 — comparative discipline**: rankings are claims, not color. No
+  "largest / second-largest / after X" unless the corpus states it verbatim OR
+  the arithmetic is shown from numbers in context. If held numbers contradict
+  a ranking, the numbers win and the ranking dies — codified from the owner
+  catching "second-largest after aDAO" beside numbers proving otherwise.
+- **Rule 12 — historical data map**: before "I can't find historical data",
+  the agent must check the mapped products (apr-history, pool-status-history,
+  epoch-band-history, nft state-history, distributions/history.json), with
+  the wrong-object caution (sinks ≠ pairs) and the APR-basis caution (platform
+  basis vs Eris convention) inline.
+- **docs/agent/DATA-MAP.md**: question → product → recipe, written for the
+  agent AND humans; added to the grounding corpus. Carries the xASTRO worked
+  example as the canonical decomposition recipe.
+- **read_product `key` parameter — surgical extraction**: one pool/token/entry
+  pulled from big keyed files (apr-history, pool-status-history,
+  token-catalog…), so the middle of a matrix is reachable — plain truncation
+  used to cut pools out of the middle. Key-miss returns the available names.
+- **Env-switchable MODEL**: `MODEL` env var (default claude-haiku-4-5) — tier
+  up to Sonnet on Render with zero code change.
+
 ## Agent v1.4.0 + Rev 1.3 — 2026-08-20 — read_product tool, trust links, rich rendering
 
 - **read_product tool**: the agent can now fetch org data files on demand
