@@ -69,11 +69,16 @@
 - Phoenix Finance — Core Contract Test 0.2 (433KB) — `Phoenix Finance/`
   (distinct protocol from Phoenix Directive — do not conflate)
 
-## NOT covered by SCV (audit status unknown — keep hunting)
-**Solid Protocol · Votion · SkeletonSwap · Credia** — no SCV report exists.
-Either audited elsewhere or unaudited; each protocol chapter states
-"audit: none found (SCV set checked 2026-08-21)" until a report surfaces.
-This absence is itself a sourced, dated fact.
+## NOT covered by SCV or Oak
+**Solid Protocol — CONFIRMED UNAUDITED, first-party** (2026-08-21): Solid's
+own Terms of Use state "The Protocol's smart contracts have not been
+formally audited by a third-party security firm." Hunt closed; re-open only
+if they announce one. Solid's Atrium marketplace carries an **internal**
+6-pass audit only (AUDIT.md in solid-online/atrium-marketplace — 29/29
+invariants, no critical/high, two medium admin-trust findings).
+**Votion · SkeletonSwap · Credia** — no report at SCV or Oak (both sets
+enumerated 2026-08-21); status unknown. Each chapter states the dated
+absence until a report surfaces.
 
 ## Oak Security set (owner-provided 2026-08-21, second auditor)
 Base: `https://github.com/oak-security/audit-reports/blob/main/` + path.

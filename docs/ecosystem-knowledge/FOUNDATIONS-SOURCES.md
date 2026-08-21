@@ -77,10 +77,10 @@ reads both.
 | Topic | Current state | What we need |
 |---|---|---|
 | **Phoenix Directive** | founding doc VERIFIED (see §A) | placement-criteria post · treasury contract address |
-| **Solid Protocol** | 12-line chapter, 1 URL; **no SCV audit exists** (full set checked 2026-08-21) | docs site, repo, audit by another firm if any |
+| **Solid Protocol** | **CLOSED 2026-08-21**: whitepaper v2 read in full, chapter rewritten, facts extracted; audit status = NONE per Solid's own Terms (first-party) | re-verify if an audit is announced |
 | **TLA / Alliance Hub** | module repo + README verified; **alliance-audit-v1.0.pdf CAPTURED** (3.2MB, live at terra-money/alliance + PD fork); official docs site registered (docs.alliance.terra.money) | docs-site deep read; Eris Alliance-Hub repo; hub-funding governance prop; take-rate two-layer on-chain probe |
 | **aDAO NFT contract** | audit link known (SCV) + **collection SOURCE repo found**: github.com/phoenix-directive/alliance-nft-collection | SCV Security audit PDF: https://github.com/SCV-Security/PublicReports/blob/b819ec669f81e603caca261931e2a4aaca1cddf7/Alliance/Alliance%20DAO%20-%20NFT%20Collection%20Contract%20-%20Audit%20Report%20v1.0.pdf — fold key findings into a chapter |
-| **Votion** | facts.json, 1 URL | Docs/repo for vault mechanics + optimizer behavior (re-optimization cadence, fee) |
+| **Votion** | **docs repo read in full 2026-08-21** (erisprotocol/votion-docs — user-facing only); chapter written | optimizer algorithm/cadence/fees remain UNPUBLISHED — permanent honesty boundary unless Eris publishes |
 | **Boost DAO** | facts.json, 0 URLs | Any primary source |
 | **SkeletonSwap pool types** | "typically XYK" asserted | Confirm per-pool (stable vs volatile) from warlock backend or repo — feeds the Stage-3 pricing guard (AUDIT-price-artifact §4 F1) |
 
@@ -113,8 +113,13 @@ reads both.
   DEPLOYED address found (prop #4822); TLA's three alliance vt contracts +
   weekly reward-growth config captured; module take_rate=0 at creation for
   all. Spec: SPEC-governance-props.md.
-- (pending) Solid audit by any firm, if one exists · remaining protocol
-  doc-site links. Each gets: link/copy archived, claims extracted into
+- **2026-08-21 · Solid mega-intake (owner-provided)** — whitepaper v2 (full),
+  app Terms/Privacy, Atrium marketplace pages, solid-online GitHub org,
+  erisprotocol/votion-docs. Solid + Votion chapters written; audit hunt
+  CLOSED (Solid unaudited, first-party). Platform flag: Atrium trades the
+  Alliance NFT collection AND lists TLA Locks (veLUNA) — vAMP locks are
+  tradeable, lock ownership can change hands.
+- (pending) SkeletonSwap per-pool types · Boost DAO primary source. Each gets: link/copy archived, claims extracted into
   the relevant facts.json with `source:` fields, chapter updated, corpus wired.
 
 ## D. Rules
