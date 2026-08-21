@@ -27,3 +27,18 @@
   carry-forward had nothing to carry this run because prior finals for
   cg-only tokens were already null (pre-F1 outage). Expect stATOM/dATOM to
   populate as CG windows succeed, then carry across throttled runs.
+
+## 2026-08-21 — E12: ASTRO wrong-token repoint (owner-verified)
+- The 2083% ASTRO flagged_mismatch from the 19:14 run was the registry's
+  phoenix-1 address pointing at LEGACY cw20 ASTRO (pre-Neutron-migration
+  ghost, ~$12K TVL, trading ~21× above real ASTRO) while CoinGecko's
+  astroport-fi listing is live and correct. The mismatch rule held the
+  correct final ($0.000333) — no taint entered — but the flag was real.
+- Repointed phoenix-1 to the current ibc ASTRO denom (verbatim from our
+  astroport cron snapshot). Verified against the TLA LUNA-ASTRO gauge pool
+  contract: it holds the NEW ibc ASTRO, so no symbol collision touches TLA;
+  the cw20 ghost lives only in leftover non-TLA pools.
+- Gate 3/3: repointed entry lands direct_match (~1.4% delta), astroport
+  final restored, legacy address absent. Registry incident index: E11
+  (EURe wrong coin) → E12 (ASTRO wrong token, same failure family:
+  identifier drift after a migration).
