@@ -12,8 +12,13 @@ Recipe (the xASTRO case, 2026-08-19, is the worked example):
 3. Decompose: APR ≈ rewards ÷ staked. If staked ROSE while APR fell, the drop is
    capital inflow (often healthy). If `vp_human`/`bucket_pct` fell, allocation
    declined. Say which — with the numbers.
-   Worked example: xASTRO E192→E199: staked $7.3K→$16.5K (+125%), VP 0.76M→0.70M
-   (−8%) → APR 82%→28% is mostly denominator growth, partly allocation drift.
+   Worked example (pool-status `staked_usd`, last capture per epoch): xASTRO
+   E192→E199: staked $8.4K→$16.5K (+97%), VP 0.75M→0.70M (−6%), LUNA
+   $0.0496→$0.0460 (−7%) → APR 82%→28%. Mostly denominator growth, with
+   allocation drift and LUNA price each shaving the USD reward. (The $7.3K
+   figure is E191, not E192 — corrected 2026-08-21.)
+   Always name the field: apr-history `staked_usd_avg` (epoch mean) vs
+   pool-status `staked_usd` (last capture) differ by up to ~15% in thin pools.
 4. Basis caveat: our `apr_pct_avg` is the platform basis; Eris UI uses another
    convention. Levels differ, trend shapes agree — say so when the asker quotes
    an Eris number.
@@ -35,7 +40,9 @@ transactions).
 
 ## Rewards / distributions per epoch
 `tla-voting/distributions/history.json` (NOT under events/) — gauge payouts per
-period, entries to period 96.
+period. `entries` runs from period 96 (oldest) to the CURRENT settled period;
+"latest" = max(period) over entries, never a positional read (T10 miss,
+2026-08-21: the agent reported period 97 as latest).
 
 ## Prices
 Live: `network-and-prices/daily/<date>.json` (15-day retention;
@@ -66,5 +73,15 @@ before E184, member-count history). Never substitute an adjacent object.
   decimals; EURE served flat at 1.14; ATOM revisits cents). Taint is
   identified by SOURCE MECHANICS (pool-derivation from non-xyk pools) and
   value-band violations only.
-- FUEL/dATOM/WHALE history before 2026-08-21 is chronically mispriced
-  (Class D, repair pending F2b); WHALE stays null permanently (abandoned).
+- FUEL/dATOM/WHALE history: repaired in F2b (2026-08-21). FUEL is priced from
+  its astroport daily-csv series; WHALE and dATOM are null in history (WHALE
+  abandoned; dATOM's CG history failed the gate — Drop Protocol is winding
+  down and dATOM trades decoupled from ATOM). Forward: dATOM prices from the
+  Astroport Neutron market; WHALE stays null. A pool with one unpriced side
+  has null total/staked/APR (F1.2) — honest blank, not half a pool.
+
+## Arb radar / unlisted pools
+Pools with no `dex` and no catalog name that appear in divergence output are
+migration corpses (drained pair contracts still in the gauge set, e.g. the
+old ampROAR-ROAR Astroport pair). Not tradeable; a spread against one is an
+artifact. "best ~$X → ~$Y net" = trade size → net profit.
