@@ -180,6 +180,18 @@ verified during this audit via ratio-history and are correct.
   pool-status / epoch-band rollups over repaired dailies, dual-checkout
   one-off per no-third-copy) still pending — matrix rows E187/189/193–196/199
   remain infected until then.
+- 2026-08-21 · **F2b COMPLETE — Class D closed.** FUEL from astroport
+  daily-csv fixture (95/100 + 5 nearest-clean); WHALE null (abandoned);
+  dATOM null — the CG `drop-staked-atom` history was rejected at gate
+  (par-proxy 05-14..28, identity flips 05-29/06-19/06-27, frozen $2.62
+  07-04..08-21 while ATOM moved 25%); evidence in
+  `F2B-datom-cg-series-REJECTED.json`. §2.5's "plausible ~1.15–1.25×" stays
+  unverified — CG's 1.66× today is the same frozen number, not a finding.
+  **Gate finding on F2-A:** `approx_apr_pct` was not recomputed on the 128
+  repaired legs (rollup reads it directly) — reconciled + annotated in F2b.
+  **Forward items opened:** F1.2 (unpriced side ⇒ null totals, not half-pool),
+  dATOM registry → Drop hub rate × ATOM chain-exact. Rollups re-derived;
+  FUEL moved ≤2 APR pts/epoch. 970 corrections total across A/B/C/D/APR.
 - (pending) F1 shipped + gated · (pending) F2 corrections applied, before/
   after table here · (pending) owner external price confirmations · (pending)
   matrices re-derived, band deltas recorded.

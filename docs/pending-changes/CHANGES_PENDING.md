@@ -1,3 +1,17 @@
+## 2026-08-21 (late) — F2b SHIPPED; audit Class D closed
+
+See cron-member-data-log.md F2b entry. Price audit now closed F1→F3 + F2b.
+
+### FORWARD CAPTURE QUEUE (owner priority: correct-from-source, dynamic)
+1. **F1.2 tla-snapshot**: when one LP side is unpriced, `total_pool_usd` /
+   `staked_in_tla_usd` / `approx_apr_pct` → null (today: half-pool value,
+   doubled APR). Then re-annotate the 600 WHALE/dATOM null legs in history.
+2. **dATOM pricing from source**: registry `cg:drop-staked-atom` is a frozen
+   venue number. Replace with Drop hub exchange-rate × ATOM (chain-exact,
+   bLUNA method; Neutron LCD state query). Low exposure ($142), high principle.
+3. Registry identifier-drift sweep (E11/E12 family).
+4. Then: bot audit T2–T10, SPEC sign-offs, SPEC-pd-bribe-drift (now unblocked).
+
 ## 2026-08-21 — FOUNDATIONS ARC + SESSION DELIVERY (data-dump digest; commit set staged)
 
 **Committed in this delivery (see docs-log.md + help-log.md):** help rework
