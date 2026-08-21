@@ -209,3 +209,21 @@ archive tla-snapshot-data_2026 after quiet period → step-7 deletes.
 apr-history / pool-status-history / daily-archive page URLs remain
 legacy-STATIC files (crons frozen with the job; replacements = 4a
 pool-status forward series + the APR emitter item).
+
+## 2026-08-21 — tla-snapshot F1: price-artifact forward fix (AUDIT-price-artifact-2026-08 §4)
+- **Stage-3 pool-type guard (permanent):** `registerPoolReserves` now takes the
+  pool's dex_subtype and REFUSES concentrated, stable, and unknown-type pools —
+  reserves≠price by design (Astroport's own PCL/stableswap docs; the arbLUNA
+  lesson). Only xyk reserves may feed derivation. SkeletonSwap subtype-null
+  pools are refused pending per-pool type confirmation (FOUNDATIONS open item).
+  Refusals logged loudly per pool.
+- **Stage 3.5 prev-daily carry:** on full feed miss, yesterday's price is
+  carried as last resort — feed-grade prior sources ONLY (`pool_derived`
+  priors are never carried, so tainted concentrated derivations cannot
+  propagate; verified in gate vs the actually-tainted 2026-08-20 daily).
+  Source `prev_daily:<date>(<orig>)`, `stale:true`.
+- Gate 12/12 on real production fixtures incl. Class-A incident replay
+  (stLUNA CG-outage): phantom path eliminated; tainted prior → honest null;
+  clean prior → flagged stale carry. Effect on dailies: non-xyk-derived
+  symbols (FUEL/WHALE/dATOM…) now resolve null instead of phantom until
+  proper feed entries land (F2 round) — honest blank beats manufactured price.
