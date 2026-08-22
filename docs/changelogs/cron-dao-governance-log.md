@@ -22,6 +22,9 @@ kept for trust-grading of aDAO targets); pixel-lions minimal registry created
 (core + voting module from the address-catalog config). Next 6h run rewrites
 lion-dao and pixel-lions proposals.json; dao.html reads those files, so the
 DAO page's Lions/Allies tabs go live from chain without manual updates.
+Also 1.1.0: each proposal now carries `startHeight`, `expiration`
+({at_time_iso}|{at_height}|{never}) and `live` straight from the chain object —
+the site merges DAOs chronologically and shows time left on live proposals.
 Note: `proposals.json` carries `exportedAt` but no heartbeat and system-health
 does not watch this cron — queued.
 
