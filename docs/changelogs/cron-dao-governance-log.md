@@ -2,6 +2,19 @@
 
 ---
 
+## 1.1.1 — 2026-08-22 — explicit `registry.coreAddress` wins (Lion DAO captured the msig)
+
+1.1.0's first run resolved Lion DAO from the registry entry labelled "Lion DAO
+Core" (…rqxflq06) — which is the **pixeLions α stewardship multisig** (45
+proposals: validator-reward swaps). The real DAODAO core (…cssgluec, 24
+proposals, two live) was labelled "Lion DAO Treasury". Labels are human; the
+core address is the contract. Fix: `registry.coreAddress` is consulted first
+(added to lion-dao and pixel-lions registries, matching the address-catalog
+config's TRACKED core addresses); entries relabelled. Mock gate: Lion resolves
+to its main module (count 24) via registry.coreAddress. The msig's proposals
+are NOT part of the main-DAO leaderboard (owner); a separate folder can
+capture them later if wanted.
+
 ## 1.1.0 — 2026-08-22 — chain-first module resolution (Lion DAO was capturing aDAO's proposals)
 
 **Bug:** `lion-dao/governance/registry.json` was a copy of aDAO's registry

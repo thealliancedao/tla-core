@@ -5,6 +5,34 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## 2026-08-22 — Lions podium/tiles: registry names, one-bucket streaks
+
+Podium and Best-Streak tile now use registry name → address-catalog handle
+(same rule as rows). Lions streak = best run in EITHER DAO (it was the minimum
+of both, so anyone active in only one DAO scored 0). Registered/All counts
+names from the catalog too. Scoring law recorded inline: each DAO's rate is
+out of its own proposal count, then averaged — so the Lion+Pixel pair never
+outweighs aDAO in the Allies comparison. Live proposals (two on Lion DAO
+today) float to the top of the Lions/Allies proposal lists.
+
+## 2026-08-22 — DAO-first navigation; partner rows match aDAO rows; one vote-dot palette
+
+- Navigation (owner): pick the DAO first — **aDAO** (default) · **Lions** (Lion
+  DAO + Pixel Lions as ONE bucket) · **Allies** (all three) — as the shared tab
+  strip on the top tile; then **Members | Proposals** for that DAO as a
+  segmented toggle in the strip's right slot. The old three DAO buttons and
+  the old Members/Proposals tiles are hidden receivers; switchMemberView /
+  switchTab unchanged.
+- Partner rows (Lions, Allies) now render with the aDAO row layout: registry
+  name (members.csv, then the address catalog's handles/entities — never a
+  guess), Lion/Pixel/both chip, voted/total, 🔥 streak, last-20 dots inline,
+  rate, yes/no/abstain breakdown, progress bar; expanded view = full dot
+  history with a legend.
+- One vote-dot palette everywhere (owner): yes **green** · no **yellow** ·
+  no-with-veto **red** · abstain **light blue** · no vote **solid gray** (the
+  hollow "no vote" ring read as a missed row). Legends and breakdown swatches
+  updated to match.
+
 ## 2026-08-22 — DAO selector drives Proposals; live proposals stand out; Copy / Audit in Help
 
 - The aDAO · Lions · Allies selector now sits above both tabs and applies to
