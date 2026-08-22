@@ -5,6 +5,22 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## 2026-08-22 — Lions / Allies tabs were empty: legacy JSON unwrap broke cron-written files
+
+`loadPartnerData()` parsed the partner proposal files through a legacy unwrap
+(`.replace(/\\n/g,'\n')…`) written for the old double-encoded hand exports.
+The dao-governance cron writes proper JSON, so the unwrap turned escaped
+newlines inside descriptions into raw newlines and `JSON.parse` threw ("Bad
+control character") — Lion DAO silently loaded 0 proposals, so the Lions and
+Allies leaderboards rendered nothing. Fix: `parseProposalFile()` tries proper
+JSON first, legacy unwrap second. Full-page gate with the live files: Lions
+tab renders voters (main: 0). Note the Lion file itself still holds aDAO's
+proposals until dao-governance 1.1.0's next run (see cron-dao-governance-log);
+the leaderboards become the real Lion/Pixel rankings at that point.
+Scoring law (owner, for the record): Lions tab = Lion DAO + Pixel Lions as ONE
+bucket; Allies tab = aDAO + that partner bucket — never two points for the
+partner pair vs one for aDAO. Future: TLA lock holders join the ally score.
+
 ## Rev 1.7 — 2026-08-20 — Invalid Date fixed; shared footer mounted
 
 - "Updated: Invalid Date" — the page read `exported_at` while dao-governance
