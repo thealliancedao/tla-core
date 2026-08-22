@@ -2,6 +2,19 @@
 
 ---
 
+## Agent v1.9.3 — 2026-08-22 — period maths as audit strings (model recounted 199→209 as 11)
+
+Owner's second live paste: the model wrote "199 to 209 = 11 periods … 159.1M
+per period" and "already funded through E200". The audit had `periods: 10`
+and a RAW per-period the model then re-derived. Now the audit emits the
+sentences: `periods_text` ("10 periods (E199 through E208; end 209 is
+exclusive)"), `per_period` ("175,000,000 ROAR"), `amount_human`, and
+`runway_text` built from runway.json's `current_period` ("funded for 1 more
+period after the current one (E198) — through E199; this bribe runs
+E199–E208"). Rule 3: copy these strings; never recount (end is exclusive) and
+never redo the division. Regression: the Lion bribe prop — 10 periods,
+175,000,000 ROAR, runway text present.
+
 ## Agent v1.9.2 — 2026-08-22 — the general lesson: the audit leaves no blanks for the model to fill
 
 Owner's ask: make the fix robust, not a box around one example. The lesson

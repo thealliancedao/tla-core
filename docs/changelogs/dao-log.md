@@ -5,6 +5,20 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## 2026-08-22 — streak means CURRENT streak (the "18 with all-gray recent dots" confusion)
+
+The Lions streak counted from newest to oldest per DAO but a voter who took the
+OLDEST 18 of 36 still showed 🔥18 next to a row of recent grays. Now one
+definition for the whole bucket, the same sequence the dots draw: combined
+Lion+Pixel proposals newest-first (chain startHeight, else id), count back
+from the newest CLOSED proposal until the first miss; live/open proposals are
+skipped (nobody has "missed" a vote that is still open). Dots render oldest →
+newest, newest at the right, exactly like aDAO rows. The tile reads
+"🔥 name · current streak". Gate: oldest-only voter → no streak; steady voter
+with a live proposal pending → 🔥5; dots newest-right with the live one gray.
+Also: "Audit in Help" now REPLACES the drawer input (it could append to a
+previous paste — the "piled together" report).
+
 ## 2026-08-22 — Lions podium/tiles: registry names, one-bucket streaks
 
 Podium and Best-Streak tile now use registry name → address-catalog handle
