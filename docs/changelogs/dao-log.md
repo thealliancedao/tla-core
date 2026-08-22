@@ -5,11 +5,39 @@ Newest revisions on top. Times are UTC.
 
 ---
 
-## 2026-08-21 — unified chrome
+## 2026-08-22 — DAO selector drives Proposals; live proposals stand out; Copy / Audit in Help
 
-Header + picker from the libs; picker feeds the member search. Members /
-Proposals tiles replaced by `SiteHeader.subnav` (Open DAODAO + load status in
-the right slot); hidden `.header-tab` receivers keep switchTab() working.
+- The aDAO · Lions · Allies selector now sits above both tabs and applies to
+  Proposals too: Lions = Lion DAO + Pixel Lions merged (one bucket), Allies =
+  all three, aDAO = aDAO. Newest first by chain `startHeight` (dao-governance
+  1.1.0 now captures `startHeight` / `expiration` / `live`), id order within a
+  DAO as fallback; LIVE proposals always float to the top.
+- Live treatment: amber ring + "LIVE — voting now" strip with time left (from
+  `expiration.at_time`), quorum reached / passing state, and a "Vote on DAODAO"
+  button that links to the RIGHT DAO's core (aDAO / Lion DAO / Pixel Lions).
+- Every card: DAO chip, **Copy messages** (raw msgs JSON — what executes) and
+  **Audit in Help** (opens the drawer with the messages pasted into the audit
+  prompt — the assistant checks every address against the registries with
+  independent verify links). No more fetching the JSON by hand.
+- Gate (full page, simulated post-cron Lion file with live #24): Lions shows
+  both DAOs, live first with countdown + DAODAO link to Lion's core, copy and
+  Audit-in-Help work, Allies shows all three, aDAO-only shows 39. 8/8.
+
+## 2026-08-22 — Lions / Allies tabs were empty: legacy JSON unwrap broke cron-written files
+
+`loadPartnerData()` parsed the partner proposal files through a legacy unwrap
+(`.replace(/\\n/g,'\n')…`) written for the old double-encoded hand exports.
+The dao-governance cron writes proper JSON, so the unwrap turned escaped
+newlines inside descriptions into raw newlines and `JSON.parse` threw ("Bad
+control character") — Lion DAO silently loaded 0 proposals, so the Lions and
+Allies leaderboards rendered nothing. Fix: `parseProposalFile()` tries proper
+JSON first, legacy unwrap second. Full-page gate with the live files: Lions
+tab renders voters (main: 0). Note the Lion file itself still holds aDAO's
+proposals until dao-governance 1.1.0's next run (see cron-dao-governance-log);
+the leaderboards become the real Lion/Pixel rankings at that point.
+Scoring law (owner, for the record): Lions tab = Lion DAO + Pixel Lions as ONE
+bucket; Allies tab = aDAO + that partner bucket — never two points for the
+partner pair vs one for aDAO. Future: TLA lock holders join the ally score.
 
 ## Rev 1.7 — 2026-08-20 — Invalid Date fixed; shared footer mounted
 
