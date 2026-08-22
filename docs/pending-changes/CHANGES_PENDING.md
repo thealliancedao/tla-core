@@ -1,3 +1,28 @@
+## 2026-08-22 — END OF ARC: announced to Lion DAO; next = layout & nav settlement
+
+Shipped today (all byte-verified on main): DAO page live from chain for all 3
+DAOs (cron 1.1.1 coreAddress, Lions/Allies boards real, live props, Copy /
+Audit in Help), help agent v1.10.0 (registry-backed prop audit with verify
+links, generic deep walk + unresolved block, period strings, question log
+ON), drawer wide toggle, help-bubble session ×, mobile bar pinned, backing
+history C.6 (hub rate; 2 rows repaired), explorer tab tile, secondary pages
+on the lib chrome, catalog 1.2.0 entities (14).
+
+### NEXT SESSION — in this order (see SPEC-layout-and-nav.md)
+1. **Bug hunt + layout optimisation, every page, desktop + mobile** (§A).
+   Start with the page×check table; fix per page; gate; ship.
+2. **Deep links** (§B): `?view=` everywhere, section ids + link affordance,
+   `routes.json` sitemap product.
+3. **Nav rethink** (§C): present the three options with mock screenshots;
+   owner decides; lib renders.
+4. **Bot routes to data** (§D) from routes.json.
+5. Tiles: LP Grades, aDAO recommendations, slippage.
+Carry-overs (unchanged): typography pass · Enterprise-staker slug · arb
+grouping by denom · null-leg re-annotation · perf (lazy ticker, roster in
+localStorage 24h) · system-health watches dao-governance · spec sign-offs.
+Verify on arrival: question log count; dao-governance next run (Lion 24 /
+Pixel 12, live ids); backing-history row for 2026-08-22 uses hub rate.
+
 ## 2026-08-21 (late night) — UNIFIED CHROME MILESTONE SHIPPED
 
 Header/picker/ticker/sub-nav on every core page (see index-log milestone entry
