@@ -5,6 +5,14 @@ DAO wallets, members, ally collections). Session-level beats, newest first.
 
 ---
 
+## 1.2.0 — 2026-08-21 — `entities` from the curated wallet register
+
+Reads `tla-core/docs/curated/wallets.json` and publishes `entities`
+{address → label, subtype, protocol, flags} + `entities_status`; drift check
+that `dao_main_wallet` is present; fetch miss → `entities:{}` loudly, never a
+guess. Pages (address picker) read this — no labels live in page code. Add or
+relabel a wallet in the curated file; the daily run publishes it everywhere.
+
 ## 2026-08-19 — publisher retry (job was dying after publishing its data)
 
 This cron was SINGLE-SHOT and died on a 409 branch race — but only on

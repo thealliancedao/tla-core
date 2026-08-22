@@ -11,6 +11,11 @@ small.
 
 ---
 
+## Rev 2.1 — 2026-08-21 — unified chrome
+
+Site header replaces the page's own links; header picker is the zap planner's
+wallet (inline box hidden). URL/remembered wallet loads the planner on arrival.
+
 ## Rev 2.0 — 2026-08-03 — SIMULATOR-V2: zap planner port · wallet selector · rev footer
 
 **Zap planner** ported from `tla-stats.html` T2.7 into its natural home,

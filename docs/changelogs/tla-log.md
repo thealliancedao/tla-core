@@ -2,6 +2,20 @@
 
 ---
 
+## Rev T3.13 — 2026-08-21 — unified chrome: tabs above the tiles, picker in the header
+
+Tabs (Overview · Member Portfolio · LP Grades · LP Stats · TLA Stats · Docs) now
+render via `SiteHeader.subnav` directly under the site header, ABOVE the six
+info tiles; the "Terra Liquidity Alliance Tracker / Eris TLA" title row is
+retired and Live Epoch · Epoch Ends In · load status · member status chip move
+into the sub-nav's right slot at runtime. The legacy tab strip and the "View
+member" select are hidden receivers: sub-nav clicks forward to `.tab-btn` so
+switchToTab(), #hash deep links and analytics are unchanged; the header picker
+sets `#member-selector` (pre-data selections held in store and rendered when
+data lands; × = TLA-wide; board clicks sync the pill). Rendering code untouched.
+Gate: order, 6 tabs, hash sync, epoch widgets moved, click drives page — 0 fails.
+Also T5.4 (arb strip corpse filter) earlier today.
+
 ## Rev T5.4 — 2026-08-21 — arb strip: corpses out (matches the simulator)
 
 The Overview arb strip and slippage.html's radar disagreed: the strip showed

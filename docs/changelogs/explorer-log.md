@@ -5,6 +5,14 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 4.16 — 2026-08-21 — unified chrome
+
+Header + picker from the libs. Search-by-Address / Last-4 / Holders sections
+(desktop, mobile, Wallet tab) hidden — the header picker drives the Collection
+filter and the Wallet lookup (runs when the Wallet tab is active or opened).
+Collection · Analytics · Wallet now on `SiteHeader.subnav`, synced with
+`?view=`; the old view-tab buttons are hidden receivers for switchView().
+
 ## Rev 4.14 — 2026-08-20 — shared footer mounted
 
 The explorer now renders the standard site footer (rev · changelog · System

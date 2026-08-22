@@ -2,6 +2,28 @@
 
 ---
 
+## 2026-08-21 — Unified chrome milestone (site-wide)
+
+One header, one address picker, one ticker, one in-page tab component on every
+core page (SPEC-unified-header §3–§9). Libs: `lib/site-header.js` (index header in
+the TLA Stats theme; logo = tab height 3.25rem; VIEWING address row; CoinGecko
+marquee; `SiteHeader.subnav()` = the TLA-Stats-style tab strip under the header
+with a right status slot), `lib/address-picker.js` (typeahead: case-insensitive
+name prefix→substring, exact first; terra1 prefix; paste-through; 3–6 char
+last-N either direction; full finder with group tabs + sorts; rows = name — full
+address [copy → "Copied, please verify" card]; selection contract URL→remembered→
+saved, always-visible ×, one-tap Save for home-screen; `tla:wallet` event;
+entities from `catalog.entities`, never hardcoded), `lib/site-footer.js` (help
+drawer wallet = the global selection; "Choose an address" → finder). Every page
+mounts the header/picker; local search boxes/tab strips are hidden receivers so
+existing page logic is untouched. All steps jsdom-gated 0 fails.
+
+index: own header + own ticker retired (lib renders both); refresh strip moved
+into the sub-nav right slot; mobile bottom bar kept. adao-lore: header + picker.
+transparency-hub + help: header, picker, sub-nav (hub: Updates · Docs · System
+Health · Endpoints with live badges mirrored). Catalog cron 1.2.0 publishes the
+curated `wallets.json` register as `entities` (see cron-address-catalog-log).
+
 ## 2026-08-20 — tla-ext rescue + epoch-band backfill plan (tla-stats)
 
 - **RESCUE (paste before deleting tla-ext_json_storage!)**: the legacy repo's

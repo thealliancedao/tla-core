@@ -2,6 +2,13 @@
 
 ---
 
+## Rev 2.6 — 2026-08-21 — unified chrome
+
+Header picker is the page's address input (Paste/View/Save card hidden; the old
+`tla_portfolio_wallet` key migrates once into the picker's saved slot); "Try it"
+chips route through the picker. The TLA sub-tab strip is `SiteHeader.subnav`
+with the epoch readout in the right slot. Rev 2.5 → 2.6.
+
 ## 2026-08-09 — Rev 2.4 — asset + pricing source migration (no behavior change)
 
 Included in the site-wide grand repoint v1: pricing reads → org feed

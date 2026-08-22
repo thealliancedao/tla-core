@@ -2,36 +2,11 @@
 
 ---
 
-## Agent v1.9.0 + Rev 1.6 — 2026-08-21 — proposal audit (registry-backed, evidence-tiered)
+## Rev 1.5 — 2026-08-21 — unified chrome
 
-Paste a governance proposal's messages (wasm execute / bank send JSON) into the
-Help chat or the drawer and the server runs a DETERMINISTIC audit before the
-model speaks: every address is resolved against the platform registries and
-tagged with how it is known —
-- **structural** — `catalog.contracts`: the capture engine queries this contract
-  hourly and gets the expected responses (chain-verified live)
-- **gauge_set** — listed by the TLA gauge controller in the live tla-snapshot
-- **token** — denom seen in live DEX pools by the token-catalog cron
-- **curated** — owner label in docs/curated (a human label, not chain proof)
-- **unknown** — no registry knows it (unverified, not "bad")
-Checks: allowance = bribe amount (no leftover approval), add_bribe goes to the
-registered bribe manager, gauge name valid and matches the pool's bucket, pool
-is in the live gauge set, distribution periods + per-period amount, the pool's
-current runway, admin/upgrade actions (migrate, update_admin, set_owner…)
-flagged, bank sends to unknown addresses flagged, >1,000 LUNA in funds flagged.
-Audit mode rules (rule set `MODE_ADDENDA.audit`): tiers in exact words, full
-addresses, arithmetic shown, flags verbatim, an explicit "what is NOT checked"
-line (poster identity, proposal text, treasury balance, intent), and the words
-safe/legit/genuine/approved are banned — the bot says what MATCHES. Audit
-citations only for contracts covered by the Eris contracts-ve3 SCV audit.
-Gate on the live Lion DAO #24 prop (1.75B ROAR → LUNA-ROAR, E199→E209):
-bribe manager structural, ROAR token + curated, LUNA-ROAR gauge_set, 0 flags,
-0 unknown; adversarial variant (unknown spender, wrong gauge, amount mismatch):
-3 flags, 1 unknown. Prose-wrapped JSON is extracted; question limit raised to
-9,000 chars in audit mode. Help page: "Audit a proposal" chip prefills the
-prompt; drawer placeholder mentions it. `audit_proposal` is also a model tool.
-Not yet: reading the proposal text, the poster's identity, or treasury
-balances — the bot states these gaps every time.
+Help page mounts the site header + picker. Drawer wallet row = the global
+selection: selected chip with ×, or "Choose an address" → the full finder;
+legacy `tla_help_wallet` migrates into `tla:selected_wallet`.
 
 ## Agent v1.8.1 — 2026-08-21 — battery T2–T10 graded; rule 13 (reading discipline)
 
