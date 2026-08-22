@@ -2,6 +2,29 @@
 
 ---
 
+## 1.1.0 — 2026-08-22 — chain-first module resolution (Lion DAO was capturing aDAO's proposals)
+
+**Bug:** `lion-dao/governance/registry.json` was a copy of aDAO's registry
+(`dao:"alliancedao"`, 2026-01-07) with Lion entries appended; the cron took the
+FIRST registry contract answering `proposal_count` — AllianceDAO's module — so
+lion-dao/proposals.json held aDAO's 39 proposals and the live Lion DAO #24 was
+missing. Pixel Lions had no registry and was skipped (stale since January).
+**Fix:** `findProposalModule(registry, dao)` now finds this DAO's *Core* entry
+(name matches the folder, or the sole core), asks the core on chain for its
+`proposal_modules`, keeps Enabled ones, verifies `proposal_count`. Registry
+names route; the chain decides. Fallback orders registry candidates by folder
+match and refuses another DAO's module when a core exists. Logs a registry-
+drift warning when `registry.dao` ≠ folder. Mock gate: Lion via core (count
+24, not aDAO's module), aDAO unchanged, fallback safe, core-only registry
+(Pixel Lions) resolves from chain — 4/4.
+**Registries (dao-originations):** lion-dao dao/daoName corrected (aDAO entries
+kept for trust-grading of aDAO targets); pixel-lions minimal registry created
+(core + voting module from the address-catalog config). Next 6h run rewrites
+lion-dao and pixel-lions proposals.json; dao.html reads those files, so the
+DAO page's Lions/Allies tabs go live from chain without manual updates.
+Note: `proposals.json` carries `exportedAt` but no heartbeat and system-health
+does not watch this cron — queued.
+
 ## 2026-08-11 — 1.0.0 — NEW CRON: chain-derived DAO governance capture
 
 Replaces the hand-exported governance corpus (`defipatriot/adao_json_storage`,
