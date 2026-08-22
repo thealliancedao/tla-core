@@ -2,6 +2,56 @@
 
 ---
 
+## Agent v1.9.2 — 2026-08-22 — the general lesson: the audit leaves no blanks for the model to fill
+
+Owner's ask: make the fix robust, not a box around one example. The lesson
+behind all three v1.9.1 errors is one lesson — wherever the deterministic
+audit leaves a gap, the model fills it with a plausible guess. So:
+- **Generic deep walk** of every decoded message, any shape: base64 strings
+  anywhere that decode to JSON (cw20 `send` hooks, router sub-msgs, DAODAO
+  wrappers) are decoded and walked; every terra1… address at any depth is
+  resolved; every amount is denominated by the token it belongs to, with the
+  pairing rules that cover the shapes in the wild — `{denom, amount}`,
+  `{cw20, amount}`, Astroport `{info:{native_token|token|cw20}, amount}`, and
+  cw20 calls where the token is the called contract (`send`/`transfer` on a
+  token address). Token symbols/decimals come from the token-catalog chain
+  registry, network-and-prices, and the known-contracts token list.
+- **Explicit `unresolved` block**: addresses no registry knows, denoms no
+  registry knows (amounts left RAW, flagged), actions outside the known
+  vocabulary, and bare large integers with no token context. Rule 9: the
+  model prints it under "## Unresolved" verbatim and may not infer token,
+  counterparty or purpose for anything in it. Anything not in the audit
+  block is not known.
+Gates: the real swap prop (5,377 LUNA → USDC), the Lion bribe (1.75B ROAR
+named on both legs), and a never-seen shape (cw20 send → base64 hook →
+provide_liquidity with an unknown ibc denom + a ROAR leg + a treasury receiver):
+nested decoded, treasury found inside the hook as structural, unknown denom
+and unknown contract listed as unresolved, 250,000 ROAR and 5 ROAR named. 7/7.
+
+## Agent v1.9.1 — 2026-08-22 — audit: decode, denominate, and name from registries (not the model)
+
+Owner's first live paste (pixeLions α swap prop) exposed three model errors the
+audit block had left room for: the execute `msg` was a base64 string the audit
+did not decode (so the model narrated it), "5,377,000,000 uluna" became
+"5.38M LUNA" (it is 5,377 LUNA), and `ibc/2C962…` (Noble USDC) became "stETH".
+Fixes, all deterministic and server-side:
+- base64 / string `msg` decoded before analysis; `msg_was_base64` reported.
+- amounts converted ONLY via registries: `uluna` fixed, token-catalog
+  chain-registry identity (symbol + decimals), network-and-prices astroport
+  addresses. Unknown denoms stay raw and are labelled "not converted".
+- swap routers recognised (`swap_and_action`): amount_in → denom_out, min_out,
+  the pool(s) with their tier, the post-swap destination with its tier; flags
+  for a destination no registry knows and for a missing minimum-output guard.
+- two new tiers: **dex_pool** (Astroport snapshot, chain-verified) and
+  **dao_registry** (the DAO's own dao-originations registry — a per-DAO human
+  label). The >1,000 LUNA flag now prints the human amount.
+- rule 8: amounts only as the audit's human strings; never name a token the
+  audit did not resolve ("unresolved denom ibc/…").
+Gate on that prop: 5,377 LUNA → USDC via LUNA-USDC (dex_pool), min 264.03 USDC,
+destination = pixeLions α stewardship msig (Lion DAO registry), router
+contract UNKNOWN (true — Skip Go entry point is not in any registry yet;
+curate it in docs/curated/known_contracts.json if desired).
+
 ## Rev 1.5 — 2026-08-21 — unified chrome
 
 Help page mounts the site header + picker. Drawer wallet row = the global
