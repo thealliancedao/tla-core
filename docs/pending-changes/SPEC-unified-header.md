@@ -126,3 +126,43 @@ Each step: tla-log/explorer-log/dao-log entries per existing changelog homes.
 No build step, no framework, no change to any data product. The 7K-line
 tla-stats rendering stays untouched (header mounts above it; picker talks to
 the existing select). No new cron.
+
+## 9. Uniform chrome (owner direction, 2026-08-21 evening) — STATUS
+Goal restated: "make all these pages look and feel uniform and navigation feel
+the same no matter where you land."
+
+### Shipped in libs (every core page inherits)
+- Header = logo · 5 tabs · globe; logo height = tab height (3.25rem).
+- Address row under the tabs: VIEWING label · picker · hint. Picker mounted on
+  index, explorer, tla-stats, member-portfolio, slippage, dao, lore, help, hub.
+- CoinGecko marquee rendered by the header lib on every page (index's own
+  strip retired); `ticker:false` opt-out exists, unused.
+- `SiteHeader.subnav(items, {right, onSelect})`: the ONE in-page tab component
+  — TLA Stats tab look (icon · label · optional badge, cyan underline), sits
+  directly under the header, right slot for status (epoch countdown, Open
+  DAODAO). DAO page Members/Proposals moved onto it (tiles retired, hidden
+  receivers keep switchTab() working).
+- Help drawer wallet row = selected chip or "Choose an address" → finder.
+- Entities come from `catalog.entities` (curated wallets.json via catalog
+  cron 1.2.0) — no labels in page code.
+
+### Shipped later the same evening (all gated)
+- tla-stats tabs above tiles + title row retired (T3.13); explorer, hub,
+  member-portfolio tab strips on `subnav`; index refresh strip in the slot.
+
+### Remaining (next session)
+1. **tla-stats**: move its tab strip (Overview · Member Portfolio · LP Grades
+   · LP Stats · TLA Stats · Docs) ABOVE the six info tiles by rendering it via
+   `SiteHeader.subnav` with the epoch countdown in the right slot; hide the
+   in-page strip as receiver (same pattern as the DAO page). Remove the
+   "Terra Liquidity Alliance Tracker / Eris TLA" title row into the sub-nav
+   right slot or drop it (owner circled it as redundant).
+2. **nft-explorer**: Collection · Analytics · Wallet onto `subnav`.
+3. **member-portfolio / slippage / transparency-hub / help**: their local
+   tab rows onto `subnav` (hub: Updates · Docs · System Health · Endpoints).
+4. **index**: retire the "Last refresh: page load · Refresh" strip into the
+   sub-nav right slot (owner circled it), keep the mobile bottom bar.
+5. Typography pass: one scale — Outfit 1rem/700 tabs, .78rem mono status,
+   .72rem uppercase labels — audit each page's own header-adjacent text.
+6. Roster: Enterprise stakers as a catalog slug (owner's roster definition).
+7. Arb radar grouping key by denom (WETH vs WETH.axl) — queued from tla-log.

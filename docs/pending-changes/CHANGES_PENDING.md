@@ -1,3 +1,18 @@
+## 2026-08-21 (late night) — UNIFIED CHROME MILESTONE SHIPPED
+
+Header/picker/ticker/sub-nav on every core page (see index-log milestone entry
++ per-page logs). Catalog cron 1.2.0 (`entities`) shipped — first daily run
+publishes the 14 curated entities. Spec §9 updated.
+
+### NEXT (fresh session)
+1. Verify on phone: tla-stats sub-nav + epoch slot, explorer tabs, DAO tabs,
+   picker row on every page; catalog 1.2.0 first run → `entities` count 14.
+2. Typography pass (spec §9.5): audit header-adjacent text per page.
+3. Roster: Enterprise stakers as a catalog slug (owner's roster definition).
+4. Arb strip: group by denom (WETH vs WETH.axl); quiet-state wording.
+5. Re-annotate 600 WHALE/dATOM null legs to F1.2 semantics.
+6. Spec sign-offs still pending: SPEC-governance-props, SPEC-lp-grades-rework.
+
 ## 2026-08-21 (night) — bot audit T2–T10 DONE; arb strip fixed; SPEC-unified-header drafted
 
 - Battery graded 6 pass / 2 partial / 1 fail; agent v1.8.1 rule 13 + DATA-MAP
