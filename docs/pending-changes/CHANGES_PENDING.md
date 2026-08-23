@@ -33,7 +33,23 @@ VERIFY ON ARRIVAL:
 4. C.5 STILL UNRESOLVED from 08-22: warm ran but committed products show
    pending 0 / classification 9981 — the 19 stay unbucketed until walk task 2.
 
-NEXT (order): 2) 19-token `daodao_custody_unattributed` bucket + sum guard →
+SHIPPED LATER SAME DAY — TASK 2 (custody bucket + the REAL 9981 root cause):
+- Root cause was NOT just a missing bucket: `daodaoCustodyCount` filtered on the
+  daodao_staked FLAG, which carries flipped-false from base on hot/warm — custody
+  read 1631, chain count 0, tracker "reconciled", C.5 sweep never re-fired.
+  Now counts RAW chain ownership (owner == staking contract): 1650 every mode.
+- New bucket `daodao_custody_unattributed` (third custody state: unstaked,
+  window expired, never claimed — incl. legacy 1319/3605/6847/7123). Resolution
+  strands land there; claims tracker promotes attributable ones to pending
+  (real unstaker as real_owner); left-custody clears. Held token never no-bucket.
+- nfts/adao C.6: index.js + CHANGELOG + NEW mock-run-custody.js (BINDING gate,
+  real committed poisoned base, 4 scenarios W/H/T/E, all sum 10,000).
+- VERIFY: next warm/full logs custody 1650 / chain 19; sweep re-fires; summary
+  daodao_custody_unattributed_count + daodao_pending_claim_count sum to 19;
+  "Classification sums correctly to 10000"; Analytics Supply bar gains the
+  bucket only after walk task 4 (page reads flags — no page change shipped yet).
+
+NEXT (order): 2) ~~19-token bucket~~ DONE → 
 3) flows.js delisting→sale upgrade + sales-enriched/listing-history/
 luna-usd-daily forward-fill (merge INTO org path; two-phase, prior-verbatim) →
 4) page field-drift fixes (four panels + uluna royalty + conservative mark +
