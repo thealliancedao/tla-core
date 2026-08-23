@@ -68,6 +68,19 @@ SHIPPED SAME DAY — TASK 3 (market-history: the ported duty, Analytics un-froze
   the missing months. Analytics numbers move only after (2)+(3) land — same-run
   analytics reads pre-maintenance committed inputs by design.
 
+SHIPPED — PERF BUNDLE PART 1 (explorer Rev 4.26 + platform-crons compact-bundle
+1.0.0): rank tiles sized (w-72, px-4); insights on help/system-health/
+transparency-hub; preview hover dedupe guard. CRON: NEW compact-bundle.js in
+warm/full (runs last) → nfts/adao/snapshots/explorer-bundle.json, 437KB
+dict-encoded first-paint product, refuses on summary mismatch; gated on real
+inputs (10,000 rows, #6192 round-trip, 1,631/17+2/5,828 reconciled, ranks
+match, refusal proven).
+VERIFY: commit both, trigger warm (or wait for auto) → log shows
+"=== compact-bundle === ... 437 KB" and explorer-bundle.json lands (~440KB).
+NEXT (fresh session): page boot swap onto the bundle + background hydrate +
+lazy BBL detail — opening line: "Read PROJECT_KNOWLEDGE and CHANGES_PENDING,
+then wire the explorer onto explorer-bundle.json (perf part 2)."
+
 SHIPPED — OWNER REWORK (explorer Rev 4.25): Share button removed (URL is the
 mechanism); holders panel → top-row scrollable dropdown (names+counts, live vs
 filters, click → header select) between Search-by-ID and Amount; Rank System
