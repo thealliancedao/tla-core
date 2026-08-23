@@ -68,6 +68,26 @@ SHIPPED SAME DAY — TASK 3 (market-history: the ported duty, Analytics un-froze
   the missing months. Analytics numbers move only after (2)+(3) land — same-run
   analytics reads pre-maintenance committed inputs by design.
 
+SHIPPED — OWNER REWORK (explorer Rev 4.25): Share button removed (URL is the
+mechanism); holders panel → top-row scrollable dropdown (names+counts, live vs
+filters, click → header select) between Search-by-ID and Amount; Rank System
+relocated below Display Options; lib/address-picker.js gains a pill copy
+button (all pages) with flip-to-check + short-address tooltip verification.
+Gate reworked and green (dropdown sums 1,631 exact).
+VERIFY: top row = ID | Holders | Amount | Sort | Reset; rank toggle below
+Display Options; dropdown scrolls with counts; pill shows copy icon when a
+wallet is selected, click → check + "Copied terra…xxxx".
+REMAINING on explorer: perf bundle (fresh session).
+
+SHIPPED — TASK 6 (explorer Rev 4.24): Analytics hero sentence (written from
+the products: sales/at-sale USD, minted/10,000, listed+ask-side, last-sale
+recency honest — currently "1d ago #6192 50 SOLID"); status-filter counts now
+"N match" labeled/locale-formatted instead of bare floating integers. Gated.
+VERIFY: Analytics opens with the sentence; slider counts read "1,631 match".
+REMAINING on explorer: perf bundle (cron compact metadata 16.3MB→~1MB first
+paint, BBL ranks lazy, image-request dedupe, insights on help/system-health/
+transparency-hub) — next delivery.
+
 SHIPPED — FEATURES (explorer Rev 4.23): filtered-holders panel (live group-by
 of the FILTERED set, chips → header select, hidden when nothing narrows) +
 Share view button (URL already carried full filter state; now discoverable,
