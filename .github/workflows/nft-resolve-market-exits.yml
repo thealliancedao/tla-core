@@ -1,0 +1,32 @@
+name: NFT — Resolve Marketplace Exits (Jun 12 → v2 deploy)
+
+# ONE-OFF (workflow_dispatch): fetches every marketplace-exit tx since the last
+# enriched sale from the LCD, archives the raw responses, classifies with the
+# LIVE classifyNftTx v2, and merges the sale/cancel/list records into the
+# transfers month files. Idempotent. sales-enriched is appended by the next
+# warm's market-history pass (single-writer law), not here.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  resolve:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Resolve marketplace exits
+        run: node .github/scripts/nft-market-history/resolve-market-exits.js
+      - name: Commit
+        run: |
+          git config user.name "nft-market-history"
+          git config user.email "actions@users.noreply.github.com"
+          git add nfts/adao/transfers archive/lcd/market-exits
+          git diff --cached --quiet && echo "nothing to commit" || git commit -m "market-history: resolve Jun12→v2-deploy marketplace exits (LCD truth, v2 records merged; raw txs archived)"
+          git push
