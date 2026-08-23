@@ -1,0 +1,30 @@
+name: NFT — Recover Batch-Settle Sales
+
+# ONE-OFF (workflow_dispatch): appends the 64 batch-settle sales the retired
+# pipeline dropped, derived from the in-repo FCD archive with the LIVE
+# platform-crons classifier + enricher. Idempotent — a re-run appends 0.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  recover:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Recover batch-settle sales
+        run: node .github/scripts/nft-market-history/recover-batch-sales.js
+      - name: Commit
+        run: |
+          git config user.name "nft-market-history"
+          git config user.email "actions@users.noreply.github.com"
+          git add nfts/adao/snapshots/sales-enriched.json
+          git diff --cached --quiet && echo "nothing to commit" || git commit -m "market-history: recover 64 batch-settle sales (labeled repair, FCD re-derive via live classifier)"
+          git push
