@@ -68,6 +68,21 @@ SHIPPED SAME DAY — TASK 3 (market-history: the ported duty, Analytics un-froze
   the missing months. Analytics numbers move only after (2)+(3) land — same-run
   analytics reads pre-maintenance committed inputs by design.
 
+SHIPPED — TASK 5 LEGACY STRIP (explorer Rev 4.21):
+- Dual footer + stale changelog modal + JS + CSS stripped (lib footer owns rev/
+  changelog/health); false deving.zone credit gone with it; page links folded
+  into the slim page footer. ~760-line unreachable Snapshot Tool removed (incl.
+  its second 6.5MB nfts.json download). Badge key: BROKEN wording corrected
+  (was "eligible for rewards" — backwards), Atrium entry added. Dead
+  cloudflare-ipfs fallback → ipfs.io. Header picker now drives the Wallet tab
+  (tla:wallet listener, wallet-view entry hook, leaderboard row → select).
+- Page gate green on live products (1,326 sales, royalties 14,845 LUNA).
+- VERIFY: single footer at page bottom (Rev 4.21, changelog opens from lib);
+  badge key correct; pick a wallet in the header → Wallet tab shows it;
+  click a leaderboard row → header pill updates.
+- NEXT in finishing build: wallet columns (UNCLAIMED + VP%), filtered-holders
+  panel, shareable filter URLs, analytics hero, perf bundle.
+
 SHIPPED — UNRESOLVED-EXIT SENTINEL + COVERAGE GAP REGISTER (the "never again"):
 - market-history 1.1.0: every marketplace exit must resolve to sale or cancel —
   any v1 exit (trailing 60d, registry-driven venue set) with no v2 record for
