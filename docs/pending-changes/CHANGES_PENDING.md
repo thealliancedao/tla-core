@@ -1,3 +1,64 @@
+## 2026-08-22 (late) — PAGE-BY-PAGE WALK STARTED: Home · DAO · TLA Stats · Treasury · TLA Deposits
+
+Owner's doctrine for this arc (binding): **walk every page for (1) old-repo code, (2)
+formatting, (3) improvement — present the data the way someone would want to SEE it,
+(4) chat-bot functionality, (5) load speed.** Design pages as a story (hero number →
+one plain sentence written from the data → what changed and WHY → detail). Never a
+tile that can read "$0" when something moved; every comparison row must reconcile.
+Merge legacy data INTO the org path (same path, deeper history) — never a side file.
+
+Shipped today (all gated; owner byte-verifies on commit):
+- index.html 3.80→3.98 + lib 1.4.0: pulse opens by default; epoch pill (#199,
+  local/UTC); TLA staked from gauge product (30/31, SS incl.); tokens-vs-prices
+  split on every TVL row (exact on DEX TVL); 6+6 rows; Votion realized APY
+  (matches votion.money: 59.3/58.96); governance alert modal + Live/Pending ·
+  Past views + per-DAO history; Quick audit = precedent check + action ledger
+  (pass / needs-verification / unknown-verify) + Request-verification;
+  dead-repo reads removed (defipatriot/* zero requests); perf 113 MB → ~40 MB.
+- lib: width law 1400/1550/1750 + Outfit + mesh on every page; ticker above a
+  sticky bar, only on Home + TLA Stats; logos 4.5em; footer health fetched once.
+- DAO 1.9 (proposal_count gate, IPFS gateway rotation daodao→dweb→ipfs.io),
+  TLA Stats participants dedupe, lore planets 24 MB → 1.6 MB, manifest icons.
+- dao_treasury 3.0 + dao_tla_deposits 3.0: hero story, tokens-vs-dollars INDEX
+  chart (default), reconciling change cards, non/≥amp APR, Protocol Income
+  (claims ledger), proposals with impact from the cron corpus (was 0 of 24).
+- Crons: dao-governance 1.2.0b (anchor-gov CAPA, x/gov LUNA, veto_timelock
+  object fix, DAO_ONLY), address-catalog 1.3.0 (catalog/trusted product),
+  help-agent 1.11.1 (trust tier, final text turn), votion 1.3.0 (yield +
+  realized_7d/30d), nfts/adao 6b (daily claim ledger, 60 rows) + C.5 (nft_claims
+  state sweep), dao-dashboard 1.4 (daily-index.json; 10 migrated epoch-end rows
+  live in daily/ as ordinary files).
+- tla-core: docs/curated/trusted-addresses.json (trust register, 16 seeded,
+  1 needs-verification: Skip router), catalog/trusted/current.json (414),
+  nfts/adao/claims/history.json (60 claims since 2026-06-23), dao-originations
+  capapult + terra registries.
+
+### VERIFY ON ARRIVAL
+1. daily-index.json committed at member-data/dao-dashboard/ (NOT inside daily/);
+   old daily/index.json deleted; cron 1.4 appended today's date.
+2. NFT warm/full run: `nft_claims sweep: 19 open claims … — reconciled` (C.5);
+   hot runs still report 0/0 + classification 9981 (hot-mode bucket gap — queued).
+3. votion cron ran with 1.3.0 → deposits/pulse rows read `yield.realized_7d`.
+4. Treasury & deposits pages: hero sentence reads from data; change cards
+   reconcile to the headline; Index chart shows both lines (dollars null for
+   days with no day-of price — never today's price).
+
+### NEXT SESSION — continue the walk, same five checks per page
+1. NFT Explorer (26 MB across 4 overlapping NFT files → one bundle, cron-side;
+   Atrium capture for pixeLions/TLA Locks; 19 stranded tokens in hot mode).
+2. aDAO Lore (BNB logo 404; lib mesh now) · Member Portfolio · LP Grades ·
+   LP Stats · Transparency Hub (→ becomes the Help/Docs hub: docs + sources +
+   audits registry + address catalog; Docs tab leaves TLA Stats; bot corpus
+   = the hub; bot answers "where can I see X" from routes.json).
+3. Feed cron (X links + Medium + forum.phoenix.money) for the News tile.
+4. Amplified APR capture (Eris; the old admin tool had apr.amplified per pool).
+5. Home: "View Full Library" link to deleted repo; atom.png / logo_stamp 404s;
+   tla-tile.js not loaded; avg-daily-gain tile from claims ledger (ampluna_to_
+   backing ÷ unbroken) instead of backing deltas.
+6. Explorer/Home second perf pass (listing-history 1.8 MB, sales-enriched 1 MB,
+   rarity 1.9 MB lazy below the fold). Vercel insights script.js 'bind' error
+   is theirs.
+
 ## 2026-08-22 — END OF ARC: announced to Lion DAO; next = layout & nav settlement
 
 Shipped today (all byte-verified on main): DAO page live from chain for all 3
