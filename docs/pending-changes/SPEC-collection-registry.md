@@ -30,7 +30,7 @@ thealliancedao/nft-collections/<slug>/      ← the collection's ONE place
 thealliancedao/dao-originations/<slug>/     ← their DAO side (if they have one)
 ├── governance/ · treasury/ · positions/     ← already the convention
 
-tla-core/catalog/collections.json          ← OUR switch. Enabling an entry
+tla-core/catalog/collection-registry.json          ← OUR switch. Enabling an entry
                                                tells the crons to capture that
                                                folder and the site to light up
                                                the collection selector + shift
@@ -153,7 +153,7 @@ aDAO's). `tla_stats` only makes sense when the DAO participates in TLA.
 2. Their folder in nft-collections gets collection.json + metadata/ + rarity/
    (+ lore/ if they want the Lore page). DAO material goes to their
    dao-originations folder. That is the ENTIRE surface they ever touch.
-3. We flip their entry in tla-core/catalog/collections.json to enabled —
+3. We flip their entry in tla-core/catalog/collection-registry.json to enabled —
    next cron pass captures them; the site's selector tiles appear and the
    dynamic pages (Explorer, Analytics, Wallet, Portfolio, Lore, DAO,
    TLA Stats) can shift from aDAO to their collection.
@@ -164,7 +164,7 @@ aDAO's). `tla_stats` only makes sense when the DAO participates in TLA.
 ## Build order (proposed)
 
 1. **This spec approved** → commit `adao/collection.json` to nft-collections
-   (packaged as a bare file) + `catalog/collections.json` to tla-core.
+   (packaged as a bare file) + `catalog/collection-registry.json` to tla-core.
    repo and commits the seed (README + registry + aDAO entry — packaged)."
 
 2. Pages under audit going FORWARD read constants from a tiny

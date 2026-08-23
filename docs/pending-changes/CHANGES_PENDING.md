@@ -72,11 +72,18 @@ DECISION FINAL — COLLECTION ARCHITECTURE, settled (owner + audit 2026-08-23):
 - Partner data: nft-collections/<slug>/ (collection.json + metadata/ rarity/
   lore/ per that repo's own convention) and dao-originations/<slug>/ for the
   DAO side. Partners touch ONLY their folders. Nobody forks anything.
-- Our switch: tla-core/catalog/collections.json (owner: no new single-file
+- Our switch: tla-core/catalog/collection-registry.json (owner: no new single-file
   folder — catalog/ is the existing home for registries, beside
   trusted/current.json). Enabling an entry = crons capture the folder, site
   lights the selector + shifts the dynamic pages.
-- CLEANUP: delete tla-core/collections/ (registry.json committed there under
+- NAMING (2026-08-23 final): the switch is catalog/collection-registry.json —
+  renamed from collections.json after a one-letter collision with the per-
+  collection collection.json caused a mis-upload. Registry = switch (ours, in
+  catalog/); collection.json = a collection's config (theirs, in
+  nft-collections/<slug>/). CLEANUP DONE: tla-core/collections/ deleted;
+  ALSO delete tla-core/catalog/collection.json (the aDAO config uploaded to
+  the wrong repo — its home is nft-collections/adao/).
+- CLEANUP (done earlier): delete tla-core/collections/ (registry.json committed there under
   the superseded plan — remove the folder via web UI; nothing reads it yet).
 - Products stay in tla-core/nfts/<slug>/snapshots/ (internal machinery).
 
