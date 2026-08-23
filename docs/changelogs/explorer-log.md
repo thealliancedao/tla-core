@@ -5,6 +5,28 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 4.27 — 2026-08-23 — perf part 2: the page boots on 442KB
+
+The explorer now paints from explorer-bundle.json — 442KB instead of the 16.3MB
+it loaded before. The gallery, all filters, ranks, status badges, listing
+prices and the amount counter render immediately from the bundle; owners,
+listing detail and grades hydrate from the full products in the background
+(the leaderboard and holders dropdown fill in seconds later, with an honest
+"holders loading…" in the gap — never a fake "0 holders").
+
+Parallel-run by construction: ANY bundle problem — missing file, schema drift,
+thin metadata join — falls straight through to the original full boot,
+untouched. The bundle earns trust before the fallback is ever considered for
+removal.
+
+Gate proves all three paths with a latch: the full products are HELD BACK while
+the test asserts the page painted from the bundle alone (20 cards, counter at
+10,000, leaderboard deliberately empty), then released to assert hydration
+completes; a second jsdom instance 404s the bundle and asserts the old boot
+still renders gallery + leaderboard.
+
+This closes the NFT Explorer walk — capture layer, page, and performance.
+
 ## Rev 4.26 — 2026-08-23 — rank tiles sized + perf quick wins (page side of the bundle next)
 
 Rank System buttons regained their proper size (the 4.25 move dropped the width
