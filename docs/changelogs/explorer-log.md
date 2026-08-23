@@ -5,6 +5,16 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 4.30 — 2026-08-23 — MILESTONE: the Explorer walk is complete
+
+Round-number close on the full arc (4.20→4.27 in one day): field-contract
+repair, legacy strip (~762 dead lines), Wallet tab (UNCLAIMED + VP% + backing),
+holders dropdown + shareable filter URLs, hero sentence, owner rework, perf
+part 1+2 (16.3MB → 442KB first paint with parallel-run fallback). Capture side:
+Atrium vocabulary fixture-locked, custody honest (C.6), market-history with the
+unresolved-exit sentinel, three lost sales recovered, gap register standing.
+Every number on the page is gated against the products that produce it.
+
 ## Rev 4.27 — 2026-08-23 — perf part 2: the page boots on 442KB
 
 The explorer now paints from explorer-bundle.json — 442KB instead of the 16.3MB

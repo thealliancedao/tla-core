@@ -1,5 +1,15 @@
 # Index Page Changelog
 
+## Rev 4.00 — 2026-08-23 — audit arc milestone
+
+The index audit-and-revamp arc closes at a round number. Since 3.9x: VP Locked /
+VP potential change-rows fixed (nearest-day fallback for the late-publishing
+member daily), the untrustworthy Votion realized/combined-APY chips dropped
+(forward APR + TVL remain), the 2023-era dual footer retired for the shared lib
+footer v3.1 (uniform project column, honest wording — the "no tracking" claim
+removed, anonymous page metrics and public-chain-data disclosed), and the
+ecosystem row rebuilt to the owner's nine venues.
+
 ---
 
 ## 2026-08-21 — Unified chrome milestone (site-wide)

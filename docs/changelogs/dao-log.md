@@ -1,5 +1,11 @@
 # DAO Changelog
 
+## Treasury 3.1 / TLA-Deposits 3.1 — 2026-08-23 — audit arc milestone
+
+Both pages marked at 3.1 to close the reconciliation-audit arc: treasury and
+deposits reconcile green against products, and both now render the shared lib
+footer v3.1 (single footer everywhere; honest legal block; ecosystem links).
+
 This is the change history for `dao.html` (the DAO Governance landing page).
 Newest revisions on top. Times are UTC.
 
