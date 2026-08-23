@@ -68,6 +68,23 @@ SHIPPED SAME DAY — TASK 3 (market-history: the ported duty, Analytics un-froze
   the missing months. Analytics numbers move only after (2)+(3) land — same-run
   analytics reads pre-maintenance committed inputs by design.
 
+CORRECTION + SHIPPED — ATRIUM SALES WERE MISSED (owner caught it):
+- "No sales since June 12" was WRONG — the audit's spot-check filtered exits
+  from BBL only. Owner's own Atrium buy (995038E5…, 2026-08-21, #6192, 49.99
+  SOLID, listing 549) proved it; 36 marketplace-exit txs Jun-12→v2-deploy need
+  sale-vs-delist resolution (several Aug 19–21 Atrium exits to the owner's
+  wallet are likely more buys).
+- SHIPPED: Atrium `buy_nft` vocabulary fixture-locked in classifyNftTx v2 (attr
+  normalization price/listing_id→amount/auction_id; gate G6 on the real tx;
+  zero FCD-suite regression). tla-core one-off Action `nft-resolve-market-exits`
+  (workflow_dispatch): LCD-fetches all 36, archives raw responses under
+  archive/lcd/market-exits/, merges v2 records into transfers months; next warm
+  appends the sales (single-writer law). Registry: Atrium fixture-locked note +
+  GOVERNANCE FLAG: Atrium sale paid 0 royalty to DAO (BBL enforces 5%).
+- VERIFY: (1) run the Action — log lists each SALE line with gross/denom/buyer;
+  (2) trigger/await warm — sales-enriched grows past 1,323 and Floor history
+  26-08 (and possibly 26-07) gains bars; (3) royalties/volume tiles restate.
+
 SHIPPED SAME DAY — TASK 4 (page field-contract repair, explorer Rev 4.20):
 - Four dead Analytics panels revived (volume chart usd/sales, leaderboards,
   most-traded LUNA-equiv, trading line without phantom P&L); royalties made
