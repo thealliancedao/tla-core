@@ -68,6 +68,29 @@ SHIPPED SAME DAY — TASK 3 (market-history: the ported duty, Analytics un-froze
   the missing months. Analytics numbers move only after (2)+(3) land — same-run
   analytics reads pre-maintenance committed inputs by design.
 
+DECISION FINAL — COLLECTION ARCHITECTURE, settled (owner + audit 2026-08-23):
+- Partner data: nft-collections/<slug>/ (collection.json + metadata/ rarity/
+  lore/ per that repo's own convention) and dao-originations/<slug>/ for the
+  DAO side. Partners touch ONLY their folders. Nobody forks anything.
+- Our switch: tla-core/catalog/collections.json (owner: no new single-file
+  folder — catalog/ is the existing home for registries, beside
+  trusted/current.json). Enabling an entry = crons capture the folder, site
+  lights the selector + shifts the dynamic pages.
+- CLEANUP: delete tla-core/collections/ (registry.json committed there under
+  the superseded plan — remove the folder via web UI; nothing reads it yet).
+- Products stay in tla-core/nfts/<slug>/snapshots/ (internal machinery).
+
+FOOTER V3 (lib, all pages — supersedes v2's layout, owner: full redesign):
+structured grid replaces the centered rows — brand column (wordmark, one-liner,
+Telegram/X/GitHub) + Site / Ecosystem (9 stacked links) / This-project columns
+(org repo, Changelog+Rev, System-Health dot, Contact, App when enabled), then
+the four-protection row (not-financial-advice / data-as-is-third-party /
+no-wallet-no-tracking / open-source-open-door), then a bottom bar (© year ·
+community-built · page slug). Health/rev/changelog/App wiring contracts all
+preserved. V3 gate green (10 checks incl. old-layout-absent assertion).
+VERIFY: any page footer → new column layout; health dot still lights; on
+narrow screens columns stack.
+
 SHIPPED — PICKER DISPLAY (lib, all pages): header hint text removed; selected
 wallet shows "Name - terra1…full" on desktop (pill widens to 44em ≥768px) and
 "Name - …7ulw" on mobile; unnamed = full address desktop / terra1hr8…7ulw

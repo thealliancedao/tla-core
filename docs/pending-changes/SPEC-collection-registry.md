@@ -14,17 +14,36 @@ in TLA) all render that collection exactly as they render aDAO. No forked
 pages, no copied crons. If a collection would rather self-host, the entire
 repo is theirs to fork — the registry entry is the only thing they change.
 
-## Files
+## Files — the repos already exist; the config file is the missing piece
+
+**Owner model (2026-08-23), mapped onto the org's EXISTING layout:** collection
+data lives in the partner-facing repos that already follow "one folder per
+tenant"; the ENABLE SWITCH lives in our core config. Nobody forks anything.
 
 ```
-tla-core/collections/registry.json          ← the index: [slug, enabled] pairs
-tla-core/collections/<slug>/collection.json ← one file, everything below
-tla-core/collections/<slug>/metadata.json   ← 10k-style trait metadata, org format
-tla-core/collections/<slug>/rarity.json     ← ranking records (org format, see below)
+thealliancedao/nft-collections/<slug>/      ← the collection's ONE place
+├── collection.json                          ← NEW: the config contract (below)
+├── metadata/                                ← already the convention
+├── rarity/                                  ← already the convention
+└── lore/                                    ← already the convention
+
+thealliancedao/dao-originations/<slug>/     ← their DAO side (if they have one)
+├── governance/ · treasury/ · positions/     ← already the convention
+
+tla-core/catalog/collections.json          ← OUR switch. Enabling an entry
+                                               tells the crons to capture that
+                                               folder and the site to light up
+                                               the collection selector + shift
+                                               the dynamic pages to it.
 ```
 
-Products land under the existing convention: `nfts/<slug>/snapshots/…` — aDAO's
-`nfts/adao/…` is already this shape; nothing moves.
+The nft-collections README already states the goal — "Onboarding is config,
+not code. Adding a collection = add a folder. Nothing else restructures." —
+this spec is that config. collection.json's `governance` section points at the
+dao-originations folder when one exists. Captured products keep landing in
+tla-core/nfts/<slug>/snapshots/ (internal machinery; partners never open it).
+Reads of the public repos are unauthenticated — cron token surface unchanged.
+
 
 ## collection.json — the contract
 
@@ -50,7 +69,7 @@ Field-by-field. `null` is always legal and means "feature off / not applicable"
 | field | notes |
 |---|---|
 | `images` | `{"cdn_pattern":"https://…/{id}.png","ipfs_fallback":true}` — the explorer builds URLs from the pattern; metadata.json carries per-token `image`/`thumbnail_image` ipfs:// for fallback |
-| `metadata_file` | `collections/<slug>/metadata.json` — org format: `[{id, name, attributes:[{trait_type,value}]}]` |
+| `metadata_file` | `metadata/<file>.json` (repo-relative) — org format: `[{id, name, attributes:[{trait_type,value}]}]` |
 
 ### Backing (null when unbacked)
 ```json
@@ -129,18 +148,25 @@ aDAO's). `tla_stats` only makes sense when the DAO participates in TLA.
 
 ## Onboarding flow (what a collection leader actually does)
 
-1. Fill collection.json (or answer the field list above in chat — we transcribe).
-2. Provide metadata.json + rarity.json in org format (we have converters; "we
-   can make that happen").
-3. PR to tla-core → review → `enabled: true`.
-4. Next cron pass captures; the site shows their tile. Done.
-5. Self-hosting instead: fork the org repos, keep your own registry — every
-   law, gate, and page comes along.
+1. Fill collection.json (or answer the field list in chat — we transcribe;
+   "we can make that happen" applies to metadata/rarity conversion too).
+2. Their folder in nft-collections gets collection.json + metadata/ + rarity/
+   (+ lore/ if they want the Lore page). DAO material goes to their
+   dao-originations folder. That is the ENTIRE surface they ever touch.
+3. We flip their entry in tla-core/catalog/collections.json to enabled —
+   next cron pass captures them; the site's selector tiles appear and the
+   dynamic pages (Explorer, Analytics, Wallet, Portfolio, Lore, DAO,
+   TLA Stats) can shift from aDAO to their collection.
+4. Want it self-hosted instead? Everything is public and open — reference or
+   copy any part into your own build; we'll point you at the pieces.
+
 
 ## Build order (proposed)
 
-1. **This spec approved** → seed `collections/adao/collection.json` with aDAO's
-   real values (identity/backing/governance/marketplaces are all known).
+1. **This spec approved** → commit `adao/collection.json` to nft-collections
+   (packaged as a bare file) + `catalog/collections.json` to tla-core.
+   repo and commits the seed (README + registry + aDAO entry — packaged)."
+
 2. Pages under audit going FORWARD read constants from a tiny
    `lib/collection-config.js` shim that today returns the aDAO entry — zero
    behavior change, retrofit done incrementally as pages get touched anyway.
