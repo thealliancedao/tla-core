@@ -85,3 +85,51 @@ Pools with no `dex` and no catalog name that appear in divergence output are
 migration corpses (drained pair contracts still in the gauge set, e.g. the
 old ampROAR-ROAR Astroport pair). Not tradeable; a spread against one is an
 artifact. "best ~$X → ~$Y net" = trade size → net profit.
+
+---
+
+## Coverage & gap register — NFT market data (2026-08-23)
+
+Written down so limits live in a document, not in memory. Every entry is either
+guarded by an automated invariant or queued with its closing mechanism.
+
+**Guarded by the unresolved-exit sentinel** (market-history ≥1.1.0, warm/full,
+window `SENTINEL_WINDOW_DAYS`=60): every NFT that leaves a registry marketplace
+did so as a sale or a delist — no third thing. Any v1 exit record with no v2
+sale/cancel record for the same tx raises a heartbeat warning
+(`stats.unresolved_exits` + tx list in market-history-heartbeat.json) and a loud
+log line. This is the invariant that would have caught the 2026-08-21 Atrium
+sale of #6192 the same day instead of by owner luck two days later.
+
+**Known seams (open, queued):**
+- **FCD→walker seam, 2025-01-07 → 2025-01-09 (~2 days).** The frozen FCD
+  archive ends ~Jan 7 2025; forward transfers begin 2025-01-09T10:40:30Z
+  (height 13,769,850). Transfer-level custody history only — sales were
+  captured independently by the old pipeline through 2026-06. Closable via the
+  frozen-but-queryable FCD (paginate the NFT contract past the archive tail).
+  Archive-window queue.
+- **Unattributed custody tokens 6847 / 7123.** In DAODAO custody, chain claims
+  exist, unstaker not among 488 known addresses — original unstake txs predate
+  the tracker seed. Archive-window queue.
+
+**Known limits by construction (documented, not bugs):**
+- **OTC / P2P sales are invisible as sales.** classifyNftTx v2 rides registry
+  marketplaces only; a payment + transfer_nft between two wallets in one tx
+  records as a plain transfer. Any heuristic here is a rule that can break —
+  if ever addressed, it flags `possible_p2p_sale` for human review and never
+  auto-enriches.
+- **Vocabulary lock status:** BBL settle/create/cancel — fixture-locked (FCD
+  suite, 11,582 txs). Atrium buy_nft — fixture-locked (real sale 995038E5…,
+  gate G6); Atrium cancel/list — generic path, `auction_id` may be absent on
+  cancels (listing-history falls back to token match). Boost — generic
+  money-movement path only, never exercised on a real Boost sale; first real
+  fixture locks it. Anything unresolvable → `resolution:'ambiguous'`, loudly
+  warned, never guessed.
+- **Pre-org enriched rows (1,221) carry `marketplace: null`** — old-pipeline
+  provenance predating venue labeling. Values chain-derived and trusted;
+  venue attribution for them is an archive re-derive, not a correction.
+- **`spot_luna_usd` / `value_today_usd` on enriched** are frozen at the last
+  full rebuild (June 2026): recomputing mutates committed rows, which the
+  prior-verbatim law forbids. The live-mark path is a P&L-feature design
+  decision, tracked in CHANGES_PENDING.
+
