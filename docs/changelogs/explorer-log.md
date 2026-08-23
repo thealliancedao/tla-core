@@ -5,6 +5,49 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 4.25 — 2026-08-23 — owner-driven rework: holders dropdown, layout, pill copy
+
+Live verification feedback, applied same-day:
+
+**Share button removed** — the URL alone is the share mechanism (owner-verified
+it round-trips); a button duplicating copy-the-URL was clutter.
+
+**Holders moved into the top row as a dropdown.** The panel tile is gone;
+between Search-by-ID and Amount there's now a scrollable dropdown — names with
+counts, sorted by holdings, live against the current filters ("155 holders of
+selection" for Staked→DAO, rows summing to exactly 1,631; "All holders (N)"
+when unfiltered). Click a holder → the unified header selects them.
+
+**Rank System moved down** to where the panel used to sit, below Display
+Options — it's a display mode, not a search input, and the top row is for
+searching.
+
+**Copy on the header pill** (lib/address-picker.js — every page gets this):
+with a wallet selected, a copy icon sits right on the pill — no need to open
+the full finder. Feedback verifies WHAT was copied: the icon flips to a check
+and the tooltip shows the short address for 1.6s.
+
+Gate reworked for the new layout: Share absent, rank buttons outside the top
+row, dropdown label + row-sum exact (1,631), URL round-trip intact, pill copy
+wiring asserted.
+## Rev 4.24 — 2026-08-23 — the tab reads itself (hero sentence) + filter counts labeled
+
+**Hero sentence.** The Analytics tab now opens with one line written FROM the
+data, per the page doctrine (hero number → sentence from data): sales all-time
+with at-sale dollars, minted of 10,000, listed now with ask-side liquidity, and
+the last sale with honest recency — "last sale 1d ago (#6192 · 50 SOLID)" today,
+and it will say "312d ago" just as plainly in a quiet market. Never a static
+caption; empty products drop their clause instead of faking one.
+
+**Filter counts labeled.** The bare integers floating above the status sliders
+("1631" hovering over Ent–DAO) read as noise. They now render as "1,631 match"
+— locale-formatted, hover-explained (matches at this slider position within the
+current filters), and blank at zero.
+
+Gate: hero facts asserted against the live enriched tail (recency check adapts
+to the real last sale), and the staked filter's count must read "1,631 match"
+exactly.
+
 ## Rev 4.23 — 2026-08-23 — the sales-flyer pair: holders of this selection + Share view
 
 **Holders of this selection.** The old Holders dropdown (hidden in Rev 4.16)
