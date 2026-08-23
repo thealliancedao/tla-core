@@ -5,6 +5,44 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 4.20 — 2026-08-23 — Analytics tells the truth again (field-contract repair)
+
+The capture layer was fixed first (classifyNftTx v2, market-history maintenance,
+the 64 recovered batch-settle sales — see platform-crons changelogs); this rev
+makes the page read what the products actually write:
+
+**Four dead panels revived by field truth.** Volume over time read
+`monthly.notional_usd`/`count` (product writes `usd`/`sales`) — blank chart.
+Leaderboards read `x.notional_usd`/`x.count` — every row "$—". Most-traded read
+a USD field the product never carried — now shows LUNA-equiv, labeled, never a
+fake dollar. Trading character promised a realized-P&L the product never
+computed — the line now states what IS computed (flips, % of sales, median
+hold); P&L arrives with the portfolio cost-basis feature, not before.
+
+**Royalties tile**: the old product field summed raw micro-units ACROSS payment
+denoms (uluna + ubLUNA + …) — a unit-mixing number. analytics.js now publishes
+denom-correct `royalty_luna` / `royalty_usd_today` / `royalty_by_denom` (each
+sale priced through its own day); the tile reads those and shows an honest
+"awaiting next warm capture" until they land.
+
+**Conservative mark**: tier mark = the LOWER of sales floor and ask, matching
+the site-wide 2026-08-03 policy (index.html) — the midpoint overstated whenever
+asks sat above sales. One market cap across the site again.
+
+**Governance concentration is DAODAO-only**: "2,034 NFTs staked" mixed 403
+Enterprise stakes (no DAODAO vote) into a card titled DAODAO VP — now 1,631,
+summed from the stakers themselves, and says so.
+
+**Supply screener knows the new custody bucket**: pending + custody-unattributed
+render as "Unclaimed (custody)" (currently 17+2=19) instead of the 2 leaking
+into Free float. Spread colour un-inverted: a deep-negative spread (cheapest ask
+far below what trades) is seller capitulation — red, not green.
+
+**Gate (permanent): gate-explorer-analytics.mjs** — runs the real page script in
+jsdom against the real committed products and asserts specific values in
+specific cells (663 flips, $27.6K top buyer, 1,631 DAODAO, 17+2 unclaimed,
+min-mark anchor, no phantom P&L). Requires `npm i jsdom`.
+
 ## Rev 4.16 — 2026-08-21 — unified chrome
 
 Header + picker from the libs. Search-by-Address / Last-4 / Holders sections
