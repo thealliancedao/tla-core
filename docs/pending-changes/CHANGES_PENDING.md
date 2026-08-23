@@ -49,7 +49,26 @@ SHIPPED LATER SAME DAY — TASK 2 (custody bucket + the REAL 9981 root cause):
   "Classification sums correctly to 10000"; Analytics Supply bar gains the
   bucket only after walk task 4 (page reads flags — no page change shipped yet).
 
-NEXT (order): 2) ~~19-token bucket~~ DONE → 
+SHIPPED SAME DAY — TASK 3 (market-history: the ported duty, Analytics un-frozen):
+- NEW platform-crons nfts/adao/market-history.js in the warm/full pass: forward-
+  fills luna/bluna-usd-daily from org price-history (June 9 → yesterday, ~75
+  days), appends v2 sales to sales-enriched, maintains listing-history
+  (open/close, all-ever-seen dedupe). Laws in code: prior rows byte-verbatim
+  (throws), never-shrink (throws), ambiguous never enriched, no fabricated
+  price days, repairs labeled.
+- flows.js delisting→sale upgrade at rollup (chain truth wins, labeled).
+- tla-core one-off Action `nft-recover-batch-sales` (workflow_dispatch):
+  appends the 64 REAL batch-settle sales the old pipeline dropped — live
+  classifier + live enricher, registry roles, idempotent, repair-labeled.
+- Gate: mock-run-market-history.js (G1–G5, real committed products, fixture
+  self-derived). VERIFY ON ARRIVAL: (1) gate passes locally; (2) run the
+  one-off Action once → sales-enriched 1,259 → 1,323; (3) next warm logs
+  "luna-usd-daily: +N days" reaching yesterday and market-history heartbeat
+  lands; (4) NEXT analytics pass shows 1,323 sales and floor history gains
+  the missing months. Analytics numbers move only after (2)+(3) land — same-run
+  analytics reads pre-maintenance committed inputs by design.
+
+NEXT (order): 2) ~~19-token bucket~~ DONE → 3) ~~market-history port~~ DONE → 
 3) flows.js delisting→sale upgrade + sales-enriched/listing-history/
 luna-usd-daily forward-fill (merge INTO org path; two-phase, prior-verbatim) →
 4) page field-drift fixes (four panels + uluna royalty + conservative mark +
