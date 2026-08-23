@@ -87,6 +87,71 @@ DECISION FINAL — COLLECTION ARCHITECTURE, settled (owner + audit 2026-08-23):
   the superseded plan — remove the folder via web UI; nothing reads it yet).
 - Products stay in tla-core/nfts/<slug>/snapshots/ (internal machinery).
 
+PIXEL LIONS GOVERNANCE CORRECTED + HISTORY BACKFILL QUEUED (2026-08-23):
+pixeLions have their OWN DAODAO DAO (est. Oct 2024, 291 members, 2,930/5,000
+staked 58.54%, 1-second unstaking, "formerly of Enterprise" = legacy-
+Enterprise history like aDAO's). Council (5 members, equal 20%) shipped to
+dao-originations/pixel-lions/governance/council.json; collection.json
+governance rewritten (own DAO + Lion DAO as parent). STILL NEEDED from owner:
+the pixeLions DAO core address (copy from its daodao.zone URL) + the DAODAO
+NFT-staking module address (its contract list).
+
+BACKFILL — YES, and it is DURING-ARCHIVE-ACCESS priority: pixel-lions needs
+its own sales/transfers/staking history for explorer-grade parity. The infra
+EXISTS and parameterizes: (1) FCD frozen archive covers genesis→Jan 7 2025 —
+the same walk that built aDAO's corpus, pointed at the pixelions contract;
+(2) archive node covers Jan 2025→now while access lasts (TIME-SENSITIVE);
+(3) forward capture = add the pixelions contract + its venues to the
+tla-flows capture set (BBL sale vocabulary ALREADY fixture-locked from aDAO —
+same warlock/necropolis contract terra1ej4cv98…7gccs9). Products land at
+tla-core/nfts/pixel-lions/snapshots/ mirroring aDAO's shape. Build order:
+forward capture first (stops the bleeding), then archive-era walk, then FCD
+era. This is a full session: "Read PROJECT_KNOWLEDGE and CHANGES_PENDING,
+then build the pixel-lions history backfill (forward capture + archive walk)."
+
+PIXEL LIONS — ALL DATA SOURCES RESOLVED (2026-08-23, full BBL HAR): warlock
+necropolis API serves rank/top_percent/rarity/traits per token (125 pages x
+40); images ipfs CID bafybeihgr… ({id}.png — BBL uses a TOKENED realityflux
+gateway, we use public ipfs.io with the same CID); metadata token_uri CID
+bafybeia4wio… ({id}.json). Trait counts in the API match the owner-transcribed
+traits-reference EXACTLY (240 cross-checks on the captured page-1 payload).
+NO rank reverse-engineering needed — warlock IS the rank oracle; the owner's
+72 transcribed anchors + 2 API-confirmed (#1→4760, #2→3348) become the sweep's
+refusal gate. SHIPPED to nft-collections: filled collection.json, bbl-rank-
+anchors.json, traits-reference.json, and .github/{workflows,scripts}/
+sweep-pixel-lions — a one-off Action (repo-local, default token, no new
+credentials) that mirrors metadata.json + rarity.json with four refusal gates
+(supply 5000, exact trait-count reconciliation, 74 anchors, rank range).
+PLACEMENT NOTE for owner approval: collection-data sweep Actions live IN
+nft-collections (the repo they write) — extends the tla-core-only Action law.
+OWNER: commit the zip, run the sweep-pixel-lions Action, send the log.
+Remaining after sweep: BBL royalty bps, DAODAO-staking confirmation, Lion DAO
+consent — then pixel-lions is wiring-ready.
+
+PIXEL LIONS PILOT SEEDED (2026-08-23): nft-collections/pixel-lions/ —
+collection.json (contract terra17z7fpaa…xp50g from the BBL HAR; supply 5,000
+PROVEN by trait-count sums, six independent confirmations; 6 traits; Lion DAO
+core terra1tkersa2…gluec from dao-originations/lion-dao registry; BBL
+marketplace; backing null; portfolio/wallet-tracking OFF pending Lion DAO
+consent) + metadata/traits-reference.json (all 127 trait values with counts,
+transcribed from owner screenshots, every trait sums to exactly 5,000 — the
+validation target future metadata must reconcile against). Switch updated:
+pixel-lions entry enabled:false. TO FLIP ENABLED, still needed: per-token
+metadata file (chain nft_info sweep or team file), rarity method choice
+(statistical-from-counts computable today, or team's intended list), image
+CDN pattern (HAR truncated at 100KB before any image request — re-export
+complete or paste one image URL), staking-contract confirmation, BBL royalty
+bps. Then the registry-wiring session makes crons+site actually read it.
+
+FOOTER V3.1 (lib): This-project column made uniform — five identical
+icon+label rows (repo/Changelog/System Health/Contact/App), rev+date+page
+moved to the bottom bar (single page-rev id). Honest wording per owner:
+"no tracking" claim REMOVED; blurb now "No wallet connection, no accounts —
+just public on-chain data"; legal section retitled "No wallet, no accounts"
+and discloses that wallet holdings shown are public on-chain data and hosting
+collects anonymous aggregate page metrics. Escape normalization + 9-check
+gate green.
+
 FOOTER V3 (lib, all pages — supersedes v2's layout, owner: full redesign):
 structured grid replaces the centered rows — brand column (wordmark, one-liner,
 Telegram/X/GitHub) + Site / Ecosystem (9 stacked links) / This-project columns
