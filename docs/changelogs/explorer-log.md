@@ -5,6 +5,26 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 4.23 — 2026-08-23 — the sales-flyer pair: holders of this selection + Share view
+
+**Holders of this selection.** The old Holders dropdown (hidden in Rev 4.16)
+reborn as a live panel: narrow the collection with any filter and the panel
+shows exactly who holds the result and how many each — "1,631 NFTs across 155
+holders" for Staked→DAO, chips sorted by count, "+N more" expands. Click a
+holder and the unified header selects them (every page follows). Hidden when no
+filter narrows the set — the full-collection answer is the Wallet-tab
+leaderboard, not a duplicate.
+
+**Share view.** The URL has quietly carried the whole filter state since the
+deep-link work — now it's discoverable: one button refreshes the URL and copies
+it. Any filtered view, rank system included (`ranks=bbl` now serialized too),
+reopens exactly from the link — filters, sliders, trait picks, sort. Built for
+sales flyers and "look at these" links.
+
+Gate: UI-driven — toggles the Staked→DAO filter exactly as a user would, then
+asserts the panel appears, the summary counts 1,631, expanded chips sum to
+1,631 exactly, and the URL carries `staked=true&staked_pos=2`.
+
 ## Rev 4.22 — 2026-08-23 — Wallet tab: the 17 stop being invisible
 
 **UNCLAIMED column.** Seventeen NFTs sit unstaked in DAODAO custody with their
