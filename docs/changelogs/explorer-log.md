@@ -5,6 +5,20 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 4.26 — 2026-08-23 — rank tiles sized + perf quick wins (page side of the bundle next)
+
+Rank System buttons regained their proper size (the 4.25 move dropped the width
+constraint — they collapsed to text width). Insights beacons added to the three
+bare pages (help, system-health, transparency-hub). Preview-tile hover guarded
+against re-setting the same image src (the HAR's 33 duplicate PNG requests).
+
+Cron side of the perf bundle shipped in platform-crons: explorer-bundle.json —
+all 10,000 tokens' traits, grade, both ranks, status and listing USD in 437KB
+(vs the 16.3MB the page loads today), reconciled to summary.json or it refuses
+to publish. The page swap (boot on the bundle, hydrate the rest in the
+background, BBL grade detail lazy) is the next delivery, after the product
+lands and verifies on a warm run.
+
 ## Rev 4.25 — 2026-08-23 — owner-driven rework: holders dropdown, layout, pill copy
 
 Live verification feedback, applied same-day:
