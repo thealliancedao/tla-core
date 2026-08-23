@@ -68,6 +68,22 @@ SHIPPED SAME DAY — TASK 3 (market-history: the ported duty, Analytics un-froze
   the missing months. Analytics numbers move only after (2)+(3) land — same-run
   analytics reads pre-maintenance committed inputs by design.
 
+SHIPPED — UNRESOLVED-EXIT SENTINEL + COVERAGE GAP REGISTER (the "never again"):
+- market-history 1.1.0: every marketplace exit must resolve to sale or cancel —
+  any v1 exit (trailing 60d, registry-driven venue set) with no v2 record for
+  the same tx raises loud log warns + heartbeat stats.unresolved_exits with the
+  tx list. Currently flags 10 in Aug alone — the resolve-market-exits Action
+  clears them. Gate G6 on the REAL committed 2026/08 month (flags pre-resolve,
+  clears post-resolve, shape-aware both ways).
+- docs/agent/DATA-MAP.md: coverage & gap register appended (in the help-bot
+  corpus, so the bot can answer coverage questions honestly): FCD→walker seam
+  2025-01-07→09 (~2d, transfer-level only, archive-queue), tokens 6847/7123
+  attribution (archive-queue), OTC/P2P invisibility by construction, vocab
+  lock status (BBL+Atrium-sale locked; Atrium-cancel/Boost generic), frozen
+  spot semantics.
+- VERIFY: next warm after the resolve Action → "✓ sentinel: every marketplace
+  exit … resolves"; before it → the ⚠⚠ SENTINEL block listing the pending 10.
+
 CORRECTION + SHIPPED — ATRIUM SALES WERE MISSED (owner caught it):
 - "No sales since June 12" was WRONG — the audit's spot-check filtered exits
   from BBL only. Owner's own Atrium buy (995038E5…, 2026-08-21, #6192, 49.99
