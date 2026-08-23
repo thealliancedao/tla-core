@@ -68,6 +68,15 @@ SHIPPED SAME DAY — TASK 3 (market-history: the ported duty, Analytics un-froze
   the missing months. Analytics numbers move only after (2)+(3) land — same-run
   analytics reads pre-maintenance committed inputs by design.
 
+SHIPPED — FEATURES (explorer Rev 4.23): filtered-holders panel (live group-by
+of the FILTERED set, chips → header select, hidden when nothing narrows) +
+Share view button (URL already carried full filter state; now discoverable,
+ranks=bbl serialized + restored). Gate is UI-driven: real toggle+slider events,
+panel sums to 1,631 exactly for Staked→DAO, URL round-trips.
+VERIFY: filter anything → panel appears with counts; Share view → paste the
+link in a new tab → identical view; chip click → header pill updates.
+NEXT: analytics hero + filter-count cleanup, then perf bundle (cron).
+
 SHIPPED — WALLET TAB (explorer Rev 4.22): UNCLAIMED + VP% columns (grid 9→11
 cols), backing line on wallet search (unbroken × per_nft_ampluna, USD from
 per_nft_value_usd — product fields, no re-derivation), all non-blocking
