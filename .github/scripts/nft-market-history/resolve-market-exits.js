@@ -23,6 +23,7 @@ const fs = require('fs'), path = require('path'), https = require('https');
 
 const PC_RAW = 'https://raw.githubusercontent.com/thealliancedao/platform-crons/main';
 const LCDS = ['https://terra-lcd.publicnode.com', 'https://terra-rest.publicnode.com'];
+const RPCS = ['https://terra-rpc.publicnode.com'];   // Tendermint - different retention than the REST tx index
 const CUTOFF = '2026-06-12T02:45:01Z';          // last enriched sale — resolve everything after
 const NFT = 'terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9';
 const TRANSFERS = path.join(process.cwd(), 'nfts/adao/transfers');
@@ -37,11 +38,36 @@ function httpGetText(url) {
   });
 }
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+const blockTimeCache = {};
+async function blockTime(height) {
+  if (blockTimeCache[height]) return blockTimeCache[height];
+  for (const rpc of RPCS) {
+    try {
+      const b = JSON.parse(await httpGetText(`${rpc}/block?height=${height}`));
+      const t = b.result && b.result.block && b.result.block.header && b.result.block.header.time;
+      if (t) return (blockTimeCache[height] = new Date(t).toISOString().slice(0, 19) + 'Z');
+    } catch { /* next */ }
+  }
+  return null;
+}
 async function fetchTx(hash) {
   let lastErr;
-  for (const lcd of LCDS) for (let a = 1; a <= 3; a++) {
+  for (const lcd of LCDS) for (let a = 1; a <= 2; a++) {
     try { return JSON.parse(await httpGetText(`${lcd}/cosmos/tx/v1beta1/txs/${hash}`)); }
-    catch (e) { lastErr = e; await sleep(400 * a); }
+    catch (e) { lastErr = e; await sleep(300 * a); }
+  }
+  // Tendermint RPC fallback - some gateways prune the REST tx index earlier
+  // than RPC. Response adapted to the LCD shape the caller expects.
+  for (const rpc of RPCS) for (let a = 1; a <= 2; a++) {
+    try {
+      const r = JSON.parse(await httpGetText(`${rpc}/tx?hash=0x${hash}`));
+      const tr = r.result;
+      if (!tr || !tr.tx_result) throw new Error('rpc: empty result');
+      const ts = await blockTime(tr.height);
+      if (!ts) throw new Error('rpc: block time unavailable');
+      return { tx_response: { txhash: hash, height: String(tr.height), timestamp: ts,
+        code: Number(tr.tx_result.code || 0), events: tr.tx_result.events || [] } };
+    } catch (e) { lastErr = e; await sleep(300 * a); }
   }
   throw lastErr;
 }
@@ -98,10 +124,10 @@ function normEvents(events) {
   // fetch + archive + classify
   fs.mkdirSync(ARCHIVE, { recursive: true });
   const archive = []; const byMonth = {};
-  let sales = 0, cancels = 0, lists = 0, ambiguous = 0, failed = 0;
+  let sales = 0, cancels = 0, lists = 0, ambiguous = 0, failed = 0; const failedHashes = [];
   for (const h of [...hashes].sort()) {
     let resp;
-    try { resp = await fetchTx(h); } catch (e) { console.warn(`  ✗ ${h.slice(0, 10)} fetch failed: ${e.message}`); failed++; continue; }
+    try { resp = await fetchTx(h); } catch (e) { console.warn(`  x ${h.slice(0, 10)} fetch failed: ${e.message}`); failed++; failedHashes.push(h); continue; }
     const tr = resp.tx_response;
     const txr = { txhash: tr.txhash, height: Number(tr.height), timestamp: tr.timestamp, code: Number(tr.code || 0), events: normEvents(tr.events) };
     archive.push({ txhash: tr.txhash, height: tr.height, timestamp: tr.timestamp, code: tr.code, events: txr.events });
@@ -117,10 +143,14 @@ function normEvents(events) {
     await sleep(250);   // BATCH_CONCURRENCY doctrine: gentle on public LCDs
   }
   console.log(`resolved: ${sales} sales (${ambiguous} ambiguous), ${cancels} cancels, ${lists} lists · ${failed} fetch failures`);
-  if (failed) throw new Error(`${failed} tx fetches failed — refusing partial resolution (re-run)`);
+  // PARTIAL MODE: commit what resolved; the unresolved-exit sentinel owns the
+  // residual and keeps flagging it in every warm heartbeat until closed.
+  // (All-or-nothing was the pre-sentinel policy; refusing good data because a
+  // gateway pruned other txs just delays truth.)
+  if (failed) console.warn(`  ! ${failed} tx(s) unresolved this run - committed partially; hashes recorded in the archive doc; the sentinel keeps flagging them. Re-run retries.`);
 
   fs.writeFileSync(path.join(ARCHIVE, `exits-${CUTOFF.slice(0, 10)}-to-v2-deploy.json`),
-    JSON.stringify({ schemaVersion: 1, capturedAt: new Date().toISOString(), source: 'LCD /cosmos/tx/v1beta1/txs (one-off resolve-market-exits)', cutoff: CUTOFF, count: archive.length, txs: archive }, null, 1));
+    JSON.stringify({ schemaVersion: 1, capturedAt: new Date().toISOString(), source: 'LCD /cosmos/tx/v1beta1/txs + Tendermint RPC /tx (one-off resolve-market-exits)', cutoff: CUTOFF, count: archive.length, unresolved_fetch_failures: failedHashes, txs: archive }, null, 1));
   console.log(`archived ${archive.length} raw txs → archive/lcd/market-exits/`);
 
   // merge v2 records into the month files (v1 untouched — new keys only)
