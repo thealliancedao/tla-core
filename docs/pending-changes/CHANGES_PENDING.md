@@ -1,4 +1,29 @@
-## 2026-08-23 — EXPLORER WALK 1a SHIPPED: classifyNftTx v2 (marketplace sale capture)
+# CHANGES_PENDING — session queue & state
+(Consolidated 2026-08-23 end-of-session. THE authoritative "where are we" now
+lives in PROJECT_KNOWLEDGE.md — read that first; this file carries the
+detailed per-item state below it.)
+
+CONSOLIDATION 2026-08-23 (end of the Explorer + multi-collection session):
+- MILESTONE REVS SHIPPED: index 4.00, nft-explorer 4.30, treasury 3.1,
+  tla-deposits 3.1 — audit arcs closed at round numbers; changelog entries in
+  index-log/dao-log/explorer-log.
+- DEEP AUDIT RESULT: repos clean. Deleted earlier tonight: tla-core
+  collections/ (superseded), catalog/collection.json (mis-upload). Remaining
+  owner-decision items (NOT deleted): site test.html (Member Portfolio TEST
+  P1 — still linked from index+tools; delete the page AND both links together
+  or keep); tools.html carries the retired 2023 footer (fold into a future
+  page-walk); Render parallel cron pairs (owner console); legacy
+  sales-history.json fold (queued).
+- pixeLions: sweep green (5,000 metadata + ranks, anchors exact on main),
+  validate-collection PASS — data layer COMPLETE. Open: royalty bps, Lion DAO
+  consent, classic-era contract address.
+- HUB VISION recorded in SPEC-collection-registry.md ("The Hub" section):
+  COLLECTION pill in the unified header, page context mapping, feature-flag
+  gating, per-collection branding block (theming after function).
+- NEXT SESSIONS in priority order: (1) registry wiring / hub, (2) genesis
+  walk (time-sensitive), (3) pre-announcement gate #0, (4) portfolio P&L,
+  (5) housekeeping batch. Openers in PROJECT_KNOWLEDGE.
+
 
 Explorer audit findings (full list in chat + explorer-log.md): Analytics tab inputs
 frozen at 2026-06-12 — sales-enriched/listing-history have NO org maintainer (duty

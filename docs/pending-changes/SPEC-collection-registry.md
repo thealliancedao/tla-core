@@ -182,3 +182,30 @@ aDAO's). `tla_stats` only makes sense when the DAO participates in TLA.
   lore files? (Spec assumes lore file per slug.)
 - Portfolio wallet-tracking consent: registry flag enough, or want an explicit
   signed-off note per collection in the repo?
+
+
+## The Hub — collection context & theming (owner vision, 2026-08-23)
+
+The end state is a HUB: powerful collections allied in one place, each
+experiencing the site as THEIRS. Design principles for the wiring session:
+
+**One global collection context, like the wallet picker.** The unified header
+gains a COLLECTION pill beside VIEWING: pick a collection and every page
+follows — the same mental model users already have for wallets. Persisted
+(sessionStorage) + shareable (`?collection=slug` in every URL).
+
+**Page context mapping.** With a collection selected: index's DAO tiles show
+THEIR dao + treasury (dao-originations folder), the marketplace strips show
+THEIR venues, NFT Explorer / Analytics / Wallet / Portfolio / Lore render
+THEIR products (tla-core/nfts/<slug>/), TLA Stats appears only when their DAO
+participates in TLA. Feature flags in collection.json decide which pages light
+up at all. aDAO is simply the default context, not a special case.
+
+**Per-collection theming.** collection.json grows an optional `branding` block
+— accent colors, logo URL, font preference — applied as CSS variables when
+that context is active. The site FEELS like their site. (Template gains the
+field; theming ships after the functional wiring, never before.)
+
+**Why collections come to us:** they fill four files, run one validator, and
+get an explorer, analytics, wallet views, DAO tooling, and a hub audience —
+hosted, or forked wholesale. The alliance is the product.
