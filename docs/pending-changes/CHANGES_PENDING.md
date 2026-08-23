@@ -68,7 +68,28 @@ SHIPPED SAME DAY — TASK 3 (market-history: the ported duty, Analytics un-froze
   the missing months. Analytics numbers move only after (2)+(3) land — same-run
   analytics reads pre-maintenance committed inputs by design.
 
-NEXT (order): 2) ~~19-token bucket~~ DONE → 3) ~~market-history port~~ DONE → 
+SHIPPED SAME DAY — TASK 4 (page field-contract repair, explorer Rev 4.20):
+- Four dead Analytics panels revived (volume chart usd/sales, leaderboards,
+  most-traded LUNA-equiv, trading line without phantom P&L); royalties made
+  denom-correct at the SOURCE (analytics.js: royalty_luna / royalty_usd_today /
+  royalty_by_denom — old field mixed uluna+ubLUNA micro-units) with the tile
+  honest-blank until next warm; conservative min-mark (site-wide policy, one
+  mcap again); governance DAODAO-only 1,631; Unclaimed (custody) 17+2 in Supply
+  (the 2 no longer leak into Free float); spread colour un-inverted.
+- NEW page gate gate-explorer-analytics.mjs (jsdom + real committed products,
+  specific values in specific cells). VERIFY ON ARRIVAL: (1) Analytics volume
+  chart has bars & buyer rows show $ values; (2) trading line reads
+  "663 flips (held ≤30d) · 50.1% ..."; (3) governance card says 1,631 DAODAO
+  only; (4) Supply shows Unclaimed (custody) 19; (5) royalties tile shows
+  "awaiting next warm capture" until the next warm, then LUNA+USD; (6) mark/mcap
+  dropped vs yesterday (conservative min — expected, not a bug).
+- NOTED, deliberately unfixed: enriched spot_luna_usd/value_today_usd frozen at
+  June builtAt — recomputing mutates committed rows (prior-verbatim conflict);
+  belongs to the P&L feature's live-mark design. sales-history.json (1,221 rows,
+  a third legacy sales file feeding two analytics lines) → fold-into-enriched
+  candidate, task 5/6 audit.
+
+NEXT (order): 2) ~~19-token bucket~~ DONE → 3) ~~market-history port~~ DONE → 4) ~~page field fixes~~ DONE → 
 3) flows.js delisting→sale upgrade + sales-enriched/listing-history/
 luna-usd-daily forward-fill (merge INTO org path; two-phase, prior-verbatim) →
 4) page field-drift fixes (four panels + uluna royalty + conservative mark +
