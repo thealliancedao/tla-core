@@ -68,6 +68,42 @@ SHIPPED SAME DAY — TASK 3 (market-history: the ported duty, Analytics un-froze
   the missing months. Analytics numbers move only after (2)+(3) land — same-run
   analytics reads pre-maintenance committed inputs by design.
 
+SHIPPED — PICKER DISPLAY (lib, all pages): header hint text removed; selected
+wallet shows "Name - terra1…full" on desktop (pill widens to 44em ≥768px) and
+"Name - …7ulw" on mobile; unnamed = full address desktop / terra1hr8…7ulw
+mobile; re-renders on resize across the breakpoint. Gated both widths.
+VERIFY: select yourself → desktop pill reads "DeFi_Patriot - terra1hr8…x77ulw"
+(full string); shrink the window → flips to "DeFi_Patriot - …7ulw".
+
+SHIPPED — INDEX FIXES + FOOTER V2 + COLLECTION SPEC (2026-08-23 late):
+- index (Rev 3.99): VP Locked / VP potential change-rows no longer dash — the
+  member daily publishes late so today's file 404s; nearest-3 fallback added
+  (same fix the headline tile already had). Votion realized/combined-APY chip
+  DROPPED from both vault rows (owner: numbers not trustworthy; forward APR +
+  TVL + link remain).
+- lib/site-footer.js v2 (EVERY page): ecosystem row (Eris TLA, Astroport,
+  Solid→solidcapa.com, Atrium→atrium.markets, Boost, BBL, Votion,
+  Terra→phoenix.money, DAODAO) + four-section legal/community block (not
+  financial advice / third-party data / no wallet, no tracking / open source
+  open door with github.com/thealliancedao). index + tla-stats bespoke footers
+  RETIRED (incl. tla-stats' literal \u-escape disclaimer bug and index's
+  frozen Rev 3.70 tag); both now mount the lib footer (index passes
+  appInfo:true to keep the App/PWA button — its modal JS was already
+  DOMContentLoaded + guarded). Footer render gate green (9 venues, 4 sections,
+  repo link, no literal escapes, App button conditional).
+- NEW SPEC-collection-registry.md + collections/registry.json +
+  collections/adao/collection.json seed: the plug-in-a-collection contract
+  (identity/traits/rarity/images/backing/governance/marketplaces/feature
+  flags), cron + site discovery model, onboarding flow, build order. aDAO seed
+  uses ONLY known-true values; unknowns are explicit TODOs, never invented.
+  BINDING for new page work: build against the registry shape (step 2 shim:
+  lib/collection-config.js returning the aDAO entry — zero behavior change).
+- VERIFY: index → VP rows show deltas; Votion rows have no realized-APY chip;
+  scroll to footer on index + tla-stats → new legal block, ecosystem links,
+  App button on index only; read the SPEC and answer its three owner questions.
+- QUEUED from this pass: index page-walk (orphaned changelogModal div + JS,
+  guarded but dead); tla-stats T-rev history fold into lib changelog link.
+
 SHIPPED — PERF PART 2 (explorer Rev 4.27, FINAL explorer item): bundle-first
 boot (442KB paints gallery/filters/ranks/status/prices immediately; owners/
 grades hydrate in background; "holders loading…" honest gap state); parallel-
