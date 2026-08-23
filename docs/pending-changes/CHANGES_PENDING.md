@@ -68,6 +68,21 @@ SHIPPED SAME DAY — TASK 3 (market-history: the ported duty, Analytics un-froze
   the missing months. Analytics numbers move only after (2)+(3) land — same-run
   analytics reads pre-maintenance committed inputs by design.
 
+SHIPPED — PERF PART 2 (explorer Rev 4.27, FINAL explorer item): bundle-first
+boot (442KB paints gallery/filters/ranks/status/prices immediately; owners/
+grades hydrate in background; "holders loading…" honest gap state); parallel-
+run fallback to the untouched full boot on ANY bundle problem. Gate: latch
+proves paint-before-hydrate + hydration completion + 404-fallback in a second
+jsdom instance. THE EXPLORER WALK IS COMPLETE.
+VERIFY: hard-refresh the live page with DevTools Network open — first paint
+arrives on explorer-bundle.json (~442KB) before nfts.json/metadata finish;
+leaderboard fills in a beat later; block explorer-bundle.json in DevTools and
+refresh → page still boots the old way.
+NEXT UP (pick any): pre-announcement gate #0 (side-by-side reconciliation),
+portfolio P&L, during-archive-access queue (STATE sampler / 6847+7123 /
+FCD seam / BBL payment legs / Credia), warlock one-off for the 3 Jun-12 exits,
+Render cron-pair retirements, Nov token rollover checklist.
+
 SHIPPED — PERF BUNDLE PART 1 (explorer Rev 4.26 + platform-crons compact-bundle
 1.0.0): rank tiles sized (w-72, px-4); insights on help/system-health/
 transparency-hub; preview hover dedupe guard. CRON: NEW compact-bundle.js in
