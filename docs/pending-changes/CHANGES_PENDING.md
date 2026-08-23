@@ -68,6 +68,17 @@ SHIPPED SAME DAY — TASK 3 (market-history: the ported duty, Analytics un-froze
   the missing months. Analytics numbers move only after (2)+(3) land — same-run
   analytics reads pre-maintenance committed inputs by design.
 
+SHIPPED — WALLET TAB (explorer Rev 4.22): UNCLAIMED + VP% columns (grid 9→11
+cols), backing line on wallet search (unbroken × per_nft_ampluna, USD from
+per_nft_value_usd — product fields, no re-derivation), all non-blocking
+enrichment from summary.json fetched at boot. The 2 contract-held unattributed
+stay off the board (Enterprise-unattributed precedent). Gate rebased onto real
+page markup, end-to-end init, sort-click assertions (17 exact, top staker
+19.87% @ …5309, backing math exact).
+VERIFY: Wallet tab shows Unclaimed and VP % columns; sort by each; DeFi_Patriot
+row shows VP%; search a wallet → backing line under the title.
+NEXT: filtered-holders panel + shareable filter URLs, hero, perf bundle.
+
 SHIPPED — TASK 5 LEGACY STRIP (explorer Rev 4.21):
 - Dual footer + stale changelog modal + JS + CSS stripped (lib footer owns rev/
   changelog/health); false deving.zone credit gone with it; page links folded
