@@ -5,6 +5,33 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 4.22 — 2026-08-23 — Wallet tab: the 17 stop being invisible
+
+**UNCLAIMED column.** Seventeen NFTs sit unstaked in DAODAO custody with their
+claims never completed — attributed to their real owners since C.6, but fitting
+none of the board's columns, so they either vanished from their owners' rows or
+broke the row totals. New column between Enterprise and Broken, amber, with a
+hover explaining the state. (The 2 contract-held unattributed tokens stay off
+the board by the same precedent as the 81 Enterprise-unattributed — visible in
+the Supply screener, never mislabeled as someone's holding.)
+
+**VP % column.** Every DAODAO staker's share of staked voting power, straight
+from the stakers product, sortable — the holder board doubles as a governance
+view. Blank (—) for non-stakers, never zero-faked.
+
+**Backing on the wallet view.** Searching a wallet now shows what its unbroken
+NFTs still carry: count × per-NFT ampLUNA and the product-computed USD, live
+from the summary feed. Broken NFTs excluded (their backing was already
+redeemed) — consistent with the corrected badge key.
+
+All three are enrichment, not gates: if the summary feed ever fails, the page
+loads with blanks in those spots rather than blocking.
+
+Page gate extended and rebased onto the REAL page markup (jsdom parses
+nft-explorer-index.html, initializeExplorer runs end-to-end): sort-click drives
+the new columns — Unclaimed sums to the pending 17, VP% sort surfaces the true
+top staker, backing line math asserted exactly.
+
 ## Rev 4.21 — 2026-08-23 — legacy strip (the page sheds its dead weight)
 
 **One footer, one changelog.** The page carried TWO footers: the lib footer
