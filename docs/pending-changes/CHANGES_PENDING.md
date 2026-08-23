@@ -1,3 +1,47 @@
+## 2026-08-23 — EXPLORER WALK 1a SHIPPED: classifyNftTx v2 (marketplace sale capture)
+
+Explorer audit findings (full list in chat + explorer-log.md): Analytics tab inputs
+frozen at 2026-06-12 — sales-enriched/listing-history have NO org maintainer (duty
+never ported from the retired data-repo Action); luna-usd-daily frozen 2026-06-08;
+field drift blanks four panels (monthly.notional_usd/count vs usd/sales,
+flips.flip_count/realized_pnl_usd vs count/luna, royalties.to_dao_usd_* absent,
+royalty total in uluna); 19 unbucketed tokens = DAODAO custody unattributed
+(incl. legacy 4: 1319/3605/6847/7123); governance concentration mixes Enterprise
+(2,034) into "DAODAO VP" (should be 1,631); explorer mark still midpoint vs
+index.html conservative min (two market caps); dual footer w/ false deving.zone
+credit (Rev 4.13 inline); dead snapshot tool ~700 lines; cloudflare-ipfs.com
+fallback (defunct gateway); badge key says broken="eligible for rewards"
+(backwards, contradicts its own Backing explainer); address-picker loaded but
+never read (Wallet tab doesn't follow VIEWING); 16.2 MB first paint.
+
+SHIPPED (this delivery, gated):
+- platform-crons: aux-classifiers.js classifyNftTx v2 (sale/list/cancel/bid,
+  order-segmented batch settles, buyer==fee-wallet edge, legs_consistent flag),
+  tla-flows/index.js registry parse `nft_marketplace` + markets pass-through,
+  NEW mock-run-nft-v2.js (BINDING gate: FCD 11,582 txs; 1,151/2,793/1,602/0/0;
+  v1 parity; 1,087/1,087 enriched gross+seller+buyer).
+- tla-core: capture-registry.json +3 marketplaces (BBL role-evidenced;
+  Atrium/Boost generic until fixture).
+- v2 corrects history: old pipeline dropped 64 batch-settle sales, misattributed
+  13 fee/royalty/net (legs don't sum to gross; v2's do exactly).
+
+VERIFY ON ARRIVAL:
+1. Both repos: mock-run-nft-v2.js passes (TLA_CORE_DIR=<tla-core> node ...).
+2. Next Render tla-flows run logs "3 marketplaces watched" and walks clean.
+3. First real marketplace event lands in nfts/adao/transfers/2026/08.json as a
+   v2 record (list/cancel likeliest; sale when one happens).
+4. C.5 STILL UNRESOLVED from 08-22: warm ran but committed products show
+   pending 0 / classification 9981 — the 19 stay unbucketed until walk task 2.
+
+NEXT (order): 2) 19-token `daodao_custody_unattributed` bucket + sum guard →
+3) flows.js delisting→sale upgrade + sales-enriched/listing-history/
+luna-usd-daily forward-fill (merge INTO org path; two-phase, prior-verbatim) →
+4) page field-drift fixes (four panels + uluna royalty + conservative mark +
+DAODAO-only governance + spread colour) → 5) legacy strip (dual footer,
+snapshot tool, gateway, badge key, picker wiring) → 6) Analytics hero sentence →
+7) compact bundle (16.2 MB → ~1 MB). Open item: tla-flows mock scenarios B/C
+fail pristine in a fresh env (harness env dependency) — suite is BINDING, fix.
+
 ## 2026-08-22 (late) — PAGE-BY-PAGE WALK STARTED: Home · DAO · TLA Stats · Treasury · TLA Deposits
 
 Owner's doctrine for this arc (binding): **walk every page for (1) old-repo code, (2)
