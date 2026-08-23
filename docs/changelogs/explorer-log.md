@@ -5,6 +5,33 @@ Newest revisions on top. Times are UTC.
 
 ---
 
+## Rev 4.21 — 2026-08-23 — legacy strip (the page sheds its dead weight)
+
+**One footer, one changelog.** The page carried TWO footers: the lib footer
+(rev, live changelog from tla-core, health dot) and a stale hand-copied one
+frozen at Rev 4.13 with its own changelog modal — including a credit to a data
+source this page stopped using months ago. The duplicate footer, its modal, its
+~90 lines of modal JS and orphaned CSS are gone; the slim page footer keeps the
+page-specific links (Rarity Explained, Badges Explained, NFT Contract, Audit).
+
+**~760 lines of unreachable Snapshot Tool removed.** Its trigger button no
+longer existed in the page; it also re-downloaded the 6.5MB inventory a second
+time and fetched a retired epoch file. The org products it duplicated are the
+canonical source.
+
+**Badge key tells the truth about BROKEN.** The old text said broken NFTs are
+"eligible for rewards" — exactly backwards. Now: backing already claimed, NFT
+and vote stay with the owner, excluded from future backing. Atrium added to the
+key (text badge until a logo asset lands).
+
+**The header VIEWING pill drives the Wallet tab.** Picking a wallet anywhere
+loads it in the wallet search; opening the Wallet tab with a selection loads it;
+clicking a leaderboard row selects in the header so every other page follows.
+Dead cloudflare-ipfs.com fallback replaced with ipfs.io.
+
+Page gate re-run green on live products (1,326 sales incl. the 3 recovered
+Atrium sales, royalties tile live at 14,845 LUNA).
+
 ## Rev 4.20 — 2026-08-23 — Analytics tells the truth again (field-contract repair)
 
 The capture layer was fixed first (classifyNftTx v2, market-history maintenance,
