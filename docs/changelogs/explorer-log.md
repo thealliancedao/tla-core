@@ -1,5 +1,41 @@
 # NFT Explorer Changelog
 
+## 2026-08-24 — release-history 1.6 — every phase number chain-exact from provenance; estimates retired
+
+Owner walk: the page was "pieced together from sales-bot data and roundabout
+guesses". The genesis walk (nfts/adao/provenance, FCD archive complete to
+2025-01-07) had already reconciled every candy machine (loaded = sold +
+returned + governance moves) and even carried a `release_history_verification`
+block against this page. Applied: Phase 1b **127 sold** at 50 LUNA (page said
+"181–385 est."; 352 loaded, 225 returned), Phase 2a **525** at 75 (page
+"296–500 est."; 1,000 loaded, 473 returned, 2 gov moves), Phase 2b rounds
+**197 / 459 / 644** (page had no counts) = **156,205 LUNA** (page 148,390,
+back-computed from a guessed ~114 average; true weighted average 120.16),
+windows corrected (1b to Mar 4, 2a to Mar 18, round 3 Jun 4–5). USD is now
+each token's own mint-day LUNA price (no gaps in luna-usd-daily): 1b
+$32.59–$41.55 avg $34.24 · 2a $52.82–$89.90 avg $54.62 (the "$1.60 LUNA"
+spike was a memory; max was $1.20) · 2b avg $78.79; hero mint-cost range
+$33–$90 (was $32–$120). The ROI constants follow. The "681 combined /
+split uncertain" note is replaced by where the numbers come from. Multisig
+462 + 538 = 1,000 and breaks 462 (Feb) + 539 (Jun) confirmed on chain. Gate
++M1–M7: the page's numbers must equal `provenance/summary.json:mint_story`
+(12/12). Knowledge base: five sourced facts (Ally reward_weight 0.008 from
+gov prop #4801, GoA/claim history, Growth Proposal plan, chain mint story,
+multisig breaks) + a distribution section in alliance-dao.md — the
+"reward_weight not recorded" gap closed; the help bot can now answer it.
+
+
+## 2026-08-24 — release-history 1.5 — floor from the org market product; hardcoded $43 phantom removed
+
+The page read the GitHub API of `defipatriot/tla_json_storage` (retired, 403)
+for the NFT floor and, on failure, used a hardcoded $43 "Estimate" in the
+floor tile, the ROI comparison and the backing insight — a phantom on a public
+page. Now: `nfts/adao/snapshots/floor-history.json` latest row, base tier
+(listing floor for the tile, sales floor with its sample size for the market
+line); unavailable → "—" and the insight text drops the comparison instead of
+inventing one. Gate `gate-release-history.mjs` 5/5.
+
+
 This is the change history for `nft-explorer-index.html` (the NFT browse / search page).
 Newest revisions on top. Times are UTC.
 

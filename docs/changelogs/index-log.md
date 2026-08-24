@@ -1,5 +1,42 @@
 # Index Page Changelog
 
+## 2026-08-24 — owner eyes-on walk, batch 1: alliances 1.5 · rarity-explained 1.1
+
+**alliances 1.5** — owner: page is right as it is; add a front door for
+prospective partners. Added under "Forge Your Alliance": three tracks (NFT
+collection · token/protocol · projects on other chains) each with how a past
+deal was actually shaped (Pixel Lions OTC → treasury; 3B ROAR three ways;
+Eris backing), a copyable proposal template, and the honest process line
+(Telegram → community poll → proposal in both DAOs; the DAO decides
+on-chain). Owner HAR: the story image `Ozara North.png` was 3.2 MB — 60% of
+the page and its slowest asset; now a 213 KB WebP (same 1500² art), lazy.
+Zero failed requests in the HAR.
+
+**rarity-explained 1.1** — owner: "make sure this is accurate". Every claim
+re-derived from the metadata the page itself links. Reproduced exactly:
+all object counts, 40/32/20/20/16 layers, planet 480–520, inhabitant
+463–543, Lightning strike 6, Grade 1 = 466, Grade 40 = 25, BBL #1–#6 Sabers,
+#7–#12 lightning-strike tokens with their intended ranks, native-planet 967,
+home-system 80 (under "any Object carrying the species' name" — now stated).
+Corrected: Phoenix Rising's BBL rank is #48–#73 as one block (page said
+"roughly #66"); the most common Light is Clear (1,739), not Sunlight (507),
+with three lights at exactly 1,000; the BBL capture date (2026-06-10; 8,931
+ranked; 22 of 433 broken carried a rank) is now stated — the broken count has
+grown since, so the BBL side is a dated snapshot and reads as one. Owner HAR:
+1.7 MB, 1.0 s, zero failures.
+
+## 2026-08-24 — page-walk mechanical pass: index 4.03 · fuel-tool 2.5 (+ dao 1.10, tla-stats T3.18, release-history 1.5)
+
+Every page booted in jsdom against committed products (errors, fetch
+inventory, first-paint weight, dead reads, legacy chrome). Record:
+`docs/pending-changes/AUDIT-page-walk-2026-08-24.md`. Fixed here: fuel-tool's
+volume bars loaded 30 daily JSON snapshots (8.1 MB) for one pool — now the
+19 KB daily CSVs, first paint 9.4 → 1.86 MB; index logo-library link pointed
+at a deleted personal repo — now the site's own assets folder (which is what
+the library renders from). dao / tla-stats credit links moved to tla-core.
+Queued with counts: legacy chrome strip is 15 pages, not 1; index 33 MB /
+tla-stats 9.5 MB / member-portfolio 5.5 MB share one fix (slim daily series).
+
 ## 2026-08-24 — fuel-tool 2.4 — deep links into the trade planner (FUEL queue item b, step 1)
 
 "Plan a trade into FUEL →" / "out of FUEL →" under the supply map, landing on
