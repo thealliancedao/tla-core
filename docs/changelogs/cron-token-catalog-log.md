@@ -1,5 +1,35 @@
 # Token-Catalog Cron — Changelog
 
+## capa-supply v1 — 2026-08-24 — CAPA supply map duty (SPEC-capa-supply-map.md)
+
+New isolated duty at the end of the token-catalog run (failure never takes the
+catalog publish down): `token-catalog/supply/capa/current.json` — every custody
+form CAPA can sit in, two levels.
+
+Level 1 (CAPA): gov contract cw20 balance (the largest bucket, ~175.5M), hub
+holding (cw20 balance, cross-checked against hub `state{}` within 0.01%),
+Astroport + SkeletonSwap pool reserves; `liquid_derived` is the labeled
+remainder (no all_accounts walk in v1). Level 2 (ampCAPA): supply split into
+liquid / TLA non-amp / via-compounder using LIVE compounder
+`amplp_exchange_rates` (never constants), with the DAO-staked receipt from
+`total_power_at_height` and the outside-DAO-or-unbonding remainder labeled
+(claims enumeration is v2, per the probe finding that unbonding must be its own
+bucket). LP staked amp/non-amp split for both DEXes the same way.
+
+Guards (publish-blocking to `guard_failed` status): hub state-vs-balance,
+level-2 sum to ampCAPA supply, supply × hub rate = CAPA in hub, non-negative
+remainders. A failed query is a null bucket and `partial` status — never a
+silent 0.
+
+Gate: `gate-capa-supply.js` drives the LIVE module (no-third-copy) on the
+probe-v2 fixture (artifact 9506487143) — 12/12 incl. both failure paths.
+
+Parallel-run: v1 publishes alongside the legacy ampcapa-data_2026 feed (dead
+since 08-10, so parity = probe values); the ampCAPA tool repoints after one
+verified publish. Neighbors (DATA-MAP, system-health registry, site
+cron-registry, help-agent allow-list, REPO-CATALOG) ship with the tool-repoint
+batch — the product is unmonitored until then, by choice, not accident.
+
 The journey of building the **token-catalog** cron: what we set out to do, what
 broke, why, how we fixed it, and what we verified at each step. Session-level beats —
 the real hurdles and breakthroughs, not every keystroke. Newest first.
