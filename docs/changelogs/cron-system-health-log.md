@@ -2,6 +2,16 @@
 
 ---
 
+## 2026-08-24 — 1.0.3 — capa-supply freshness row (+1 → mock 34/34)
+
+`token-catalog/supply/capa/current.json` gets its own FRESHNESS_MAP row
+(`capa-supply`, `capturedAt`, 12h band — rides org-token-catalog's ~5h
+cadence). The product is its own heartbeat. R4b gate: stale via capturedAt.
+Note: the VERSION string still read 1.0.1 — 1.0.2 shipped without the bump;
+corrected to 1.0.3 here.
+
+---
+
 ## 2026-08-19 — 1.0.2 — consumer-side law: a violation means this job is WORKING
 
 `system-health.html` now reads this product instead of the retired legacy file,

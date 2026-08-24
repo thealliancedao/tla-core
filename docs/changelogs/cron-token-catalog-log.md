@@ -1,5 +1,42 @@
 # Token-Catalog Cron — Changelog
 
+## capa-supply v2.0 — 2026-08-24 — per-wallet rows: every holder in every form, sum-guarded
+
+`token-catalog/supply/capa/wallets.json` (new) + `daily/<date>.json` + `index.json`
+(new row series). Every custody form is now ENUMERATED from the contract that
+owns it — CAPA cw20 `balance` state walk · Solid gov `bank` state walk (shares →
+CAPA via the hub's own `staker{}` balance/share rate) · ve3 single + project
+`shares` state walks (shares × the pool's post-take amount/shares — one basis
+with v1.1) · bank `denom_owners_by_query` for ampCAPA, the three amplp receipts
+and the SS LP · DAO `list_stakers` · `claims{address}` for the ampCAPA-orbit
+wallets — and every enumeration is sum-guarded against that contract's OWN
+total (cw20 Σ == total_supply, Σ gov shares == state.total_share, Σ ve3 shares
+== pool shares, Σ owners == supply_by_denom, DAO module holding == power + Σ
+claims — 13 guards). Rows ≥ 10,000 CAPA-equivalent publish; the tail is summed
+per column so rows + tail + bucket rows reconcile.
+
+Laws applied: null-vs-0 per COLUMN (an enumeration that did not complete is
+`null` on every row and listed in `columns_unknown`, never 0); rates live at
+capture; remainders labeled (`gov_balance_beyond_shares` = poll deposits /
+undistributed, `astro_lp_in_incentives_not_tla` = LP staked directly on
+Astroport with no enumeration, `receipt_unbonding_unattributed`); the index
+REFUSES to rebuild from a failed or corrupt read (absent = start fresh).
+
+Design finding while gating: the aDAO treasury is a 64-char DAODAO core, so a
+"32-byte = protocol contract" rule hid it. Now `kind` is chain-structural and
+`role:"bucket"` marks ONLY the structural set (gov, hub, pair, compounder, DAO
+module, Incentives) whose holdings ARE the other rows; every other contract is
+a HOLDER. Two gate catches on the way: the hub's gov key is a 32-byte address
+(decoder only took 20), and a never-shrink assertion that could never trip
+(replaced by the failed-read refusal). Gate `mock-run-capa-supply.js` (now
+committed — v1.1's gate was session-local) 58/58 incl. v1.1's collection map,
+four failure scenarios, decoders, and the index series. The page gate derives
+its fixture from this same world.
+
+First live run: expect `wallets.json` with a few hundred rows; read the guard
+lines in the log — a guard firing on live data is the system working. Watch
+`claims_queried` (orbit size) for LCD load; ≤5 concurrent.
+
 ## capa-supply v1.1 — 2026-08-24 — first live publish: 3 guards fired, all real
 
 The 15:35Z run published `guard_failed` on hub_state_vs_balance,

@@ -1,5 +1,25 @@
 # Index Page Changelog
 
+## 2026-08-24 — ampcapa-tool 2.1 — CAPA Whales from the product (13 forms), live scan demoted
+
+The whale tab now reads `token-catalog/supply/capa/wallets.json` first: one
+column per custody form (liquid CAPA · gov · ampCAPA liquid · ampCAPA in TLA ·
+receipt in DAO · receipt held / unbonding · CAPA-LUNA LP across Astro + SS,
+liquid + TLA + amplified) with hover breakdowns, a source line showing cron
+capture time, status and sum-guard state (13/13 green or which failed), the
+enumerated/published/floor counts and any unattributable remainder. Threshold
+filters client-side; `?` cells (never 0) when an enumeration was incomplete;
+structural bucket contracts hidden unless toggled, other contracts (the aDAO
+treasury is a DAODAO core) shown as holders with a *contract* chip. CSV export
+carries all 13 forms. The browser scan stays as ⛏ LIVE (4 forms) — labeled
+partial, offered only when the product is unavailable; no table is invented.
+Footer rev string corrected (read "Rev 1.3" since before 2.0). Gate
+`gate-ampcapa-whales.mjs` (jsdom, fixture derived from the LIVE cron module)
+33/33: owner + treasury cells exact, threshold/sort/toggle/CSV, incomplete
+and product-down scenarios. Still reading the dead `ampcapa-data_2026`
+snapshots: the members tab's 24h/7d/30d change columns — queued (needs a
+compact per-wallet daily).
+
 ## 2026-08-24 — FUEL history fold (owner catch)
 
 The owner asked where the older FUEL history went — and it was sitting in

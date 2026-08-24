@@ -2,6 +2,14 @@
 
 ---
 
+## Agent v1.11.5 — 2026-08-24 — capa_wallets readable; DATA-MAP "CAPA custody" section
+
+`read_product` allow-list gains `capa_wallets` (per-wallet CAPA custody rows,
+13 forms, sum-guarded) beside `capa_supply`. DATA-MAP (in the corpus) gains
+the section that tells the bot how to read them: trust `status`/guards
+first, gov balance CONTAINS the hub, `role:"bucket"` rows are not holders,
+`null` = unknown this run, `unattributed.*` = what no read can attribute.
+
 ## Agent v1.9.3 — 2026-08-22 — period maths as audit strings (model recounted 199→209 as 11)
 
 Owner's second live paste: the model wrote "199 to 209 = 11 periods … 159.1M
