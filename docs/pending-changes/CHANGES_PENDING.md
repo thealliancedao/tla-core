@@ -62,6 +62,26 @@ org-token-catalog log line `supply/fuel/{current,wallets}.json (ok — stakers
 query_errors line (escrow resolution is the one read without a probe
 fixture); then fuel-tool → FUEL SUPPLY MAP bar + Boost DAO stakers section
 (your own Boost position if any, unbonding chips).
+SLIPPAGE.HTML REV 3.0 — TRADE PLANNER (owner: "make it a real tool", 2026-08-24
+late): from→to routes across every captured pool (direct / any two-hop /
+split), size ladder + largest-under-limit solve, wallet liquid balances (live),
+market context (price-history 90d + dex-data rolling volume/TVL + stable peg
+lines) framed as context not advice, warnings, execution recipe, ?from/?to deep
+links (fuel-tool 2.4 links in). Gate 20/20 on committed reserves. Full entry:
+changelogs/slippage-log.md. VERIFY: open slippage.html, pick your wallet in
+the header → CAPA chip first with its $ value; TO = ASTRO, $150 → route via
+LUNA, ≤3.00% impact / 3.58% with fees, red "over your 1% limit — largest under
+1%: $19"; ladder; FUEL/SOLID context cards; recipe. Then the ideas queue below.
+PLANNER IDEAS QUEUE (not built — owner to prioritize): (1) per-pool fee rates
+from chain instead of the assumed 0.3% (Astroport pair `config`/PCL params);
+(2) exact PCL/stableswap math for curved legs (today: xyk bound, labeled ≤);
+(3) "notify me" — no backend; would be a cron product (alerts) + page poll;
+(4) portfolio rebalance mode (many-to-one / one-to-many, Odos-style);
+(5) bribe-cycle context ("this token is a live bribe in epoch N — demand from
+voters, settles Wednesday"); (6) LP-entry mode: is this pool deep enough for
+the LP size I plan, what share of the pool would I be; (7) history-aware
+warnings ("this pool's TVL halved in the last 30d") once the slim daily
+row-series cron (index perf item) exists — same data, cheaper reads.
 NEXT-SESSION OPENER (proposed): "Read PROJECT_KNOWLEDGE and CHANGES_PENDING,
 then do the LP/ampLP identity fold + amplp_mappings duty (unblocks
 Catalog/Chain-Queries repoints)." — or FUEL route helper (below).
