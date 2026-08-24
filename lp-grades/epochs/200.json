@@ -1,0 +1,7500 @@
+{
+ "schemaVersion": 1,
+ "cron": "lp-grades",
+ "version": "lp-grades-1.0.1",
+ "capturedAt": "2026-08-24T23:15:30.236Z",
+ "capturedAtUnix": 1787613330236,
+ "epoch": 200,
+ "window_epochs": [
+  196,
+  197,
+  198,
+  199
+ ],
+ "rubric": {
+  "config_version": "0.2.0-draft",
+  "config_sha": "73c2e6b31c21",
+  "quality_weights": {
+   "trading_quality_A": 0.6,
+   "asset_chain_value_B": 0.4
+  },
+  "A_weights": {
+   "depth": 0.3,
+   "utilization": 0.25,
+   "trend": 0.15,
+   "exit_slippage": 0.2,
+   "pool_balance": 0.1
+  },
+  "B_weights": {
+   "durability_B1": 0.45,
+   "asset_class_B2": 0.3,
+   "chain_alignment_B3": 0.25
+  },
+  "grade_boundaries": {
+   "A_plus": 90,
+   "A": 80,
+   "B": 70,
+   "C": 55,
+   "D": 40
+  },
+  "advisor": {
+   "_note": "Parameters for the on-page aDAO Vote Advisor + Bribe Planner (Rev G2). The recommendation is a DETERMINISTIC algorithm over the published grades — every parameter here is public so the output is arguable, never hidden opinion. Council judgment always decides; this is the rubric's answer, not an instruction.",
+   "vote": {
+    "chunk_bps": 1000,
+    "_chunk_note": "TLA votes allocate in 10% chunks per bucket (weight_bps multiples of 1000). Each bucket gets the wallet's FULL VP, split across that bucket's pools in these chunks.",
+    "min_quality": 40,
+    "objective": "marginal_need",
+    "_objective_note": "Each 10% chunk goes to the bucket pool with the highest quality x underpaid-ratio, RECOMPUTED after every chunk as our own assigned VP raises the pool's support — so the advisor never piles all chunks on one pool past the point of diminishing need.",
+    "max_per_pool_bps": 5000,
+    "_cap_note": "Diversification cap: no single pool receives more than this share of a bucket's VP, however dominant its marginal need — real voters defend multiple thresholds, and an all-in recommendation would overstate the rubric's confidence. Raise to 10000 to disable."
+   },
+   "bribe": {
+    "presets_usd": [
+     25,
+     50,
+     75,
+     100
+    ],
+    "unit_usd": 25,
+    "min_effective_pot_usd": 25,
+    "max_splits": 4,
+    "_note": "Budget allocates in unit_usd chunks, greedily by need_score with diminishing returns as a pool's planned pot grows; a placement below min_effective_pot_usd is merged upward rather than dust-split. Candidates: graded pools flagged bribe_target or underpaid."
+   }
+  }
+ },
+ "sources": {
+  "token_catalog_at": "2026-08-24T19:53:11.469Z",
+  "snapshot_at": "2026-08-24T23:01:12.617Z",
+  "ps_history_at": "2026-08-24T23:03:23.378Z",
+  "pd_bribes": true,
+  "net_prices_at": "2026-08-24T23:05:25.555Z"
+ },
+ "medians": {
+  "liquidity_per_1m_vp_by_bucket": {
+   "stable": 20319.530592502997,
+   "project": 11988.516472293159,
+   "bluechip": 12911.745673832525,
+   "single": 16213.225587294204
+  },
+  "vp_by_bucket": {
+   "stable": 12226491.088715,
+   "project": 2487352.080578,
+   "bluechip": 2561881.112077,
+   "single": 1040321.458428
+  }
+ },
+ "counts": {
+  "pools": 75,
+  "graded": 32,
+  "new": 0,
+  "inactive": 43,
+  "ungradeable": 0,
+  "firm": 23,
+  "provisional": 38
+ },
+ "lenses": [
+  {
+   "id": "best_for_chain",
+   "label": "Best for the chain",
+   "default": true,
+   "sort": "quality_grade desc",
+   "framing": "voter",
+   "description": "The absolute best pools for Terra and its users — quality (A x B), no opportunity weighting."
+  },
+  {
+   "id": "needs_votes",
+   "label": "Needs votes",
+   "sort": "need_score desc",
+   "filter": "need_score > 0 && state == graded",
+   "framing": "voter",
+   "description": "Deserving and under-supported, within their bucket — where your vote works hardest."
+  },
+  {
+   "id": "underdogs",
+   "label": "Underdogs",
+   "sort": "quality_grade desc",
+   "filter": "underdog == true",
+   "framing": "voter",
+   "description": "Small pools doing real work with below-median support — the discovery list."
+  },
+  {
+   "id": "chain_builders",
+   "label": "Chain builders",
+   "sort": "B3_score desc",
+   "framing": "voter",
+   "description": "Pools generating the most take-rate flow into chain-owned liquidity."
+  },
+  {
+   "id": "traders_choice",
+   "label": "Trader's choice",
+   "sort": "(depth + exit_slippage + utilization)/count desc",
+   "framing": "both",
+   "description": "Best pools for people actually trading — depth, honest exits, real throughput."
+  },
+  {
+   "id": "active_projects",
+   "label": "Active projects",
+   "sort": "utilization desc",
+   "filter": "bucket == 'PROJECT'",
+   "framing": "voter",
+   "description": "Project-bucket pools with the most real activity behind them."
+  },
+  {
+   "id": "new_pools",
+   "label": "New pools",
+   "sort": "first_seen_epoch desc",
+   "filter": "state == 'new'",
+   "framing": "voter",
+   "description": "Too new to grade honestly — the jump-start candidates."
+  },
+  {
+   "id": "bribe_targets",
+   "label": "Bribe targets",
+   "sort": "quality_grade desc",
+   "filter": "bribe_target == true",
+   "framing": "briber",
+   "description": "Quality pools with no pot — a first bribe here has zero competition."
+  },
+  {
+   "id": "at_risk",
+   "label": "At risk",
+   "sort": "vote_pct asc",
+   "filter": "threshold_risk == true",
+   "framing": "voter",
+   "description": "Near the 1% cliff — staked value stops earning if they slip."
+  },
+  {
+   "id": "healthy_to_enter",
+   "label": "Healthy to enter",
+   "sort": "quality_grade desc",
+   "filter": "state != 'inactive'",
+   "framing": "depositor",
+   "description": "The safety view: same quality facts, support-gap de-emphasized — is this a sound pool to LP into?"
+  }
+ ],
+ "pools": [
+  {
+   "gauge_pool_id": "native:factory/terra186rpfczl7l2kugdsqqedegl4es4hp624phfc7ddy8my02a4e8lgq5rlx7y/ampCAPA",
+   "name": "ampCAPA",
+   "bucket": "single",
+   "dex": "Single",
+   "dex_subtype": "single",
+   "lp_address": "factory/terra186rpfczl7l2kugdsqqedegl4es4hp624phfc7ddy8my02a4e8lgq5rlx7y/ampCAPA",
+   "pool_address": null,
+   "is_single": true,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 7443840.842112,
+   "pct_of_bucket": 27.238789844455663,
+   "staked_usd": 181356.68534472305,
+   "depth_usd": null,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 348.7628564321597,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": null,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": null
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 66.69438791446245,
+     "parts": {
+      "durability_B1": 78.1,
+      "asset_class_B2": 57.5,
+      "chain_alignment_B3": 57.2
+     },
+     "tokens": [
+      {
+       "denom": "terra1t4p3u8khpd7f8qzurwyafxt648dya6mp6vur3vaapswt6m24gkuqrfdhar",
+       "symbol": "CAPA",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      },
+      {
+       "denom": "factory/terra186rpfczl7l2kugdsqqedegl4es4hp624phfc7ddy8my02a4e8lgq5rlx7y/ampCAPA",
+       "symbol": "ampCAPA",
+       "match": "no_mapping",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 56.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 66.7
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.5,
+    "balance": "underpaid",
+    "need_score": 100.2,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 132.11,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "C"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1s275y73lfupag0g03nglxaedfnsw5z4m5zc9wk66guy503zuw5ss889tlx",
+   "name": "LUNA-USDC",
+   "bucket": "stable",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1s275y73lfupag0g03nglxaedfnsw5z4m5zc9wk66guy503zuw5ss889tlx",
+   "pool_address": "terra1v3lqxl0eyte9x3nhdgcj8hwvjq76aupnnzz0yll8mxs5cckc29pqvg2scu",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 12874385.461044,
+   "pct_of_bucket": 45.704914986263304,
+   "staked_usd": 285545.47882527515,
+   "depth_usd": 350533.74750000006,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 549.1259208178369,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 62.327399349027175,
+     "parts": {
+      "depth": 92.3,
+      "utilization": 27.5,
+      "trend": 68.9,
+      "exit_slippage": 37.2,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.13726875719212336,
+     "trend_pct": 4.4,
+     "slip_bound": true,
+     "slip_worst_pct": 35.64
+    },
+    "B": {
+     "score": 71.4267208114439,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 64.5
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/2C962DAB9F57FE0921435426AE75196009FAA1981BF86991203C8411F8980FDB",
+       "symbol": "USDC",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 66
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.09,
+    "balance": "balanced",
+    "need_score": 72,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 6.94,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "C"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1my4tml2ae4zewq0u5fpq2qzq4rdpfh5pq7y3eekxxhwxdwdmce4shw9mt4",
+   "name": "LUNA-ampLUNA",
+   "bucket": "project",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1my4tml2ae4zewq0u5fpq2qzq4rdpfh5pq7y3eekxxhwxdwdmce4shw9mt4",
+   "pool_address": "terra1cupwgntu082ypw2ztgtxfzcenexcu6ggp5zzunn3yzfwgrvdcclqgjrjqg",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 5430340.701368,
+   "pct_of_bucket": 20.035650378631534,
+   "staked_usd": 93762.07431260574,
+   "depth_usd": 778202.1375,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 180.31168137039566,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 59.37924232070374,
+     "parts": {
+      "depth": 100,
+      "utilization": 9.9,
+      "trend": 56.7,
+      "exit_slippage": 45.5,
+      "pool_balance": 93
+     },
+     "util_weekly_ratio": 0.04953501251255964,
+     "trend_pct": -1.6,
+     "slip_bound": true,
+     "slip_worst_pct": 23.09
+    },
+    "B": {
+     "score": 68.54053883139122,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 46.5
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct",
+       "symbol": "ampLUNA",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      }
+     ],
+     "flags": []
+    },
+    "quality": 63
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.44,
+    "balance": "underpaid",
+    "need_score": 90.7,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 138.43,
+     "pd_lifetime": {
+      "native:uluna": 105210.066669
+     },
+     "pd_leg_count": 19
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "C"
+  },
+  {
+   "gauge_pool_id": "cw20:terra17thxg96vtxv39kcltc0dvrltqgkumu8fv93rpz3xz98675cgxdjq3y4ddn",
+   "name": "USDC-EURe",
+   "bucket": "bluechip",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra17thxg96vtxv39kcltc0dvrltqgkumu8fv93rpz3xz98675cgxdjq3y4ddn",
+   "pool_address": "terra1ys7edvw89krf47n4zsz4c4m9das7ppltjtfv2epw85thqpvl6hhqn55m6y",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 10588638.546716,
+   "pct_of_bucket": 39.11270496318611,
+   "staked_usd": 259647.70654209837,
+   "depth_usd": 293750.41500000004,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 499.32251258095846,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 52.86402595194969,
+     "parts": {
+      "depth": 88.5,
+      "utilization": 6.7,
+      "trend": 54.6,
+      "exit_slippage": 32.4,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.033337984965389075,
+     "trend_pct": -2.7,
+     "slip_bound": true,
+     "slip_worst_pct": 40.57
+    },
+    "B": {
+     "score": 72.5442527100963,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": 62.9
+     },
+     "tokens": [
+      {
+       "denom": "ibc/2C962DAB9F57FE0921435426AE75196009FAA1981BF86991203C8411F8980FDB",
+       "symbol": "USDC",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/8D52B251B447B7160421ACFBD50F6B0ABE5F98D2C404B03701130F12044439A1",
+       "symbol": "EURe",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 60.7
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.9,
+    "balance": "underpaid",
+    "need_score": 115.3,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 29.62,
+     "pd_lifetime": {
+      "native:uluna": 32706.362294
+     },
+     "pd_leg_count": 17
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "C"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1q475uvk9te5nxq2lzu0h96t0devmx4v8ctxqtm253ut05wrpugsq0m4e3k",
+   "name": "bLUNA-LUNA",
+   "bucket": "project",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "terra1q475uvk9te5nxq2lzu0h96t0devmx4v8ctxqtm253ut05wrpugsq0m4e3k",
+   "pool_address": "terra1j5znhs9jeyty9u9jcagl3vefkvzwqp6u9tq9a3e5qrz4gmj2udyqp0z0xc",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 2487352.080578,
+   "pct_of_bucket": 9.177272549854566,
+   "staked_usd": 31936.20279596694,
+   "depth_usd": 180493.0675,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 61.415774607628734,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 62.519376244134634,
+     "parts": {
+      "depth": 77.9,
+      "utilization": null,
+      "trend": 57.2,
+      "exit_slippage": 24.7,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": -1.4,
+     "slip_bound": false,
+     "slip_worst_pct": 50.79
+    },
+    "B": {
+     "score": 54.36417371719084,
+     "parts": {
+      "durability_B1": 71.3,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 29.2
+     },
+     "tokens": [
+      {
+       "denom": "terra17aj4ty4sz4yhgm08na8drc0v03v2jwr3waxcqrwhajj729zhl7zqnpc0ml",
+       "symbol": "bLUNA",
+       "match": "no_mapping",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 56.3
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 59.3
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.07,
+    "balance": "balanced",
+    "need_score": 63.5,
+    "underdog": false,
+    "bribe_target": true,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": {
+      "native:uluna": 1319.482846
+     },
+     "pd_leg_count": 2
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "C"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1huw82c9grj9xz9umkc8hqcjqgndadlkrp8rn9u6eh5jh5j2s2t7qs33vry",
+   "name": "USDC-USDT",
+   "bucket": "single",
+   "dex": "Astroport",
+   "dex_subtype": "stable",
+   "lp_address": "terra1huw82c9grj9xz9umkc8hqcjqgndadlkrp8rn9u6eh5jh5j2s2t7qs33vry",
+   "pool_address": "terra1dnssvse0fqw4d4gqc8kvchfud5r6e8cr7w9cdpervhl2pgr2eecquujpg6",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 7514460.506701,
+   "pct_of_bucket": 27.4972040480135,
+   "staked_usd": 138827.8335727395,
+   "depth_usd": 196662.1125,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 266.97660302449907,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 48.14317408954894,
+     "parts": {
+      "depth": 79.7,
+      "utilization": 8.1,
+      "trend": 50.5,
+      "exit_slippage": 23.1,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.040481923553097716,
+     "trend_pct": -4.7,
+     "slip_bound": true,
+     "slip_worst_pct": 54.24
+    },
+    "B": {
+     "score": 70.0256257531699,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": 52.9
+     },
+     "tokens": [
+      {
+       "denom": "ibc/2C962DAB9F57FE0921435426AE75196009FAA1981BF86991203C8411F8980FDB",
+       "symbol": "USDC",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/9B19062D46CAB50361CE9B0A3E6D0A7A53AC9E7CB361F32A73CC733144A9A9E5",
+       "symbol": "USDt",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 56.9
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.14,
+    "balance": "balanced",
+    "need_score": 64.8,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 138.43,
+     "pd_lifetime": {
+      "native:uluna": 70829.401143
+     },
+     "pd_leg_count": 18
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "C"
+  },
+  {
+   "gauge_pool_id": "cw20:terra10un5hr6asmn7g0ggh9sz0x3v8f9evh5cvawk8xs65rghundc25mq7g5par",
+   "name": "ampLUNA-LUNA",
+   "bucket": "project",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "terra10un5hr6asmn7g0ggh9sz0x3v8f9evh5cvawk8xs65rghundc25mq7g5par",
+   "pool_address": "terra1tsx0dmasjvd45k6tdywzv77d5t9k3lpzyuleavuah77pg3lwm9cq4469pm",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 4183.703582,
+   "pct_of_bucket": 0.01543608897976951,
+   "staked_usd": 13.762320429964403,
+   "depth_usd": 77808.53,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.026466000826854623,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 53.30207422269316,
+     "parts": {
+      "depth": 59.6,
+      "utilization": null,
+      "trend": 60.3,
+      "exit_slippage": 15.2,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": 0.2,
+     "slip_bound": false,
+     "slip_worst_pct": 69.72
+    },
+    "B": {
+     "score": 56.90625,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct",
+       "symbol": "ampLUNA",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 54.7
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.27,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1xkt5etsaptddec6achnjlqnx884fwxwuk795fs885v6eyygu6eus7uauhc",
+   "name": "LUNA-EURe",
+   "bucket": "stable",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1xkt5etsaptddec6achnjlqnx884fwxwuk795fs885v6eyygu6eus7uauhc",
+   "pool_address": "terra1vhxl8ggscmhae3muvwvs2vs8ppprzqf07xngcdp798fwnrcksjxszqfa8n",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 12226491.088715,
+   "pct_of_bucket": 43.40484735996946,
+   "staked_usd": 184122.92680994523,
+   "depth_usd": 202062.7175,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 354.082551557587,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 42.77491436751861,
+     "parts": {
+      "depth": 80.3,
+      "utilization": 5.9,
+      "trend": 15,
+      "exit_slippage": 24.7,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.029674514820984266,
+     "trend_pct": -22.5,
+     "slip_bound": true,
+     "slip_worst_pct": 50.87
+    },
+    "B": {
+     "score": 69.66153429529858,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 57.4
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/8D52B251B447B7160421ACFBD50F6B0ABE5F98D2C404B03701130F12044439A1",
+       "symbol": "EURe",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 53.5
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.74,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 10,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra16a45v4k74w3yy30utfxdsekdlnks27sv48sn2suaf4wt7u6meq8scz75mx/uLP",
+   "name": "LUNA-USDC",
+   "bucket": "stable",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra16a45v4k74w3yy30utfxdsekdlnks27sv48sn2suaf4wt7u6meq8scz75mx/uLP",
+   "pool_address": "terra16a45v4k74w3yy30utfxdsekdlnks27sv48sn2suaf4wt7u6meq8scz75mx",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 2477286.852012,
+   "pct_of_bucket": 8.794531227171662,
+   "staked_usd": 50337.30597586327,
+   "depth_usd": 75200.45749999999,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 96.80251149204476,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 46.08254132959726,
+     "parts": {
+      "depth": 58.9,
+      "utilization": null,
+      "trend": 27.9,
+      "exit_slippage": 13.6,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": -16.1,
+     "slip_bound": false,
+     "slip_worst_pct": 72.57
+    },
+    "B": {
+     "score": 64.44456355962339,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 36.5
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/2C962DAB9F57FE0921435426AE75196009FAA1981BF86991203C8411F8980FDB",
+       "symbol": "USDC",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 53.4
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": true,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra12usr3jlgvuzq70kpt6u03stxrgzwpjxnej6herpuw9t7echj8z3q44dyyk",
+   "name": "USDC-SOLID",
+   "bucket": "project",
+   "dex": "Astroport",
+   "dex_subtype": "xyk",
+   "lp_address": "terra12usr3jlgvuzq70kpt6u03stxrgzwpjxnej6herpuw9t7echj8z3q44dyyk",
+   "pool_address": "terra1fwjxdjpl98shj20l4swlen9hyu4lhvekrvqkqn393lzzghmsn2wqjdnvpu",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 5522346.212449,
+   "pct_of_bucket": 20.375111630567684,
+   "staked_usd": 70328.44400786489,
+   "depth_usd": 87751.075,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 135.2470077074325,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 38.52722301185579,
+     "parts": {
+      "depth": 62.2,
+      "utilization": 1.8,
+      "trend": 42.8,
+      "exit_slippage": 15,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.009096783828303324,
+     "trend_pct": -8.6,
+     "slip_bound": false,
+     "slip_worst_pct": 70.22
+    },
+    "B": {
+     "score": 73.38365122578925,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 70,
+      "chain_alignment_B3": 41.9
+     },
+     "tokens": [
+      {
+       "denom": "ibc/2C962DAB9F57FE0921435426AE75196009FAA1981BF86991203C8411F8980FDB",
+       "symbol": "USDC",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 86.3
+      },
+      {
+       "denom": "terra10aa3zdkrc7jwuf8ekl3zq7e7m42vmzqehcmu74e4egc7xkm5kr2s0muyst",
+       "symbol": "SOLID",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      }
+     ],
+     "flags": []
+    },
+    "quality": 52.5
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.06,
+    "balance": "balanced",
+    "need_score": 55.8,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 132.11,
+     "pd_lifetime": {
+      "native:uluna": 4200
+     },
+     "pd_leg_count": 3
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1cg9t08mqa88us074mpwpuu8lp5w4jwtye3vaazll45w27at52cpsq7c564",
+   "name": "LUNA-CAPA",
+   "bucket": "project",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1cg9t08mqa88us074mpwpuu8lp5w4jwtye3vaazll45w27at52cpsq7c564",
+   "pool_address": "terra183wqgrwa2k0uvlz99j57c496gfuwgtaccrhv4stcjzv3ydacl9zq0hmf25",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 5529755.444934,
+   "pct_of_bucket": 20.40244855099444,
+   "staked_usd": 60088.773807653095,
+   "depth_usd": 55105.207500000004,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 115.55533424548672,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 39.861584968937365,
+     "parts": {
+      "depth": 52.1,
+      "utilization": 0.4,
+      "trend": 78.5,
+      "exit_slippage": 11.7,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.002201910625624487,
+     "trend_pct": 9.3,
+     "slip_bound": true,
+     "slip_worst_pct": 75.71
+    },
+    "B": {
+     "score": 69.00065357245268,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 57.5,
+      "chain_alignment_B3": 39.4
+     },
+     "tokens": [
+      {
+       "denom": "terra1t4p3u8khpd7f8qzurwyafxt648dya6mp6vur3vaapswt6m24gkuqrfdhar",
+       "symbol": "CAPA",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 51.5
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.91,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 132.11,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc",
+   "name": "cw20:terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc",
+   "bucket": "single",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc",
+   "pool_address": null,
+   "is_single": true,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 0,
+   "pct_of_bucket": null,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": null,
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": null,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": null,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": null
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 50,
+     "parts": {
+      "durability_B1": 50,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "native_terra",
+       "guide": true,
+       "score": 50
+      }
+     ],
+     "flags": []
+    },
+    "quality": 50
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "no_support",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": {
+      "native:uluna": 17295.713868
+     },
+     "pd_leg_count": 4
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1sjujvcvkszrt84280agzv0du7tsrf44y4n7hcd9n8y0q7snfgersd68ens",
+   "name": "cw20:terra1sjujvcvkszrt84280agzv0du7tsrf44y4n7hcd9n8y0q7snfgersd68ens",
+   "bucket": "single",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "terra1sjujvcvkszrt84280agzv0du7tsrf44y4n7hcd9n8y0q7snfgersd68ens",
+   "pool_address": null,
+   "is_single": true,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": null,
+   "vp": 0,
+   "pct_of_bucket": null,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": {
+    "yearly_rate": "0.1",
+    "taken_raw": "0",
+    "harvested_raw": "0",
+    "last_taken_s": null,
+    "stake_mechanism": "astroport"
+   },
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": null,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": null,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": null
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 50,
+     "parts": {
+      "durability_B1": 50,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "terra1sjujvcvkszrt84280agzv0du7tsrf44y4n7hcd9n8y0q7snfgersd68ens",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 50
+      }
+     ],
+     "flags": []
+    },
+    "quality": 50
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": null,
+    "bribe_target": null,
+    "threshold_risk": null,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1d8ap3zyd6tfnruuuwvs0t927lr4zwptruhulfwnxjpqzudvyn8usfgl8ze/uLP",
+   "name": "ampROAR-ROAR",
+   "bucket": "single",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra1d8ap3zyd6tfnruuuwvs0t927lr4zwptruhulfwnxjpqzudvyn8usfgl8ze/uLP",
+   "pool_address": "terra1d8ap3zyd6tfnruuuwvs0t927lr4zwptruhulfwnxjpqzudvyn8usfgl8ze",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 1448083.796376,
+   "pct_of_bucket": 5.298884143720642,
+   "staked_usd": 30774.300919108253,
+   "depth_usd": 33438.814999999995,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 59.181347921362025,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 43.197913013675816,
+     "parts": {
+      "depth": 41.3,
+      "utilization": null,
+      "trend": 59.6,
+      "exit_slippage": 5.4,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": -0.2,
+     "slip_bound": false,
+     "slip_worst_pct": 84.34
+    },
+    "B": {
+     "score": 59.558838313681385,
+     "parts": {
+      "durability_B1": 78.1,
+      "asset_class_B2": 57.5,
+      "chain_alignment_B3": 28.6
+     },
+     "tokens": [
+      {
+       "denom": "factory/terra1vklefn7n6cchn0u962w3gaszr4vf52wjvd4y95t2sydwpmpdtszsqvk9wy/ampROAR",
+       "symbol": "ampROAR",
+       "match": "no_mapping",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 56.3
+      },
+      {
+       "denom": "terra1lxx40s29qvkrcj8fsa3yzyehy7w50umdvvnls2r830rys6lu2zns63eelv",
+       "symbol": "ROAR",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      }
+     ],
+     "flags": []
+    },
+    "quality": 49.7
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.31,
+    "balance": "balanced",
+    "need_score": 65.1,
+    "underdog": false,
+    "bribe_target": true,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra178ca7z2w6346wlkmxwpw80s2a5fmas9q28xlzegkt4c4rdam67aql5fgxj/uLP",
+   "name": "USDC-USDt",
+   "bucket": "single",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra178ca7z2w6346wlkmxwpw80s2a5fmas9q28xlzegkt4c4rdam67aql5fgxj/uLP",
+   "pool_address": "terra178ca7z2w6346wlkmxwpw80s2a5fmas9q28xlzegkt4c4rdam67aql5fgxj",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 1027167.555112,
+   "pct_of_bucket": 3.7586511805108427,
+   "staked_usd": 15735.314553774604,
+   "depth_usd": 24493.8075,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 30.260220295720394,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 39.487829517873124,
+     "parts": {
+      "depth": 34.5,
+      "utilization": null,
+      "trend": 61.8,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": 0.9,
+     "slip_bound": false,
+     "slip_worst_pct": 90.48
+    },
+    "B": {
+     "score": 61.266718503807546,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": 17.8
+     },
+     "tokens": [
+      {
+       "denom": "ibc/2C962DAB9F57FE0921435426AE75196009FAA1981BF86991203C8411F8980FDB",
+       "symbol": "USDC",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/9B19062D46CAB50361CE9B0A3E6D0A7A53AC9E7CB361F32A73CC733144A9A9E5",
+       "symbol": "USDt",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 48.2
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.94,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": true,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra17vas9rhxhc6j6f5wrup9cqapxn74jvpft069py7l7l9kr7wx3tnsxrazux/uLP",
+   "name": "native:factory/terra17vas9rhxhc6j6f5wrup9cqapxn74j",
+   "bucket": "bluechip",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "factory/terra17vas9rhxhc6j6f5wrup9cqapxn74jvpft069py7l7l9kr7wx3tnsxrazux/uLP",
+   "pool_address": "terra17vas9rhxhc6j6f5wrup9cqapxn74jvpft069py7l7l9kr7wx3tnsxrazux",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 31200.940189,
+   "pct_of_bucket": 0.11525118765762934,
+   "staked_usd": 0.3286600722530296,
+   "depth_usd": null,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.0006320386004865955,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 42.22222222222223,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": 60,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": 0,
+     "slip_bound": false,
+     "slip_worst_pct": 98.17
+    },
+    "B": {
+     "score": 56.8125,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/2C962DAB9F57FE0921435426AE75196009FAA1981BF86991203C8411F8980FDB",
+       "symbol": "USDC",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/9B19062D46CAB50361CE9B0A3E6D0A7A53AC9E7CB361F32A73CC733144A9A9E5",
+       "symbol": "USDt",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 48.1
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1h840qkh5pqmrvnt6d3m97slcl3q8k6czv67rrmnydp96xwda2afsghwnjr",
+   "name": "PAXG-WBTC",
+   "bucket": "single",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1h840qkh5pqmrvnt6d3m97slcl3q8k6czv67rrmnydp96xwda2afsghwnjr",
+   "pool_address": "terra1g55qjcptzqgdyqfgzu5mj8x82955rvlxy4c37z5t6ldgz7cz033q0xr2lx",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 3756213.718677,
+   "pct_of_bucket": 13.744882281077212,
+   "staked_usd": 60900.34037499945,
+   "depth_usd": 132638.29249999998,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 117.11603918269125,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 47.61477999605495,
+     "parts": {
+      "depth": 71.2,
+      "utilization": 1.7,
+      "trend": 75.9,
+      "exit_slippage": 22.2,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.008518706353576419,
+     "trend_pct": 8,
+     "slip_bound": true,
+     "slip_worst_pct": 56.06
+    },
+    "B": {
+     "score": 47.08696015227649,
+     "parts": {
+      "durability_B1": 51.3,
+      "asset_class_B2": null,
+      "chain_alignment_B3": 39.6
+     },
+     "tokens": [
+      {
+       "denom": "ibc/0EF5630576C66968EF0787868CF09FD866FAD131BC148D24A148358A85F0EB62",
+       "symbol": "PAXG",
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": true,
+       "score": 56.3
+      },
+      {
+       "denom": "ibc/88386AC48152D48B34B082648DF836F975506F0B57DBBFC10A54213B1BF484CB",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_looks_native",
+       "guide": true,
+       "score": 46.3
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:PAXG",
+      "mcap_source_pending:ibc/88386AC4"
+     ]
+    },
+    "quality": 47.4
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 69.21,
+     "pd_lifetime": {
+      "native:uluna": 33347.843632
+     },
+     "pd_leg_count": 5
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1wdzdltygkgqyuvggnqnxsny9vhfyex92kzaz6zkued2wvp7nvxpsv739js",
+   "name": "LUNA-WBTC",
+   "bucket": "bluechip",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1wdzdltygkgqyuvggnqnxsny9vhfyex92kzaz6zkued2wvp7nvxpsv739js",
+   "pool_address": "terra1mea829xtsnxwv4l9lhzs0tzpnyamjpz5y45a9tpp06jgdhjd48yqc4ales",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 4911280.458506,
+   "pct_of_bucket": 18.14146953052649,
+   "staked_usd": 106423.48616649181,
+   "depth_usd": 103199.6725,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 204.66055032017658,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 40.11436757041317,
+     "parts": {
+      "depth": 65.7,
+      "utilization": 9,
+      "trend": 29.7,
+      "exit_slippage": 18.4,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.04504437121368102,
+     "trend_pct": -15.1,
+     "slip_bound": true,
+     "slip_worst_pct": 63.75
+    },
+    "B": {
+     "score": 56.95633760729723,
+     "parts": {
+      "durability_B1": 66.3,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 48.6
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/88386AC48152D48B34B082648DF836F975506F0B57DBBFC10A54213B1BF484CB",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_looks_native",
+       "guide": true,
+       "score": 46.3
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:ibc/88386AC4"
+     ]
+    },
+    "quality": 46.9
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.68,
+    "balance": "underpaid",
+    "need_score": 78.7,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 17.3,
+     "pd_lifetime": {
+      "native:uluna": 30092.088245
+     },
+     "pd_leg_count": 14
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8",
+   "name": "LUNA-SOLID",
+   "bucket": "project",
+   "dex": "Astroport",
+   "dex_subtype": "xyk",
+   "lp_address": "terra14arerdfc88cdv6m6frc03a0963z877756kqac4h4xvd9vftn0hqqhquca8",
+   "pool_address": "terra1e45ctmel6t5m9vdgxv3zxh3ecflkfcd6mr42sluzrqnhveqmy3fss338s7",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 1795141.252171,
+   "pct_of_bucket": 6.623308644280145,
+   "staked_usd": 21521.080471745,
+   "depth_usd": 22992.79,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 41.38669321489424,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 31.388620550946897,
+     "parts": {
+      "depth": 33.1,
+      "utilization": 4,
+      "trend": 69,
+      "exit_slippage": 0.5,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.02011058721591564,
+     "trend_pct": 4.5,
+     "slip_bound": false,
+     "slip_worst_pct": 89.3
+    },
+    "B": {
+     "score": 67.12010312535351,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 65,
+      "chain_alignment_B3": 22.9
+     },
+     "tokens": [
+      {
+       "denom": "terra10aa3zdkrc7jwuf8ekl3zq7e7m42vmzqehcmu74e4egc7xkm5kr2s0muyst",
+       "symbol": "SOLID",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 45.7
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 25.31,
+     "pd_lifetime": {
+      "native:uluna": 8743.301286
+     },
+     "pd_leg_count": 7
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1vczn40ch624g2kserhzqu2n69j3h7h7c5nfeznw96pnxjuly5h5s25u9dm",
+   "name": "LUNA-ROAR",
+   "bucket": "project",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1vczn40ch624g2kserhzqu2n69j3h7h7c5nfeznw96pnxjuly5h5s25u9dm",
+   "pool_address": "terra189v2ewgfx5wdhje6geefdtxefeemujplk8qw2wx3x5hdswn95l8qf4n2r0",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 1122804.000122,
+   "pct_of_bucket": 4.142669793168995,
+   "staked_usd": 27550.016359936097,
+   "depth_usd": 28275.300000000003,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 52.98080069218481,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 31.502683285795307,
+     "parts": {
+      "depth": 37.6,
+      "utilization": 0.4,
+      "trend": 62.7,
+      "exit_slippage": 3.6,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.0019068517174546322,
+     "trend_pct": 1.3,
+     "slip_bound": true,
+     "slip_worst_pct": 86.3
+    },
+    "B": {
+     "score": 65.86360981027414,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 57.5,
+      "chain_alignment_B3": 26.8
+     },
+     "tokens": [
+      {
+       "denom": "terra1lxx40s29qvkrcj8fsa3yzyehy7w50umdvvnls2r830rys6lu2zns63eelv",
+       "symbol": "ROAR",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 45.2
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 2.05,
+    "balance": "underpaid",
+    "need_score": 92.5,
+    "underdog": false,
+    "bribe_target": true,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 3.58,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra19xrvvkq5607xudcxvw444yycjz6e3vk3l8p633z68k0vv5q09wnsa9q2qt",
+   "name": "LUNA-ATOM",
+   "bucket": "bluechip",
+   "dex": "Astroport",
+   "dex_subtype": "xyk",
+   "lp_address": "terra19xrvvkq5607xudcxvw444yycjz6e3vk3l8p633z68k0vv5q09wnsa9q2qt",
+   "pool_address": "terra1j3d29y506cvtavdpakdzl6e0g2xcskvmmulsetcd0jfwrpr8eu9qfe0dmf",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 2483413.413932,
+   "pct_of_bucket": 9.173324382752332,
+   "staked_usd": 32761.898313476016,
+   "depth_usd": 32363.057500000003,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 63.0036506028385,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 38.884737191263014,
+     "parts": {
+      "depth": 40.6,
+      "utilization": 7,
+      "trend": 92.7,
+      "exit_slippage": 5.4,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.034822470764860114,
+     "trend_pct": 16.3,
+     "slip_bound": false,
+     "slip_worst_pct": 84.33
+    },
+    "B": {
+     "score": 54.560609006414204,
+     "parts": {
+      "durability_B1": 68.1,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 29.6
+     },
+     "tokens": [
+      {
+       "denom": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 50
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 45.2
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.02,
+    "balance": "balanced",
+    "need_score": 46.2,
+    "underdog": true,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 11.54,
+     "pd_lifetime": {
+      "native:uluna": 16136.251249
+     },
+     "pd_leg_count": 15
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1sxmrwp48wt3h4whatla7xwl9g6t5y95u589az2cdu0myuzjpkkrs4ztprc",
+   "name": "LUNA-PAXG",
+   "bucket": "bluechip",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1sxmrwp48wt3h4whatla7xwl9g6t5y95u589az2cdu0myuzjpkkrs4ztprc",
+   "pool_address": "terra1xgdyzzhs2v2ne3us2kyj5ry47fwc7uk44k035dyyygq42xechwwqlddmcr",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 2577447.679791,
+   "pct_of_bucket": 9.520671634313164,
+   "staked_usd": 33000.752969925794,
+   "depth_usd": 25391.765000000003,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 63.46298648062653,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 38.25692272801569,
+     "parts": {
+      "depth": 35.3,
+      "utilization": 6.8,
+      "trend": 100,
+      "exit_slippage": 4.9,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.033908030349986906,
+     "trend_pct": 29.9,
+     "slip_bound": true,
+     "slip_worst_pct": 84.92
+    },
+    "B": {
+     "score": 54.496081183334866,
+     "parts": {
+      "durability_B1": 71.3,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 29.7
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/0EF5630576C66968EF0787868CF09FD866FAD131BC148D24A148358A85F0EB62",
+       "symbol": "PAXG",
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": true,
+       "score": 56.3
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:PAXG"
+     ]
+    },
+    "quality": 44.8
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.99,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 11.54,
+     "pd_lifetime": {
+      "native:uluna": 10019.958207
+     },
+     "pd_leg_count": 7
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1euf8klqukk4wlly90nve0n6drqvq9pst73wc34pruuvx09nptxyse68hgl",
+   "name": "LUNA-INJ",
+   "bucket": "bluechip",
+   "dex": "Astroport",
+   "dex_subtype": "xyk",
+   "lp_address": "terra1euf8klqukk4wlly90nve0n6drqvq9pst73wc34pruuvx09nptxyse68hgl",
+   "pool_address": "terra10m23jmgtx0lvc6v5gffdmcutlmrgy9pnf8wun4mxft2xd3dnqdvsv392j5",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 2561881.112077,
+   "pct_of_bucket": 9.46317127035221,
+   "staked_usd": 30697.993373002297,
+   "depth_usd": 27071.197500000002,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 59.03460264038904,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 36.11845603629098,
+     "parts": {
+      "depth": 36.7,
+      "utilization": 7.5,
+      "trend": 82.8,
+      "exit_slippage": 4.2,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.03739264743519308,
+     "trend_pct": 11.4,
+     "slip_bound": false,
+     "slip_worst_pct": 85.72
+    },
+    "B": {
+     "score": 54.86135109530244,
+     "parts": {
+      "durability_B1": 69.4,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 28.6
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/25BC59386BB65725F735EFC0C369BB717AA8B5DAD846EAF9CBF5D0F18F207211",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 52.5
+      }
+     ],
+     "flags": []
+    },
+    "quality": 43.6
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.93,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 11.54,
+     "pd_lifetime": {
+      "native:uluna": 9252.491099
+     },
+     "pd_leg_count": 8
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1hqq6pnx74q0wae7eqqu2wgddzr2xn8l9gvd33sfwqfew50qawj0sfn69fh",
+   "name": "cw20:terra1hqq6pnx74q0wae7eqqu2wgddzr2xn8l9gvd33sf",
+   "bucket": "single",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "terra1hqq6pnx74q0wae7eqqu2wgddzr2xn8l9gvd33sfwqfew50qawj0sfn69fh",
+   "pool_address": "terra1tkj3j48d0xrh932szzsap3w8htfv3gmj2zld06an2kp90xzq5kzqvtjwfl",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 471503.067895,
+   "pct_of_bucket": 1.7253422325676824,
+   "staked_usd": 5763.455525348453,
+   "depth_usd": null,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 11.083568317977795,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 36.72731761907378,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": 43.5,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": -8.2,
+     "slip_bound": false,
+     "slip_worst_pct": 97.14
+    },
+    "B": {
+     "score": 52.82010790225104,
+     "parts": {
+      "durability_B1": 78.1,
+      "asset_class_B2": 57.5,
+      "chain_alignment_B3": 1.7
+     },
+     "tokens": [
+      {
+       "denom": "factory/terra1vklefn7n6cchn0u962w3gaszr4vf52wjvd4y95t2sydwpmpdtszsqvk9wy/ampROAR",
+       "symbol": "ampROAR",
+       "match": "no_mapping",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 56.3
+      },
+      {
+       "denom": "terra1lxx40s29qvkrcj8fsa3yzyehy7w50umdvvnls2r830rys6lu2zns63eelv",
+       "symbol": "ROAR",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      }
+     ],
+     "flags": []
+    },
+    "quality": 43.2
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.75,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra14lul8rjcad0jeuu680n4q7dwgxjkr6mqzx8umyewj8c6xn93squqllleht",
+   "name": "LUNA-ASTRO",
+   "bucket": "project",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra14lul8rjcad0jeuu680n4q7dwgxjkr6mqzx8umyewj8c6xn93squqllleht",
+   "pool_address": "terra1nwepezm3mghyxm7fjfhfr2d4jwqzndtncf9tclgunqfcwhe52mpq4sxaqr",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 976775.538281,
+   "pct_of_bucket": 3.603886801884755,
+   "staked_usd": 10434.911183172664,
+   "depth_usd": 9869.425,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 20.06713689071666,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 32.393521605744986,
+     "parts": {
+      "depth": 14.8,
+      "utilization": 11.9,
+      "trend": 100,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.05927387808902023,
+     "trend_pct": 22.7,
+     "slip_bound": true,
+     "slip_worst_pct": 94.72
+    },
+    "B": {
+     "score": 58.11435971681422,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 11.2
+     },
+     "tokens": [
+      {
+       "denom": "ibc/8D8A7F7253615E5F76CB6252A1E1BD921D5EDB7BBAAF8913FB1C77FF125D9995",
+       "symbol": "ASTRO",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 42.7
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.89,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": true,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 24.34,
+     "pd_lifetime": {
+      "native:uluna": 28135.691127
+     },
+     "pd_leg_count": 16
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "native:ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6",
+   "name": "xASTRO",
+   "bucket": "single",
+   "dex": "Single",
+   "dex_subtype": "single",
+   "lp_address": "ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6",
+   "pool_address": null,
+   "is_single": true,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 694389.572566,
+   "pct_of_bucket": 2.540937136955256,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": null,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": null
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 42.5,
+     "parts": {
+      "durability_B1": 42.5,
+      "asset_class_B2": null,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": false,
+       "score": 42.5
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:ibc/65B3EB62"
+     ]
+    },
+    "quality": 42.5
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1phz6qdzszgwj303rp5cfpfgcgfq0wwg0na2he980t58mryz69hyqsjkfc0",
+   "name": "LUNA-arbLUNA",
+   "bucket": "single",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1phz6qdzszgwj303rp5cfpfgcgfq0wwg0na2he980t58mryz69hyqsjkfc0",
+   "pool_address": "terra1p9lcjw8knxhtv2pyr9wa8e2ushjnjllljvsuu9cugv7trqynjzasz4x52j",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 794729.712233,
+   "pct_of_bucket": 2.908105650539069,
+   "staked_usd": 15273.07420873882,
+   "depth_usd": 19422.145000000004,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 29.371296555266966,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 27.64550704231065,
+     "parts": {
+      "depth": 29.5,
+      "utilization": 1.6,
+      "trend": 60.3,
+      "exit_slippage": 0,
+      "pool_balance": 93.5
+     },
+     "util_weekly_ratio": 0.008232321109650087,
+     "trend_pct": 0.2,
+     "slip_bound": true,
+     "slip_worst_pct": 93.49
+    },
+    "B": {
+     "score": 61.24052490416259,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 17.3
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
+       "symbol": "arbLUNA",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      }
+     ],
+     "flags": []
+    },
+    "quality": 41.1
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.19,
+    "balance": "balanced",
+    "need_score": 48.7,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 11.54,
+     "pd_lifetime": {
+      "native:uluna": 35110.857994
+     },
+     "pd_leg_count": 15
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1e6k3u9uwysataqnysfdn7y5v254pawm0gcuflumugtd7l4w74slq0qww44",
+   "name": "LUNA-FUEL",
+   "bucket": "project",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1e6k3u9uwysataqnysfdn7y5v254pawm0gcuflumugtd7l4w74slq0qww44",
+   "pool_address": "terra10yfnsqn20rzlnlzkeva5255q27zp6ws9te9uuql9e0lacfcze7zsffjct5",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 3779048.281196,
+   "pct_of_bucket": 13.943082817425681,
+   "staked_usd": 34134.60611345844,
+   "depth_usd": 42754.284999999996,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 65.64347329511239,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 30.59610457529506,
+     "parts": {
+      "depth": 46.6,
+      "utilization": 0.1,
+      "trend": 34.3,
+      "exit_slippage": 7.2,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.00048698948383048903,
+     "trend_pct": -12.9,
+     "slip_bound": true,
+     "slip_worst_pct": 82.08
+    },
+    "B": {
+     "score": 54.72572604874985,
+     "parts": {
+      "durability_B1": 68.1,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 30.3
+     },
+     "tokens": [
+      {
+       "denom": "ibc/4B44179AC2F0BEE50C16A673B3B886398988692885B2848A1C8AEF27148B3961",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 40.2
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.75,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 96.49,
+     "pd_lifetime": {
+      "native:uluna": 3382.714173
+     },
+     "pd_leg_count": 2
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "D"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1wttdzwa6pdegtrdjdw49y0pd3dd8qd3cqn89j6t9v978lx05rr8sew5jyq/uLP",
+   "name": "LUNA-arbLUNA",
+   "bucket": "single",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra1wttdzwa6pdegtrdjdw49y0pd3dd8qd3cqn89j6t9v978lx05rr8sew5jyq/uLP",
+   "pool_address": "terra1wttdzwa6pdegtrdjdw49y0pd3dd8qd3cqn89j6t9v978lx05rr8sew5jyq",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 15878.66188,
+   "pct_of_bucket": 0.05810381268680833,
+   "staked_usd": 26.99744145294134,
+   "depth_usd": 1068.0525,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.051918156640271815,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 25.34484558936269,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": 60.1,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": 0,
+     "slip_bound": false,
+     "slip_worst_pct": 99.41
+    },
+    "B": {
+     "score": 56.90625,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
+       "symbol": "arbLUNA",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      }
+     ],
+     "flags": []
+    },
+    "quality": 38
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.1,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1t9uvn05g0hdlx2nnqug3lt3pkla4sfdj0n0xnd66kmwvyt25y65sk37cej/uLP",
+   "name": "USDC-EURe",
+   "bucket": "bluechip",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra1t9uvn05g0hdlx2nnqug3lt3pkla4sfdj0n0xnd66kmwvyt25y65sk37cej/uLP",
+   "pool_address": "terra1t9uvn05g0hdlx2nnqug3lt3pkla4sfdj0n0xnd66kmwvyt25y65sk37cej",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 0.000002,
+   "pct_of_bucket": 7.387674022609201e-12,
+   "staked_usd": 2189.6548967787,
+   "depth_usd": 3539.6025,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 4.2108748014975,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 25.344850894480487,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": 60.1,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": 0,
+     "slip_bound": false,
+     "slip_worst_pct": 98.07
+    },
+    "B": {
+     "score": 56.8125,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/2C962DAB9F57FE0921435426AE75196009FAA1981BF86991203C8411F8980FDB",
+       "symbol": "USDC",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/8D52B251B447B7160421ACFBD50F6B0ABE5F98D2C404B03701130F12044439A1",
+       "symbol": "EURe",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 37.9
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra14h48hukanmfv6wrrs50m4w2f9hf09lakwl5d5pkpt4rpl3gtg7ks4ye6d4",
+   "name": "LUNA-USDT",
+   "bucket": "stable",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra14h48hukanmfv6wrrs50m4w2f9hf09lakwl5d5pkpt4rpl3gtg7ks4ye6d4",
+   "pool_address": "terra1aategw0787y4fyunmwdvdqraxfc8jtxykyed2skx3p5fd3lkgkmsqry7pz",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 512161.900731,
+   "pct_of_bucket": 1.8182084265647869,
+   "staked_usd": 9642.664105256108,
+   "depth_usd": 11372.98,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 18.54358481780021,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 24.407126311148957,
+     "parts": {
+      "depth": 17.8,
+      "utilization": 6.1,
+      "trend": 50.3,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": 0.030272675437118306,
+     "trend_pct": -4.9,
+     "slip_bound": true,
+     "slip_worst_pct": 94
+    },
+    "B": {
+     "score": 57.796722635366244,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 9.9
+     },
+     "tokens": [
+      {
+       "denom": "ibc/9B19062D46CAB50361CE9B0A3E6D0A7A53AC9E7CB361F32A73CC733144A9A9E5",
+       "symbol": "USDt",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 37.8
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.93,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1wymgwg90ry2w04avy899ucmuuak7w8n3xw2msmw2jf9rfugre0ssenx4hn/uLP",
+   "name": "LUNA-USDt",
+   "bucket": "stable",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra1wymgwg90ry2w04avy899ucmuuak7w8n3xw2msmw2jf9rfugre0ssenx4hn/uLP",
+   "pool_address": "terra1wymgwg90ry2w04avy899ucmuuak7w8n3xw2msmw2jf9rfugre0ssenx4hn",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 48222.102316,
+   "pct_of_bucket": 0.17119163423222117,
+   "staked_usd": 11.842630811694299,
+   "depth_usd": 5336.425,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.022774290022489038,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 25.823958514330094,
+     "parts": {
+      "depth": 1.4,
+      "utilization": null,
+      "trend": 59.6,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": -0.2,
+     "slip_bound": false,
+     "slip_worst_pct": 97.24
+    },
+    "B": {
+     "score": 55.3125,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/9B19062D46CAB50361CE9B0A3E6D0A7A53AC9E7CB361F32A73CC733144A9A9E5",
+       "symbol": "USDt",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 37.6
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.01,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1gny66hmejvrkra39cn7r8f7y7yg06hy3cv2xehpxraqfgjtdtpnqjtmu53/uLP",
+   "name": "LUNA-EURe",
+   "bucket": "stable",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra1gny66hmejvrkra39cn7r8f7y7yg06hy3cv2xehpxraqfgjtdtpnqjtmu53/uLP",
+   "pool_address": "terra1gny66hmejvrkra39cn7r8f7y7yg06hy3cv2xehpxraqfgjtdtpnqjtmu53",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 29944.90047,
+   "pct_of_bucket": 0.10630636579856466,
+   "staked_usd": 631.422467195976,
+   "depth_usd": 2317.6675,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 1.214273975376877,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 25.250765024404586,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": 59.6,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": -0.2,
+     "slip_bound": false,
+     "slip_worst_pct": 98.65
+    },
+    "B": {
+     "score": 55.3125,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/8D52B251B447B7160421ACFBD50F6B0ABE5F98D2C404B03701130F12044439A1",
+       "symbol": "EURe",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 37.3
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.04,
+    "balance": "balanced",
+    "need_score": 38.7,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1wje8lj3372njwuw8t4scmyp94t5pyxxh89tsnkrfyxghqh6aunzqz4a9k3/uLP",
+   "name": "USDC-SOLID",
+   "bucket": "project",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra1wje8lj3372njwuw8t4scmyp94t5pyxxh89tsnkrfyxghqh6aunzqz4a9k3/uLP",
+   "pool_address": "terra1wje8lj3372njwuw8t4scmyp94t5pyxxh89tsnkrfyxghqh6aunzqz4a9k3",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 19132.864793,
+   "pct_of_bucket": 0.07059214344278736,
+   "staked_usd": 0.0014023130306819048,
+   "depth_usd": 420.155,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.0000026967558282344325,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": 99.79
+    },
+    "B": {
+     "score": 62.90625,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 70,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/2C962DAB9F57FE0921435426AE75196009FAA1981BF86991203C8411F8980FDB",
+       "symbol": "USDC",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 86.3
+      },
+      {
+       "denom": "terra10aa3zdkrc7jwuf8ekl3zq7e7m42vmzqehcmu74e4egc7xkm5kr2s0muyst",
+       "symbol": "SOLID",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      }
+     ],
+     "flags": []
+    },
+    "quality": 35.2
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra18fved7svlqq9q9h23cg4uw97lllmg7fa03psevczy20ayhdwrm3sznjeh5/uLP",
+   "name": "LUNA-SOLID",
+   "bucket": "project",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra18fved7svlqq9q9h23cg4uw97lllmg7fa03psevczy20ayhdwrm3sznjeh5/uLP",
+   "pool_address": "terra18fved7svlqq9q9h23cg4uw97lllmg7fa03psevczy20ayhdwrm3sznjeh5",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 4759.278322,
+   "pct_of_bucket": 0.017559715266147198,
+   "staked_usd": 0.04814265835988343,
+   "depth_usd": 70.64,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.00009258203530746815,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": 99.96
+    },
+    "B": {
+     "score": 61.40625,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 65,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "terra10aa3zdkrc7jwuf8ekl3zq7e7m42vmzqehcmu74e4egc7xkm5kr2s0muyst",
+       "symbol": "SOLID",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      }
+     ],
+     "flags": []
+    },
+    "quality": 34.6
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1adp223mw8937arxcfl36acjjyn2dcf7wzp8h09jek5k0gw3vch8sqlq6su",
+   "name": "ATOM-LUNA",
+   "bucket": "bluechip",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "terra1adp223mw8937arxcfl36acjjyn2dcf7wzp8h09jek5k0gw3vch8sqlq6su",
+   "pool_address": "terra1frfcj4xhvx0emkup4vel5jun9zun0797j5yhn7ant3r4jzy9mkxqzcwev6",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 452897.454177,
+   "pct_of_bucket": 1.6729293785646318,
+   "staked_usd": 5847.6967446596445,
+   "depth_usd": 7288.5525,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 11.24557066280701,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 25.54348226559651,
+     "parts": {
+      "depth": 8.2,
+      "utilization": null,
+      "trend": 44.7,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": -7.7,
+     "slip_bound": false,
+     "slip_worst_pct": 96.33
+    },
+    "B": {
+     "score": 47.628481061911074,
+     "parts": {
+      "durability_B1": 68.1,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 1.9
+     },
+     "tokens": [
+      {
+       "denom": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 50
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 34.4
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra12hs75vlyd38zjvhegsqzr8uvz2r764fdy8mhqw0qg0s2mv858yvstwmsf8/uLP",
+   "name": "LUNA-wstETH",
+   "bucket": "bluechip",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra12hs75vlyd38zjvhegsqzr8uvz2r764fdy8mhqw0qg0s2mv858yvstwmsf8/uLP",
+   "pool_address": "terra12hs75vlyd38zjvhegsqzr8uvz2r764fdy8mhqw0qg0s2mv858yvstwmsf8",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": true,
+   "vp": 1554447.097184,
+   "pct_of_bucket": 5.7418742196932575,
+   "staked_usd": 6423.918072299781,
+   "depth_usd": 5660.85,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 12.353688600576502,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 26.357948533772742,
+     "parts": {
+      "depth": 2.7,
+      "utilization": null,
+      "trend": 59.7,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": -0.1,
+     "slip_bound": false,
+     "slip_worst_pct": 96.82
+    },
+    "B": {
+     "score": 46.22529335016083,
+     "parts": {
+      "durability_B1": 67.5,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 3.4
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/A356EC90DC3AE43D485514DA7260EDC7ABB5CFAA0654CE2524C739392975AD3C",
+       "symbol": "wstETH",
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": false,
+       "score": 48.8
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:wstETH"
+     ]
+    },
+    "quality": 34.3
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.32,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra126w5m24usxydxn0tjqd73k8uw06r42wttahf9t0cjyhmljlqhrdsjucx45/uLP",
+   "name": "LUNA-ROAR",
+   "bucket": "project",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra126w5m24usxydxn0tjqd73k8uw06r42wttahf9t0cjyhmljlqhrdsjucx45/uLP",
+   "pool_address": "terra126w5m24usxydxn0tjqd73k8uw06r42wttahf9t0cjyhmljlqhrdsjucx45",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 6756.722905,
+   "pct_of_bucket": 0.024929437262705845,
+   "staked_usd": 0.000988594099664258,
+   "depth_usd": 72.38,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.0000019011424993543423,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": 99.96
+    },
+    "B": {
+     "score": 59.15625,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 57.5,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "terra1lxx40s29qvkrcj8fsa3yzyehy7w50umdvvnls2r830rys6lu2zns63eelv",
+       "symbol": "ROAR",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      }
+     ],
+     "flags": []
+    },
+    "quality": 33.7
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra15rzp38yq2cqy2jnewc9vgzqguf3t2q0gqpv9evg8tckrtqp8x44qezhthc/uLP",
+   "name": "CAPA-LUNA",
+   "bucket": "project",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra15rzp38yq2cqy2jnewc9vgzqguf3t2q0gqpv9evg8tckrtqp8x44qezhthc/uLP",
+   "pool_address": "terra15rzp38yq2cqy2jnewc9vgzqguf3t2q0gqpv9evg8tckrtqp8x44qezhthc",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 18131.238853,
+   "pct_of_bucket": 0.06689656921501329,
+   "staked_usd": 39.80581584182926,
+   "depth_usd": 393.7275,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.07654964584967165,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": 99.78
+    },
+    "B": {
+     "score": 59.15625,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 57.5,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "terra1t4p3u8khpd7f8qzurwyafxt648dya6mp6vur3vaapswt6m24gkuqrfdhar",
+       "symbol": "CAPA",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 33.7
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.18,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1hvntefafgn05llkqyl6uxx6j0jjwmqjtxqdrwdm43s9tkzx7xkfqkcl7h6/uLP",
+   "name": "LUNA-ASTRO",
+   "bucket": "project",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra1hvntefafgn05llkqyl6uxx6j0jjwmqjtxqdrwdm43s9tkzx7xkfqkcl7h6/uLP",
+   "pool_address": "terra1hvntefafgn05llkqyl6uxx6j0jjwmqjtxqdrwdm43s9tkzx7xkfqkcl7h6",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 0.450044,
+   "pct_of_bucket": 0.0000016604711812519103,
+   "staked_usd": 0.2668153568356212,
+   "depth_usd": 1.15,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.0005131064554531176,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": 100
+    },
+    "B": {
+     "score": 55.3125,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/8D8A7F7253615E5F76CB6252A1E1BD921D5EDB7BBAAF8913FB1C77FF125D9995",
+       "symbol": "ASTRO",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 32.1
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1aa8nurhuk7rwedhjyzptggypuxd3y66qp4nsx6ph240g37esdm7qyheqkd/uLP",
+   "name": "ATOM-dATOM",
+   "bucket": "single",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra1aa8nurhuk7rwedhjyzptggypuxd3y66qp4nsx6ph240g37esdm7qyheqkd/uLP",
+   "pool_address": "terra1aa8nurhuk7rwedhjyzptggypuxd3y66qp4nsx6ph240g37esdm7qyheqkd",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 7896.793097,
+   "pct_of_bucket": 0.028896250225750698,
+   "staked_usd": 6.674196898509169,
+   "depth_usd": 621.6025,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.012834994035594556,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 25.06381930072207,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": 58.7,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": -0.7,
+     "slip_bound": false,
+     "slip_worst_pct": 98.79
+    },
+    "B": {
+     "score": 40.5,
+     "parts": {
+      "durability_B1": 50,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 50
+      },
+      {
+       "denom": "ibc/223FF539430381ADAB3A66AC4822E253C3F845E9841F17FEEC207B3AA9F8D915",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      }
+     ],
+     "flags": []
+    },
+    "quality": 31.2
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.05,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra12mvtdvn4fgtsqs4fwxr56vcwjw0xe23lhdfyjq5ghk7vmfeuxn0srau9q2",
+   "name": "ATOM-dATOM",
+   "bucket": "single",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra12mvtdvn4fgtsqs4fwxr56vcwjw0xe23lhdfyjq5ghk7vmfeuxn0srau9q2",
+   "pool_address": "terra1a0h6vrzkztjystg8sd949qyrc6mw9gzxk2870cr2mukg53uzgvqs46qul9",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": true,
+   "vp": 314601.734858,
+   "pct_of_bucket": 1.1512028161616206,
+   "staked_usd": 115.94117157903845,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.22296379149815088,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 23.75231770290322,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": 58.8,
+      "exit_slippage": 0,
+      "pool_balance": 90
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": -0.6,
+     "slip_bound": true,
+     "slip_worst_pct": 97.58
+    },
+    "B": {
+     "score": 40.5,
+     "parts": {
+      "durability_B1": 50,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 50
+      },
+      {
+       "denom": "ibc/223FF539430381ADAB3A66AC4822E253C3F845E9841F17FEEC207B3AA9F8D915",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      }
+     ],
+     "flags": []
+    },
+    "quality": 30.5
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.02,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": true,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": {
+      "native:uluna": 4200
+     },
+     "pd_leg_count": 3
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1q2gd6kc7nt8xct94chrlsqtpxfs9rve0j76lquce624y5zp85cdseshh85/uLP",
+   "name": "LUNA-INJ",
+   "bucket": "bluechip",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra1q2gd6kc7nt8xct94chrlsqtpxfs9rve0j76lquce624y5zp85cdseshh85/uLP",
+   "pool_address": "terra1q2gd6kc7nt8xct94chrlsqtpxfs9rve0j76lquce624y5zp85cdseshh85",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 10679.874723,
+   "pct_of_bucket": 0.03944971652791386,
+   "staked_usd": 9.26905716491705,
+   "depth_usd": 574.4025,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.017825109932532793,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": 99.67
+    },
+    "B": {
+     "score": 47.71875,
+     "parts": {
+      "durability_B1": 69.4,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/25BC59386BB65725F735EFC0C369BB717AA8B5DAD846EAF9CBF5D0F18F207211",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 52.5
+      }
+     ],
+     "flags": []
+    },
+    "quality": 29.1
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.07,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1wwy8xjk4mff7qp2g7qzmgfu9agd6wjdmz99crj94zv9tmh7dvhmq0jsf6a",
+   "name": "LUNA-SWTH",
+   "bucket": "project",
+   "dex": "Astroport",
+   "dex_subtype": "xyk",
+   "lp_address": "terra1wwy8xjk4mff7qp2g7qzmgfu9agd6wjdmz99crj94zv9tmh7dvhmq0jsf6a",
+   "pool_address": "terra1crlsemxx6yjpeq3am9dzccln0dykusm685ecxscuyny7u596elqqj6xd9z",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 14534.228988,
+   "pct_of_bucket": 0.05362513082340863,
+   "staked_usd": 7.837824265821332,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.015072738972733332,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": 99.78
+    },
+    "B": {
+     "score": 47.15625,
+     "parts": {
+      "durability_B1": 68.1,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/792AAE6279F4709F66068E29A79E6F16BBC0A9B93561A91FC040606793E62D6B",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 28.9
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.04,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": {
+      "native:uluna": 1504.07039
+     },
+     "pd_leg_count": 1
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra19z7g4fnu529250sdkdmgm9kw4qgwmmqrjas9t24ll84mpd94lxnshf0z2h",
+   "name": "LUNA-arbLUNA",
+   "bucket": "single",
+   "dex": "Astroport",
+   "dex_subtype": "stable",
+   "lp_address": "terra19z7g4fnu529250sdkdmgm9kw4qgwmmqrjas9t24ll84mpd94lxnshf0z2h",
+   "pool_address": "terra16nfwldn9j5xhry2y78gvm3x4vte8vu77zr3ctlan79w5f5aheawqnz7a4f",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 26711.378957,
+   "pct_of_bucket": 0.09774330930736347,
+   "staked_usd": 6364.06731589344,
+   "depth_usd": 1795.1675,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 12.238590992102768,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 9.382522474631838,
+     "parts": {
+      "depth": 0,
+      "utilization": 1.9,
+      "trend": 54.2,
+      "exit_slippage": 0,
+      "pool_balance": 7.8
+     },
+     "util_weekly_ratio": 0.009354280310890209,
+     "trend_pct": -2.9,
+     "slip_bound": true,
+     "slip_worst_pct": 98.59
+    },
+    "B": {
+     "score": 57.718887978293814,
+     "parts": {
+      "durability_B1": 93.1,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 3.3
+     },
+     "tokens": [
+      {
+       "denom": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
+       "symbol": "arbLUNA",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 28.7
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 14.69,
+    "balance": "underpaid",
+    "need_score": 114.8,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": {
+      "native:uluna": 4200
+     },
+     "pd_leg_count": 3
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra19d8tttv0lvhwpj828qqrcmm6yaqdfhrchfheuufcw4kywtmk9u3q98ask3",
+   "name": "LUNA-wstETH",
+   "bucket": "bluechip",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra19d8tttv0lvhwpj828qqrcmm6yaqdfhrchfheuufcw4kywtmk9u3q98ask3",
+   "pool_address": "terra1u0sp5gaw9amfa8vsaaqvvjpqqdyz4eeslzdjsgaq40afctpx7f6s6augj2",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 15251.91902,
+   "pct_of_bucket": 0.05633810296949658,
+   "staked_usd": 0.9410905550527227,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.0018097895289475436,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": true,
+     "slip_worst_pct": 99.98
+    },
+    "B": {
+     "score": 45.375,
+     "parts": {
+      "durability_B1": 67.5,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/A356EC90DC3AE43D485514DA7260EDC7ABB5CFAA0654CE2524C739392975AD3C",
+       "symbol": "wstETH",
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": false,
+       "score": 48.8
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:wstETH"
+     ]
+    },
+    "quality": 28.2
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": {
+      "native:uluna": 6729.553335
+     },
+     "pd_leg_count": 5
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1tfr4ghftlsf2l9nxr3clewk52g5q8wj7m2rglw67dkql9x6u7w6q53gwrn",
+   "name": "LUNA-WBTC",
+   "bucket": "bluechip",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1tfr4ghftlsf2l9nxr3clewk52g5q8wj7m2rglw67dkql9x6u7w6q53gwrn",
+   "pool_address": "terra1p996av7ftzj973swd4yt2er2sn3v9y5j9qfxz67gatnrpf8lfgwsel8hcg",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 18588.506837,
+   "pct_of_bucket": 0.0686629145393992,
+   "staked_usd": 0.0008702162790411787,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.000001673492844309959,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": true,
+     "slip_worst_pct": 99.98
+    },
+    "B": {
+     "score": 44.8125,
+     "parts": {
+      "durability_B1": 66.3,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/88386AC48152D48B34B082648DF836F975506F0B57DBBFC10A54213B1BF484CB",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_looks_native",
+       "guide": true,
+       "score": 46.3
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:ibc/88386AC4"
+     ]
+    },
+    "quality": 27.9
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra10ca0xhyjrzl3zk9g26yjxlw5rjplu5ts4jgcvvrgr62ml8jf57hqs3nck5",
+   "name": "LUNA-wBNB.axl",
+   "bucket": "bluechip",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra10ca0xhyjrzl3zk9g26yjxlw5rjplu5ts4jgcvvrgr62ml8jf57hqs3nck5",
+   "pool_address": "terra10clh64cpvjjen8f24qz2046d24s79w2ev2dyd9ke29wmqdqp4yjs3cyk0y",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 11770.53967,
+   "pct_of_bucket": 0.043478455076075034,
+   "staked_usd": 1.5363633514373094,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.002954544906610211,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": true,
+     "slip_worst_pct": 99.79
+    },
+    "B": {
+     "score": 43.96875,
+     "parts": {
+      "durability_B1": 64.4,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/1319C6B38CA613C89D78C2D1461B305038B1085F6855E8CD276FE3F7C9600B4C",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": false,
+       "score": 42.5
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:ibc/1319C6B3"
+     ]
+    },
+    "quality": 27.6
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.01,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra10xwhrfj2hqtwr4jwam3e24w92ypgl85lqz35lqzqhuay5r2h7pgqv4596s",
+   "name": "cw20:terra10xwhrfj2hqtwr4jwam3e24w92ypgl85lqz35lqz",
+   "bucket": "single",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "terra10xwhrfj2hqtwr4jwam3e24w92ypgl85lqz35lqzqhuay5r2h7pgqv4596s",
+   "pool_address": "terra1sjujvcvkszrt84280agzv0du7tsrf44y4n7hcd9n8y0q7snfgersd68ens",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 0,
+   "pct_of_bucket": 0,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": {
+    "yearly_rate": "0.1",
+    "taken_raw": "0",
+    "harvested_raw": "0",
+    "last_taken_s": null,
+    "stake_mechanism": "astroport"
+   },
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 0,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": 0
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 68,
+     "parts": {
+      "durability_B1": 75,
+      "asset_class_B2": 57.5,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "terra1lxx40s29qvkrcj8fsa3yzyehy7w50umdvvnls2r830rys6lu2zns63eelv",
+       "symbol": "ROAR",
+       "match": "cg_confirmed",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 100
+      },
+      {
+       "denom": "factory/terra1vklefn7n6cchn0u962w3gaszr4vf52wjvd4y95t2sydwpmpdtszsqvk9wy/amproar",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 50
+      }
+     ],
+     "flags": []
+    },
+    "quality": 27.2
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1a5apghncafx0nem740fsrmd6demaywvp332a4uat63u2jtwn8mgsz7khkw",
+   "name": "LUNA-WBTC.axl",
+   "bucket": "bluechip",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1a5apghncafx0nem740fsrmd6demaywvp332a4uat63u2jtwn8mgsz7khkw",
+   "pool_address": "terra1afkvgc0mxfqakqlaqpxdgy58n79x4r239q3tucxmrsqvqk7ce3ksnctxfu",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 112073.449664,
+   "pct_of_bucket": 0.4139810563534663,
+   "staked_usd": 202.7479583928975,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.3898999199863414,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": true,
+     "slip_worst_pct": 99.72
+    },
+    "B": {
+     "score": 42.28125,
+     "parts": {
+      "durability_B1": 60.6,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/05D299885B07905B6886F554B39346EA6761246076A1120B1950049B92B922DD",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_looks_native",
+       "guide": false,
+       "score": 35
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:ibc/05D29988"
+     ]
+    },
+    "quality": 26.9
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.14,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": {
+      "native:uluna": 15684.337457
+     },
+     "pd_leg_count": 11
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1aysexulsnuxna62m5rlnuzfcvct3df93gd4q0kkjtjcqsvv93s5sd0fyd2/uLP",
+   "name": "wBTC.osmo-LUNA",
+   "bucket": "bluechip",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra1aysexulsnuxna62m5rlnuzfcvct3df93gd4q0kkjtjcqsvv93s5sd0fyd2/uLP",
+   "pool_address": "terra1aysexulsnuxna62m5rlnuzfcvct3df93gd4q0kkjtjcqsvv93s5sd0fyd2",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": true,
+   "vp": 1427002.753324,
+   "pct_of_bucket": 5.271115585461759,
+   "staked_usd": 516.2691007638807,
+   "depth_usd": 507.40999999999997,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.9928251937766936,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": 99.71
+    },
+    "B": {
+     "score": 42.28125,
+     "parts": {
+      "durability_B1": 60.6,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/CF57A83CED6CEC7D706631B5DC53ABC21B7EDA7DF7490732B4361E6D5DD19C73",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_looks_native",
+       "guide": false,
+       "score": 35
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:ibc/CF57A83C"
+     ]
+    },
+    "quality": 26.9
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.03,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra18336lhc2vt9s9tw4pqetvdwywg9555rduzv527r9q47smw89epcsxgxuny",
+   "name": "wstETH-WETH.axl",
+   "bucket": "single",
+   "dex": "Astroport",
+   "dex_subtype": "xyk",
+   "lp_address": "terra18336lhc2vt9s9tw4pqetvdwywg9555rduzv527r9q47smw89epcsxgxuny",
+   "pool_address": "terra1yga5eepqnpg77gaj59uqfkm2qtllvpq642cmx5gj5lzjf5v88wzs2srzp7",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 111118.377737,
+   "pct_of_bucket": 0.4066086585183122,
+   "staked_usd": 1975.3975779263017,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 3.798841496012119,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 25.361170969060936,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": 60.1,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": 0.1,
+     "slip_bound": false,
+     "slip_worst_pct": 98.99
+    },
+    "B": {
+     "score": 29.330357142857146,
+     "parts": {
+      "durability_B1": 45.6,
+      "asset_class_B2": null,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/A356EC90DC3AE43D485514DA7260EDC7ABB5CFAA0654CE2524C739392975AD3C",
+       "symbol": "wstETH",
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": false,
+       "score": 48.8
+      },
+      {
+       "denom": "ibc/BC8A77AFBD872FDC32A348D3FB10CC09277C266CFE52081DE341C7EC6752E674",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": false,
+       "score": 42.5
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:wstETH",
+      "mcap_source_pending:ibc/BC8A77AF"
+     ]
+    },
+    "quality": 26.9
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 1.1,
+    "balance": "balanced",
+    "need_score": 29.5,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": {
+      "native:uluna": 7939.059423
+     },
+     "pd_leg_count": 8
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1mnucaeckccseq66kglv299wasp02akyh535jcpcdu37tdakr92esf9mjm5",
+   "name": "SWTH-rSWTH",
+   "bucket": "single",
+   "dex": "Astroport",
+   "dex_subtype": "xyk",
+   "lp_address": "terra1mnucaeckccseq66kglv299wasp02akyh535jcpcdu37tdakr92esf9mjm5",
+   "pool_address": "terra1rzw2egugtjhxz2x58z55kwldm96fzck8qsf9srf5v0uehf64a2asjsak68",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 24212.145517,
+   "pct_of_bucket": 0.08859801779880926,
+   "staked_usd": 39.29285417263396,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.07556318110121915,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": 99.81
+    },
+    "B": {
+     "score": 40.5,
+     "parts": {
+      "durability_B1": 50,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/792AAE6279F4709F66068E29A79E6F16BBC0A9B93561A91FC040606793E62D6B",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      },
+      {
+       "denom": "ibc/0E90026619DD296AD4EF9546396F292B465BAB6B5BE00ABD6162AA1CE8E68098",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      }
+     ],
+     "flags": []
+    },
+    "quality": 26.2
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.1,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1stavsz7hhsw56tngxt6p5xmkm86a9nvgztgvv56wj7q6yceutmwsvrwjdz",
+   "name": "LUNA-WHALE",
+   "bucket": "project",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1stavsz7hhsw56tngxt6p5xmkm86a9nvgztgvv56wj7q6yceutmwsvrwjdz",
+   "pool_address": "terra1a6d0lcvfzyllulaaazzg5j70yn4m3e2t90shtlxsr3fwhcg34g2sgwfr75",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 501.334722,
+   "pct_of_bucket": 0.0018497121571267208,
+   "staked_usd": 0,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 0,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": 0
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 64.75,
+     "parts": {
+      "durability_B1": 71.3,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "ibc/36A02FFC4E74DF4F64305130C3DFA1B06BEAC775648927AA44467C76A77AB8DB",
+       "symbol": "WHALE",
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 56.3
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 25.9
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6den6lv427esjaadua3ftzyjpsqgtl5z/uLP",
+   "name": "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+   "bucket": "project",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "factory/terra1zushwxgqdkg22mtv9p946yp53r6den6lv427esjaadua3ftzyjpsqgtl5z/uLP",
+   "pool_address": "terra1zushwxgqdkg22mtv9p946yp53r6den6lv427esjaadua3ftzyjpsqgtl5z",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 57263.76479,
+   "pct_of_bucket": 0.21127896642057853,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 0,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": 0
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 64.75,
+     "parts": {
+      "durability_B1": 71.3,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/36A02FFC4E74DF4F64305130C3DFA1B06BEAC775648927AA44467C76A77AB8DB",
+       "symbol": "WHALE",
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 56.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 25.9
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1pz99udaf85erk8lumjylczz0cuf70mmq9gns3ejxt7s3mk266mqq6gkqkn",
+   "name": "ATOM-stATOM",
+   "bucket": "single",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1pz99udaf85erk8lumjylczz0cuf70mmq9gns3ejxt7s3mk266mqq6gkqkn",
+   "pool_address": "terra1f9vmtntpjmkyhkxtlc49jcq6cv8rfz0kr06zv6efdtdgae4m9y9qlzm36t",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 0.000015,
+   "pct_of_bucket": 5.4888579207036106e-11,
+   "staked_usd": 0.03237420509295219,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.00006225808671721575,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 14.990684426281819,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 89.9
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": true,
+     "slip_worst_pct": 99.71
+    },
+    "B": {
+     "score": 41.0625,
+     "parts": {
+      "durability_B1": 51.3,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 50
+      },
+      {
+       "denom": "ibc/FD9DBF0DB4D301313195159303811FD2FD72185C4B11A51659EFCD49D7FF1228",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 52.5
+      }
+     ],
+     "flags": []
+    },
+    "quality": 25.4
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1h3z2zv6aw94fx5263dy6tgz6699kxmewlx3vrcu4jjrudg6xmtyqk6vt0u",
+   "name": "LUNA-bLUNA",
+   "bucket": "project",
+   "dex": "Astroport",
+   "dex_subtype": "stable",
+   "lp_address": "terra1h3z2zv6aw94fx5263dy6tgz6699kxmewlx3vrcu4jjrudg6xmtyqk6vt0u",
+   "pool_address": "terra1h32epkd72x7st0wk49z35qlpsxf26pw4ydacs8acq6uka7hgshmq7z7vl9",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": false,
+   "vp": 2370.169283,
+   "pct_of_bucket": 0.008744917806058971,
+   "staked_usd": 4022.857935827757,
+   "depth_usd": 1387.6475,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 7.736265261207226,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 10.18997234832245,
+     "parts": {
+      "depth": 0,
+      "utilization": 0.1,
+      "trend": 58.7,
+      "exit_slippage": 0,
+      "pool_balance": 13.5
+     },
+     "util_weekly_ratio": 0.0006377700388607337,
+     "trend_pct": -0.6,
+     "slip_bound": true,
+     "slip_worst_pct": 98.94
+    },
+    "B": {
+     "score": 47.0625,
+     "parts": {
+      "durability_B1": 71.3,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "terra17aj4ty4sz4yhgm08na8drc0v03v2jwr3waxcqrwhajj729zhl7zqnpc0ml",
+       "symbol": "bLUNA",
+       "match": "no_mapping",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 56.3
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 24.9
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 141.58,
+    "balance": "underpaid",
+    "need_score": 99.6,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": {
+      "native:uluna": 5173.492786
+     },
+     "pd_leg_count": 5
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1vc66wpr2ghcesnf203em6yefpze3vrmq99n8yz0me3jzs6g4e8rs2kec75",
+   "name": "LUNA-wSOL.wh",
+   "bucket": "bluechip",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra1vc66wpr2ghcesnf203em6yefpze3vrmq99n8yz0me3jzs6g4e8rs2kec75",
+   "pool_address": "terra16zzqwekwsqn4zlsyu4vhjr52ee2hdvppjcr8h22qznjadaazzdgsvd905d",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 391.204858,
+   "pct_of_bucket": 0.0014450469834825605,
+   "staked_usd": 0,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 0,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": 0
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 58.625,
+     "parts": {
+      "durability_B1": 64.4,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "terra1ctelwayk6t2zu30a8v9kdg3u2gr0slpjdfny5pjp7m3tuquk32ysugyjdg",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": false,
+       "score": 42.5
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:terra1ctelwa"
+     ]
+    },
+    "quality": 23.5
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra12u7a9wkjqrkhxjcxx70uhfx8y49j4lclfnet2smw9agpnrv9chps27n9mh/uLP",
+   "name": "LUNA-wSOL",
+   "bucket": "bluechip",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra12u7a9wkjqrkhxjcxx70uhfx8y49j4lclfnet2smw9agpnrv9chps27n9mh/uLP",
+   "pool_address": "terra12u7a9wkjqrkhxjcxx70uhfx8y49j4lclfnet2smw9agpnrv9chps27n9mh",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 33231.875439,
+   "pct_of_bucket": 0.1227531314516425,
+   "staked_usd": 0,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 0,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": 0
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 58.625,
+     "parts": {
+      "durability_B1": 64.4,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "terra1ctelwayk6t2zu30a8v9kdg3u2gr0slpjdfny5pjp7m3tuquk32ysugyjdg",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": false,
+       "score": 42.5
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:terra1ctelwa"
+     ]
+    },
+    "quality": 23.5
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra12eu8jk4w7lgn2rk7xs46nz7c7r9fw8q98afy9adlwtkghazj40asjf65zu",
+   "name": "LUNA-wBNB.wh",
+   "bucket": "bluechip",
+   "dex": "Astroport",
+   "dex_subtype": "concentrated",
+   "lp_address": "terra12eu8jk4w7lgn2rk7xs46nz7c7r9fw8q98afy9adlwtkghazj40asjf65zu",
+   "pool_address": "terra1v3xmc8nn8h8e7z55d80a72g4rgz6mrxyasxq089k8n6m40xldlksf2w5x8",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 14.094726,
+   "pct_of_bucket": 0.000052063620562997235,
+   "staked_usd": 8.790377555999912,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.016904572223076755,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 9.121051912827186,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 54.7
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": true,
+     "slip_worst_pct": 99.99
+    },
+    "B": {
+     "score": 43.96875,
+     "parts": {
+      "durability_B1": 64.4,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "terra1xc7ynquupyfcn43sye5pfmnlzjcw2ck9keh0l2w2a4rhjnkp64uq4pr388",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": false,
+       "score": 42.5
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:terra1xc7ynq"
+     ]
+    },
+    "quality": 23.1
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 48.3,
+    "balance": "underpaid",
+    "need_score": 92.4,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1m5juz238n27dd24d9e3kacmqax8gu7j5ee9hhfczpl52f3n7adaqudk2c9/uLP",
+   "name": "LUNA-wBNB",
+   "bucket": "bluechip",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra1m5juz238n27dd24d9e3kacmqax8gu7j5ee9hhfczpl52f3n7adaqudk2c9/uLP",
+   "pool_address": "terra1m5juz238n27dd24d9e3kacmqax8gu7j5ee9hhfczpl52f3n7adaqudk2c9",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 48.256031,
+   "pct_of_bucket": 0.00017824991332646213,
+   "staked_usd": 0.00000670894426708308,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 1.2901815898236695e-8,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 8.158551413328718,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 49
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": 100
+    },
+    "B": {
+     "score": 43.96875,
+     "parts": {
+      "durability_B1": 64.4,
+      "asset_class_B2": 50,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "terra1xc7ynquupyfcn43sye5pfmnlzjcw2ck9keh0l2w2a4rhjnkp64uq4pr388",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": false,
+       "score": 42.5
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:terra1xc7ynq"
+     ]
+    },
+    "quality": 22.5
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6vg2he9d6z9rgslr4k7l",
+   "name": "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+   "bucket": "single",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6vg2he9d6z9rgslr4k7l",
+   "pool_address": "terra1ntx595elf3ukxcd0wy76h24rzztcv2p6n3wmfd358ks95prv42fs9mn63n",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 27830.505615,
+   "pct_of_bucket": 0.10183846078805271,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 0,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": 0
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 55.875,
+     "parts": {
+      "durability_B1": 53.1,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "ibc/B3F639855EE7478750CC8F82072307ED6E131A8EFF20345E1D136B50C4E5EC36",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      },
+      {
+       "denom": "ibc/36A02FFC4E74DF4F64305130C3DFA1B06BEAC775648927AA44467C76A77AB8DB",
+       "symbol": "WHALE",
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 56.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 22.4
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75pdeg0txfvhyuswm6653",
+   "name": "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+   "bucket": "single",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75pdeg0txfvhyuswm6653",
+   "pool_address": "terra1j9jmsplecj9ay2py27953p84nfmv7f6ce75ms5fleyhd0aecpc7q0hgmsa",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 65181.442677,
+   "pct_of_bucket": 0.23851445194702656,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 0,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": 0
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 55.875,
+     "parts": {
+      "durability_B1": 53.1,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "ibc/517E13F14A1245D4DE8CF467ADD4DA0058974CDCC880FA6AE536DBCA1D16D84E",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      },
+      {
+       "denom": "ibc/36A02FFC4E74DF4F64305130C3DFA1B06BEAC775648927AA44467C76A77AB8DB",
+       "symbol": "WHALE",
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 56.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 22.4
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra12252e02w0k5yv9mryctth4j3y2sdas0xremw0jznzwal5v3xeqjst7q537/uLP",
+   "name": "wETH-wstETH",
+   "bucket": "single",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra12252e02w0k5yv9mryctth4j3y2sdas0xremw0jznzwal5v3xeqjst7q537/uLP",
+   "pool_address": "terra12252e02w0k5yv9mryctth4j3y2sdas0xremw0jznzwal5v3xeqjst7q537",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 0.000175,
+   "pct_of_bucket": 6.403667574154213e-10,
+   "staked_usd": 2.22849579782746e-9,
+   "depth_usd": 67.33,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 4.2855688419758844e-12,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": 99.96
+    },
+    "B": {
+     "score": 29.330357142857146,
+     "parts": {
+      "durability_B1": 45.6,
+      "asset_class_B2": null,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "terra15hhqg8gyz04zapynqtk7uvlsp7lzay7etrt9ann0276v94yae63sxygeat",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": false,
+       "score": 42.5
+      },
+      {
+       "denom": "ibc/A356EC90DC3AE43D485514DA7260EDC7ABB5CFAA0654CE2524C739392975AD3C",
+       "symbol": "wstETH",
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_disclosed",
+       "guide": false,
+       "score": 48.8
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:terra15hhqg8",
+      "mcap_source_pending:wstETH"
+     ]
+    },
+    "quality": 21.7
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra14n22zd24nath0tf8fwn468nz7753rjuks67ppddrcqwq37x2xsxsddqxqc",
+   "name": "LUNA-stLUNA",
+   "bucket": "project",
+   "dex": "Astroport",
+   "dex_subtype": "stable",
+   "lp_address": "terra14n22zd24nath0tf8fwn468nz7753rjuks67ppddrcqwq37x2xsxsddqxqc",
+   "pool_address": "terra1re0yj0j6e9v2szg7kp02ut6u8jjea586t6pnpq6628wl36fphtpqwt6l7p",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "active",
+   "gaugeActive": true,
+   "vp": 332193.931537,
+   "pct_of_bucket": 1.2256544913474208,
+   "staked_usd": 3554.6904258395716,
+   "depth_usd": 4378.7225,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 6.835943126614561,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 0.9455045956596437,
+     "parts": {
+      "depth": 0,
+      "utilization": 0,
+      "trend": 0,
+      "exit_slippage": 0,
+      "pool_balance": 9.4
+     },
+     "util_weekly_ratio": 0.000023480878686093625,
+     "trend_pct": -60.8,
+     "slip_bound": true,
+     "slip_worst_pct": 99.09
+    },
+    "B": {
+     "score": 47.15625,
+     "parts": {
+      "durability_B1": 68.1,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/08095CEDEA29977C9DD0CE9A48329FDA622C183359D5F90CF04CC4FF80CBE431",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      },
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": 19.4
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.89,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": true,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra10e2rz5etaped4nh0vk502hf7uwtz5lqvxqatxl4qyr0chcynxf2swhfwww",
+   "name": "WBTC.axl-WBTC.osmo",
+   "bucket": "single",
+   "dex": "Astroport",
+   "dex_subtype": "stable",
+   "lp_address": "terra10e2rz5etaped4nh0vk502hf7uwtz5lqvxqatxl4qyr0chcynxf2swhfwww",
+   "pool_address": "terra1mps5z5gt2c2akwcp86mq0zhw66kdugtc3selcyradtje0vp0z49sfrk8jx",
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": false,
+   "vp": 24266.430151,
+   "pct_of_bucket": 0.08879665822767818,
+   "staked_usd": 273.0884585639315,
+   "depth_usd": 0,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.5251701126229452,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": true,
+     "slip_worst_pct": 99.84
+    },
+    "B": {
+     "score": 22.5,
+     "parts": {
+      "durability_B1": 35,
+      "asset_class_B2": null,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/05D299885B07905B6886F554B39346EA6761246076A1120B1950049B92B922DD",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_looks_native",
+       "guide": false,
+       "score": 35
+      },
+      {
+       "denom": "ibc/CF57A83CED6CEC7D706631B5DC53ABC21B7EDA7DF7490732B4361E6D5DD19C73",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_looks_native",
+       "guide": false,
+       "score": 35
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:ibc/05D29988",
+      "mcap_source_pending:ibc/CF57A83C"
+     ]
+    },
+    "quality": 19
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.69,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": {
+      "native:uluna": 17962.531579
+     },
+     "pd_leg_count": 12
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "provisional",
+    "snapshots_used": 78,
+    "snapshots_expected": 144,
+    "ratio": 0.542,
+    "epochs_covered": 4,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "native:factory/terra13ywdferm4jtcperal9png3cvhtmar5se9nu4r49k7vujrakwy9zqa3rhwe/uLP",
+   "name": "wBTC.osmo-wBTC.axl",
+   "bucket": "single",
+   "dex": "Skeleton Swap",
+   "dex_subtype": null,
+   "lp_address": "factory/terra13ywdferm4jtcperal9png3cvhtmar5se9nu4r49k7vujrakwy9zqa3rhwe/uLP",
+   "pool_address": "terra13ywdferm4jtcperal9png3cvhtmar5se9nu4r49k7vujrakwy9zqa3rhwe",
+   "is_single": false,
+   "is_ss": true,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": true,
+   "vp": 1040321.458428,
+   "pct_of_bucket": 3.8067844514469735,
+   "staked_usd": 132.35188532059558,
+   "depth_usd": 223.16750000000002,
+   "take_rate": 0.1,
+   "take_flow_epoch_usd": 0.2545228563857608,
+   "first_seen_epoch": 184,
+   "sample": {
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": 16.666666666666668,
+     "parts": {
+      "depth": 0,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": 0,
+      "pool_balance": 100
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": 99.87
+    },
+    "B": {
+     "score": 22.5,
+     "parts": {
+      "durability_B1": 35,
+      "asset_class_B2": null,
+      "chain_alignment_B3": 0
+     },
+     "tokens": [
+      {
+       "denom": "ibc/CF57A83CED6CEC7D706631B5DC53ABC21B7EDA7DF7490732B4361E6D5DD19C73",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_looks_native",
+       "guide": false,
+       "score": 35
+      },
+      {
+       "denom": "ibc/05D299885B07905B6886F554B39346EA6761246076A1120B1950049B92B922DD",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "wrapped_looks_native",
+       "guide": false,
+       "score": 35
+      }
+     ],
+     "flags": [
+      "mcap_source_pending:ibc/CF57A83C",
+      "mcap_source_pending:ibc/05D29988"
+     ]
+    },
+    "quality": 19
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": 0.01,
+    "balance": "overweighted",
+    "need_score": 0,
+    "underdog": false,
+    "bribe_target": false,
+    "threshold_risk": false,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "graded",
+   "confidence": {
+    "tier": "firm",
+    "snapshots_used": 28,
+    "snapshots_expected": 28,
+    "ratio": 1,
+    "epochs_covered": 4,
+    "has_gaps": false,
+    "depth_fallback": false
+   },
+   "grade": "F"
+  },
+  {
+   "gauge_pool_id": "cw20:terra1yqp35sjllqjqh25pt49pcqnnpe3960tanmf2upfadej2gdumz6psn8t5vp",
+   "name": "cw20:terra1yqp35sjllqjqh25pt49pcqnnpe3960tanmf2upfadej2gdumz6psn8t5vp",
+   "bucket": "stable",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "terra1yqp35sjllqjqh25pt49pcqnnpe3960tanmf2upfadej2gdumz6psn8t5vp",
+   "pool_address": null,
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": null,
+   "vp": 0,
+   "pct_of_bucket": null,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": {
+    "yearly_rate": "0.1",
+    "taken_raw": "0",
+    "harvested_raw": "0",
+    "last_taken_s": null,
+    "stake_mechanism": "astroport"
+   },
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": null,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": null,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": null
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 73.75,
+     "parts": {
+      "durability_B1": 86.3,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/2C962DAB9F57FE0921435426AE75196009FAA1981BF86991203C8411F8980FDB",
+       "symbol": "USDC",
+       "match": "registry_assigned",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 86.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": null
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": null,
+    "bribe_target": null,
+    "threshold_risk": null,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": null
+  },
+  {
+   "gauge_pool_id": "cw20:terra1a2nc0k4m6hun6yr4g6ujnc46wlpfuywzves689at3tdkezrjg8wq7p35ra",
+   "name": "cw20:terra1a2nc0k4m6hun6yr4g6ujnc46wlpfuywzves689at3tdkezrjg8wq7p35ra",
+   "bucket": "project",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "terra1a2nc0k4m6hun6yr4g6ujnc46wlpfuywzves689at3tdkezrjg8wq7p35ra",
+   "pool_address": null,
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": null,
+   "vp": 0,
+   "pct_of_bucket": null,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": {
+    "yearly_rate": "0.1",
+    "taken_raw": "0",
+    "harvested_raw": "0",
+    "last_taken_s": null,
+    "stake_mechanism": "astroport"
+   },
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": null,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": null,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": null
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 64.75,
+     "parts": {
+      "durability_B1": 71.3,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/36A02FFC4E74DF4F64305130C3DFA1B06BEAC775648927AA44467C76A77AB8DB",
+       "symbol": "WHALE",
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 56.3
+      }
+     ],
+     "flags": []
+    },
+    "quality": null
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": null,
+    "bribe_target": null,
+    "threshold_risk": null,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": null
+  },
+  {
+   "gauge_pool_id": "native:factory/terra12exvyhctk6ggqvzj2tlhsv769llctntf5zdj9erz6q2uq4h8hn8q5k5xpg/uLP",
+   "name": "native:factory/terra12exvyhctk6ggqvzj2tlhsv769llctntf5zdj9erz6q2uq4h8hn8q5k5xpg/uLP",
+   "bucket": "project",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "factory/terra12exvyhctk6ggqvzj2tlhsv769llctntf5zdj9erz6q2uq4h8hn8q5k5xpg/uLP",
+   "pool_address": null,
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": null,
+   "vp": 0,
+   "pct_of_bucket": null,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": {
+    "yearly_rate": "0.1",
+    "taken_raw": "11432941",
+    "harvested_raw": "11432941",
+    "last_taken_s": 1739203222,
+    "stake_mechanism": "default"
+   },
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": null,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": null,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": null
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 62.875,
+     "parts": {
+      "durability_B1": 68.1,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/08095CEDEA29977C9DD0CE9A48329FDA622C183359D5F90CF04CC4FF80CBE431",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      }
+     ],
+     "flags": []
+    },
+    "quality": null
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": null,
+    "bribe_target": null,
+    "threshold_risk": null,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": null
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1nll8xy7m2dyac3sww2tg7dqj8s0mlak68drgtzd9gh4yvnvpplhsn3sxnv/uLP",
+   "name": "native:factory/terra1nll8xy7m2dyac3sww2tg7dqj8s0mlak68drgtzd9gh4yvnvpplhsn3sxnv/uLP",
+   "bucket": "project",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "factory/terra1nll8xy7m2dyac3sww2tg7dqj8s0mlak68drgtzd9gh4yvnvpplhsn3sxnv/uLP",
+   "pool_address": null,
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": null,
+   "vp": 0,
+   "pct_of_bucket": null,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": {
+    "yearly_rate": "0.1",
+    "taken_raw": "1238609515",
+    "harvested_raw": "1238609515",
+    "last_taken_s": 1768204802,
+    "stake_mechanism": "default"
+   },
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": null,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": null,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": null
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 62.875,
+     "parts": {
+      "durability_B1": 68.1,
+      "asset_class_B2": 55,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "uluna",
+       "symbol": "LUNA",
+       "match": "registry_assigned",
+       "acquisition_class": "native_terra",
+       "guide": false,
+       "score": 86.3
+      },
+      {
+       "denom": "ibc/792AAE6279F4709F66068E29A79E6F16BBC0A9B93561A91FC040606793E62D6B",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      }
+     ],
+     "flags": []
+    },
+    "quality": null
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": null,
+    "bribe_target": null,
+    "threshold_risk": null,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": null
+  },
+  {
+   "gauge_pool_id": "cw20:terra1yxj707eppjphy4fshmt2rcqfnmat4ym58z6x9jk52mvte56ktv7sqfy2r5",
+   "name": "cw20:terra1yxj707eppjphy4fshmt2rcqfnmat4ym58z6x9jk52mvte56ktv7sqfy2r5",
+   "bucket": "single",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "terra1yxj707eppjphy4fshmt2rcqfnmat4ym58z6x9jk52mvte56ktv7sqfy2r5",
+   "pool_address": null,
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": null,
+   "vp": 0,
+   "pct_of_bucket": null,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": {
+    "yearly_rate": "0.1",
+    "taken_raw": "11178513759",
+    "harvested_raw": "10971600679",
+    "last_taken_s": 1744853771,
+    "stake_mechanism": "astroport"
+   },
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": null,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": null,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": null
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 55.875,
+     "parts": {
+      "durability_B1": 53.1,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "ibc/36A02FFC4E74DF4F64305130C3DFA1B06BEAC775648927AA44467C76A77AB8DB",
+       "symbol": "WHALE",
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 56.3
+      },
+      {
+       "denom": "ibc/517E13F14A1245D4DE8CF467ADD4DA0058974CDCC880FA6AE536DBCA1D16D84E",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      }
+     ],
+     "flags": []
+    },
+    "quality": null
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": null,
+    "bribe_target": null,
+    "threshold_risk": null,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": null
+  },
+  {
+   "gauge_pool_id": "cw20:terra1zn0kcywt3epp6md4ugnprslf84hhxklwz4g0d8ck7ldf9uspudqqpmf0ya",
+   "name": "cw20:terra1zn0kcywt3epp6md4ugnprslf84hhxklwz4g0d8ck7ldf9uspudqqpmf0ya",
+   "bucket": "single",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "terra1zn0kcywt3epp6md4ugnprslf84hhxklwz4g0d8ck7ldf9uspudqqpmf0ya",
+   "pool_address": null,
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": null,
+   "vp": 0,
+   "pct_of_bucket": null,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": {
+    "yearly_rate": "0.1",
+    "taken_raw": "14877625676",
+    "harvested_raw": "14806061246",
+    "last_taken_s": 1745254749,
+    "stake_mechanism": "astroport"
+   },
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": null,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": null,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": null
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 55.875,
+     "parts": {
+      "durability_B1": 53.1,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "ibc/36A02FFC4E74DF4F64305130C3DFA1B06BEAC775648927AA44467C76A77AB8DB",
+       "symbol": "WHALE",
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 56.3
+      },
+      {
+       "denom": "ibc/B3F639855EE7478750CC8F82072307ED6E131A8EFF20345E1D136B50C4E5EC36",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      }
+     ],
+     "flags": []
+    },
+    "quality": null
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": null,
+    "bribe_target": null,
+    "threshold_risk": null,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": null
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1c439uc3qdlfuqncxae7l07nsdgjtu45g98yhn5ydjn2866nsw3ws0e0vte/uLP",
+   "name": "native:factory/terra1c439uc3qdlfuqncxae7l07nsdgjtu45g98yhn5ydjn2866nsw3ws0e0vte/uLP",
+   "bucket": "single",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "factory/terra1c439uc3qdlfuqncxae7l07nsdgjtu45g98yhn5ydjn2866nsw3ws0e0vte/uLP",
+   "pool_address": null,
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "inactive_below_threshold",
+   "gaugeActive": null,
+   "vp": 0,
+   "pct_of_bucket": null,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": {
+    "yearly_rate": "0.1",
+    "taken_raw": "167",
+    "harvested_raw": "167",
+    "last_taken_s": 1787572800,
+    "stake_mechanism": "default"
+   },
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": null,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": null,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": null
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 54.75,
+     "parts": {
+      "durability_B1": 51.3,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": true,
+       "score": 50
+      },
+      {
+       "denom": "ibc/FD9DBF0DB4D301313195159303811FD2FD72185C4B11A51659EFCD49D7FF1228",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 52.5
+      }
+     ],
+     "flags": []
+    },
+    "quality": null
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": null,
+    "bribe_target": null,
+    "threshold_risk": null,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": null
+  },
+  {
+   "gauge_pool_id": "native:factory/terra1nezkc3lxdxv26hqwy44jr7j9typtk39pns254ev52s9guqc2zsyqx7hvc9/uLP",
+   "name": "native:factory/terra1nezkc3lxdxv26hqwy44jr7j9typtk39pns254ev52s9guqc2zsyqx7hvc9/uLP",
+   "bucket": "single",
+   "dex": null,
+   "dex_subtype": null,
+   "lp_address": "factory/terra1nezkc3lxdxv26hqwy44jr7j9typtk39pns254ev52s9guqc2zsyqx7hvc9/uLP",
+   "pool_address": null,
+   "is_single": false,
+   "is_ss": false,
+   "gauge_status": "dewhitelisted",
+   "gaugeActive": null,
+   "vp": 0,
+   "pct_of_bucket": null,
+   "staked_usd": 0,
+   "depth_usd": null,
+   "take_rate": {
+    "yearly_rate": "0.1",
+    "taken_raw": "0",
+    "harvested_raw": "0",
+    "last_taken_s": null,
+    "stake_mechanism": "default"
+   },
+   "take_flow_epoch_usd": null,
+   "first_seen_epoch": null,
+   "sample": {
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "scores": {
+    "A": {
+     "score": null,
+     "parts": {
+      "depth": null,
+      "utilization": null,
+      "trend": null,
+      "exit_slippage": null,
+      "pool_balance": null
+     },
+     "util_weekly_ratio": null,
+     "trend_pct": null,
+     "slip_bound": false,
+     "slip_worst_pct": null
+    },
+    "B": {
+     "score": 54,
+     "parts": {
+      "durability_B1": 50,
+      "asset_class_B2": 60,
+      "chain_alignment_B3": null
+     },
+     "tokens": [
+      {
+       "denom": "ibc/792AAE6279F4709F66068E29A79E6F16BBC0A9B93561A91FC040606793E62D6B",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      },
+      {
+       "denom": "ibc/0E90026619DD296AD4EF9546396F292B465BAB6B5BE00ABD6162AA1CE8E68098",
+       "symbol": null,
+       "match": "no_mapping",
+       "acquisition_class": "ibc_cosmos_native",
+       "guide": false,
+       "score": 50
+      }
+     ],
+     "flags": []
+    },
+    "quality": null
+   },
+   "overlay": {
+    "ratio_vs_bucket_median": null,
+    "balance": "balanced",
+    "need_score": 0,
+    "underdog": null,
+    "bribe_target": null,
+    "threshold_risk": null,
+    "support": {
+     "active_pot_usd": 0,
+     "pd_lifetime": null,
+     "pd_leg_count": 0
+    }
+   },
+   "state": "inactive",
+   "confidence": {
+    "tier": "insufficient",
+    "snapshots_used": 0,
+    "snapshots_expected": 0,
+    "ratio": 0,
+    "epochs_covered": 0,
+    "has_gaps": true,
+    "depth_fallback": false
+   },
+   "grade": null
+  }
+ ]
+}
