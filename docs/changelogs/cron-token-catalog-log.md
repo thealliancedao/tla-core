@@ -1,5 +1,32 @@
 # Token-Catalog Cron — Changelog
 
+## capa-supply v1.1 — 2026-08-24 — first live publish: 3 guards fired, all real
+
+The 15:35Z run published `guard_failed` on hub_state_vs_balance,
+supply×rate=in_hub, and lp_nonamp_non_negative. Every one was chain truth:
+
+1. **The hub stakes its CAPA in Solid governance** — its own cw20 balance is 0
+   and the gov contract's 175.72M CONTAINS the hub's 157.17M. v1.1: `in_hub`
+   from hub `state{}`; gov splits into `gov_hub_portion` (gov `staker{hub}`) +
+   `gov_staked_direct` (18.55M); new cross-check hub-state ≈ hub-per-gov-books
+   (0.5% band for accrual timing). Consequence: **true liquid CAPA is ~300.4M
+   (60% of supply)**, not the ~143.6M the probe-era arithmetic implied — the
+   probe double-counted hub inside gov, and the guard existed to catch exactly
+   that.
+2. **Astroport-config staking forwards LP to Astroport Incentives** — the
+   staking contract's cw20 balance is 0 by design. Staked totals now read
+   `total_staked_balances` (post-take).
+3. **Amp/non-amp split now single-basis**: the compounder's own entry in
+   `all_staked_balances{address: compounder}` vs the same contract's totals —
+   both post-take, so take-rate drift can't push non-amp negative. Rate-implied
+   amp removed (rates still published for reference).
+
+Also: `num()` returns null on NaN (a pool answering without the asset produced
+NaN that slid past null checks — caught by a gate fixture typo, kept as a case).
+
+Gate rebuilt on the FIRST LIVE PUBLISH values as fixtures — 13/13 incl. both
+failure paths. Expect the next run to publish `ok` with liquid_derived ≈ 300.4M.
+
 ## capa-supply v1 — 2026-08-24 — CAPA supply map duty (SPEC-capa-supply-map.md)
 
 New isolated duty at the end of the token-catalog run (failure never takes the
