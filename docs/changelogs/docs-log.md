@@ -1,5 +1,23 @@
 # docs / ecosystem-knowledge — changelog
 
+## 2026-08-24 — one-off Action `capa-supply-fold-legacy` (+ script)
+
+`.github/scripts/capa-supply/fold-legacy.mjs` + `workflows/capa-supply-fold-legacy.yml`
+(workflow_dispatch, `dry_run` default true, dual-checkout of platform-crons so
+row shapes + merge rules come from the LIVE capa-supply module). Folds the
+retired ampcapa-data_2026 weeklies (epochs 181–197) + monthlies into
+`supply/capa/wallets-daily/<date>.json`, `wallets-daily/index.json` and
+`supply/capa/index.json` rows, every artefact `src: legacy_fold …`. Laws in
+code: prior-verbatim (captured days/rows never touched), never-shrink
+(unreadable committed file → refuse), per-snapshot guard Σ members.capa ==
+summary.totalCapa, weekly+monthly on the same day → first wins, dailies 404
+upstream → not folded (never invented). Proven locally against the real
+legacy feed: 20 index rows added (2026-04-19 → 08-09), 19 daily files, re-run
+adds 0, a simulated captured day left untouched. OWNER: run with dry_run,
+read the log, run again with dry_run unchecked, then retire the Render job
+(checklist in CHANGES_PENDING).
+
+
 ## 2026-08-21 — Foundations arc (primary-source intake, session delivery)
 - NEW `ecosystem-knowledge/FOUNDATIONS-SOURCES.md` — primary-source registry:
   verified / thin / owner-intake ledger. Astroport pool-type + fee flows

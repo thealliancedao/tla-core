@@ -1,5 +1,33 @@
 # Token-Catalog Cron — Changelog
 
+## capa-supply v2.1 — 2026-08-24 — compact per-wallet daily + legacy fold (the last dead-feed read on the tool)
+
+First v2.0 live run (18:09Z) verified: `ok`, 13/13 sum guards closing to the
+digit on chain truth (cw20 Σ = 500,000,000.00; DAO module 15,848,667.36 =
+power 15,491,461.36 + Σ claims), 4,923 holders enumerated, 215 published ≥
+10K + 19 holder-contracts + 10 buckets, tail 4,708 wallets = 2.12M CAPA,
+claims 483/0 failed, 148 KB. `gov_balance_beyond_shares` read exactly
+200,000.000 — a live Solid poll deposit, which is what the label exists for.
+Floor stays at 10K.
+
+v2.1 adds `supply/capa/wallets-daily/<date>.json` — `{addr: [total_capa_equiv,
+receipt_dao_capa]}` for every holder that is a DAO staker or ≥ floor (~20
+bytes/row; null = unknown that run) + `wallets-daily/index.json` (day list
+with src; never-shrink; a captured day is never demoted to legacy). This is
+the change-period series the ampCAPA tool's members tab needed: the retired
+`ampcapa-data_2026` feed's `members[].capa` IS `receipt_dao_capa` (receipt ×
+ve3 rate × hub rate), so its 17 weeklies (epochs 181–197) + 4 monthlies fold
+in as `[null, receipt_dao]` under `src: legacy_fold …` — totals the legacy
+cron never measured stay null, never invented. New exports `legacyIndexRow`
+(same key set as a captured index row, everything else null, status
+`legacy_fold`), `foldIndexRows` (adds ONLY dates with no committed row —
+captured rows byte-untouched; refuses failed/corrupt reads) and
+`upsertDailyIndex`. The fold itself is a tla-core one-off Action
+(`capa-supply-fold-legacy.yml`, dual-checkout, dry-run default) — see
+docs-log. Gate 66/66 (+F1–F8: daily rows, buckets absent / below-floor DAO
+staker present, null total on incomplete enumeration, legacy row shape, fold
+prior-verbatim + never-shrink, daily-index precedence).
+
 ## capa-supply v2.0 — 2026-08-24 — per-wallet rows: every holder in every form, sum-guarded
 
 `token-catalog/supply/capa/wallets.json` (new) + `daily/<date>.json` + `index.json`

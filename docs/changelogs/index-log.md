@@ -1,5 +1,20 @@
 # Index Page Changelog
 
+## 2026-08-24 — ampcapa-tool 2.2 — members-tab change periods from the org series; dead feed gone; verified labels
+
+The 24H/7D/30D Δ column on DAO Members read `defipatriot/ampcapa-data_2026`
+(cron dead since 08-10; its dailies 404). It now reads
+`token-catalog/supply/capa/wallets-daily/` — latest committed day at or
+before today−N — and the badge names the comparison day actually used
+("7D vs 2026-08-17 (legacy weekly)") so weekly-resolution history is never
+mistaken for a daily. A member whose value was unknown on the comparison day
+gets NEW/—, never a fabricated delta. Zero fetches to the personal repo
+remain on the page. Whale rows now carry the VERIFIED label from
+`catalog/trusted/current.json` when one exists (Phoenix Directive DAO core,
+etc.); unlabeled stays unlabeled (pattern ≠ identity). Gate 41/41 (+M1–M8:
+live DAO enumeration stubbed, exact deltas per period, legacy badge, null →
+NEW, dead-feed fetch would throw, trust label join). Footer rev 2.2.
+
 ## 2026-08-24 — ampcapa-tool 2.1 — CAPA Whales from the product (13 forms), live scan demoted
 
 The whale tab now reads `token-catalog/supply/capa/wallets.json` first: one
