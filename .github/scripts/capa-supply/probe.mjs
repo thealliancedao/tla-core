@@ -1,4 +1,8 @@
-// ── CAPA supply probe v1 (2026-08-24) ─────────────────────────────────────────
+// ── CAPA supply probe v2 (2026-08-24) ─────────────────────────────────────────
+// v2: per-wallet `all_staked_balances{address}` (the form the ve3 asset-staking
+// contract answers — org capture-engine.js:520; v1's paginated form was rejected);
+// every DAO voting-module shape reported (v1 stopped at the first that answered,
+// leaving power-vs-staked-balance unresolved); gov state{} and SS reserve in summary.
 // One-off, READ-ONLY. Reads every custody form CAPA can sit in, for a list of
 // wallets AND at collection level, and prints the numbers so the CAPA supply-map
 // duty (SPEC-capa-supply-map.md) can be gated against chain truth before it is
@@ -63,6 +67,13 @@ async function tryShapes(addr, shapes) {
   for (const q of shapes) { const r = await smart(addr, q); if (!r || r.error) continue; return { shape: Object.keys(q)[0], data: r }; }
   return { shape: null, data: null };
 }
+// v2: ask EVERY shape and report each — for contracts where two shapes answer
+// with different semantics (voting power vs staked balance).
+async function allShapes(addr, shapes) {
+  const out = {};
+  for (const q of shapes) { const r = await smart(addr, q); out[Object.keys(q)[0]] = (!r || r.error) ? { error: r?.error || 'no answer' } : r; }
+  return out;
+}
 const num = (v, dec = 6) => v == null || v.error ? null : Number(v) / 10 ** dec;
 const pick = (o, keys) => { for (const k of keys) if (o && o[k] != null) return o[k]; return null; };
 
@@ -97,33 +108,23 @@ async function collection() {
 }
 
 // ── per wallet ───────────────────────────────────────────────────────────────
-async function pageAll(addr, mk, key) {
-  const rows = []; let start = null;
-  for (let i = 0; i < 40; i++) {
-    const r = await smart(addr, mk(start)); if (!r || r.error) return rows.length ? rows : null;
-    const page = r[key] || r.stakers || r.balances || r.accounts || (Array.isArray(r) ? r : []);
-    if (!page.length) break; rows.push(...page); start = page[page.length - 1].address || page[page.length - 1].staker || page[page.length - 1].addr || page[page.length - 1];
-    if (page.length < 50) break;
-  }
-  return rows;
-}
 async function wallet(w, col) {
   const o = { wallet: w };
   o.capa_liquid = num(pick(await smart(C.CAPA_TOKEN, { balance: { address: w } }), ['balance']));
   o.capa_gov_staked = await tryShapes(C.CAPA_GOV, [{ staker: { address: w } }, { staked_balance: { address: w } }, { stake: { address: w } }, { balance: { address: w } }, { staker_info: { staker: w } }]);
   o.ampcapa_liquid = num(await bank(w, C.AMPCAPA_DENOM));
-  // TLA non-amp: ve3 asset-staking keeps per-user shares; page all_staked_balances and filter.
-  const singleRows = await pageAll(C.TLA_STAKE_SINGLE, (s) => ({ all_staked_balances: s ? { limit: 50, start_after: s } : { limit: 50 } }), 'balances');
-  o.tla_nonamp_ampcapa_rows = singleRows ? singleRows.filter(r => JSON.stringify(r).includes(w)) : null;
-  const projRows = await pageAll(C.TLA_STAKE_PROJECT, (s) => ({ all_staked_balances: s ? { limit: 50, start_after: s } : { limit: 50 } }), 'balances');
-  o.tla_nonamp_lp_rows = projRows ? projRows.filter(r => JSON.stringify(r).includes(w)) : null;
-  // Per-user direct shapes too, so we learn which the contract answers.
-  o.tla_single_direct = await tryShapes(C.TLA_STAKE_SINGLE, [{ staked_balance: { address: w, asset: { native: C.AMPCAPA_DENOM } } }, { staked_balances: { address: w } }, { user_infos: { addr: w } }]);
+  // TLA staking per wallet (v2): the contract answers all_staked_balances{address}
+  // with every asset the wallet has staked in that bucket — cw20 LP = non-amp,
+  // compounder factory denom = amplified (org capture-engine classifyStakeMechanism).
+  const s1 = await smart(C.TLA_STAKE_SINGLE, { all_staked_balances: { address: w } });
+  const s2 = await smart(C.TLA_STAKE_PROJECT, { all_staked_balances: { address: w } });
+  o.tla_single_staked = s1 && !s1.error ? s1 : null;
+  o.tla_project_staked = s2 && !s2.error ? s2 : null;
   // TLA amp: the receipt is a bank denom — held liquid, or staked in the DAO.
   o.amplp_ampcapa_liquid = num(await bank(w, C.AMPLP_AMPCAPA));
   o.amplp_astro_lp_liquid = num(await bank(w, C.AMPLP_ASTRO_LP));
   o.amplp_ss_lp_liquid = num(await bank(w, C.AMPLP_SS_LP));
-  o.ampcapa_dao_staked = await tryShapes(C.AMPCAPA_DAO_VOTE, [{ voting_power_at_height: { address: w } }, { staked_balance_at_height: { address: w } }, { staked_balance: { address: w } }]);
+  o.ampcapa_dao_staked = await allShapes(C.AMPCAPA_DAO_VOTE, [{ voting_power_at_height: { address: w } }, { staked_balance_at_height: { address: w } }, { staked_balance: { address: w } }, { claims: { address: w } }]);
   // LP held liquid (not staked anywhere)
   o.astro_lp_liquid = num(pick(await smart(C.ASTRO_LP, { balance: { address: w } }), ['balance']));
   o.ss_lp_liquid = num(await bank(w, C.SS_LP_DENOM));
@@ -140,17 +141,20 @@ async function wallet(w, col) {
   console.log(`CAPA in hub (ampCAPA)   ${col.capa_in_hub}  · ampCAPA supply ${col.ampcapa_total_supply} · rate ${col.ampcapa_exchange_rate}`);
   console.log(`Astro CAPA reserve      ${col.astro_capa_reserve} · CAPA per LP ${col.astro_capa_per_lp}`);
   console.log(`amplp supply            ${JSON.stringify(col.amplp_supply)}`);
-  console.log(`gov totals shape        ${col.capa_gov_totals.shape} · DAO total-power shape ${col.ampcapa_dao_total_power.shape} · SS pool shape ${col.ss_pool_raw.shape}`);
+  console.log(`gov totals              shape=${col.capa_gov_totals.shape} ${JSON.stringify(col.capa_gov_totals.data)?.slice(0, 300)}`);
+  console.log(`DAO total power         shape=${col.ampcapa_dao_total_power.shape} ${JSON.stringify(col.ampcapa_dao_total_power.data)?.slice(0, 160)}`);
+  console.log(`SS pool                 shape=${col.ss_pool_raw.shape} ${JSON.stringify(col.ss_pool_raw.data)?.slice(0, 300)} · SS LP supply ${col.ss_lp_total_supply}`);
+  console.log(`TLA totals (single)     ${JSON.stringify(col.tla_total_staked.single)?.slice(0, 300)}`);
+  console.log(`TLA totals (project)    ${JSON.stringify(col.tla_total_staked.project)?.slice(0, 400)}`);
   for (const o of ws) {
     console.log(`\n-- ${o.wallet}`);
     console.log(`  CAPA liquid                 ${o.capa_liquid}`);
     console.log(`  CAPA gov-staked             shape=${o.capa_gov_staked.shape} ${JSON.stringify(o.capa_gov_staked.data)?.slice(0, 160)}`);
     console.log(`  ampCAPA liquid              ${o.ampcapa_liquid}`);
-    console.log(`  TLA non-amp ampCAPA rows    ${o.tla_nonamp_ampcapa_rows == null ? 'null' : JSON.stringify(o.tla_nonamp_ampcapa_rows).slice(0, 200)}`);
-    console.log(`  TLA single direct           shape=${o.tla_single_direct.shape} ${JSON.stringify(o.tla_single_direct.data)?.slice(0, 160)}`);
+    console.log(`  TLA single-bucket staked    ${o.tla_single_staked == null ? 'null' : JSON.stringify(o.tla_single_staked).slice(0, 300)}`);
     console.log(`  amplp receipt liquid        ampCAPA ${o.amplp_ampcapa_liquid} · astroLP ${o.amplp_astro_lp_liquid} · ssLP ${o.amplp_ss_lp_liquid}`);
-    console.log(`  receipt staked in DAO       shape=${o.ampcapa_dao_staked.shape} ${JSON.stringify(o.ampcapa_dao_staked.data)?.slice(0, 160)}`);
-    console.log(`  TLA non-amp LP rows         ${o.tla_nonamp_lp_rows == null ? 'null' : JSON.stringify(o.tla_nonamp_lp_rows).slice(0, 200)}`);
+    console.log(`  DAO module (all shapes)     ${JSON.stringify(o.ampcapa_dao_staked).slice(0, 400)}`);
+    console.log(`  TLA project-bucket staked   ${o.tla_project_staked == null ? 'null' : JSON.stringify(o.tla_project_staked).slice(0, 300)}`);
     console.log(`  LP liquid                   astro ${o.astro_lp_liquid} · ss ${o.ss_lp_liquid}`);
   }
   const fs = await import('node:fs'); fs.writeFileSync('capa-supply-probe.json', JSON.stringify(report, null, 2));
