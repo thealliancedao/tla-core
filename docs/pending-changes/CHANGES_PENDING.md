@@ -1,11 +1,33 @@
 # CHANGES_PENDING — session queue & state
-NEXT-SESSION OPENER (owner-agreed 2026-08-24): "Read PROJECT_KNOWLEDGE and
-CHANGES_PENDING, then build capa-supply v2 per-wallet rows + whale scan v2 on
-the ampCAPA tool." The current whale table sees only 4 of 9+ custody forms
-(~40M+ CAPA-equivalent invisible: liquid ampCAPA 21.3M, receipts-in-wallet
-6.85M rcpt, unbonding queues, SS LP, liquid LP). All reads proven by the probe
-+ cron; v2 = per-wallet rows in token-catalog/supply/capa + table columns per
-form, per-wallet sum guard.
+SHIPPED 2026-08-24 (later session) — capa-supply v2.0 + ampcapa-tool 2.1:
+per-wallet rows for ALL 13 custody forms (was 4), each enumeration sum-guarded
+against the owning contract's total, `wallets.json` + `daily/` + `index.json`;
+whale tab reads the product, live scan demoted to a labeled 4-form fallback.
+Neighbors done: system-health 1.0.3 (+capa-supply row, 34/34), site
+cron-registry, DATA-MAP section, REPO-CATALOG, help-agent v1.11.5
+(`capa_wallets`), SPEC status. Gates: mock-run-capa-supply.js 58/58 (now
+committed — v1.1's was session-local) · gate-ampcapa-whales.mjs 33/33.
+VERIFY ON ARRIVAL: (1) next org-token-catalog run logs
+`token-catalog/supply/capa/wallets.json (ok — N wallets + M contracts, tail T,
+claims Q/0 failed)` and any `guard …: ok=false` lines — read them, don't
+bypass; expect guards green on first run but treat a firing as chain truth;
+(2) `wallets.json` lands (a few hundred rows, <1MB), `daily/2026-08-2x.json`
+and `index.json` row 1; (3) open ampcapa-tool → CAPA Whales → source line
+reads "cron product · status ok · 13/13 green"; the owner's wallet shows Gov
+~1.14M and Receipt in DAO ~7.3M CAPA-equiv, unbonding ~808K until the
+2026-08-25 release, then 0 + higher receipt-held; (4) system-health run shows
+the `capa-supply` row fresh; (5) DAO treasury appears at a 100K threshold
+with the *contract* chip (it is a DAODAO core — a holder, not a bucket).
+NEXT-SESSION OPENER (proposed): "Read PROJECT_KNOWLEDGE and CHANGES_PENDING,
+then do the LP/ampLP identity fold + amplp_mappings duty (unblocks
+Catalog/Chain-Queries repoints)." — or FUEL route helper (below).
+QUEUED from v2: (a) per-wallet CHANGE periods — the ampcapa-tool members tab
+still reads dead `defipatriot/ampcapa-data_2026` snapshots for 24h/7d/30d
+deltas; needs a compact per-wallet daily (address → total only, ~100KB/day)
+before those columns can be repointed; (b) legacy weekly epochs 181–197 fold
+into `supply/capa/index.json` as deeper history (converter), then retire the
+ampCAPA Snapshot Render job per parallel-run law; (c) first-live-run
+calibration of WALLET_FLOOR_CAPA (10,000) if the file exceeds ~1MB.
 FUEL TOOL QUEUE (owner 2026-08-24): (a) buy/sell route helper — best execution
 FUEL vs USDC/LUNA/SOLID; first step is a preset deep-link into slippage.html
 (?token=FUEL) which already prices routes from live reserves, then an inline

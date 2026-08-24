@@ -1,5 +1,5 @@
 # SPEC — CAPA supply map (every form CAPA can be held in)
-Status: DRAFT v2 2026-08-24 · owner-approved direction (keep the ampCAPA tool, org-source it)
+Status: BUILT v2 2026-08-24 — collection map v1.1 LIVE+GREEN; per-wallet rows v2.0 SHIPPED (wallets.json + daily/ + index.json; gate mock-run-capa-supply.js 58/58; page gate gate-ampcapa-whales.mjs 33/33). Open: legacy-feed fold (epochs 181–197 → index rows), per-wallet change periods.
 Gate: probe v2 run 2026-08-24T04:03Z (artifact 9506487143) — shapes confirmed, fixture values below.
 
 ## Why
@@ -59,9 +59,20 @@ Treasury non-amp CAPA-LUNA: probe and `member-data/positions` agree on raw LP 18
 - Rates from live contracts at capture (hub `state`, compounder
   `amplp_exchange_rates`), never constants.
 
-## Per-wallet rows
-Same buckets per address for the wallets the page needs (DAO members from the
-ampCAPA DAO + Solid gov stakers + top holders), so the tool's tables read one file.
+## Per-wallet rows — BUILT (capa-supply v2.0)
+Every holder in every form is ENUMERATED from the owning contract (cw20 state
+walk · gov `bank` state walk · ve3 `shares` state walks · bank `denom_owners`
+× 5 denoms · DAO `list_stakers` · `claims{address}` for the ampCAPA orbit) and
+every enumeration is sum-guarded against that contract's own total (13
+guards). Rows ≥ 10,000 CAPA-equiv publish to `wallets.json`; the tail is
+summed per column so rows + tail + `role:"bucket"` rows reconcile. `kind` is
+chain-structural (32-byte = contract); `role:"bucket"` marks the structural
+set only — the aDAO treasury (a DAODAO core) is a HOLDER row. Unknown form =
+`null`, never 0. Labeled remainders: `gov_balance_beyond_shares`,
+`astro_lp_in_incentives_not_tla`, `receipt_unbonding_unattributed`.
+Not done: per-wallet CHANGE periods (24h/7d/30d) — needs a compact per-wallet
+daily (address → total only) before the tool's dead `ampcapa-data_2026`
+snapshot reads can be replaced; queued.
 
 ## Fold of the legacy feed
 `ampcapa-data_2026` weekly epochs 181–197 (members: ampLP/ampCAPA/CAPA/vpPct;
