@@ -26,15 +26,16 @@ Members → 24H badge "24H vs <yesterday>" once two captured days exist, 7D/30D
 badges "(legacy weekly)" until the org series is 7/30 days deep; deltas
 non-blank for members present on the comparison day; (4) CAPA Whales rows for
 the PD DAO core / Solid contracts now carry their verified labels.
-RETIRE THE ampCAPA SNAPSHOT RENDER JOB (owner console, parallel-run law —
-in this order, after (2)+(3) are green): a. Render → "ampCAPA Snapshot" →
-Suspend; b. reload ampcapa-tool.html, all three Δ periods still resolve
-(page reads org only); c. wait one org-token-catalog cycle, confirm a new
-wallets-daily day landed; d. Render → Delete the job; e. archive the
-`defipatriot/ampcapa-data_2026` repo (nothing reads it — verified: zero site
-refs; keep archived, do not delete, its weeklies are the fold's provenance);
-f. tick this item + REPO-CATALOG "Mid-fleet Render" line (ampCAPA Snapshot →
-retired 2026-08-2x).
+RENDER FLEET = ORG ONLY (owner console 2026-08-24, screenshot): 14 jobs —
+org-token-catalog, org-system-health, tla-help-agent, org-nft-flows,
+org-nft-inventory, org-tla-flows, org-member-data, org-votion,
+org-dao-governance, org-address-catalog, nap-org, org-lp-grades,
+org-tla-voting, org-dex-data. The ampCAPA Snapshot job, the votion pair and
+every other mid-fleet/legacy job are ALREADY GONE — the "retire the job"
+step and the standing "Render parallel pairs" housekeeping item are CLOSED.
+Only step left for the legacy feed: after the fold Action commits, ARCHIVE
+(not delete) `defipatriot/ampcapa-data_2026` — nothing reads it (zero site
+refs), and its weeklies are the fold's provenance.
 NEXT-SESSION OPENER (proposed): "Read PROJECT_KNOWLEDGE and CHANGES_PENDING,
 then do the LP/ampLP identity fold + amplp_mappings duty (unblocks
 Catalog/Chain-Queries repoints)." — or FUEL route helper (below).
