@@ -62,7 +62,9 @@ VERIFY split) · system-health (org-system-health) · tla-flows (walk COMPLETE
 raw/ + forward events) · tla-voting (org-tla-voting + E2 registry;
 pd-bribes/current.json REPLACES hand tla_pd_bribes) · token-catalog
 (org-token-catalog; replaces tla_known_tokens + shadow contracts/ — tokens
-keyed BY ADDRESS) · votion (org-votion; VERIFY fully covers legacy
+keyed BY ADDRESS; + supply/capa/{current,wallets,index}.json + daily/ — the
+CAPA custody map, v2 2026-08-24 → readers: ampcapa-tool.html, help-agent
+`capa_supply`/`capa_wallets`, system-health `capa-supply` row) · votion (org-votion; VERIFY fully covers legacy
 votion-positions → then close that item)
 
 ## docs/ — contents AS READ 2026-08-09
