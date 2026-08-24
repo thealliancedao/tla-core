@@ -1,5 +1,28 @@
 # cron-member-data — changelog
 
+## v1.4.0 — 2026-08-24 — LP-position denominator fix (reconciliation finding)
+
+The CAPA supply probe caught `member-data/positions` publishing 119,157 CAPA
+underlying for the treasury's non-amplified CAPA-LUNA LP while the redeemable
+claim is 109,459 — 8.9% high. Root cause in `lib/capture-engine.js` Step 1:
+`user_pct_of_pool` was user SHARES ÷ TLA-bucket total SHARES, then multiplied
+against the WHOLE pool's reserves and, for USD, against `staked_in_tla_usd` —
+three quantities on two different denominators.
+
+Now: `user_pct_of_pool` = redeemable LP `amount` ÷ `lp_health.total_share`
+(LP over LP), with the old shares ratio kept as `user_pct_of_tla_bucket` for
+reward math; USD pairs `depth_usd` with the pool pct (or, where no `lp_health`
+exists, the bucket pct with `staked_in_tla_usd`, labeled via `usd_basis`).
+New `pct_basis` field names the math on every position.
+
+Gate: `gate-engine-lp.js` requires the LIVE engine (no-third-copy) with network
+stubbed to the real treasury fixture — 6/6, including "old 119,157 nowhere".
+
+Consumers that will shift on next publish: dao_tla_deposits.html (position USD
++ underlying sums) and member-portfolio.html (position USD) — non-amp LP rows
+move down up to ~9%. That is the correction, not a regression; re-run the
+treasury/deposits reconciliation after one publish cycle.
+
 ---
 
 ## 2026-08-19 — 4.0.1 — publisher hardening across all folds
