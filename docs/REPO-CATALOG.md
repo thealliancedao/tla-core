@@ -48,8 +48,9 @@ placeholder. No writers yet.
 | org-votion | vault + holder capture (SPEC-votion-capture; live 1.2.0 LST hub-rate pricing) | votion/* | hourly; epoch products weekly |
 *cadence = observed commit frequency 2026-08-09; VERIFY exact Render schedules before editing any job.
 
-Mid-fleet Render (org-adjacent strip targets): ampCAPA Snapshot,
-votion-epoch-snapshot, votion-positions. Everything without an org- prefix =
+Mid-fleet Render (org-adjacent strip targets): ampCAPA Snapshot (RETIRE-READY
+2026-08-24: org capa-supply v2.1 + fold Action supersede it — checklist in
+CHANGES_PENDING), votion-epoch-snapshot, votion-positions. Everything without an org- prefix =
 legacy fleet (dying per strips).
 
 ## tla-core root data dirs (writer → readers)
