@@ -1,5 +1,68 @@
 # Index Page Changelog
 
+## 2026-08-24 — batch 3 (same package as batch 2): CAPA supply map spec + probe · contracts fold
+
+- **SPEC-capa-supply-map.md** — all nine custody forms of CAPA (two-level: CAPA
+  buckets sum to supply; ampCAPA buckets sum to CAPA-in-hub via the hub rate),
+  as a duty inside org-token-catalog at `token-catalog/supply/capa/`. Lists every
+  neighbour that must move with a new product (DATA-MAP, system-health gate,
+  cron-registry.js, help-agent allow-list, REPO-CATALOG, changelog, facts).
+- **capa-supply-probe** Action (read-only): reads every bucket for the treasury
+  + owner wallets and collection totals; learns the unknown query shapes (Solid
+  gov, ampCAPA DAO voting module, SkeletonSwap pool) by trying candidates and
+  reporting which answered; null never coerced to 0; concurrency 4 with backoff.
+  Mock-gated end-to-end against a stubbed LCD (shape fallback, pagination,
+  per-LP math). Its run log + artifact are the gate for the cron duty.
+- **docs/curated/known_contracts.json** +5 Phoenix Directive contracts folded from
+  the legacy registry (FEE_COLLECTOR, CONNECTOR stable/bluechip, PDT_CONFIG_OWNER,
+  VE_GUARDIAN) — first step of the tools-to-org fold.
+
+Deferred with the mapping written (CHANGES_PENDING): FUEL tool repoint (price
+from price-history, TVL/volume from dex-data/astroport daily — 32 sparse FUEL
+days since 2025-12-28), TLA Catalog / Chain Queries repoint (needs
+`amplp_mappings` published), ampCAPA tool repoint (needs the supply product).
+
+## 2026-08-24 — batch 2: index 4.02 · footer v3.3 (owner HAR + console, index load)
+
+Owner HAR of the index: 447 requests, 68 MB, `onLoad` at 32.2 s while
+`DOMContentLoaded` was 2.1 s. Diagnosis and what this rev does about it:
+
+- **Votion rows dashed out** (owner report): the pulse asks for *today's*
+  `votion/snapshots/daily/<date>.json`, which is written later in the day than
+  the astro daily that sets `latest`; 404 → null → "—" on vault TVL and both
+  Max rows. Rev 3.99 gave the member feed a nearest-capture fallback; Votion now
+  has the same (`nearest(daily.votion, latest, 3)`). Data was never missing.
+- **`window.load` held 31.8 s by `boostdao.io/favicon.ico`** — three tiles
+  loaded remote favicons (TLA, BBL, Boost). Repointed to local logo assets.
+  Anything gated on `load` (timeout fallbacks) was waiting on Boost's server.
+- **nfts.json (7 MB) downloaded twice**: the V2 marketplace loader used its own
+  `get()` instead of `__jsonOnce`. Deduped — 7 MB less per load.
+- **`assets/token-logos/wBTC.png` was 2000×2000, 1.03 MB** for a 20 px tile.
+  Resized to 128×128 (19 KB). `ATOM` logo path pointed at a missing `atom.png`;
+  now `atom.svg` (exists).
+- Marketplace thumbnail `<img>`s get `loading="lazy" decoding="async"` (65
+  imagedelivery requests, 8.5 MB, were eager).
+
+Footer **v3.3**: Creda added to the ecosystem banner; Atrium, Votion and Creda
+tiles carry logos, all vendored in /assets/images (owner committed them 2026-08-24;
+votion-logo-optimized.png resized 365 KB → 128 px). 10 tiles. links.html **1.6**:
+Atrium and Creda cards use the same logos.
+
+STILL THE BULK OF THE LOAD — cron work, logged in CHANGES_PENDING:
+the pulse chart and the TLA history chart fan out one request per day per
+product: 56 × tla-snapshot/daily (9.9 MB), 49 × astroport/snapshots/daily
+(13.8 MB), 28 × skeletonswap daily, 21 × network-and-prices daily, 10 × monthly
+bribe event files (3.1 MB). ~28 MB and ~165 requests that should be one slim
+`index.json` row series per product (the backing-history pattern). sessionStorage
+makes repeat visits cheap; first visit pays it all. Also seen: the
+`network-and-prices/daily/2026-08-11.json` 404 is the same 08-11 hole as
+backing-history.
+
+Gate: count==1 anchors; 8/8 inline blocks `node --check`; footer jsdom gate 10
+tiles / Creda present / all logos; Votion fallback is the Rev 3.99 pattern
+verbatim (not fixture-gated here — the pulse module has no standalone gate yet;
+owed).
+
 ## 2026-08-23 — page-walk batch 1: index 4.01 · ally 3.5 · tools 1.5 · links 1.5 · tutorials 1.6 · footer v3.2 · header picker slot
 
 Site-wide (shared libs, every page picks these up):
