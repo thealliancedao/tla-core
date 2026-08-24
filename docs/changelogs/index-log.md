@@ -1,5 +1,19 @@
 # Index Page Changelog
 
+## 2026-08-24 — fuel-tool 2.3 — FUEL supply map + Boost DAO stakers (Neutron) from the product; dead second pass removed
+
+Top of the page: FUEL SUPPLY MAP strip (native supply bar: Boost staked ·
+unbonding · treasury · bridged to Terra · Neutron liquid, guard state in the
+corner). Whales panel now reads `supply/fuel/wallets.json` in four sections:
+Boost DAO stakers (governance power, unbonding chips), Neutron liquid top 15,
+Terra IBC top 15, and the structural contracts listed separately with their
+roles so nobody reads the treasury as a whale. Verified names from the trust
+register. Terra-only live scan kept as the labeled fallback. Gate
+`gate-fuel-tool.mjs` 14/14 (fixture from the live cron module) — and it
+caught a live bug: a legacy 24h Astroport liquidity/volume second pass
+referenced an undefined `FUEL_POOL` and had failed silently since 2.0; its
+targets were already set by dex-data/getTokens, so the pass was deleted.
+
 ## 2026-08-24 — ampcapa-tool 2.3 (CAPA in TLA LP: the five TLA-side forms) · fuel-tool 2.2 (whales legible)
 
 **ampcapa-tool 2.3** — owner walk: the CAPA-in-TLA-LP tab showed two columns

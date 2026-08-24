@@ -1,5 +1,33 @@
 # Token-Catalog Cron — Changelog
 
+## fuel-supply v1.0 — 2026-08-24 — FUEL map: Boost DAO on Neutron + Terra IBC, sum-guarded
+
+The owner asked for Boost DAO members' positions on the FUEL whales panel;
+they live on Neutron. Probe (`fuel-boost-dao-probe`, 19:27Z) answered every
+shape: core "Boost DAO", voting module dao-voting-token-staked 2.5.0, FUEL
+native denom, 46 stakers Σ 16,055,799.122882 == total_power == module bank,
+treasury 42,438,782, native supply 99,859,353.300701. New duty
+`token-catalog/fuel-supply.js` → `token-catalog/supply/fuel/{current,
+wallets,index}.json`: Neutron level (native supply = Boost staked + unbonding
++ treasury + bridged escrow + liquid-derived) and Terra level (IBC supply =
+Σ owners), five guards incl. the cross-chain one (Terra IBC supply ≈ Neutron
+escrow balance, resolved via Terra denom-trace → channel counterparty →
+Neutron escrow_address). Per-wallet rows on both chains (`chain`,
+`fuel.{liquid, boost_staked, boost_unbonding}`), floor 10,000 FUEL + tail,
+`role:"bucket"` for treasury / voting module / escrow / catalog-known FUEL
+pairs / TLA incentive manager. Neutron LCD via env `NEUTRON_LCD` (default
+publicnode). Smart queries go through fetchJson (the engine's queryContract
+is Terra-bound). Gate `mock-run-fuel-supply.js` 17/17 on the probe fixture
+incl. owners-walk failure (liquid null, not 0), escrow unavailable (bridged
+null, cross guard suspended), a dropped 12M holder (guard fires). The 0.01%
+band is kept deliberately: a transfer landing mid-walk is that size and a
+guard that flaps on timing gets ignored.
+
+VERIFY first live run: `supply/fuel/{current,wallets}.json (ok — stakers 46,
+staked 16055799.12…, treasury 42438782, bridged N, rows R + tail T)`; if
+`bridged` is null read the `query_errors` line (escrow resolution is the one
+read with no probe fixture behind it).
+
 ## capa-supply v2.1 — 2026-08-24 — compact per-wallet daily + legacy fold (the last dead-feed read on the tool)
 
 First v2.0 live run (18:09Z) verified: `ok`, 13/13 sum guards closing to the

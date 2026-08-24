@@ -2,6 +2,10 @@
 
 ---
 
+## Agent v1.11.6 — 2026-08-24 — fuel_supply / fuel_wallets readable; DATA-MAP "FUEL custody"
+
+Boost DAO (Neutron) stakers, treasury, escrow and Terra IBC holders answerable from the product, with the chain split and bucket rule spelled out in DATA-MAP.
+
 ## Agent v1.11.5 — 2026-08-24 — capa_wallets readable; DATA-MAP "CAPA custody" section
 
 `read_product` allow-list gains `capa_wallets` (per-wallet CAPA custody rows,

@@ -2,6 +2,12 @@
 
 ---
 
+## 2026-08-24 — 1.0.4 — fuel-supply freshness row (mock 35/35)
+
+`token-catalog/supply/fuel/current.json` row (12h band). R4c gate: absent product is listed stale, never vanishes.
+
+---
+
 ## 2026-08-24 — 1.0.3 — capa-supply freshness row (+1 → mock 34/34)
 
 `token-catalog/supply/capa/current.json` gets its own FRESHNESS_MAP row
