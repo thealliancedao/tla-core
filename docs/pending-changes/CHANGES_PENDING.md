@@ -108,7 +108,7 @@ DECISION). VERIFY: commit platform-crons first; next org-member-data run logs
 `last_claims: deposit 2026-07-07 · vote 2026-01-11 · rebase 2026-01-11 ·
 locks 2026-07-07`; then index popup shows those dates with tx links and the
 bribe rows read USDC/USDT/SOLID/LUNA; Live Activity opens on aDAO with 10
-rows + Load more; open Lion DAO #26 Quick audit → 3,500,000,000 ROAR,
+rows + Load more; All Current Listings shows "10 of N" + Load more (4.06); open Lion DAO #26 Quick audit → 3,500,000,000 ROAR,
 "for pool: ROAR-ampROAR LP", Decoded messages. Parking lot
 from HARs: `assets/planets/` is 65 MB of PNGs (only two referenced; convert
 on use, never bulk); footer health dot = 20 tiny heartbeat reads per page —
