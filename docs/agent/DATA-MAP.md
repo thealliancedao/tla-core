@@ -71,7 +71,12 @@ aDAO treasury is `kind:"contract", role:null` and is a holder. A `null` form
 `unattributed.*` names what no per-wallet read can attribute (LP staked
 directly on Astroport, gov balance beyond shares, unbonding not swept).
 History: `token-catalog/supply/capa/index.json` rows (one per UTC day) +
-`daily/<date>.json`.
+`daily/<date>.json`. Per-wallet history ("how has X's DAO position moved?"):
+`supply/capa/wallets-daily/<date>.json` `rows[addr] = [total_capa_equiv,
+receipt_dao_capa]` (pick days from `wallets-daily/index.json`; `src:
+legacy_fold` days are weekly-resolution folds of the retired ampcapa-data_2026
+feed with total null; index rows with `status: legacy_fold` carry only
+hub_rate + receipt_in_dao — say so when quoting them).
 
 ## Votion
 `votion/snapshots/current.json` + `votion/history/`. Rankings only with shown
