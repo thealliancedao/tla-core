@@ -1,0 +1,103 @@
+{
+  "_meta": {
+    "topic": "alliance-dao",
+    "label": "The Alliance DAO (aDAO)",
+    "official_docs": "https://www.thealliancedao.com/ally.html",
+    "github": "https://github.com/thealliancedao",
+    "verified_at": "2026-08-23",
+    "summary": "10,000-NFT Terra collection whose contract holds an Alliance-module 'Ally' stake. Rewards are claimed daily, bonded to ampLUNA, and split 90% to unbroken holders / 10% to the DAO wallet. Holders may 'break' once to take their share.",
+    "schema": "see ecosystem-knowledge/README.md"
+  },
+  "facts": [
+    {
+      "id": "adao.collection.supply",
+      "claim": "The Alliance DAO collection is 10,000 NFTs on Terra (contract terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9).",
+      "value": 10000, "unit": "nfts", "kind": "static_sourced",
+      "source_url": "https://chainsco.pe/terra2/address/terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9",
+      "source_section": "contract num_tokens", "source_type": "chain", "verified_at": "2026-08-23", "source_status": "ok", "live_ref": "nfts/adao/snapshots/summary.json:total_tokens",
+      "notes": "Split, custody and marketplace counts are live in summary.json (unbroken_count, broken_count, unminted_count, treasury_held_count…)."
+    },
+    {
+      "id": "adao.rewards.source",
+      "claim": "The NFT contract earns LUNA staking rewards through the Terra Alliance module: its 'Ally' asset was admitted as an Alliance asset by Terra governance, so the contract's stake is rewarded alongside native LUNA delegations.",
+      "value": null, "unit": null, "kind": "static_sourced",
+      "source_url": "https://www.thealliancedao.com/ally.html", "source_section": "How Rewards are Generated", "source_type": "doc",
+      "verified_at": "2026-08-23", "source_status": "ok", "live_ref": null,
+      "notes": "The exact reward share is set by the asset's Alliance reward_weight (query /terra/alliances). Not yet recorded here — do not quote a percentage for 'share of all staking rewards' until it is."
+    },
+    {
+      "id": "adao.rewards.daily_claim",
+      "claim": "Once a day (around 00:50 UTC) Eris's auto-compound bot (terra1gtuvt6eh4m67tvd2dnfqhgks9ec6ff08c5vlup) calls alliance_claim_rewards on the NFT contract; all accrued LUNA rewards are claimed in one transaction.",
+      "value": null, "unit": null, "kind": "static_sourced",
+      "source_url": "https://chainsco.pe/terra2/tx/70757515D0FEBE07DABC2013CAC9217514C16AE252AA54BF5E395A9885215B18",
+      "source_section": "decoded claim tx, 2026-04-25", "source_type": "chain", "verified_at": "2026-04-25", "source_status": "ok", "live_ref": null
+    },
+    {
+      "id": "adao.rewards.bond_to_ampluna",
+      "claim": "Every LUNA claimed is bonded into the Eris staking hub in the same transaction, so rewards arrive as ampLUNA (which itself keeps compounding) rather than as liquid LUNA.",
+      "value": null, "unit": null, "kind": "static_sourced",
+      "source_url": "https://chainsco.pe/terra2/tx/70757515D0FEBE07DABC2013CAC9217514C16AE252AA54BF5E395A9885215B18",
+      "source_section": "decoded claim tx, 2026-04-25", "source_type": "chain", "verified_at": "2026-04-25", "source_status": "ok", "live_ref": null
+    },
+    {
+      "id": "adao.rewards.split_90_10",
+      "claim": "Of the ampLUNA minted by each daily claim, 90% stays in the NFT contract as backing shared by all unbroken NFTs and 10% is sent to the DAO main wallet (terra1sffd4efk2jpdt894r04qwmtjqrrjfc52tmj6vkzjxqhd8qqu2drs3m5vzm) as operating funds.",
+      "value": 10, "unit": "percent_to_dao", "kind": "static_sourced",
+      "source_url": "https://chainsco.pe/terra2/tx/70757515D0FEBE07DABC2013CAC9217514C16AE252AA54BF5E395A9885215B18",
+      "source_section": "decoded claim tx, 2026-04-25: 1,874 LUNA claimed → 899 ampLUNA → 809 holders pool + 89 DAO wallet", "source_type": "chain",
+      "verified_at": "2026-04-25", "source_status": "ok", "live_ref": null,
+      "notes": "This 10% is the NFT contract's treasury cut. It is NOT the TLA 10% take rate on gauge rewards — two different mechanisms that share a number. Never say 'take rate' unqualified."
+    },
+    {
+      "id": "adao.backing.per_nft",
+      "claim": "Backing per unbroken NFT is the contract's ampLUNA balance divided by the unbroken count; the contract's per-token rewards{} query matches this for unbroken tokens but is wrong for broken ones, so the site always uses the collection-wide division.",
+      "value": null, "unit": "ampluna_per_nft", "kind": "live_binding",
+      "source_url": "https://github.com/thealliancedao/tla-core/blob/main/nfts/adao/snapshots/summary.json", "source_section": "backing", "source_type": "self",
+      "verified_at": "2026-08-23", "source_status": "ok", "live_ref": "nfts/adao/snapshots/summary.json:backing.per_nft_ampluna",
+      "notes": "Daily history (ampLunaPerNft, ampLunaRate, backingInLuna per day) is nfts/adao/snapshots/backing-history.json rows[]. Daily gain = latest two rows' backingInLuna difference per day."
+    },
+    {
+      "id": "adao.break.mechanics",
+      "claim": "A holder may 'break' an NFT once: the NFT's share of the ampLUNA backing is paid out to the holder and that NFT stops accruing. The holder keeps the NFT and any governance voting power it carries; broken NFTs remain transferable.",
+      "value": null, "unit": null, "kind": "static_sourced",
+      "source_url": "https://www.thealliancedao.com/ally.html", "source_section": "How to Claim Your Rewards", "source_type": "doc",
+      "verified_at": "2026-08-23", "source_status": "ok", "live_ref": "nfts/adao/snapshots/summary.json:broken_count"
+    },
+    {
+      "id": "adao.break.venues",
+      "claim": "Breaking is offered on BoostDAO Ignite and on Atrium; both support the same contract action.",
+      "value": null, "unit": null, "kind": "static_sourced",
+      "source_url": "https://www.boostdao.io/ignite/permissionless-terra", "source_section": "Alliance DAO collection", "source_type": "doc",
+      "verified_at": "2026-08-23", "source_status": "ok", "live_ref": null,
+      "notes": "Atrium: https://atrium.markets/collection/terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9"
+    },
+    {
+      "id": "adao.break.last_nft_standing",
+      "claim": "The daily claim does not depend on how many NFTs are unbroken, so as NFTs break, the same 90% inflow is divided among fewer NFTs and per-NFT daily yield rises.",
+      "value": null, "unit": null, "kind": "static_sourced",
+      "source_url": "https://www.thealliancedao.com/ally.html", "source_section": "The Last NFT Standing: Reward Projection Calculator", "source_type": "self",
+      "verified_at": "2026-08-23", "source_status": "ok", "live_ref": "nfts/adao/snapshots/summary.json:unbroken_count"
+    },
+    {
+      "id": "adao.governance.homes",
+      "claim": "aDAO governs on DAODAO: a main DAO (terra1sffd4efk2jpdt894r04qwmtjqrrjfc52tmj6vkzjxqhd8qqu2drs3m5vzm) with an NFT-staking voting module (terra1c57ur376szdv8rtes6sa9nst4k536dynunksu8tx5zu4z5u3am6qmvqx47), plus a smaller Council DAO.",
+      "value": null, "unit": null, "kind": "static_sourced",
+      "source_url": "https://daodao.zone/dao/terra1sffd4efk2jpdt894r04qwmtjqrrjfc52tmj6vkzjxqhd8qqu2drs3m5vzm", "source_section": "DAO home", "source_type": "chain",
+      "verified_at": "2026-08-23", "source_status": "ok", "live_ref": "nfts/adao/snapshots/summary.json:daodao_staked_count"
+    },
+    {
+      "id": "adao.tla.locks",
+      "claim": "aDAO itself holds two direct TLA locks (max-duration ampLUNA and max-duration arbLUNA) and no Votion vault positions; its TLA-wide voting power is the treasury wallet as one entity, not the sum of members.",
+      "value": null, "unit": null, "kind": "static_sourced",
+      "source_url": "https://github.com/thealliancedao/tla-core/blob/main/docs/ecosystem-knowledge/terra-liquidity-alliance.md", "source_section": "How aDAO plugs in", "source_type": "self",
+      "verified_at": "2026-08-23", "source_status": "ok", "live_ref": null
+    },
+    {
+      "id": "adao.rewards.not_guaranteed",
+      "claim": "The Alliance rewards to the Ally asset are granted by Terra governance and can be changed or removed by a future proposal; they are not guaranteed.",
+      "value": null, "unit": null, "kind": "static_sourced",
+      "source_url": "https://www.thealliancedao.com/ally.html", "source_section": "Important Disclaimer", "source_type": "doc",
+      "verified_at": "2026-08-23", "source_status": "ok", "live_ref": null
+    }
+  ]
+}
