@@ -7,6 +7,30 @@ PAGE-WALK BATCH 1 (2026-08-23, later session) — shipped: footer v3.2 / header
 picker slot / index 4.01 / ally 3.5 / tools 1.5 / links 1.5 / tutorials 1.6 /
 help-agent corpus +alliance-dao. Full entry: changelogs/index-log.md.
 NEW QUEUE ITEMS from the walk:
+- CRON (perf, biggest lever on index load): publish slim daily row series
+  (`index.json` rows, backing-history pattern) for tla-snapshot, astroport
+  daily, skeletonswap daily, network-and-prices daily, and a bribes-by-day
+  aggregate — so the pulse/TLA charts read 5 files instead of ~165 (28 MB).
+  Pages repoint after parity.
+- CRON: network-and-prices/daily/2026-08-11.json missing — same 08-11 hole.
+- SITE: pulse module has no standalone jsdom gate — build one (fixtures:
+  astro/ss/votion/member/snap daily + catalog) before the next pulse change.
+- TOOLS FOLD (owner 2026-08-24: keep all tools, org-sourced):
+  · FUEL tool → price: price-history/<yyyy>/<mm>.json days[date].FUEL.usd (32
+    sparse days since 2025-12-28) + network-and-prices/current.json FUEL block;
+    TVL/volume: dex-data/astroport daily pool row for FUEL-LUNA (tool's history
+    expects {date, avgTvlUsd, …}). Legacy hourly history (defipatriot/tla-core)
+    is 404 — org series IS the history from here.
+  · TLA Catalog / Chain Queries → token-catalog + catalog/trusted +
+    docs/curated/known_contracts.json (+5 PD contracts to fold); needs
+    `amplp_mappings` published in token-catalog current.json (org-token-catalog
+    duty, from ve3 asset_configs{}) — DATA-MAP, system-health gate, help-agent
+    map follow.
+  · ampCAPA tool → NEW duty "CAPA supply map": SPEC-capa-supply-map.md written;
+    gate = capa-supply-probe Action run (owner to trigger, paste log). Then the
+    duty in org-token-catalog, then the tool repoint, then legacy fold + retire.
+  · DONE 2026-08-24: known_contracts.json +5 PD contracts (fold step 1).
+
 - CRON: backing-history.json hole 2026-08-11→08-19 (migrated series ends 08-10,
   org-nft-daily starts 08-20); fill from state-history or archive, and fix the
   stale date_range/missing_dates metadata the publisher writes.
