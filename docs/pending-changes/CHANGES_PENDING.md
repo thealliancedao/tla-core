@@ -44,17 +44,24 @@ LATER SAME SESSION — owner walk of the tool + FUEL page:
   keyed by the wallet, amplified keyed by the compounder; Σ holders' receipt
   forms 50,575,920 = receipt supply × rates = compounder entry 50,575,748.
 - fuel-tool 2.2: whales table legible (was styled as a caption).
-- NEW one-off Action `fuel-boost-dao-probe` (read-only, Neutron): OWNER —
-  trigger when Neutron LCDs are back, paste the log. Unblocks:
-  SPEC-fuel-supply-map → `token-catalog/supply/fuel` duty (Terra IBC supply +
-  Neutron native + Boost DAO stakers + treasury, sum-guarded) → fuel-tool
-  whales "Boost DAO stakers (Neutron)" section. Boost core (owner):
-  neutron1ej43fvrmw40dg6xj40mmh822a8xz98rt5ad2p9tj2tgtgxw0zalsvvzm43.
+- ~~fuel-boost-dao-probe~~ RAN 19:27Z (46 stakers Σ == power == bank;
+  treasury 42.44M; native 99.86M) → **fuel-supply v1.0 duty BUILT** in
+  org-token-catalog (`supply/fuel/{current,wallets,index}.json`, 5 guards
+  incl. cross-chain escrow; gate 17/17) + **fuel-tool 2.3** (supply-map strip
+  + Boost DAO stakers section, 14/14; dead FUEL_POOL pass removed) +
+  system-health 1.0.4 (35/35) + cron-registry + help-agent v1.11.6 +
+  DATA-MAP. Render: org-token-catalog needs NO new env (Neutron LCD defaults
+  to publicnode; `NEUTRON_LCD` overrides).
 VERIFY ON ARRIVAL (this batch): ampcapa-tool → CAPA IN TLA LP → source line
 "cron product … 13/13 green", five columns populated (treasury: LP amp
 ~129,859 · LP plain ~109,877 · ampCAPA amp ~448,781), "Show Protocol
 Contracts" reveals the ve3 compounder row at ~50.6M ampCAPA · TLA plain;
-fuel-tool → FUEL Whales rows readable at a glance.
+fuel-tool → FUEL Whales rows readable at a glance. FUEL first live run:
+org-token-catalog log line `supply/fuel/{current,wallets}.json (ok — stakers
+46, …, bridged N, rows R + tail T)` — if bridged is null, paste the
+query_errors line (escrow resolution is the one read without a probe
+fixture); then fuel-tool → FUEL SUPPLY MAP bar + Boost DAO stakers section
+(your own Boost position if any, unbonding chips).
 NEXT-SESSION OPENER (proposed): "Read PROJECT_KNOWLEDGE and CHANGES_PENDING,
 then do the LP/ampLP identity fold + amplp_mappings duty (unblocks
 Catalog/Chain-Queries repoints)." — or FUEL route helper (below).
