@@ -82,6 +82,26 @@ voters, settles Wednesday"); (6) LP-entry mode: is this pool deep enough for
 the LP size I plan, what share of the pool would I be; (7) history-aware
 warnings ("this pool's TVL halved in the last 30d") once the slim daily
 row-series cron (index perf item) exists — same data, cheaper reads.
+PAGE WALK — MECHANICAL PASS DONE 2026-08-24 (owner away from Eris; the two
+eyes-on checks remain): record `AUDIT-page-walk-2026-08-24.md`. Fixed:
+release-history 1.5 (org floor; $43 phantom gone), fuel-tool 2.5 (9.4 →
+1.86 MB), index 4.03 / dao 1.10 / tla-stats T3.18 (retired-repo links).
+Queued from it: BATCH 4 legacy chrome strip = 15 pages (5 need shared chrome
+mounted first) — owner-present batch; heavy pages (index 33 MB, tla-stats
+9.5 MB, member-portfolio 5.5 MB) → slim daily series (core item 4);
+tla-catalog / chain-queries still on the legacy registry → identity fold
+(core item 3). Eyes-on checks (story shape, bot) on index, tla-stats, dao,
+member-portfolio when Eris resolves.
+OWNER EYES-ON WALK (2026-08-24, in progress): alliances ✓ (1.5: front
+door + 3.2 MB → 213 KB image) · rarity-explained ✓ (1.1: three factual
+corrections + BBL capture date; everything else reproduced from the data).
+release-history ✓ (1.6: chain-exact phases from provenance; knowledge base
++5 facts incl. Ally reward_weight 0.008 / gov prop 4801 — housekeeping item
+"ally reward_weight fact" CLOSED; rewards-share tile still open, needs a
+live /terra/alliances read). Remaining per owner: "the last three". Parking lot
+from HARs: `assets/planets/` is 65 MB of PNGs (only two referenced; convert
+on use, never bulk); footer health dot = 20 tiny heartbeat reads per page —
+by design (live dot), not a cost.
 NEXT-SESSION OPENER (proposed): "Read PROJECT_KNOWLEDGE and CHANGES_PENDING,
 then do the LP/ampLP identity fold + amplp_mappings duty (unblocks
 Catalog/Chain-Queries repoints)." — or FUEL route helper (below).
