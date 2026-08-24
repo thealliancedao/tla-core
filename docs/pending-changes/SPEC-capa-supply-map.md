@@ -1,6 +1,6 @@
 # SPEC — CAPA supply map (every form CAPA can be held in)
-Status: DRAFT 2026-08-24 · owner-approved direction (keep the ampCAPA tool, org-source it)
-Gate before code: `.github/workflows/capa-supply-probe.yml` run log + artifact.
+Status: DRAFT v2 2026-08-24 · owner-approved direction (keep the ampCAPA tool, org-source it)
+Gate: probe v2 run 2026-08-24T04:03Z (artifact 9506487143) — shapes confirmed, fixture values below.
 
 ## Why
 The ampCAPA Dashboard (tools → ampcapa-tool.html) is the only place that shows
@@ -26,7 +26,7 @@ Level 1 — CAPA (cw20 `terra1t4p3u…rfdhar`, decimals 6):
 | id | form | read |
 |---|---|---|
 | `capa.liquid` | CAPA in wallets | cw20 `all_accounts` page walk (+ `balance`) |
-| `capa.gov_staked` | CAPA staked in Solid governance `terra1sf66…e0cnm` | shape learned by probe (`staker`/`staked_balance`/…) |
+| `capa.gov_staked` | CAPA staked in Solid governance `terra1sf66…e0cnm` | per wallet `staker{address}` → use `balance` (share × rate incl. accrued); total = `state{}.total_share` × (balance/share) — ~175.5M CAPA, the largest bucket |
 | `capa.in_hub` | CAPA bonded into the ampCAPA hub `terra186rp…rlx7y` | hub `state{}` total CAPA; parent of Level 2 |
 | `capa.in_lp.astro.nonamp` | CAPA-LUNA LP (Astroport) staked plain in TLA project bucket | ve3 asset-staking `terra1awq6…3lpa` shares × CAPA-per-LP |
 | `capa.in_lp.astro.amp` | same LP amplified | receipt denom `…/42/project/amplp` supply × amplp→LP rate × CAPA-per-LP |
@@ -39,7 +39,17 @@ Level 2 — ampCAPA (`factory/…/ampCAPA`), must sum to `capa.in_hub` via the h
 | `ampcapa.liquid` | ampCAPA in wallets | bank `denom_owners` |
 | `ampcapa.tla.nonamp` | ampCAPA in TLA single bucket, plain | ve3 asset-staking `terra1qdz5…e23k` shares |
 | `ampcapa.tla.amp.held` | amplified receipt `…/44/single/amplp` held in wallet | bank by_denom / denom_owners |
-| `ampcapa.tla.amp.dao` | that receipt staked in the ampCAPA DAO voting module `terra1juj3…dr0mt` | `voting_power_at_height` (shape confirmed by probe) |
+| `ampcapa.tla.amp.dao` | that receipt staked in the ampCAPA DAO voting module `terra1juj3…dr0mt` | `voting_power_at_height{address}` (`staked_balance*` unsupported → 500); total `total_power_at_height{}` (15.49M receipts) |
+| `ampcapa.tla.amp.dao_unbonding` | receipt in the DAO's unstake queue | `claims{address}` — probe: owner 357,206 releasing 2026-08-25; without this the Level-2 sum does not close |
+
+## Reads confirmed by probe v2
+- TLA staking per wallet: `all_staked_balances{address}` on each bucket contract (cw20 asset = non-amp LP; compounder factory denom = amplified) — identical to org capture-engine.js:520. `amount` = redeemable LP after take; `shares` = share units.
+- SkeletonSwap CAPA-LUNA pool `pool{}`: CAPA reserve 162,829; LP supply 27,035.8.
+- Astroport CAPA-LUNA: CAPA reserve 23,590,137; LP supply ~3,968,000 → 5.945 CAPA/LP at probe time.
+- Hub `state{}`: 142,142,977 ampCAPA × 1.10554 = 157,144,426 CAPA in hub. Compounder receipts: ampCAPA 22,345,491 · astroLP 109,373 · ssLP 1,148.
+
+## RECONCILIATION REQUIRED before the map trusts LP underlying (gate #0 item)
+Treasury non-amp CAPA-LUNA: probe and `member-data/positions` agree on raw LP 18,411.23 / shares 21,923.49, but positions publishes 119,157 CAPA underlying vs reserve÷supply 109,462 (8.9% apart, one hour apart). Find which CAPA-per-LP derivation is right (cw20 `token_info.total_supply` vs pair `pool{}.total_share`; `amount` vs `shares`) and fix the loser. Until then the map publishes LP buckets as `status:"unreconciled"`.
 
 ## Guards (publish-blocking)
 - `sum(level1) == capa.total_supply` within 0.01% → else `status: "partial"` and the
@@ -58,7 +68,9 @@ ampCAPA DAO + Solid gov stakers + top holders), so the tool's tables read one fi
 rates) → `index.json` rows as deeper history after a converter; rates also →
 `price-history/ratios/2026` if absent. Legacy cron retires per parallel-run law.
 
-## Fixture
+## Fixture (probe v2 values, 2026-08-24T04:03Z)
+Owner: gov `balance` 1,141,021.59 / `share` 1,140,715.28; DAO power 3,214,853.997 + claim 357,205.9996; everything else 0.
+Treasury: liquid CAPA 5,387.458905; ampCAPA liquid 0; receipt held ampCAPA 198,310.643 (dao-dashboard's "ampCAPA 405,805" is this × ~2.046 — relabel there); receipt astroLP 3,821.188; non-amp CAPA-LUNA LP 18,411.23; gov 0; DAO 0.
 Owner wallet holds gov-staked CAPA + receipt-in-DAO; treasury holds liquid CAPA,
 liquid ampCAPA, both LP forms, and amplified single. Non-amp single has no known
 holder (pool-level total proves the read). Probe output = the gate values.
