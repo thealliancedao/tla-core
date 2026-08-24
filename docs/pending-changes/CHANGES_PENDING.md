@@ -3,6 +3,25 @@
 lives in PROJECT_KNOWLEDGE.md — read that first; this file carries the
 detailed per-item state below it.)
 
+PAGE-WALK BATCH 1 (2026-08-23, later session) — shipped: footer v3.2 / header
+picker slot / index 4.01 / ally 3.5 / tools 1.5 / links 1.5 / tutorials 1.6 /
+help-agent corpus +alliance-dao. Full entry: changelogs/index-log.md.
+NEW QUEUE ITEMS from the walk:
+- CRON: backing-history.json hole 2026-08-11→08-19 (migrated series ends 08-10,
+  org-nft-daily starts 08-20); fill from state-history or archive, and fix the
+  stale date_range/missing_dates metadata the publisher writes.
+- ALLY: read Ally asset reward_weight from /terra/alliances, record as
+  alliance-dao.facts.json `adao.rewards.share`, restore a rewards-share tile.
+- SITE: pick canonical font (Inter vs Outfit) — index/ally vs dao/tla-stats/libs.
+- SITE: index.html still carries the orphaned chrome (changelogModal,
+  mobile-bottom-nav, SHARED CHROME SCRIPT) — strip in its own walk.
+- SITE: address-catalog.html missing Vercel analytics tag.
+- ASSETS owed: Atrium logo, Votion logo (footer banner + links page lettermarks).
+- TOOLS: purpose review of Trade Cost Simulator / TLA Catalog / Chain Queries /
+  Catalog Edit — fold into Help/Docs or retire.
+- Vision (ally): "yesterday's claim" strip derived from the backing rows +
+  backing sparkline; deferred until the series hole is filled.
+
 CONSOLIDATION 2026-08-23 (end of the Explorer + multi-collection session):
 - MILESTONE REVS SHIPPED: index 4.00, nft-explorer 4.30, treasury 3.1,
   tla-deposits 3.1 — audit arcs closed at round numbers; changelog entries in
