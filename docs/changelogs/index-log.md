@@ -1,5 +1,12 @@
 # Index Page Changelog
 
+## 2026-08-24 — index 4.06 — All Current Listings 10 at a time
+
+Same treatment as the activity feed, and the bigger win: 63 listing cards each
+carry an NFT image. Now 10 render (count reads "10 of 63"), "Load 10 more
+(N left)" appends; any filter or collection switch resets to the first 10.
+Smoke-tested on a 63-listing fixture through the live renderer.
+
 ## 2026-08-24 — index 4.05 — rewards popup from products, activity feed aDAO-first in pages of 10, decoded proposal messages
 
 Owner walk, five items. **Unclaimed TLA Rewards popup**: amounts were already
