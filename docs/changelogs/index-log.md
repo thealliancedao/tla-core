@@ -1,5 +1,50 @@
 # Index Page Changelog
 
+## 2026-08-24 — index 4.05 — rewards popup from products, activity feed aDAO-first in pages of 10, decoded proposal messages
+
+Owner walk, five items. **Unclaimed TLA Rewards popup**: amounts were already
+live from the right contracts (staking buckets, zLUNA connectors, gauge
+controller `user_pending_rebase`, bribe manager); two things were not — the
+"Last claimed" labels were hardcoded constants (Sep/Dec 2025) that had
+drifted 6–10 months from chain, and the bribe rows printed the map KEY (the
+raw denom) instead of the token name. Now: last claims come from the
+dao-dashboard product (`last_claims`, derived by the cron from the treasury's
+claim executions in tla-flows — deposit 2026-07-07, bribes/rebase
+2026-01-11, locks 2026-07-07 — with a tx link; unknown renders as "not seen",
+never a remembered date), and token names fall back to the token catalog
+(USDC/USDT/SOLID/LUNA instead of ibc/…). **Live Activity**: default tab aDAO;
+rows render 10 at a time with "Load 10 more" — every aDAO row carries an NFT
+image, so this cuts 60 image fetches at first paint to 10. **Quick audit**:
+the ledger now reads the two amount shapes it was blind to (a cw20 call's
+`{spender|recipient, amount}` is in the token being called; cw-asset
+`{amount, info}` in add_bribe), names `for_info` pools from the register, and
+notes the distribution window; new **Decoded messages** block shows the raw
+JSON with every address named inline (green = a registry knows it, amber =
+the part to check) and every amount in human units. Gate
+`gate-index-audit.mjs` on Lion DAO #26: "3,500,000,000 ROAR" both places,
+"for pool: ROAR-ampROAR LP (Astroport)", 10 LUNA attached, unknown-LP → soft.
+8/8. **News feed**: capture question written up (SPEC-news-feed) — X needs a
+paid key, everything else is a probe + cron; not built.
+
+## 2026-08-24 — verify.html 1.0 (new) · index 4.04 — "Verify us": contracts, code, audits, governance, data
+
+Owner walk: the Contract tile held two links. New page `verify.html`: the
+canonical Alliance DAO set (collection, minter, Ally denom, DAO core /
+proposal / voting modules, treasury, council multisig, broken-security
+holder, mint-era Enterprise treasury, the three candy machines with their
+reconciled counts, legacy Enterprise staking, ampLUNA hub) each with copy +
+explorer; code and audits (TFL's contract repo with the audit inside it,
+SCV's report, tla-core / platform-crons / this site); the governance that
+made it (Terra #4801, Growth Proposal, Enterprise props 10/11/14, DAODAO
+proposals); the data products anyone can re-derive with the guard that
+protects each; and the org's full contract register (59) loaded live,
+grouped by protocol, unverified entries tagged. Law enforced by the gate:
+every address on the page must exist in a chain product — it caught one
+(the proposal module) completed from memory before delivery. The minter
+was added to `known_contracts.json` (sourced to the TFL README, code 2325)
+so the register, not a README, is its home. Index 4.04: Contract tile gains
+"Contract Source" and "Verify us". Header alias `verify → index`. Gate 6/6.
+
 ## 2026-08-24 — owner eyes-on walk, batch 1: alliances 1.5 · rarity-explained 1.1
 
 **alliances 1.5** — owner: page is right as it is; add a front door for

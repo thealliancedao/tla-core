@@ -1,5 +1,17 @@
 # cron-member-data — changelog
 
+## 2026-08-24 — dao-dashboard 1.5 — `last_claims` from tla-flows (the index popup's labels were hardcoded)
+
+`dashboard.last_claims = {deposit, vote, rebase, locks}` each `{date, txhash,
+height}` or null, derived from the treasury's `claim` executions in
+tla-flows (18-month window): deposit ⇐ `asset/claim_rewards`, vote ⇐
+`bribe/claim_bribes`, rebase ⇐ `gauge/claim_rebase`, locks ⇐ `ve/deposit_for`;
+latest per mechanism; other wallets, `user:null` vault claims and non-claim
+DAO events ignored. Isolated (a flows read failure marks status partial,
+never blocks). Gate `mock-run-last-claims.js` on the seven real executions
+2025-06 → 2026-07: 7/7.
+
+
 ## v1.4.0 — 2026-08-24 — LP-position denominator fix (reconciliation finding)
 
 The CAPA supply probe caught `member-data/positions` publishing 119,157 CAPA
