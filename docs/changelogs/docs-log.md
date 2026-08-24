@@ -1,5 +1,25 @@
 # docs / ecosystem-knowledge — changelog
 
+## 2026-08-24 — one-off Action `fuel-boost-dao-probe` (read-only)
+
+`.github/scripts/fuel-supply/boost-dao-probe.mjs` + `workflows/fuel-boost-dao-probe.yml`.
+The owner wants Boost DAO members' FUEL positions on the FUEL whales panel;
+Boost DAO staking + treasury live on NEUTRON (core
+`neutron1ej43fvrmw40dg6xj40mmh822a8xz98rt5ad2p9tj2tgtgxw0zalsvvzm43`,
+owner-supplied; the DAODAO treasury page shows 42.44M FUEL there). Same
+path CAPA took — probe → SPEC → duty: reads core `dump_state` (name /
+voting_module / proposal_modules), voting-module shapes (`info`, `denom`,
+`total_power_at_height`, paginated `list_stakers`, `claims` sample), bank
+balances of core + module, and supply/trace of every FUEL-looking denom so
+the Terra IBC supply on fuel-tool reconciles to the Neutron native supply.
+Tries three public Neutron LCDs (first that answers wins; inputs override).
+Writes nothing. Offline control-flow gate: 35-staker pagination, Σ ==
+total_power, denom discovery. OWNER: trigger when Neutron LCDs are up, paste
+the log; then SPEC-fuel-supply-map (Terra IBC + Neutron native + Boost
+stakers + treasury, sum-guarded like CAPA) → duty in org-token-catalog →
+fuel-tool whales section "Boost DAO stakers (Neutron)".
+
+
 ## 2026-08-24 — one-off Action `capa-supply-fold-legacy` (+ script)
 
 `.github/scripts/capa-supply/fold-legacy.mjs` + `workflows/capa-supply-fold-legacy.yml`

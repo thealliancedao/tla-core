@@ -1,5 +1,32 @@
 # Index Page Changelog
 
+## 2026-08-24 — ampcapa-tool 2.3 (CAPA in TLA LP: the five TLA-side forms) · fuel-tool 2.2 (whales legible)
+
+**ampcapa-tool 2.3** — owner walk: the CAPA-in-TLA-LP tab showed two columns
+from two browser scans (Astro LP liquid + Astro LP TLA-plain; every "Direct"
+cell read 0 because the LP sits in Astroport Incentives). It now reads
+`supply/capa/wallets.json` and shows the five forms the owner named, each a
+sum-guarded product column: LP · not in TLA (Astro + SS liquid) · LP · TLA
+amplified · LP · TLA plain · ampCAPA · TLA plain · ampCAPA · amplified, not
+in DAO (receipt held + unbonding; the in-DAO receipt is the DAO Members tab).
+Astro/SS breakdown on hover, `?` for unknown forms, bucket contracts hidden
+unless toggled (the compounder then shows every amplified position as ONE
+plain-stake row — the visible proof there is no double count), verified
+labels, CSV with all five. The Astro-only browser scan remains as a labeled
+fallback. Owner's double-count question answered from the live file: a
+wallet's plain stake is keyed by its own address in the staking contract,
+its amplified stake by the compounder's — disjoint by construction; Σ every
+holder's receipt forms = 50,575,920 CAPA = receipt supply × rates =
+compounder plain-stake entry 50,575,748 (Δ 0.0003%, take-rate timing).
+Gate 53/53 (+T1–T12, treasury/owner/W5/W6/W7 cells exact, toggle, sort,
+CSV, footer rev).
+
+**fuel-tool 2.2** — the FUEL Whales table was wrapped in `.stat-sub` (the
+10px `#4a4840` caption style) and read as a footnote. Own styling now:
+rank dim, verified name in accent, address mono, amount bold. Boost DAO
+member positions (Neutron) still not shown — probe Action delivered (docs-log);
+capture follows the probe.
+
 ## 2026-08-24 — ampcapa-tool 2.2 — members-tab change periods from the org series; dead feed gone; verified labels
 
 The 24H/7D/30D Δ column on DAO Members read `defipatriot/ampcapa-data_2026`
