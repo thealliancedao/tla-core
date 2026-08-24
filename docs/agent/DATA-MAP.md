@@ -51,6 +51,28 @@ Live: `network-and-prices/daily/<date>.json` (15-day retention;
 `token-catalog/snapshots/current.json` (tokens keyed by denom; venue prices
 carry `.usd`).
 
+## CAPA custody ("where does CAPA sit?", "who are the CAPA whales?")
+`token-catalog/supply/capa/current.json` — the collection map: level 1
+(`capa.liquid_derived` / `gov_staked_direct` / `in_hub` / `in_lp.astro|ss`)
+sums to `capa.total_supply`; level 2 (`ampcapa.liquid` / `tla_nonamp` /
+`tla_amp_via_compounder`) sums to `ampcapa.total_supply`. Trust `status` +
+`guard_failures` before quoting; the hub STAKES its CAPA in Solid gov, so
+`gov_contract_balance` CONTAINS `gov_hub_portion` — never add them.
+`token-catalog/supply/capa/wallets.json` — per-address rows (`rows[]`, each
+with `capa_equiv.<form>` across 13 forms + `raw` units + `total_capa_equiv`),
+published ≥ `floor_capa_equiv` (10,000); the excluded remainder is summed in
+`tail_below_floor` so rows + tail + `role:"bucket"` rows reconcile to the
+buckets (`sum_guards`, 13 of them, each vs the owning contract's own total).
+`kind:"contract"` is chain-structural (32-byte address); `role:"bucket"` marks
+ONLY the structural contracts (gov, hub, pair, compounder, DAO module,
+Incentives) whose holdings ARE the other rows — a DAODAO core such as the
+aDAO treasury is `kind:"contract", role:null` and is a holder. A `null` form
+= that enumeration did not complete this run (`columns_unknown`), never 0.
+`unattributed.*` names what no per-wallet read can attribute (LP staked
+directly on Astroport, gov balance beyond shares, unbonding not swept).
+History: `token-catalog/supply/capa/index.json` rows (one per UTC day) +
+`daily/<date>.json`.
+
 ## Votion
 `votion/snapshots/current.json` + `votion/history/`. Rankings only with shown
 arithmetic (rule 11) — vault sizes vs aDAO's VP are different magnitudes;
