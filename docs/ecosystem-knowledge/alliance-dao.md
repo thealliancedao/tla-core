@@ -17,9 +17,13 @@ per marketplace) are in `nfts/adao/snapshots/summary.json`.
 
 Terra's **Alliance module** lets governance admit non-LUNA assets that then earn a
 share of LUNA staking rewards. aDAO's "Ally" asset was admitted that way, so the NFT
-contract's stake is rewarded alongside ordinary delegations. The size of that share
-is set by the asset's `reward_weight` on chain; we have not recorded the number yet,
-so the agent must not quote a percentage for "share of all staking rewards".
+contract's stake is rewarded alongside ordinary delegations. The asset is "Ally"
+(`factory/terra1phr9…/AllianceNFT`), admitted by Terra gov prop #4801 (passed
+2024-02-23) with `reward_weight` **0.008**, `take_rate` 0, pinned (no decay)
+`[adao.ally.reward_weight]`. The forum draft said 0.003; the community pushed it to
+0.008 before it went on chain. Quote the weight; the percentage of all LUNA staking
+rewards it yields depends on every other alliance weight at the time, so only give a
+percentage computed from a live `/terra/alliances` read.
 
 ## The daily cycle — four steps, one transaction
 
@@ -74,3 +78,25 @@ backing series, not a promise.
 - Ally asset `reward_weight` and the resulting reward share — to be read from
   `/terra/alliances` and recorded as a fact.
 - Per-holder cost basis for NFTs (BBL payment legs) — genesis-walk stream, not yet captured.
+
+## How the collection was distributed `[adao.history.*]`
+
+Rewarded the **Game of Alliance** testnet (2023-02-09 → 03-02). Launched 2023-12-12;
+one-month free claim to 2024-01-12: **1,191 claimed**, **8,809** minted to the
+mint-era treasury (Enterprise DAO `terra1g0mfr…`) `[adao.history.game_of_alliance]`.
+The **Growth Proposal** then planned the release `[adao.history.growth_proposal]`;
+what happened on chain is exact `[adao.history.mint_story]`:
+
+| phase | window | price | sold | loaded → returned |
+|---|---|---|---|---|
+| 1b DAO stakers | 2024-02-20 → 03-04 | 50 LUNA | **127** | 352 → 225 back |
+| 2a Terra NFT communities | 2024-02-28 → 03-18 | 75 LUNA | **525** | 1,000 → 473 back (+2 gov) |
+| 2b Alliance stakers & open | 2024-06-01 → 06-05 | 100 / 115 / 130 | **197 / 459 / 644** | 1,300 → sold out |
+
+Paid mints 1,952; primary proceeds **201,930 LUNA**. Two security allocations went to
+the council multisig and were broken on receipt: **462** (Feb 2024) + **538** (Jun
+2024, props 64–69) `[adao.history.multisig_breaks]`. Contracts and audit:
+github.com/terra-money/alliance-nft-collection. Source of truth for all of this:
+`nfts/adao/provenance` (FCD archive, complete to 2025-01-07); the site's
+release-history page is gated against it.
+
