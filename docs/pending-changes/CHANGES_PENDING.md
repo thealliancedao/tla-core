@@ -36,6 +36,25 @@ step and the standing "Render parallel pairs" housekeeping item are CLOSED.
 Only step left for the legacy feed: after the fold Action commits, ARCHIVE
 (not delete) `defipatriot/ampcapa-data_2026` — nothing reads it (zero site
 refs), and its weeklies are the fold's provenance.
+LATER SAME SESSION — owner walk of the tool + FUEL page:
+- ampcapa-tool 2.3: CAPA-in-TLA-LP tab rebuilt from the product with the five
+  TLA-side forms the owner named (LP not in TLA · LP TLA amplified · LP TLA
+  plain · ampCAPA TLA plain · ampCAPA amplified not in DAO). Gate 53/53.
+- Double-count question (whale row #3): ANSWERED from live data — plain stake
+  keyed by the wallet, amplified keyed by the compounder; Σ holders' receipt
+  forms 50,575,920 = receipt supply × rates = compounder entry 50,575,748.
+- fuel-tool 2.2: whales table legible (was styled as a caption).
+- NEW one-off Action `fuel-boost-dao-probe` (read-only, Neutron): OWNER —
+  trigger when Neutron LCDs are back, paste the log. Unblocks:
+  SPEC-fuel-supply-map → `token-catalog/supply/fuel` duty (Terra IBC supply +
+  Neutron native + Boost DAO stakers + treasury, sum-guarded) → fuel-tool
+  whales "Boost DAO stakers (Neutron)" section. Boost core (owner):
+  neutron1ej43fvrmw40dg6xj40mmh822a8xz98rt5ad2p9tj2tgtgxw0zalsvvzm43.
+VERIFY ON ARRIVAL (this batch): ampcapa-tool → CAPA IN TLA LP → source line
+"cron product … 13/13 green", five columns populated (treasury: LP amp
+~129,859 · LP plain ~109,877 · ampCAPA amp ~448,781), "Show Protocol
+Contracts" reveals the ve3 compounder row at ~50.6M ampCAPA · TLA plain;
+fuel-tool → FUEL Whales rows readable at a glance.
 NEXT-SESSION OPENER (proposed): "Read PROJECT_KNOWLEDGE and CHANGES_PENDING,
 then do the LP/ampLP identity fold + amplp_mappings duty (unblocks
 Catalog/Chain-Queries repoints)." — or FUEL route helper (below).
