@@ -1,5 +1,38 @@
 # Index Page Changelog
 
+## 2026-08-24 — tools batch: fuel-tool 2.0 · ampcapa-tool 2.0 · tools 1.6 · help-agent v1.11.4
+
+**fuel-tool 2.0** (was broken — its history repo `defipatriot/tla-core` is 404):
+price history now from org `price-history` months (confirmed captures only; no
+epoch estimates — an estimated line dressed as history is a phantom, removed
+with `buildChartDual`); natural 7D/30D/90D/ALL ranges replace the epoch tabs;
+volume bars + TVL line under the price chart from committed `dex-data` dailies
+(≤30d, honestly labeled); new strip: DEX TVL, Staked-in-TLA (+gauge VP), live
+bribes for this pool with epoch-settle countdown, Votion optimizer next-epoch
+plan; FUEL Whales table from LCD `denom_owners` (Terra IBC only — Boost staking
+is on Neutron and the page says so). Gate: jsdom on fixtures, 7/7.
+
+**ampcapa-tool 2.0**: CAPA SUPPLY MAP strip at the top reading
+`token-catalog/supply/capa/current.json` — level-1 and level-2 bars with cron
+status + guard state, the hub-stakes-in-gov overlap explained inline, and a note
+that big negative 24h table moves can be a pending 3-day unbond (owner's own
+position demonstrated it). Whale table below unchanged (live scan stays until
+per-wallet rows land in the product).
+
+**tools 1.6**: page split into LIVE TOOLS (ampCAPA, FUEL, Trade Cost Simulator)
+and TOOLS IN DEVELOPMENT (TLA Catalog, Chain Queries, Catalog Edit + the
+dynamic test-page tiles, which keep injecting into the dev grid).
+
+**help-agent v1.11.4**: `docs/ecosystem-knowledge/boost-dao.md` + facts in the
+corpus (what Boost is, FUEL's Terra IBC identity, what the agent must NOT claim
+— tokenomics, Neutron staking, audit status), and the CAPA supply map added to
+the product allow-list so answers can cite it.
+
+Noted for the pulse review (queued, not changed here): the pulse FUEL chart
+reads network-and-prices dailies, which price FUEL sparsely; once daily pricing
+via token-catalog has depth the chart fills on its own — revisit the tab then,
+and consider a current-FUEL-price readout in the strip.
+
 ## 2026-08-24 — batch 3 (same package as batch 2): CAPA supply map spec + probe · contracts fold
 
 - **SPEC-capa-supply-map.md** — all nine custody forms of CAPA (two-level: CAPA
