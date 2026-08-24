@@ -1,5 +1,91 @@
 # Index Page Changelog
 
+## 2026-08-23 — page-walk batch 1: index 4.01 · ally 3.5 · tools 1.5 · links 1.5 · tutorials 1.6 · footer v3.2 · header picker slot
+
+Site-wide (shared libs, every page picks these up):
+- **Footer v3.2** — the Ecosystem column became a left-to-right banner of logo
+  tiles (9 venues; Atrium and Votion render as lettermarks until logo assets
+  land; any failed logo degrades to a lettermark, never a broken image). Site /
+  This project columns rebalanced. **@DeFi_Patriot · Telegram** and **· X** added
+  under This project as the builder's direct line.
+- **Header picker slot** — `#sh-picker` sized to content, so the VIEWING pill
+  never grew past its 22em minimum and the full address truncated. Slot now
+  `min(42em,100%)`; name + full terra1… address fit on desktop.
+- **Legacy chrome strip** (tools, ally, links, tutorials): the per-page
+  `shared-chrome-css`, `changelogModal`, `mobile-bottom-nav` and "SHARED CHROME
+  SCRIPT" blocks were all orphaned once lib/site-header.js took over (it hides
+  `.mobile-bottom-nav` and owns the active tab; Changelog links to GitHub). ~230
+  lines per page, zero visible change. Index still carries its copy — its own walk.
+
+index.html → **Rev 4.01**: missing `logo_stamp_primary.png` (aDAO tab icon,
+silently hidden) repointed to the real logo; pixeLions thumbnails (3 sites) moved
+from the retired deving.zone CDN to the CID in `nft-collections/pixel-lions/
+collection.json` via one `pixelionsImageUrl()` helper; two hardcoded BBL
+`pinataGatewayToken` URLs removed (collection.json: never hardcode it); defunct
+`cloudflare-ipfs.com` fallback → ipfs.io; inline `REV` 3.98 vs footer 4.00 drift
+fixed (both 4.01); stale deving.zone comments corrected. Internal tile links: all
+15 resolve. External tiles: owner click-check.
+
+ally.html → **Rev 3.5** (the reason for this batch):
+- **Daily gain had been on the hardcoded 0.21 fallback since 2026-08-11.**
+  backing-history.json migrated to `{rows:[…]}` that day; ally still read the
+  legacy `{history:[…]}` key, found nothing, and showed "Fallback Gain" with
+  0.2100 exactly. Now the same `rows` read and latest-two-rows math as the index
+  tile; the fallback constant is deleted; if the series is unreadable the gain
+  cells say "Daily gain unavailable" in red and the slider projection says
+  "unavailable" (blank beats phantom). Real value at delivery: +0.318 LUNA/day.
+- **"+40% Yield Boost"** (2023 proposal-era estimate, hardcoded) replaced by a live
+  tile: ampLUNA hub-rate growth over the last ≤31 rows of the same series,
+  annualised, with the window named in the subtext (29.2% over 39 days at delivery).
+- **"~0.61% of Total LUNA Staking Rewards"** relabelled to what it computes: share
+  of all *bonded* LUNA that is aDAO backing. The true reward share needs the Ally
+  asset's Alliance `reward_weight` (queued: read `/terra/alliances`, record as a
+  fact, then restore a rewards-share tile). Static "~0.72%" placeholder removed.
+- **10% tile** is now a button opening "Where the 10% goes": the daily
+  `alliance_claim_rewards` by the Eris bot → bond to ampLUNA → 90% holders / 10%
+  DAO wallet, with the decoded 2026-04-25 tx (1,874 LUNA → 899 ampLUNA → 809 + 89).
+  This page is the only place the mechanism is shown.
+- Claim section offers **Boost and Atrium** (both support breaking); the one video
+  is labelled as the Boost walkthrough.
+- Gate (`gate-ally.mjs`, jsdom on real summary.json + backing-history.json, LCD
+  stubbed to the day's values): per-NFT gain cell equals the two-row math to 4dp;
+  status names the window; slider max = `unbroken_count` (8,907); projection at
+  max equals per-NFT gain; yield tile equals the series math; no "0.2100" anywhere;
+  error path withholds the gain while backing stays live. 11/11.
+
+tools.html → **Rev 1.5**: 2023 "About this site" band (dual footer, linked the
+personal GitHub) removed; dead ampCAPA calculator script (~90 lines, the tool
+moved to ampcapa-tool.html) removed — it was the `Cannot read properties of null
+(reading 'addEventListener')` console error. Test-page tiles (test.html …
+test-5.html probes) kept by owner decision; the 404s they log are the probe
+working.
+
+links.html → **Rev 1.5**: Deving.zone card removed (retired pipeline; this site
+is the analytics now). Added Astroport, The Liquidity Alliance, SkeletonSwap
+(URL from ecosystem-knowledge/skeletonswap.md). Atrium keeps its "A" lettermark
+until a logo asset is provided.
+
+tutorials.html → **Rev 1.6**: legacy chrome strip only; owner walk found nothing
+else.
+
+Help agent: new corpus doc `docs/ecosystem-knowledge/alliance-dao.md` +
+`alliance-dao.facts.json` (12 facts, chain-sourced where decoded) and both added
+to `CORPUS_SOURCES` (help-agent v1.11.2). Until now the agent had no aDAO
+mechanics in its corpus — "where does the 10% go" could not be answered from a
+citation.
+
+FINDINGS logged, not fixed here:
+- `nfts/adao/snapshots/backing-history.json` has **no rows 2026-08-11 → 08-19**
+  (migrated series ends 08-10, `org-nft-daily` rows start 08-20) and its `date_range.end`
+  / `missing_dates` metadata is stale. Cron item.
+- Font drift: index/ally use Inter; dao/tla-stats and the shared libs use Outfit +
+  JetBrains Mono. Owner to pick the canonical family.
+- `address-catalog.html` has no Vercel analytics tag.
+- tools.html: "2023 footer" note in PROJECT_KNOWLEDGE was stale — it was already on
+  lib v3.1; the band removed here was the separate About section.
+- The four legacy tools (Trade Cost Simulator, TLA Catalog, TLA Chain Queries,
+  Catalog Edit) are owed a purpose review — fold into Help/Docs or retire.
+
 ## Rev 4.00 — 2026-08-23 — audit arc milestone
 
 The index audit-and-revamp arc closes at a round number. Since 3.9x: VP Locked /
