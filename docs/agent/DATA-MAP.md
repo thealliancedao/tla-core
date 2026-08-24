@@ -78,6 +78,18 @@ legacy_fold` days are weekly-resolution folds of the retired ampcapa-data_2026
 feed with total null; index rows with `status: legacy_fold` carry only
 hub_rate + receipt_in_dao — say so when quoting them).
 
+## FUEL custody ("where is FUEL?", "who stakes in Boost DAO?")
+FUEL is a NEUTRON token (`factory/neutron1zl2…uruxm/fuel`); Terra holds the
+IBC voucher `ibc/4B44…3961`. `token-catalog/supply/fuel/current.json`:
+`neutron.native_supply` = `boost_staked` + `boost_unbonding` + `boost_treasury`
++ `bridged_to_terra` (the ICS-20 escrow) + `liquid_derived`; `terra.ibc_supply`
+== Σ Terra holders and ≈ the escrow (cross-chain guard). Boost DAO core
+`neutron1ej43fv…vvzm43`, voting module `neutron19740eh…sdpy2`. Per-wallet:
+`supply/fuel/wallets.json` rows carry `chain` (neutron|terra) and
+`fuel.{liquid, boost_staked, boost_unbonding}`; `role:"bucket"` = treasury,
+voting module, escrow, DEX pairs, TLA incentive manager (not holders). Read
+`status` + `sum_guards` (5) first; null = unknown this run.
+
 ## Votion
 `votion/snapshots/current.json` + `votion/history/`. Rankings only with shown
 arithmetic (rule 11) — vault sizes vs aDAO's VP are different magnitudes;
