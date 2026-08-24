@@ -1,0 +1,39 @@
+name: FUEL — Boost DAO (Neutron) probe
+
+# One-off, READ-ONLY (2026-08-24): learns the Boost DAO core / voting-module
+# shapes on Neutron and prints every member's staked FUEL + the treasury
+# balances — the fixture for a `fuel supply map` duty (probe → SPEC → duty,
+# as CAPA). Writes nothing, commits nothing. Trigger when Neutron LCDs are up;
+# read the log, download the artifact.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dao_core:
+        description: 'Boost DAO core address on Neutron'
+        required: false
+        type: string
+        default: 'neutron1ej43fvrmw40dg6xj40mmh822a8xz98rt5ad2p9tj2tgtgxw0zalsvvzm43'
+      lcd:
+        description: 'Comma-separated Neutron LCD base URLs (first that answers is used)'
+        required: false
+        type: string
+        default: 'https://neutron-rest.publicnode.com,https://rest-lb.neutron.org,https://rest.lavenderfive.com/neutron'
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Run probe
+        env:
+          DAO_CORE: ${{ inputs.dao_core }}
+          LCD: ${{ inputs.lcd }}
+        run: node .github/scripts/fuel-supply/boost-dao-probe.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: boost-dao-probe
+          path: boost-dao-probe.json
