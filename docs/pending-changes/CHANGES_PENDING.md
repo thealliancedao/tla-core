@@ -1,4 +1,18 @@
 # CHANGES_PENDING — session queue & state
+NEXT-SESSION OPENER (owner-agreed 2026-08-24): "Read PROJECT_KNOWLEDGE and
+CHANGES_PENDING, then build capa-supply v2 per-wallet rows + whale scan v2 on
+the ampCAPA tool." The current whale table sees only 4 of 9+ custody forms
+(~40M+ CAPA-equivalent invisible: liquid ampCAPA 21.3M, receipts-in-wallet
+6.85M rcpt, unbonding queues, SS LP, liquid LP). All reads proven by the probe
++ cron; v2 = per-wallet rows in token-catalog/supply/capa + table columns per
+form, per-wallet sum guard.
+FUEL TOOL QUEUE (owner 2026-08-24): (a) buy/sell route helper — best execution
+FUEL vs USDC/LUNA/SOLID; first step is a preset deep-link into slippage.html
+(?token=FUEL) which already prices routes from live reserves, then an inline
+mini-widget; (b) large-selloff watch — needs a trade-events stream for the
+LUNA-FUEL pool (dex trades are not captured today; candidate source: warlock /
+astroport tRPC swaps) — capture question before page work.
+
 (Consolidated 2026-08-23 end-of-session. THE authoritative "where are we" now
 lives in PROJECT_KNOWLEDGE.md — read that first; this file carries the
 detailed per-item state below it.)
