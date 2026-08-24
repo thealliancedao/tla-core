@@ -70,14 +70,17 @@ chain-structural (32-byte = contract); `role:"bucket"` marks the structural
 set only — the aDAO treasury (a DAODAO core) is a HOLDER row. Unknown form =
 `null`, never 0. Labeled remainders: `gov_balance_beyond_shares`,
 `astro_lp_in_incentives_not_tla`, `receipt_unbonding_unattributed`.
-Not done: per-wallet CHANGE periods (24h/7d/30d) — needs a compact per-wallet
-daily (address → total only) before the tool's dead `ampcapa-data_2026`
-snapshot reads can be replaced; queued.
+Per-wallet CHANGE periods — BUILT (v2.1): `wallets-daily/<date>.json` +
+index; tool 2.2 reads it; legacy fold Action delivered (see docs-log). Legacy
+feed retirement = owner checklist in CHANGES_PENDING.
 
-## Fold of the legacy feed
-`ampcapa-data_2026` weekly epochs 181–197 (members: ampLP/ampCAPA/CAPA/vpPct;
-rates) → `index.json` rows as deeper history after a converter; rates also →
-`price-history/ratios/2026` if absent. Legacy cron retires per parallel-run law.
+## Fold of the legacy feed — Action delivered 2026-08-24
+`ampcapa-data_2026` weekly epochs 181–197 + 4 monthlies → `wallets-daily/`
+days (`[null, receipt_dao]`) + `index.json` rows (hub_rate + receipt_in_dao
+only) via `capa-supply-fold-legacy.yml`. Rates → price-history/ratios NOT
+folded: the ampCAPA hub rate moved 1.10553774256107 → …634 over the whole
+window (CAPA gov yield ≈ 0), the daily ratio series already captures it live.
+Legacy cron retires per parallel-run law (checklist in CHANGES_PENDING).
 
 ## Fixture (probe v2 values, 2026-08-24T04:03Z)
 Owner: gov `balance` 1,141,021.59 / `share` 1,140,715.28; DAO power 3,214,853.997 + claim 357,205.9996; everything else 0.

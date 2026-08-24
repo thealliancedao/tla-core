@@ -1,33 +1,46 @@
 # CHANGES_PENDING — session queue & state
-SHIPPED 2026-08-24 (later session) — capa-supply v2.0 + ampcapa-tool 2.1:
-per-wallet rows for ALL 13 custody forms (was 4), each enumeration sum-guarded
-against the owning contract's total, `wallets.json` + `daily/` + `index.json`;
-whale tab reads the product, live scan demoted to a labeled 4-form fallback.
-Neighbors done: system-health 1.0.3 (+capa-supply row, 34/34), site
-cron-registry, DATA-MAP section, REPO-CATALOG, help-agent v1.11.5
-(`capa_wallets`), SPEC status. Gates: mock-run-capa-supply.js 58/58 (now
-committed — v1.1's was session-local) · gate-ampcapa-whales.mjs 33/33.
+SHIPPED 2026-08-24 (late session, two deliveries) — capa-supply v2.0 → v2.1 +
+ampcapa-tool 2.1 → 2.2 + fold Action:
+- v2.0 FIRST LIVE RUN VERIFIED 18:09Z: ok, 13/13 sum guards to the digit,
+  4,923 holders / 215 published / tail 4,708 = 2.12M CAPA, claims 483/0,
+  148 KB; owner row exactly as the fixture predicted (gov 1,141,022 · receipt
+  in DAO 7,275,285 · unbonding 808,365); `gov_balance_beyond_shares` =
+  200,000.000 exactly = a live Solid poll deposit. Floor stays 10K.
+- v2.1: compact per-wallet daily `supply/capa/wallets-daily/<date>.json` +
+  day index (never-shrink; capture never demoted to legacy); exports
+  legacyIndexRow / foldIndexRows / upsertDailyIndex. Gate 66/66.
+- tla-core one-off Action `capa-supply-fold-legacy.yml` (+ script): folds the
+  retired ampcapa-data_2026 weeklies 181–197 + monthlies under prior-verbatim
+  / never-shrink / labeled `legacy_fold`; proven locally on the real feed
+  (+20 index rows, 19 days, idempotent, captured day untouched).
+- ampcapa-tool 2.2: members-tab Δ periods read wallets-daily (badge names the
+  comparison day, "(legacy weekly)" when folded, null → NEW never a number);
+  ZERO reads of the personal repo remain; whale rows show VERIFIED labels
+  from catalog/trusted. Gate 41/41.
 VERIFY ON ARRIVAL: (1) next org-token-catalog run logs
-`token-catalog/supply/capa/wallets.json (ok — N wallets + M contracts, tail T,
-claims Q/0 failed)` and any `guard …: ok=false` lines — read them, don't
-bypass; expect guards green on first run but treat a firing as chain truth;
-(2) `wallets.json` lands (a few hundred rows, <1MB), `daily/2026-08-2x.json`
-and `index.json` row 1; (3) open ampcapa-tool → CAPA Whales → source line
-reads "cron product · status ok · 13/13 green"; the owner's wallet shows Gov
-~1.14M and Receipt in DAO ~7.3M CAPA-equiv, unbonding ~808K until the
-2026-08-25 release, then 0 + higher receipt-held; (4) system-health run shows
-the `capa-supply` row fresh; (5) DAO treasury appears at a 100K threshold
-with the *contract* chip (it is a DAODAO core — a holder, not a bucket).
+`wallets-daily/2026-08-2x.json (N rows) + index (1 days)`; (2) run the fold
+Action dry_run=true → log ends "+20 legacy rows … 21 rows 2026-04-19→2026-08-2x
+· wallets-daily: 19 written" (dates ≠ the captured day); then dry_run=false →
+commit lands wallets-daily/*.json + index.json; (3) ampcapa-tool → DAO
+Members → 24H badge "24H vs <yesterday>" once two captured days exist, 7D/30D
+badges "(legacy weekly)" until the org series is 7/30 days deep; deltas
+non-blank for members present on the comparison day; (4) CAPA Whales rows for
+the PD DAO core / Solid contracts now carry their verified labels.
+RETIRE THE ampCAPA SNAPSHOT RENDER JOB (owner console, parallel-run law —
+in this order, after (2)+(3) are green): a. Render → "ampCAPA Snapshot" →
+Suspend; b. reload ampcapa-tool.html, all three Δ periods still resolve
+(page reads org only); c. wait one org-token-catalog cycle, confirm a new
+wallets-daily day landed; d. Render → Delete the job; e. archive the
+`defipatriot/ampcapa-data_2026` repo (nothing reads it — verified: zero site
+refs; keep archived, do not delete, its weeklies are the fold's provenance);
+f. tick this item + REPO-CATALOG "Mid-fleet Render" line (ampCAPA Snapshot →
+retired 2026-08-2x).
 NEXT-SESSION OPENER (proposed): "Read PROJECT_KNOWLEDGE and CHANGES_PENDING,
 then do the LP/ampLP identity fold + amplp_mappings duty (unblocks
 Catalog/Chain-Queries repoints)." — or FUEL route helper (below).
-QUEUED from v2: (a) per-wallet CHANGE periods — the ampcapa-tool members tab
-still reads dead `defipatriot/ampcapa-data_2026` snapshots for 24h/7d/30d
-deltas; needs a compact per-wallet daily (address → total only, ~100KB/day)
-before those columns can be repointed; (b) legacy weekly epochs 181–197 fold
-into `supply/capa/index.json` as deeper history (converter), then retire the
-ampCAPA Snapshot Render job per parallel-run law; (c) first-live-run
-calibration of WALLET_FLOOR_CAPA (10,000) if the file exceeds ~1MB.
+QUEUED from v2 (remaining): index perf slim row-series can reuse the
+wallets-daily compact pattern; ampcapa-tool page-walk items untouched by this
+arc (legacy chrome footer, Rev string lived in inline HTML — now correct).
 FUEL TOOL QUEUE (owner 2026-08-24): (a) buy/sell route helper — best execution
 FUEL vs USDC/LUNA/SOLID; first step is a preset deep-link into slippage.html
 (?token=FUEL) which already prices routes from live reserves, then an inline
