@@ -98,7 +98,18 @@ corrections + BBL capture date; everything else reproduced from the data).
 release-history ✓ (1.6: chain-exact phases from provenance; knowledge base
 +5 facts incl. Ally reward_weight 0.008 / gov prop 4801 — housekeeping item
 "ally reward_weight fact" CLOSED; rewards-share tile still open, needs a
-live /terra/alliances read). Remaining per owner: "the last three". Parking lot
+live /terra/alliances read). verify.html 1.0 ✓ (contracts/code/audits/governance/data; register +minter).
+Owner walk of alliances / rarity / release-history / contract: COMPLETE.
+INDEX 4.05 (owner's five items): rewards popup → products (dao-dashboard 1.5
+`last_claims`; catalog names) ✓ · activity feed aDAO-first, 10 per page ✓ ·
+proposal quick-audit amounts/pools + Decoded messages view ✓ (gate 8/8) ·
+news feed → SPEC-news-feed (capture question; X needs a paid key — OWNER
+DECISION). VERIFY: commit platform-crons first; next org-member-data run logs
+`last_claims: deposit 2026-07-07 · vote 2026-01-11 · rebase 2026-01-11 ·
+locks 2026-07-07`; then index popup shows those dates with tx links and the
+bribe rows read USDC/USDT/SOLID/LUNA; Live Activity opens on aDAO with 10
+rows + Load more; open Lion DAO #26 Quick audit → 3,500,000,000 ROAR,
+"for pool: ROAR-ampROAR LP", Decoded messages. Parking lot
 from HARs: `assets/planets/` is 65 MB of PNGs (only two referenced; convert
 on use, never bulk); footer health dot = 20 tiny heartbeat reads per page —
 by design (live dot), not a cost.
