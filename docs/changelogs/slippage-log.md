@@ -1,5 +1,40 @@
 # Trade Cost Simulator Changelog
 
+## Rev 3.0 — 2026-08-24 — Trade Planner: from → to routes, split, size ladder, limit solve, wallet balances, context, warnings, recipe
+
+Owner walk: "it doesn't pick up liquid tokens in my wallet and doesn't help me
+simulate a variety of situations" — and the page is one of the most used. The
+primitives were all here (USD-sided pool universe, exact xyk execution-price
+impact, two-hop routing) but only reachable through the zap planner. Rev 3.0
+puts a planner in front of them:
+- **FROM → TO** chips (the wallet's holdings first, with $ values, when a wallet
+  is picked in the header — live bank + cw20 reads; balance buttons 25/50/100%).
+- **Routes** ranked by what you keep: direct, two hops through ANY
+  intermediate, and a **split** across the two best paths (5% steps) shown only
+  when it beats both. Per leg: pool, DEX, sold-side depth, impact; totals:
+  impact, fees (0.3%/leg, ASSUMED and labeled), net kept in $ and in TO units.
+- **Size ladder** ($20 → $5,000 + the current size) re-planned per rung, an
+  "in 4 trades" column (assumes recovery — labeled), and **largest single trade
+  under 0.5 / 1 / 3 / 5%** solved by bisection (floored: the size named is
+  never over the limit).
+- **Market context** per token, context not advice: 7d/30d change and position
+  in its 90-day range from committed price-history; the route's pools' 24h
+  volume vs their 6-day average and TVL vs 7 days ago from dex-data rolling
+  products; a peg line for stables (implied price in each xyk pool vs $1).
+- **Warnings**: over-limit (with the largest size that isn't), thin leg
+  (<$5K sold-side), SS unverified, curved bound, single-source price, stale
+  reserves (>2h).
+- **How to do it**: ordered swaps with token amounts, DEX links, a slippage-
+  tolerance hint per leg, and the capture time to re-check against.
+- Deep links `?from=&to=` (`?token=` = TO) — fuel-tool 2.4 links in.
+Everything below the planner (zap planner, arb radar, single-pool "where to
+sell") is unchanged. Gate `gate-slippage-planner.mjs` 20/20 on the committed
+reserves: CAPA→ASTRO $150 = via LUNA, ≤3.00% impact, 3.58% with fees; the
+1%-limit solve found $19 (fees alone are 0.6% on two legs, so 0.5% is
+impossible → $0); FUEL context lines; SOLID peg line; split only when it
+wins; wallet chips; deep link.
+
+
 This is the change history for `slippage.html` (the public trade-cost
 simulator + zap planner). Newest revisions on top. Times are UTC.
 

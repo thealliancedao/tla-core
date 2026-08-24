@@ -1,5 +1,10 @@
 # Index Page Changelog
 
+## 2026-08-24 — fuel-tool 2.4 — deep links into the trade planner (FUEL queue item b, step 1)
+
+"Plan a trade into FUEL →" / "out of FUEL →" under the supply map, landing on
+slippage.html Rev 3.0 with FROM/TO preset.
+
 ## 2026-08-24 — fuel-tool 2.3 — FUEL supply map + Boost DAO stakers (Neutron) from the product; dead second pass removed
 
 Top of the page: FUEL SUPPLY MAP strip (native supply bar: Boost staked ·
