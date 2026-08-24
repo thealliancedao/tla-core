@@ -1,5 +1,17 @@
 # Index Page Changelog
 
+## 2026-08-24 — FUEL history fold (owner catch)
+
+The owner asked where the older FUEL history went — and it was sitting in
+`docs/pending-changes/F2B-fuel-price-series.json`: 95 days (2026-05-17→08-20)
+extracted verbatim from dex-data daily CSVs during F2, filed as a fixture,
+never merged. Folded into `price-history/2026/{05,06,07,08}.json` under
+prior-verbatim (committed rows untouched, only missing dates filled), src
+tagged `F2b fold`, confidence 60 with a `single_source_reserve_snapshot` flag —
+labeled repair, never silent. FUEL series: 32 → ~117 confirmed days; the
+fuel-tool ALL/90D charts fill immediately. Fixture retained with a merged-at
+note. Never-shrink asserted per month.
+
 ## 2026-08-24 — tools batch: fuel-tool 2.0 · ampcapa-tool 2.0 · tools 1.6 · help-agent v1.11.4
 
 **fuel-tool 2.0** (was broken — its history repo `defipatriot/tla-core` is 404):
