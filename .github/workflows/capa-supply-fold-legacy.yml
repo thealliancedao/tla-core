@@ -1,0 +1,53 @@
+name: capa-supply — fold legacy ampcapa-data_2026 snapshots
+
+# ONE-OFF (workflow_dispatch, 2026-08-24): folds the retired personal cron's
+# weekly (epochs 181–197) + monthly snapshots into the org capa-supply series
+# (wallets-daily/<date>.json + wallets-daily/index.json + index.json rows) under
+# prior-verbatim + never-shrink, every artefact labeled `legacy_fold`. Idempotent —
+# a re-run adds 0. Checks out platform-crons so row shapes + merge rules come
+# from the LIVE module (no third copy). Run dry_run first; read the log.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Report only, write nothing'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  fold:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout tla-core
+        uses: actions/checkout@v4
+      - name: Checkout platform-crons (live capa-supply module)
+        uses: actions/checkout@v4
+        with:
+          repository: thealliancedao/platform-crons
+          path: platform-crons
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Fold
+        env:
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+          PLATFORM_CRONS_DIR: platform-crons
+        run: node .github/scripts/capa-supply/fold-legacy.mjs
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: fold-legacy-report
+          path: fold-legacy-report.json
+      - name: Commit
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git config user.name "capa-supply-fold"
+          git config user.email "actions@users.noreply.github.com"
+          git add token-catalog/supply/capa/index.json token-catalog/supply/capa/wallets-daily
+          git diff --cached --quiet && echo "nothing to commit" || git commit -m "capa-supply: fold legacy ampcapa-data_2026 weekly/monthly snapshots (labeled legacy_fold; prior-verbatim; never-shrink)"
+          git push
