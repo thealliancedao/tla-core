@@ -142,6 +142,22 @@ tla-log.md). Products live: tla-flows pressure v1.0 (E192–200, 0 unknown),
 dao-dashboard 1.5 last_claims (all four 2026-07-07 — the July 7 execution
 did deposits + bribes + rebase + locks in one tx). Owner test-drove: waterfall
 ✓, Vote Market v3 ✓ after the funding-period catch.
+LP GRADES TAB — GROUND-ZERO REDESIGN DRAFTED 2026-08-25 → SPEC-lp-grades-v2.md
+(supersedes SPEC-lp-grades-rework; folds SPEC-pd-bribe-drift + directive-watch).
+Findings that shaped it (measured): Votion reproducible; pots period-keyed;
+69–78% of rewards recompounded; PD's allocation does NOT follow its stated
+"trading efficiency + volume" criterion (56%/72% of LUNA to top-half pools;
+PAXG-WBTC ranked 16/17 and got the 3rd-largest slice both windows; LUNA-USDC /
+USDT / EURe / SOLID top-11 by efficiency both windows, never bribed; drift
+inside the 4-epoch windows is real); the 4th single gauge = wBTC.creda.a
+(PD bribes it, Votion weighs it, our snapshot omits it — Credia gap).
+D1–D4 DECIDED (in the spec). Advisor doctrine: votes are EARNED (≥4 epochs
+solid performance, or a declared greater-good reason for new/inactive/
+unsupported pools); bribes never a factor (bonus line only); recommend seldom.
+S1 PD Bribe Tracker BUILT (tla-voting 2.5.0 pd-bribe-fit, gate 10/10; tab
+section, page gate 43/43). Build order S1 tracker → S2 grading v2 →
+S3 Vote Advisor v2 (flagship: optimizer + reasons + what-if + compare-to-Votion
++ proposal JSON + public track record).
 QUEUE FROM THE WALK (in order):
 1. Remaining tla-stats tabs: LP Grades, LP Stats, TLA Stats — same method
    (screenshots + HAR, mechanical first, then presentation).
