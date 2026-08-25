@@ -1,5 +1,61 @@
 # TLA Stats Changelog
 
+## T3.19 — 2026-08-24 — Overview tab walk: Batch A fixes, Batch B redesign, Vote Market v3 (Votion's optimizer reproduced), live pots, reward fates
+
+**Batch A (mechanical, owner walk + HAR + console):** Top-by-APR reads Eris's
+per-gauge product (Amp = eris_apy_pct, Non = eris_apr_pct; movement baseline
+= the same product one epoch back) — the old path was snapshot approx_apr × a
+bucket multiplier (1.10/1.05) and read 88.5% where Eris shows 68.7/96.1 ·
+Votion VP repointed to votion/optimization aggregate (every bucket read
+"Votion 0.00" because the snapshot field was gone) · Movers rows show
+Votion's announced next-epoch move (per-pool Votion history is not captured
+daily; the tooltip says so) · bribes keyed by gauge + bucket (the same LP in
+two buckets inherited one gauge's bribe: a phantom "$493/1M VP" row and $139
+double-counted in the pot) · SS volume board says "not captured" · Member
+Portfolio → SOON (disabled subtab; page = Test 1 on Tools), Docs tab removed
+(Test 2) · dead yearly-file loader stripped (116 lines; its sources retired
+08-11) · token-name adapter fixed (parsed the catalog as an object; loaded 0
+names since 08-11 — 38 now).
+
+**Batch B (presentation):** Vote breakdown defaults to Planned, bars
+left-aligned and scaled to the largest pool, delta labels show "(users ±a ·
+Votion ±b)" · Runway opens with the sentence the data supports (0.00% of VP
+unlocking → "exit pressure from unlocks is negligible"); pending-withdrawal
+block priced in USD · Threshold Watch at-risk rows: cushion above 1% and
+"+N VP ≈ $ of bribe at the market rate" to reach 2% · Pool Health rows:
+identity + one sentence from the numbers + wider trend + three chips (APR ·
+runway · votes) + "plan a trade →" per pool; embedded simulator removed
+(strip links to the Trade Planner with the selected wallet) · Positions &
+flow: "Idle in the wallet" — live bank + cw20 balances, priced, with the TLA
+pools that take each token (Eris APY), the VP a max-lock would carry (LSTs,
+LUNA via ampLUNA), planner link per token; a menu, not advice · Growth tile:
+"Where the rewards go" panel from tla-flows/pressure (compounded / claimed to
+wallet / swapped in-tx per epoch; net token pressure chips; "left Terra" not
+captured and says so).
+
+**Vote Market (was Bounty Board), three versions in one night, the last one
+right:** v1 rate = VP-weighted median over all bribed pools → $4.58 (LP-voted
+bluechip VP dragged it down) and every projection capped at the same 7.98M.
+v2 rate = median over pools Votion votes ($18–27 band), per-pool cap by
+Votion's spare votes. **v3 = Votion's own optimizer, reproduced and gated:**
+its captured worksheet shows reward = bribe × a/(V+a) (V = gauge VP excluding
+the vault's own) and objective = max Σ with the vault's VP as budget; solving
+it exactly lands 1–2% above Votion's reported totals on every bucket-plan
+(their solver runs 1–4 iterations); hysteresis observed (keeps current under
+~4% deviation / ~$1 gain). "+$X" runs that objective on the pots with $X
+added, both max vaults, and reports Votion's votes before → after, pool
+share, emissions/week. **Owner catch:** the three CAPA gauges were missing
+from Votion's option set NOT because of the token — their pots were funded
+for period 199 only (bribe-state runway); Votion only weighs pots funded for
+the period it votes into. Rows now carry "funded / not funded p200", unfunded
+gauges with Votion votes sort to the top as warnings. **Live pots:** the page
+reads the incentive manager's pots for the voted period directly (one smart
+query, catalog-priced) on load and every 5 min, shows Votion's cast deadline
+(its voteBefore) as a countdown, and the optimizer runs on the live pots — a
+top-up shows on the next refresh. Gate `gate-tla-stats.mjs` 36/36 incl. a
+simulated live CAPA top-up flipping the row and placing Votion votes.
+
+
 ---
 
 ## Rev T3.13 — 2026-08-21 — unified chrome: tabs above the tiles, picker in the header
