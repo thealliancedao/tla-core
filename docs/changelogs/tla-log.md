@@ -1,5 +1,36 @@
 # TLA Stats Changelog
 
+## T3.20 — 2026-08-25 — LP Grades tab rebuilt (v2 lenses · Vote Advisor v2 · PD Bribe Tracker · guide) · Pools tab (LP Stats + TLA Stats merged) · dead tab + inline chrome stripped
+
+**LP Grades:** five-lens grade per pool from lp-grades 2.0.0 (Purpose · Work ·
+Efficiency · Durability · Governance; measured lenses are percentiles against
+the field; bands A≥75 B≥60 C≥45 D≥30), bucketed rows with five bars, streak
+chip, why line, drill to every number; legend states the field distribution.
+**Vote Advisor v2** on the owner's doctrine: votes are earned (≥4 epochs at
+C+), new/inactive/unsupported pools only through a declared council reason,
+bribes never an input, recommend seldom. Every bucket shows NOW and THE
+LENSES SAY with reasons + emissions; verdict carries proposability
+("not proposable yet — X 2/4 still earning"); proposal message (gauge
+controller `vote`, bps = 10000, ≤50%/pool) only when proposable. **PD Bribe
+Tracker** (pd-bribe-fit 1.0): per batch, stated criterion quoted, allocation
+vs rank on that criterion across ALL pools at placement, qualified-not-bribed,
+drift heatmap through the window, the whole field expandable with pools that
+outranked a bribed pool and got nothing. **Guide** block + corpus doc
+(lp-grades-and-voting.md) — the old interim-weights methodology text was
+wrong and is gone; header chip reads "grading v2.0.0".
+**Pools tab:** LP Stats + TLA Stats merged — one row per pool (grade ·
+liquidity · work · emissions · votes · pot · you), bucket totals rows,
+sortable, drill; tiered daily charts restored per bucket (tier remembered).
+Subnav = Overview · LP Grades · Pools; `#tla` → pools. Unknown single gauge
+named from the register (ROAR-ampROAR LP) via the FULL gauge id (the
+snapshot's name field is a truncated id).
+**Strips:** the dead TLA Stats tab (614 lines: markup, renderTlaTab,
+applyTlaFilters, showTlaMetricHistory, updateTlaSortIcons, listeners) and the
+inline legacy chrome (shared-chrome CSS, changelog modal, mobile bottom nav,
+chrome script) — see index-log for the site-wide batch. Header highlight now
+follows switchToTab. Gate 63/63.
+
+
 ## T3.19 — 2026-08-24 — Overview tab walk: Batch A fixes, Batch B redesign, Vote Market v3 (Votion's optimizer reproduced), live pots, reward fates
 
 **Batch A (mechanical, owner walk + HAR + console):** Top-by-APR reads Eris's

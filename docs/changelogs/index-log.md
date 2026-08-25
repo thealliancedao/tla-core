@@ -1,5 +1,20 @@
 # Index Page Changelog
 
+## 2026-08-25 — legacy chrome strip, batch 1 (12 pages) + adao-lore shared footer
+
+The inline copies of the shared chrome (style#shared-chrome-css, the changelog
+modal, the mobile bottom nav, the SHARED CHROME SCRIPT block) removed from
+alliances, dao, dao_tla_deposits, dao_treasury, index, nft-explorer-index,
+release-history, tla-catalog, tla-chain-queries, tla-docs, tla-stats —
+all mount the shared header + footer, which already provide both. adao-lore
+had a header but its own inline footer; it now mounts SiteFooter (Rev 2.9
+carried) and its inline chrome is gone. Every page boot-smoked (no uncaught
+errors); all gates green. Kept on purpose: ampcapa-tool, fuel-tool,
+tla-catalog-edit — their inline chrome IS their chrome (tool pages keep their
+own header/footer per owner); not legacy duplicates. Dead CSS rules for the
+old bottom nav still sit in index/tla-catalog/tla-chain-queries stylesheets
+(harmless; strip with the next CSS pass).
+
 ## 2026-08-24 — index 4.07 — Pulse Votion rows: annualised figures removed, per-period reward kept
 
 Owner: Votion's page shows ampLUNA-Max asset 36.87% / arbLUNA-Max 16.57%

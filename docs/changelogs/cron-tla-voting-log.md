@@ -1,5 +1,16 @@
 # cron-tla-voting — changelog
 
+## org-tla-voting-2.5.0 — 2026-08-25 — pd-bribe-fit duty
+
+`lib/pd-bribe-fit.js`: for every verified PD batch, allocation per gauge vs
+every active Astroport TLA pool's rank by trading efficiency (vol ÷ liq,
+weekly-avg) and by volume at the epoch before the window and per epoch
+through it; qualified-not-bribed; VP / bucket share / payout share per epoch.
+Publishes `pd-bribes/fit/current.json` + write-once `fit/batches/<prop>.json`.
+Gate mock-run-pd-fit.js 10/10 (prop 250: 56% to top-half, PAXG-WBTC 16/19;
+prop 253: 72%; LUNA-WBTC #3→#9 drift). First run: 21 batches.
+
+
 ---
 
 ## 2026-08-09 — E2 COMPLETE (§10 gate 7/7) + registry-backfill terminal-state fixes

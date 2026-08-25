@@ -1,5 +1,13 @@
 # Help Page Changelog
 
+## v1.12.0 — 2026-08-25 — grading & voting guide in the corpus; lp_grades + pd_bribe_fit readable
+
+Corpus: `ecosystem-knowledge/lp-grades-and-voting.md` (how pools are graded,
+how the DAO decides where to vote, Votion, the PD tracker, declared vs
+measured). Products: `lp_grades` (v2 lenses/streak/raw per pool),
+`pd_bribe_fit` (PD batches vs stated criterion).
+
+
 ---
 
 ## Agent v1.11.6 — 2026-08-24 — fuel_supply / fuel_wallets readable; DATA-MAP "FUEL custody"

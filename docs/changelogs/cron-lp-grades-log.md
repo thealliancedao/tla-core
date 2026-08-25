@@ -1,5 +1,19 @@
 # Changelog — lp-grades cron
 
+## lp-grades-2.0.0 — 2026-08-25 — five-lens v2 grade per pool (v2.js), alongside v1
+
+Per pool `v2`: lenses {purpose (declared, D1 table), work, efficiency,
+durability, governance} with parts, composite, letter (A≥75 B≥60 C≥45 D≥30),
+confidence (firm/provisional/thin by missing parts), streak (epochs at ≥C,
+v1-backfilled where the archive has no v2), pair_class, why, raw inputs.
+Measured parts are percentiles among active pools; null-vs-0. Reads
+votion/optimization (Votion VP per pool + Votion's rate), bribe-state runway
+(pots for the voted period), pd-bribes/fit (PD share of pot), pool-status
+history (price-neutral retention). Names fall back token-catalog → register →
+id (the Credia wBTC gauge). Gate mock-run-v2.js 8/8. First live run: 32
+graded, A3 B10 C12 D6 F1, Votion rate $18/1M VP.
+
+
 ## 2026-08-19 — 1.0.0 built + gated (design session)
 - **SPEC-lp-grading.md written** — unifies the two grading generations (legacy
   tla-registry confusion_score = Component B; interim tla-stats page grade =
