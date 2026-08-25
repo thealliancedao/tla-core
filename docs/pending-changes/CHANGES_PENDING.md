@@ -167,6 +167,15 @@ Advisor track record (cron write from E201); compare-to-Votion view; capture
 gaps (Credia market → wBTC.creda.a Work lens; SS volume); tool pages keep own
 chrome; dead bottom-nav CSS in 3 stylesheets; gate-verify expects 60
 contracts once known_contracts (register) is committed.
+MILESTONE 2026-08-25 (evening) — DAO + LORE + EXPLORER FLOOR CHART. dao.html:
+partner board = aDAO format, Both/Lion/Pixel views (Ally grade preserved),
+quick audit on every proposal via shared lib/prop-audit.js, image gateways;
+adao-lore: shared footer, 7 MB → 376 KB, Cristall; explorer: floor history
+from listing-history.json (real listings since 2023-12), log scale, bounded
+oracle; help-agent 1.13.0. Remaining from the owner's list: dao.html
+old-code hunt beyond the chrome/gateways (nothing points at a retired repo);
+tool pages keep own chrome; dead bottom-nav CSS in 3 stylesheets. tla-docs.html REBUILT (Rev 2.0, gate 5/5). NEXT: Advisor track-record cron +
+compare-to-Votion view; capture gaps (Credia market, SS volume).
 QUEUE FROM THE WALK (in order):
 1. Remaining tla-stats tabs: LP Grades, LP Stats, TLA Stats — same method
    (screenshots + HAR, mechanical first, then presentation).
