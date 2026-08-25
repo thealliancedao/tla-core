@@ -137,6 +137,27 @@ WALK STATUS: home ✓ explorer ✓ (alliances, rarity, release-history, contract
 verify) — NEXT: tla-stats.html and its tabs (857 KB, 9.5 MB first paint: the
 participants 2.3 MB + voting rollups 1.5 MB feeds; presentation redesign per
 tab against the page doctrine hero → sentence → what changed → detail).
+TLA-STATS OVERVIEW TAB — WALK COMPLETE 2026-08-24 (T3.19, gate 36/36; see
+tla-log.md). Products live: tla-flows pressure v1.0 (E192–200, 0 unknown),
+dao-dashboard 1.5 last_claims (all four 2026-07-07 — the July 7 execution
+did deposits + bribes + rebase + locks in one tx). Owner test-drove: waterfall
+✓, Vote Market v3 ✓ after the funding-period catch.
+QUEUE FROM THE WALK (in order):
+1. Remaining tla-stats tabs: LP Grades, LP Stats, TLA Stats — same method
+   (screenshots + HAR, mechanical first, then presentation).
+2. Votion optimizer payload: keep a DAILY write-once copy (votion cron) so the
+   option set / hysteresis become a time series (today: current.json only).
+3. Identify the 4th "single" gauge Votion weighs ($46 incentives) that the TLA
+   snapshot does not know.
+4. LUNA-USDC details drill says "casted −11.84M VP (−83%) vs last payout"
+   while the row says −10% vs locked-in — two baselines, one is wrong for
+   that pool; check with the products in front (rollups vs locked-in).
+5. tla-snapshot cron: attach manager bribes by gauge+bucket AND by funded
+   period (page is period-keyed now; the capture still writes last period's
+   pot as active_now).
+6. Votion per-pool VP daily history (votion cron) so Movers can say how much
+   of a shift was Votion.
+7. IBC-out stream (capture question) → pressure gains a real "left Terra".
 NEXT-SESSION OPENER (proposed): "Read PROJECT_KNOWLEDGE and CHANGES_PENDING,
 then do the LP/ampLP identity fold + amplp_mappings duty (unblocks
 Catalog/Chain-Queries repoints)." — or FUEL route helper (below).
