@@ -108,11 +108,35 @@ DECISION). VERIFY: commit platform-crons first; next org-member-data run logs
 `last_claims: deposit 2026-07-07 · vote 2026-01-11 · rebase 2026-01-11 ·
 locks 2026-07-07`; then index popup shows those dates with tx links and the
 bribe rows read USDC/USDT/SOLID/LUNA; Live Activity opens on aDAO with 10
-rows + Load more; All Current Listings shows "10 of N" + Load more (4.06); open Lion DAO #26 Quick audit → 3,500,000,000 ROAR,
+rows + Load more; All Current Listings shows "10 of N" + Load more (4.06); Pulse Votion rows
+show "0.87% this period · $48.77 expected · TVL" and NO APY (4.07 — the
+7-day realized annualisation mis-stated lumpy arb yield; parked "pulse chart
+revisit" note stands); open Lion DAO #26 Quick audit → 3,500,000,000 ROAR,
 "for pool: ROAR-ampROAR LP", Decoded messages. Parking lot
 from HARs: `assets/planets/` is 65 MB of PNGs (only two referenced; convert
 on use, never bulk); footer health dot = 20 tiny heartbeat reads per page —
 by design (live dot), not a cost.
+INDEX 4.07–4.09 (owner): Pulse Votion rows — annualised APR/APY REMOVED
+(7.7-day realized windows mis-stated lumpy arb yield: our 39.4% vs Eris
+15.6%), then the rows themselves removed; Pulse is 5×5 with Votion vault TVL
+on the right. Listings grid 12 per page. If users' "what do I earn max-locked
+in Votion" is to be answered, capture Votion's DISPLAYED APY verbatim and
+attribute it (probe their backend for the vault APY fields first — the
+optimization endpoint has none); never derive it.
+PARKED (owner idea, 2026-08-24, build after the audit): TOKEN PRESSURE from
+TLA flows — per token per epoch: SELL leg = bribes converted to LSTs by Votion
+vaults (`bribe/claim_bribes` → `zapper/swap`) and other claimers swapping in
+the same tx; BUY leg = amplified-LP compounders re-providing (claim → swap →
+provide_liquidity buys half the reward back into the pool token); net =
+TLA-driven flow nobody else can show. Product `tla-flows/pressure/<token>`
+daily rows, never-shrink; one Pulse panel (7d/30d, two legs stacked). Data
+already captured; one session. Today's bound for CAPA: Votion converts
+~50,000 CAPA/week (~$70) of the 200,000 bribed (its 20–30% share of the two
+CAPA gauges) — and its period-200 plan is EXIT on both CAPA gauges.
+WALK STATUS: home ✓ explorer ✓ (alliances, rarity, release-history, contract,
+verify) — NEXT: tla-stats.html and its tabs (857 KB, 9.5 MB first paint: the
+participants 2.3 MB + voting rollups 1.5 MB feeds; presentation redesign per
+tab against the page doctrine hero → sentence → what changed → detail).
 NEXT-SESSION OPENER (proposed): "Read PROJECT_KNOWLEDGE and CHANGES_PENDING,
 then do the LP/ampLP identity fold + amplp_mappings duty (unblocks
 Catalog/Chain-Queries repoints)." — or FUEL route helper (below).
