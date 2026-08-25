@@ -1,5 +1,20 @@
 # NFT Explorer Changelog
 
+## 2026-08-25 — floor history: real listing history, log scale, bounded oracle, chips, tab sync
+
+The listing band was built from listing-first-seen.json (a 7 KB cron log from
+August) — the builder was written for listing-history.json (3,298 listings with
+every price segment since 2023-12) and now reads it: blue bar = listings that
+period, lowest → highest ask across all markets; yellow bar overlaid = sales,
+lowest → highest, median tick (owner spec). Log scale default (linear/log
+toggle) with a "1 sale ↑" tag on one-sale outlier months (#6067, a Phoenix,
+15,000 bLUNA on 2026-05-22). Oracle lookup bounded to ±7 days; bLUNA falls
+back to LUNA × the nearest bLUNA/LUNA ratio (the old unbounded walk priced a
+Sept-2025 ask at a months-old $0.92 bLUNA → a phantom $51.7K). Chip CSS now
+owned by the app (it had ridden on the stripped inline chrome). Header tab
+highlight synced from switchView (refresh/back/deep link).
+
+
 ## 2026-08-24 — release-history 1.6 — every phase number chain-exact from provenance; estimates retired
 
 Owner walk: the page was "pieced together from sales-bot data and roundabout

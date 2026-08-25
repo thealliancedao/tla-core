@@ -1,5 +1,13 @@
 # Index Page Changelog
 
+## 2026-08-25 — quick-audit engine moved to lib/prop-audit.js (shared with dao.html)
+
+The 194-line audit block (deepDecode, msgShape/shapeCompare/precedentOf,
+resolvers, ledgerOf, ledgerHtml, decodedHtml) extracted verbatim into
+`lib/prop-audit.js`; index configures it (BASE, esc, WATCHED_DAOS, astro pools)
+and pulls the functions from it. gate-index-audit runs Lion #26 through the
+LIBRARY: 8/8 unchanged.
+
 ## 2026-08-25 — legacy chrome strip, batch 1 (12 pages) + adao-lore shared footer
 
 The inline copies of the shared chrome (style#shared-chrome-css, the changelog

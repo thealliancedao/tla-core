@@ -1,5 +1,16 @@
 # docs / ecosystem-knowledge — changelog
 
+## Rev 2.0 — 2026-08-25 — docs hub rebuilt
+
+tla-docs.html rewritten: the curated TLA guide (13 sections + glossary from
+tla-core/docs/tla-docs-content.json — the old page fetched a moved file) plus
+the knowledge base (ecosystem-knowledge/*.md rendered from markdown, grouped:
+how to read this site · the alliance · protocols on the rails · history &
+verification), sidebar with search across all docs, hash deep links, source
+link on every doc, shared chrome. Promoted from Test 2 to a Live tile on
+Tools. Gate `gate-docs.mjs` 5/5.
+
+
 ## 2026-08-24 — one-off Action `fuel-boost-dao-probe` (read-only)
 
 `.github/scripts/fuel-supply/boost-dao-probe.mjs` + `workflows/fuel-boost-dao-probe.yml`.

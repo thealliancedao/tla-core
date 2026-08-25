@@ -1,5 +1,23 @@
 # DAO Changelog
 
+## 2026-08-25 — partner board in the aDAO format · Lion / PixelLions / Both views · quick audit on every proposal · image gateways
+
+Partner leaderboard rebuilt as the aDAO row (medal · tier avatar · name + earned
+title · tier · votes/total · streak · last-20 dots · rate · yes/no/abstain ·
+bar · expand). View switch: 🤝 Both = the combined Ally grade (unchanged, the
+number Allies consumes) · 🦁 Lion DAO · 🎨 PixelLions, each grading the same
+people on that DAO's own proposals; rows carry the other grades in the meta
+line; podium follows the view. Quick audit on every expanded proposal card
+(aDAO, Lion, Pixel) from the shared engine `lib/prop-audit.js` (extracted
+verbatim from index.html — one copy): action ledger with named counterparties,
+precedent vs that DAO's past proposals, decoded messages; keyed by DAO + id
+because ids repeat across DAOs. Member images: IPFS gateway chain reordered
+(w3s / pinata / filebase / nftstorage / 4everland before dweb.link and ipfs.io,
+which now answer 403 NotSameOrigin to embedded images); Stargaze resize URLs
+(dead host) unwrapped to their ipfs path. Gate `gate-dao.mjs` 7/7 on committed
+products from tla-core + dao-originations.
+
+
 ## Treasury 3.1 / TLA-Deposits 3.1 — 2026-08-23 — audit arc milestone
 
 Both pages marked at 3.1 to close the reconciliation-audit arc: treasury and

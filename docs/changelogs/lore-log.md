@@ -1,5 +1,16 @@
 # aDAO Lore Changelog
 
+## Rev 2.9 — 2026-08-25 — shared footer · 7 MB → 376 KB · Compare clear of Help · "Cristall"
+
+Inline chrome stripped, SiteFooter mounted (Rev 2.9 carried). Phoenix Example
+(4.0 MB → 306 KB) and Sindarin Fire Saber (3.0 MB → 70 KB) as WebP; BNB logo
+404 (case) fixed. Compare button moved left of the site-wide Help launcher.
+Content: the planet is "Cristall" in the on-chain metadata (Cristall
+North/South; Cristallian objects) — nine "Crystall" mentions corrected; every
+other planet name matches the trait dictionary. Lore text mirrored into the
+bot corpus (ecosystem-knowledge/alliance-dao-lore.md).
+
+
 This is the change history for `adao-lore.html` (the Galaxy Map / Lore page).
 Newest revisions on top. Times are UTC.
 

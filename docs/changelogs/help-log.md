@@ -1,5 +1,15 @@
 # Help Page Changelog
 
+## v1.13.0 — 2026-08-25 — DAO page + lore in the corpus; governance products readable
+
+Corpus: `dao-governance-page.md` (grades incl. the Ally average, tiers, titles,
+streaks, Nakamoto, quick audit semantics, file paths) and `alliance-dao-lore.md`
+(the lore page's text in order + the trait dictionary). Products:
+`dao_proposals_adao/lion/pixel`, `dao_members_*` via a new `dao-originations/`
+read_product prefix (fetches the dao-originations repo; adao / lion-dao /
+pixel-lions folders only).
+
+
 ## v1.12.0 — 2026-08-25 — grading & voting guide in the corpus; lp_grades + pd_bribe_fit readable
 
 Corpus: `ecosystem-knowledge/lp-grades-and-voting.md` (how pools are graded,
