@@ -1,5 +1,20 @@
 # Index Page Changelog
 
+## 2026-08-24 — index 4.07 — Pulse Votion rows: annualised figures removed, per-period reward kept
+
+Owner: Votion's page shows ampLUNA-Max asset 36.87% / arbLUNA-Max 16.57%
+(Eris 36.81 / 15.63); ours showed 34.8% / 39.4%. Diagnosis from the product's
+own basis notes: the headline was `realized_7d` — vault exchange-rate growth
+over a 7.7-day window compounded to a year, and the "asset" leg the same on
+the LST hub rate. Fine for ampLUNA; wrong for arbLUNA, whose vault books
+profit in lumps (0.70% in one week → 39% "APY" against a real ~16%). A week
+is not a rate. What matches Votion to the cent is the forward leg: expected
+reward $48.77 / $262.12 per period (Votion: $49.05 / $263.63) and 0.87% /
+0.79% of TVL. The rows now show exactly that — % this period, $ expected,
+TVL, link — and no APR/APY at all; the tooltip says why. The realized series
+stays in the product (labeled measured) for anyone who wants it; the page no
+longer headlines it.
+
 ## 2026-08-24 — index 4.06 — All Current Listings 10 at a time
 
 Same treatment as the activity feed, and the bigger win: 63 listing cards each
