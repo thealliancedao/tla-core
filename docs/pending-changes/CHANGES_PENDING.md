@@ -158,6 +158,15 @@ S1 PD Bribe Tracker BUILT (tla-voting 2.5.0 pd-bribe-fit, gate 10/10; tab
 section, page gate 43/43). Build order S1 tracker → S2 grading v2 →
 S3 Vote Advisor v2 (flagship: optimizer + reasons + what-if + compare-to-Votion
 + proposal JSON + public track record).
+MILESTONE 2026-08-25 — tla-stats.html WALK COMPLETE (T3.20): LP Grades
+rebuilt (S1 tracker, S2 grading v2, S3 Advisor v2, guide + bot), Pools tab
+merged, dead TLA tab + inline chrome stripped (batch 1, 12 pages), lore
+footer shared. Products live: lp-grades 2.0.0, tla-voting 2.5.0 (pd-bribe-fit),
+help-agent 1.12.0. NEXT: adao-lore.html walk. Follow-ups from tonight:
+Advisor track record (cron write from E201); compare-to-Votion view; capture
+gaps (Credia market → wBTC.creda.a Work lens; SS volume); tool pages keep own
+chrome; dead bottom-nav CSS in 3 stylesheets; gate-verify expects 60
+contracts once known_contracts (register) is committed.
 QUEUE FROM THE WALK (in order):
 1. Remaining tla-stats tabs: LP Grades, LP Stats, TLA Stats — same method
    (screenshots + HAR, mechanical first, then presentation).
