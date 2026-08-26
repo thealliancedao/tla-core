@@ -80,11 +80,26 @@ log or artifact.
    event on a pool that migrated contracts).
 3. Spot-check one pair at epoch 150 against the probe artifact (same height →
    byte-equal reserves/total_share).
-4. `compounder.rates` count rises monotonically across epochs; `lp_per_amplp`
-   ≥ 1 and non-decreasing per asset (compounding only grows it — a DROP is an
-   anomaly worth a look).
+4. ~~`lp_per_amplp` non-decreasing~~ WRONG expectation, corrected on the first
+   live run (2026-08-26): `lp_per_amplp` is the POST-TAKE ratio. Single-asset
+   gauges have nothing to compound into, so their ratio DECAYS by the take rate
+   every week (e.g. single/terra16z3… 1.3338 → 1.3312 → …); LP gauges rise only
+   when compounding beats the take. 1,496 weekly drops and four assets below 1.0
+   are the system, not a fault. The count of rated assets does rise (33 → 65).
 5. Hub ratios vs `price-history/ratios/<yyyy>/<mm>.json` at the boundary date:
    agree to the 4th decimal (chain_exact both sides).
+
+## 7b. FIRST LIVE RUN — 2026-08-26 — VERIFIED
+104/104 complete, span [97, 200], 7,808 reads, 0 retries, 0 depth failures, 37 min.
+FINDINGS: (a) `price-history/ratios` rows tiered `interpolated` (everything
+before 2026-06) are 10–15% ABOVE chain in 2024–2025 (ampLUNA @E100: chain
+1.455, series 1.609; converges to exact by 2026-07) — a straight line through
+a curve; every historical LST valuation in the P&L inherits it → RE-ANCHOR the
+series from these weekly chain points (labeled repair, queued). (b) bLUNA's hub
+ratio is FLAT at 1.76987855 at every boundary since June 2026 — the Backbone
+hub is paused or the field is stale; not to be shown as earning until known.
+(c) one unresolved key `cw20:terra1jjvy4s4…` = wBTC.creda.a (a Credia receipt,
+a SINGLE gauge entry, not an LP) — reclassify in lib.js buildTargets.
 
 ## 8. Next (consumer)
 

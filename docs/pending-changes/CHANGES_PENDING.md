@@ -19,12 +19,47 @@ on the real archive: LCD transport, zero depth failures back to epoch 100
 HTTP-500 wasm shapes; write-once, resumable, budgeted, checkpointed). OWNER:
 dispatch `dex-state-history` with defaults (≈2 h, ≈70 reads/epoch, serial);
 re-dispatch if it budget-stops; then walk SPEC §7 VERIFY. Build order after it:
-(2) re-walk the 5,551 non-v4 events (1,144 v1 FCD-era + 4,419 v3 in 2026-06/07,
-archive-only now) · (3) build-pnl v3 — measured amp-rate curve, value curve per
+(2) SHIPPED same session: `tla-flows-rewalk-by-hash` — every record below v4 re-read
+BY TXHASH (no block walk): FCD era from archive/fcd locally (zero network), the
+2026-06→08 window ~4,700 serial reads on the archive LCD; live classifier via dual
+checkout. FINDING: the 867 FCD-era + 222 2026 "v1 claims" are the stable bucket's
+epoch take-rate distributions misread by v1 (user = the staking contract, which
+the P&L rollup was carrying as a member with 1,089 claims); +55 Votion vault
+compounds. The live classifier rejects all — they are RETRACTED by label
+(`retracted:{at,by,reason}`), never deleted; build-pnl now skips + reconciles
+them (`sources.retracted_events`). OWNER: dispatch dry_run=1 (report only), then
+dry_run=0 after the sampler finishes (same archive-node group — it queues); then
+dispatch tla-flows-pnl. Gate: 50 downgraded records re-classified byte-identical
+to their committed v4 originals · (3) build-pnl v3 — measured amp-rate curve, value curve per
 epoch, FIFO round trips, attribution · (4) picker "View portfolio →" tile on
 every page + member-portfolio rebuild on the v3 products. Doctrine learned: the
 archive LCD wraps wasm answers in HTTP 500 — a chain answer is never a retry;
 absent-vs-depth must be decided by the body, depth checked first.
+
+## 2026-08-26 — side track: "New Here? → TLA" (SPEC-new-here-tla.md)
+Data layer SHIPPED: org-votion 1.4.0 Branch D → `votion/yields/current.json`
+(vault / LST / native APR+APY, 7/14/30d, Eris formula + independent measurement,
+sources labeled). Gates 48/48 + 13/13. OWNER: deploy platform-crons; after the
+first hourly run walk SPEC §3 VERIFY (esp. whether the arbLUNA hub answers
+`exchange_rates(limit)`). PAGE SHIPPED same session: new-here-tla.html 1.0 (four routes incl. Credia; gate
+27/27 on committed products + labeled yields fixture) + site-header two-track
+"New here?" drop. Native staking APR now CHAIN-DERIVED in Branch D (provisions ÷ bonded ÷ alliance
+weights; gross = Allnodes' 37.78%, stakers' = SmartStake's 27.6% — the spread
+explained); the SmartStake CSV becomes a reference, not an input. After the
+yields deploy: eyes-on walk, then help-agent corpus.
+dex-state-history FIRST RUN VERIFIED (104/104, 0 depth failures) — SPEC §7b.
+QUEUED from it: ratio re-anchor (price-history/ratios `interpolated` rows are
+10–15% high in 2024–25 — P&L cost basis inherits it); bLUNA hub flat since
+June (paused?); wBTC.creda.a reclassify as single. new-here-tla: native APR now
+has a MANUAL OVERRIDE + validator-commission input with the honesty note ("no
+verified live feed"); URL carries apr=/comm=. Gate 32/32.
+Public endpoints found by owner 2026-08-26: `https://terra-lcd.stakely.io` (6-node LB)
+and `https://terra-rpc.stakely.io` (7-node LB) — added as THIRD fallback in
+new-here-tla.html and org-votion. OWNER: run `dex-state-history-probe` with
+`lcd_override=https://terra-lcd.stakely.io` — if it answers epoch 100, that is a
+public archive alternative and the genesis-walk clock stops mattering.
+FOUND: `price-history/ratios` daily series stops 2026-07-16 (heartbeat 07-17) —
+network-and-prices cron needs a look on Render.
 
 ## NEXT MILESTONE CANDIDATES (owner picks one to open)
 A. **Portfolio P&L + Member Portfolio rebuild** — the announcement blocker
