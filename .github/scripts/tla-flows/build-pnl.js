@@ -225,6 +225,7 @@ function main() {
     const meta = {
         events_read: 0, by_type: { deposit: 0, withdraw: 0, claim: 0 },
         null_user_events: { deposit: 0, withdraw: 0, claim: 0 },
+        retracted_events: { deposit: 0, withdraw: 0, claim: 0 },   // rewalk-by-hash labels (not member flows) — counted, never valued
         months_read: [], price_fallback_legs: 0,
         unpriced_input_legs: 0, unpriced_fee_legs: 0,
         unknown_denoms: {},
@@ -281,6 +282,7 @@ function main() {
             const type = e.type;
             if (!(type in meta.by_type)) continue;
             meta.by_type[type]++;
+            if (e.retracted) { meta.retracted_events[type]++; continue; }
             if (!e.user) { meta.null_user_events[type]++; continue; }
             const w = W(e.user);
             const date = (e.timestamp || '').slice(0, 10);
@@ -430,7 +432,7 @@ function main() {
 
     // ── Honesty assertions (abort — never publish inconsistent data) ────────
     for (const t of ['deposit', 'withdraw', 'claim']) {
-        const sum = walletRows.reduce((s, r) => s + r.counts[t], 0) + meta.null_user_events[t];
+        const sum = walletRows.reduce((s, r) => s + r.counts[t], 0) + meta.null_user_events[t] + meta.retracted_events[t];
         if (sum !== meta.by_type[t]) fail(`${t} reconcile ${sum} != ${meta.by_type[t]}`);
     }
     const claimSum = walletRows.reduce((s, r) => s + r.counts.claim, 0);
@@ -459,6 +461,7 @@ function main() {
             events_read: meta.events_read,
             events_by_type: meta.by_type,
             null_user_events: meta.null_user_events,
+            retracted_events: meta.retracted_events,
             months_read: meta.months_read,
             price_history_months: prices.months,
             known_gaps: index.known_gaps || [],
