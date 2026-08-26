@@ -176,6 +176,14 @@ oracle; help-agent 1.13.0. Remaining from the owner's list: dao.html
 old-code hunt beyond the chrome/gateways (nothing points at a retired repo);
 tool pages keep own chrome; dead bottom-nav CSS in 3 stylesheets. tla-docs.html REBUILT (Rev 2.0, gate 5/5). NEXT: Advisor track-record cron +
 compare-to-Votion view; capture gaps (Credia market, SS volume).
+CRON FLEET (2026-08-25): docs/CRON-FLEET.md is the registry (14 jobs, schedules,
+feeds). 23:00 member-data failure = top-of-hour branch race (tla-voting + three
+*/15 jobs commit at :00); publishers now 8× patient. OWNER TO SET IN RENDER:
+dex-data → :30, member-data → :45, tla-flows 2/17/32/47, nft-flows 7/22/37/52,
+nft-inventory 12/27/42/57, token-catalog 35 */6, dao-governance 25 */6 (then
+mirror in lib/cron-registry.js if a cadence changes — none do). Watch:
+tla-snapshot "votion: no recent file found" at :00 despite votion at :20.
+Footer v3.4: builder's note + copyable address.
 QUEUE FROM THE WALK (in order):
 1. Remaining tla-stats tabs: LP Grades, LP Stats, TLA Stats — same method
    (screenshots + HAR, mechanical first, then presentation).
