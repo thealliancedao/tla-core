@@ -63,6 +63,12 @@ before validator commission; `apr_gross` is the validator-site number; inputs
 published). Read `source` before quoting a number (`ratio_series_stale` means
 the fallback series is behind). Daily copies in `votion/yields/daily/`.
 
+## Credia rates over time ("what was the LUNA borrow rate last week?")
+`dex-data/credia/rates/<yyyy>/<mm>.json` — hourly points per market from Credia's
+OFF-CHAIN indexer (borrow_apr, supply_apr, utilization, totals, oracle price),
+grow-only, prior-verbatim; `rates/current.json` = 7-day min/max/latest per
+market. Chain truth for the current hour stays `dex-data/credia/snapshots`.
+
 ## Prices
 Live: `network-and-prices/daily/<date>.json` (15-day retention;
 `luna_market.usd_price`). Deeper daily LUNA: tla-snapshot dailies
