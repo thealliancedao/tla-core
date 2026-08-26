@@ -1,172 +1,29 @@
-# CHANGES_PENDING — session queue & state
-SHIPPED 2026-08-24 (late session, two deliveries) — capa-supply v2.0 → v2.1 +
-ampcapa-tool 2.1 → 2.2 + fold Action:
-- v2.0 FIRST LIVE RUN VERIFIED 18:09Z: ok, 13/13 sum guards to the digit,
-  4,923 holders / 215 published / tail 4,708 = 2.12M CAPA, claims 483/0,
-  148 KB; owner row exactly as the fixture predicted (gov 1,141,022 · receipt
-  in DAO 7,275,285 · unbonding 808,365); `gov_balance_beyond_shares` =
-  200,000.000 exactly = a live Solid poll deposit. Floor stays 10K.
-- v2.1: compact per-wallet daily `supply/capa/wallets-daily/<date>.json` +
-  day index (never-shrink; capture never demoted to legacy); exports
-  legacyIndexRow / foldIndexRows / upsertDailyIndex. Gate 66/66.
-- tla-core one-off Action `capa-supply-fold-legacy.yml` (+ script): folds the
-  retired ampcapa-data_2026 weeklies 181–197 + monthlies under prior-verbatim
-  / never-shrink / labeled `legacy_fold`; proven locally on the real feed
-  (+20 index rows, 19 days, idempotent, captured day untouched).
-- ampcapa-tool 2.2: members-tab Δ periods read wallets-daily (badge names the
-  comparison day, "(legacy weekly)" when folded, null → NEW never a number);
-  ZERO reads of the personal repo remain; whale rows show VERIFIED labels
-  from catalog/trusted. Gate 41/41.
-VERIFY ON ARRIVAL: (1) next org-token-catalog run logs
-`wallets-daily/2026-08-2x.json (N rows) + index (1 days)`; (2) run the fold
-Action dry_run=true → log ends "+20 legacy rows … 21 rows 2026-04-19→2026-08-2x
-· wallets-daily: 19 written" (dates ≠ the captured day); then dry_run=false →
-commit lands wallets-daily/*.json + index.json; (3) ampcapa-tool → DAO
-Members → 24H badge "24H vs <yesterday>" once two captured days exist, 7D/30D
-badges "(legacy weekly)" until the org series is 7/30 days deep; deltas
-non-blank for members present on the comparison day; (4) CAPA Whales rows for
-the PD DAO core / Solid contracts now carry their verified labels.
-RENDER FLEET = ORG ONLY (owner console 2026-08-24, screenshot): 14 jobs —
-org-token-catalog, org-system-health, tla-help-agent, org-nft-flows,
-org-nft-inventory, org-tla-flows, org-member-data, org-votion,
-org-dao-governance, org-address-catalog, nap-org, org-lp-grades,
-org-tla-voting, org-dex-data. The ampCAPA Snapshot job, the votion pair and
-every other mid-fleet/legacy job are ALREADY GONE — the "retire the job"
-step and the standing "Render parallel pairs" housekeeping item are CLOSED.
-Only step left for the legacy feed: after the fold Action commits, ARCHIVE
-(not delete) `defipatriot/ampcapa-data_2026` — nothing reads it (zero site
-refs), and its weeklies are the fold's provenance.
-LATER SAME SESSION — owner walk of the tool + FUEL page:
-- ampcapa-tool 2.3: CAPA-in-TLA-LP tab rebuilt from the product with the five
-  TLA-side forms the owner named (LP not in TLA · LP TLA amplified · LP TLA
-  plain · ampCAPA TLA plain · ampCAPA amplified not in DAO). Gate 53/53.
-- Double-count question (whale row #3): ANSWERED from live data — plain stake
-  keyed by the wallet, amplified keyed by the compounder; Σ holders' receipt
-  forms 50,575,920 = receipt supply × rates = compounder entry 50,575,748.
-- fuel-tool 2.2: whales table legible (was styled as a caption).
-- ~~fuel-boost-dao-probe~~ RAN 19:27Z (46 stakers Σ == power == bank;
-  treasury 42.44M; native 99.86M) → **fuel-supply v1.0 duty BUILT** in
-  org-token-catalog (`supply/fuel/{current,wallets,index}.json`, 5 guards
-  incl. cross-chain escrow; gate 17/17) + **fuel-tool 2.3** (supply-map strip
-  + Boost DAO stakers section, 14/14; dead FUEL_POOL pass removed) +
-  system-health 1.0.4 (35/35) + cron-registry + help-agent v1.11.6 +
-  DATA-MAP. Render: org-token-catalog needs NO new env (Neutron LCD defaults
-  to publicnode; `NEUTRON_LCD` overrides).
-VERIFY ON ARRIVAL (this batch): ampcapa-tool → CAPA IN TLA LP → source line
-"cron product … 13/13 green", five columns populated (treasury: LP amp
-~129,859 · LP plain ~109,877 · ampCAPA amp ~448,781), "Show Protocol
-Contracts" reveals the ve3 compounder row at ~50.6M ampCAPA · TLA plain;
-fuel-tool → FUEL Whales rows readable at a glance. FUEL first live run:
-org-token-catalog log line `supply/fuel/{current,wallets}.json (ok — stakers
-46, …, bridged N, rows R + tail T)` — if bridged is null, paste the
-query_errors line (escrow resolution is the one read without a probe
-fixture); then fuel-tool → FUEL SUPPLY MAP bar + Boost DAO stakers section
-(your own Boost position if any, unbonding chips).
-SLIPPAGE.HTML REV 3.0 — TRADE PLANNER (owner: "make it a real tool", 2026-08-24
-late): from→to routes across every captured pool (direct / any two-hop /
-split), size ladder + largest-under-limit solve, wallet liquid balances (live),
-market context (price-history 90d + dex-data rolling volume/TVL + stable peg
-lines) framed as context not advice, warnings, execution recipe, ?from/?to deep
-links (fuel-tool 2.4 links in). Gate 20/20 on committed reserves. Full entry:
-changelogs/slippage-log.md. VERIFY: open slippage.html, pick your wallet in
-the header → CAPA chip first with its $ value; TO = ASTRO, $150 → route via
-LUNA, ≤3.00% impact / 3.58% with fees, red "over your 1% limit — largest under
-1%: $19"; ladder; FUEL/SOLID context cards; recipe. Then the ideas queue below.
-PLANNER IDEAS QUEUE (not built — owner to prioritize): (1) per-pool fee rates
-from chain instead of the assumed 0.3% (Astroport pair `config`/PCL params);
-(2) exact PCL/stableswap math for curved legs (today: xyk bound, labeled ≤);
-(3) "notify me" — no backend; would be a cron product (alerts) + page poll;
-(4) portfolio rebalance mode (many-to-one / one-to-many, Odos-style);
-(5) bribe-cycle context ("this token is a live bribe in epoch N — demand from
-voters, settles Wednesday"); (6) LP-entry mode: is this pool deep enough for
-the LP size I plan, what share of the pool would I be; (7) history-aware
-warnings ("this pool's TVL halved in the last 30d") once the slim daily
-row-series cron (index perf item) exists — same data, cheaper reads.
-PAGE WALK — MECHANICAL PASS DONE 2026-08-24 (owner away from Eris; the two
-eyes-on checks remain): record `AUDIT-page-walk-2026-08-24.md`. Fixed:
-release-history 1.5 (org floor; $43 phantom gone), fuel-tool 2.5 (9.4 →
-1.86 MB), index 4.03 / dao 1.10 / tla-stats T3.18 (retired-repo links).
-Queued from it: BATCH 4 legacy chrome strip = 15 pages (5 need shared chrome
-mounted first) — owner-present batch; heavy pages (index 33 MB, tla-stats
-9.5 MB, member-portfolio 5.5 MB) → slim daily series (core item 4);
-tla-catalog / chain-queries still on the legacy registry → identity fold
-(core item 3). Eyes-on checks (story shape, bot) on index, tla-stats, dao,
-member-portfolio when Eris resolves.
-OWNER EYES-ON WALK (2026-08-24, in progress): alliances ✓ (1.5: front
-door + 3.2 MB → 213 KB image) · rarity-explained ✓ (1.1: three factual
-corrections + BBL capture date; everything else reproduced from the data).
-release-history ✓ (1.6: chain-exact phases from provenance; knowledge base
-+5 facts incl. Ally reward_weight 0.008 / gov prop 4801 — housekeeping item
-"ally reward_weight fact" CLOSED; rewards-share tile still open, needs a
-live /terra/alliances read). verify.html 1.0 ✓ (contracts/code/audits/governance/data; register +minter).
-Owner walk of alliances / rarity / release-history / contract: COMPLETE.
-INDEX 4.05 (owner's five items): rewards popup → products (dao-dashboard 1.5
-`last_claims`; catalog names) ✓ · activity feed aDAO-first, 10 per page ✓ ·
-proposal quick-audit amounts/pools + Decoded messages view ✓ (gate 8/8) ·
-news feed → SPEC-news-feed (capture question; X needs a paid key — OWNER
-DECISION). VERIFY: commit platform-crons first; next org-member-data run logs
-`last_claims: deposit 2026-07-07 · vote 2026-01-11 · rebase 2026-01-11 ·
-locks 2026-07-07`; then index popup shows those dates with tx links and the
-bribe rows read USDC/USDT/SOLID/LUNA; Live Activity opens on aDAO with 10
-rows + Load more; All Current Listings shows "10 of N" + Load more (4.06); Pulse Votion rows
-show "0.87% this period · $48.77 expected · TVL" and NO APY (4.07 — the
-7-day realized annualisation mis-stated lumpy arb yield; parked "pulse chart
-revisit" note stands); open Lion DAO #26 Quick audit → 3,500,000,000 ROAR,
-"for pool: ROAR-ampROAR LP", Decoded messages. Parking lot
-from HARs: `assets/planets/` is 65 MB of PNGs (only two referenced; convert
-on use, never bulk); footer health dot = 20 tiny heartbeat reads per page —
-by design (live dot), not a cost.
-INDEX 4.07–4.09 (owner): Pulse Votion rows — annualised APR/APY REMOVED
-(7.7-day realized windows mis-stated lumpy arb yield: our 39.4% vs Eris
-15.6%), then the rows themselves removed; Pulse is 5×5 with Votion vault TVL
-on the right. Listings grid 12 per page. If users' "what do I earn max-locked
-in Votion" is to be answered, capture Votion's DISPLAYED APY verbatim and
-attribute it (probe their backend for the vault APY fields first — the
-optimization endpoint has none); never derive it.
-PARKED (owner idea, 2026-08-24, build after the audit): TOKEN PRESSURE from
-TLA flows — per token per epoch: SELL leg = bribes converted to LSTs by Votion
-vaults (`bribe/claim_bribes` → `zapper/swap`) and other claimers swapping in
-the same tx; BUY leg = amplified-LP compounders re-providing (claim → swap →
-provide_liquidity buys half the reward back into the pool token); net =
-TLA-driven flow nobody else can show. Product `tla-flows/pressure/<token>`
-daily rows, never-shrink; one Pulse panel (7d/30d, two legs stacked). Data
-already captured; one session. Today's bound for CAPA: Votion converts
-~50,000 CAPA/week (~$70) of the 200,000 bribed (its 20–30% share of the two
-CAPA gauges) — and its period-200 plan is EXIT on both CAPA gauges.
-WALK STATUS: home ✓ explorer ✓ (alliances, rarity, release-history, contract,
-verify) — NEXT: tla-stats.html and its tabs (857 KB, 9.5 MB first paint: the
-participants 2.3 MB + voting rollups 1.5 MB feeds; presentation redesign per
-tab against the page doctrine hero → sentence → what changed → detail).
-TLA-STATS OVERVIEW TAB — WALK COMPLETE 2026-08-24 (T3.19, gate 36/36; see
-tla-log.md). Products live: tla-flows pressure v1.0 (E192–200, 0 unknown),
-dao-dashboard 1.5 last_claims (all four 2026-07-07 — the July 7 execution
-did deposits + bribes + rebase + locks in one tx). Owner test-drove: waterfall
-✓, Vote Market v3 ✓ after the funding-period catch.
-LP GRADES TAB — GROUND-ZERO REDESIGN DRAFTED 2026-08-25 → SPEC-lp-grades-v2.md
-(supersedes SPEC-lp-grades-rework; folds SPEC-pd-bribe-drift + directive-watch).
-Findings that shaped it (measured): Votion reproducible; pots period-keyed;
-69–78% of rewards recompounded; PD's allocation does NOT follow its stated
-"trading efficiency + volume" criterion (56%/72% of LUNA to top-half pools;
-PAXG-WBTC ranked 16/17 and got the 3rd-largest slice both windows; LUNA-USDC /
-USDT / EURe / SOLID top-11 by efficiency both windows, never bribed; drift
-inside the 4-epoch windows is real); the 4th single gauge = wBTC.creda.a
-(PD bribes it, Votion weighs it, our snapshot omits it — Credia gap).
-D1–D4 DECIDED (in the spec). Advisor doctrine: votes are EARNED (≥4 epochs
-solid performance, or a declared greater-good reason for new/inactive/
-unsupported pools); bribes never a factor (bonus line only); recommend seldom.
-S1 PD Bribe Tracker BUILT (tla-voting 2.5.0 pd-bribe-fit, gate 10/10; tab
-section, page gate 43/43). Build order S1 tracker → S2 grading v2 →
-S3 Vote Advisor v2 (flagship: optimizer + reasons + what-if + compare-to-Votion
-+ proposal JSON + public track record).
-MILESTONE 2026-08-25 — tla-stats.html WALK COMPLETE (T3.20): LP Grades
-rebuilt (S1 tracker, S2 grading v2, S3 Advisor v2, guide + bot), Pools tab
-merged, dead TLA tab + inline chrome stripped (batch 1, 12 pages), lore
-footer shared. Products live: lp-grades 2.0.0, tla-voting 2.5.0 (pd-bribe-fit),
-help-agent 1.12.0. NEXT: adao-lore.html walk. Follow-ups from tonight:
-Advisor track record (cron write from E201); compare-to-Votion view; capture
-gaps (Credia market → wBTC.creda.a Work lens; SS volume); tool pages keep own
-chrome; dead bottom-nav CSS in 3 stylesheets; gate-verify expects 60
-contracts once known_contracts (register) is committed.
+# CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
+
+## STATE AT CLOSE 2026-08-25 (late) — the platform walk is DONE
+Every page has been walked with the owner (index, ally, alliances, rarity,
+release-history, verify, tla-stats all tabs, NFT explorer analytics, DAO, lore,
+docs, tools) — legacy chrome stripped, dead code out, every page on shared
+chrome, gates green: tla-stats 64/64 · index-audit 8/8 · dao 7/7 · docs 5/5 ·
+release-history 12/12 · verify 6/6 (needs known_contracts on main) · planner
+20/20 · fuel-tool 14/14 · lp-grades v2 8/8 · pd-bribe-fit 10/10 · pressure 12/12.
+Crons: lp-grades 2.0.0, tla-voting 2.5.0, tla-flows 3.2, dao-dashboard 1.6,
+help-agent 1.13.2 — all on main and running. New pages: new-here.html,
+tla-docs.html Rev 2.0. OWNER TO DO IN RENDER: the schedule stagger in
+docs/CRON-FLEET.md.
+
+## NEXT MILESTONE CANDIDATES (owner picks one to open)
+A. **Portfolio P&L + Member Portfolio rebuild** — the announcement blocker
+   (SPEC-portfolio-pnl; cost-basis coverage; Test 1 on Tools is the old build).
+B. **Advisor track record + compare-to-Votion** — cron writes the
+   recommendation per epoch (E201+), page shows adopted/outcome; the Votion-
+   objective allocation side by side.
+C. **Capture gaps** — Credia market (wBTC.creda.a Work lens), SkeletonSwap
+   volume, per-pool LP holder concentration, daily Votion worksheet copy.
+D. **Pre-announcement gate #0** — side-by-side reconciliation of every headline
+   number vs the UIs members trust (Eris VP/incentives, Astroport TVL, DAODAO).
+E. **Films** — the New Here episodes (kit is written); wire them in when cut.
+
 MILESTONE 2026-08-25 (evening) — DAO + LORE + EXPLORER FLOOR CHART. dao.html:
 partner board = aDAO format, Both/Lion/Pixel views (Ally grade preserved),
 quick audit on every proposal via shared lib/prop-audit.js, image gateways;
