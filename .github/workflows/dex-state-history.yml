@@ -1,0 +1,78 @@
+name: dex-state-history
+
+# THE DUTY (2026-08-26): per-epoch pool state to genesis from the ARCHIVE node →
+# dex-data/state-history/epochs/<epoch>.json (write-once), index.json, cursor.json.
+# Probe #1 (2026-08-26) proved the shapes: LCD transport, full depth at epoch 100,
+# 67/67 pairs at epoch 199. Unlocks the portfolio value curve, amplified-rate
+# history and LP unit → token decomposition for every epoch since TLA genesis.
+#
+# Archive discipline: secrets only; SERIAL requests with spacing; ~60–75 reads per
+# epoch (born-later pools are not queried); chain answers never retried; breaker
+# on 5 consecutive transport failures; checkpoint commits every 8 epochs; clean
+# stop at the time budget — RE-DISPATCH to continue, it resumes (write-once).
+# Shares the `archive-node` concurrency group with the probe so nothing
+# archive-bound ever runs twice at once.
+
+on:
+  workflow_dispatch:
+    inputs:
+      epoch_from:
+        description: 'First epoch (blank = first boundary the event corpus can place, 97)'
+        required: false
+        default: ''
+      epoch_to:
+        description: 'Last epoch (blank = latest boundary that has started)'
+        required: false
+        default: ''
+      dry_run:
+        description: '1 = sample but write/commit nothing'
+        required: false
+        default: '0'
+      force:
+        description: '1 = resample epochs already complete (write-once override — use only for a schema change)'
+        required: false
+        default: '0'
+      req_delay_ms:
+        description: 'Spacing between archive requests (ms)'
+        required: false
+        default: '150'
+      time_budget_min:
+        description: 'Clean stop after this many minutes (Actions hard limit 360)'
+        required: false
+        default: '300'
+  schedule:
+    - cron: '50 2 * * 1'   # Mondays 02:50 UTC — picks up the boundary that started Monday 00:00 (one epoch ≈ 70 reads)
+
+permissions:
+  contents: write
+
+concurrency:
+  group: archive-node
+  cancel-in-progress: false
+
+jobs:
+  sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Git identity (checkpoint commits)
+        run: |
+          git config user.name "dex-state-history[bot]"
+          git config user.email "actions@users.noreply.github.com"
+      - name: Sample epoch boundaries
+        env:
+          ARCHIVE_LCD: ${{ secrets.ARCHIVE_LCD }}
+          ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
+          EPOCH_FROM: ${{ inputs.epoch_from }}
+          EPOCH_TO: ${{ inputs.epoch_to }}
+          DRY_RUN: ${{ inputs.dry_run || '0' }}
+          FORCE: ${{ inputs.force || '0' }}
+          REQ_DELAY_MS: ${{ inputs.req_delay_ms || '150' }}
+          TIME_BUDGET_MIN: ${{ inputs.time_budget_min || '300' }}
+        run: node .github/scripts/dex-state-history/sample.js
