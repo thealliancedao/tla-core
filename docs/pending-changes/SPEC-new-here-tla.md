@@ -81,6 +81,28 @@ LUNA-governance VP concentration; Votion's lock leaf carries the 2 + 2 year cloc
 receipt is not) — both also as tiles on the Votion screen. Route screens draw
 colored spokes from the hub node to each tile.
 
+## 3d. Owner's third walk — 2026-08-26 — all in
+Colors: native orange · TLA yellow · Votion green · Credia purple. The web uses
+the room: 280-wide hubs with a second line (TLA: LST yield AND VP), 12 leaves +
+2 dashed sub-leaves, every leaf has a `?` mini-popup (dynamic where there is
+data). The loop moved to the Credia hub and, after the owner's Credia table (2026-08-26),
+reduced to what chain verifies: ampLP markets are SUPPLY-ONLY collateral (45% LTV,
+not borrowable); the real loop is LST collateral (70% LTV) → borrow LUNA (14.24%)
+→ bond → repeat — positive carry only while LST yield > borrow rate (computed
+live; 3.33× at 70%). Credia's displayed ampLUNA supply APY 36.79% = the LST yield
+passing through (our hub read 36.86% — a second source agreeing). wBTC/Solid legs
+are NOT described. The LUNA amount is a card in
+the center of the web with its own input + chips.
+**LP boost simulator** (TLA screen, `#sim`): pick a pool (eris-apr's 20+) or —
+with a wallet selected in the picker — one of your own TLA positions (participants
+product, deposit prefilled); model: emissions to a pool = bucket rewards/yr ×
+vote share; share' = (v + a)/(V_b + a) with all your VP in that pool; pool APY
+before → after by Eris's own convention (aprToApy(incentive × 0.92) + trading −
+take, from the eris-apr product); your LP's $/yr with and without your votes;
+bribes from that pool vs the bucket's best pot ("voting your own LP costs you the
+difference in bribes, gains you the emissions"). Sanity: the re-derived APR is
+checked against eris-apr's within 2% every render. Gate 42/42.
+
 ## 4. Open capture issue found on the way
 `price-history/ratios` daily series STOPS at 2026-07-16 (heartbeat 07-17) —
 six-week hole. The yields product reads the hubs directly so the page is not
