@@ -32,6 +32,15 @@ pool `name` via `key`.
 `member-data/tla-snapshot/epoch-band-history.json` — active_pools (Astro+SS),
 tla_tvl_usd, luna_price_usd per epoch, E184→now. Semantics match the site band.
 
+## Historical pool state at epoch boundaries ("what were the reserves / LP supply / amp rate at epoch N?")
+`dex-data/state-history/epochs/<epoch>.json` — per TLA epoch START boundary since
+E97 (2024-09): every pair with a TLA flow event by then → `assets` + `total_share`
+at that height; `compounder.rates[]` (lp_per_amplp = the amplified exchange rate);
+`staking.<bucket>`; `lst_hubs.<sym>.ratio`. Classes are honest (`absent` = not yet
+instantiated; never bridged). `index.json` = coverage + the LP→pair registry.
+Sampled from the archive node (SPEC-dex-state-history); `complete:false` epochs
+are being resampled — don't read them as final.
+
 ## NFT staked/held counts over time
 `nfts/adao/snapshots/state-history/{yyyy}/{mm}.json` — daily
 daodao_staked_count, enterprise_staked_count, treasury_held_count to 2025-01
