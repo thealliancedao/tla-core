@@ -1,7 +1,8 @@
 # SPEC — "New Here? → TLA" (the LUNA holder's decision page)
 
-Status: **BUILT & GATED 2026-08-26 — data layer (org-votion 1.4.0 Branch D) +
-page (new-here-tla.html 1.0, gate 27/27) — first live look pending yields deploy** · Origin: community question → owner brief 2026-08-26 · Consumers:
+Status: **SHIPPED 2026-08-26 — data layers live (org-votion 1.4.0 yields; dex-data
+1.3.2 Credia rate history), page new-here-tla.html 1.0 walked three times with the
+owner, gate 44/44. Open: help-agent corpus; take-rate leg measurement.** · Origin: community question → owner brief 2026-08-26 · Consumers:
 `new-here-tla.html` (new), help-agent corpus.
 
 ## 1. The page in one line
@@ -102,6 +103,17 @@ take, from the eris-apr product); your LP's $/yr with and without your votes;
 bribes from that pool vs the bucket's best pot ("voting your own LP costs you the
 difference in bribes, gains you the emissions"). Sanity: the re-derived APR is
 checked against eris-apr's within 2% every render. Gate 42/42.
+
+## 3e. Credia rate history (owner: "keep history, live feed not made-up numbers")
+dex-data 1.3.2 `lib/credia-rates.js`: every hour, for every Credia market in the
+snapshot, pull the app's own indexer series (`historyGranularity`, hourly points)
+for the last 8 days → merge into `dex-data/credia/rates/<yyyy>/<mm>.json` keyed
+(market, t), existing point wins, never-shrink asserted, read via the Contents
+API; publish `rates/current.json` with 7-day min/max/latest per market. Labeled
+OFF-CHAIN on every file; the chain snapshot stays truth for "now". Gate 8/8 on
+the REAL indexer responses from the owner's HAR (LUNA borrow 9.0–14.2% over the
+window, 18.6% on Aug 19). The page shows the range on the Credia screen and in
+the loop popup, blank until the first run.
 
 ## 4. Open capture issue found on the way
 `price-history/ratios` daily series STOPS at 2026-07-16 (heartbeat 07-17) —
