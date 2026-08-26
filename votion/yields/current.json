@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "org-votion-1.4.0",
-    "generated_at": "2026-08-26T18:47:00.898Z",
+    "generated_at": "2026-08-26T19:20:05.711Z",
     "status": "partial",
     "windows": [
       7,
@@ -614,27 +614,31 @@
     }
   ],
   "native_staking": {
-    "apr_gross": 0.30516449,
-    "apr_stakers": 0.21828647,
-    "apy_stakers": 0.243862,
+    "apr_gross": 0.30516568,
+    "apr_stakers": 0.21828733,
+    "apy_stakers": 0.243863,
     "inputs": {
-      "annual_provisions_luna": 96474607.36993492,
-      "bonded_luna": 316139689.525345,
+      "annual_provisions_luna": 96475154.80287153,
+      "bonded_luna": 316140251.023356,
       "community_tax": 0,
       "total_reward_weight": 1.3980000000000001,
       "alliances_active": 8
     },
     "source": "chain: /cosmos/mint annual_provisions · /cosmos/staking pool · /cosmos/distribution params · /terra/alliances",
-    "apr_daily_est": null,
-    "apy_est": null,
-    "fee": null,
     "basis_window_days": 30,
-    "method": "PRIMARY apr_stakers = annual_provisions ÷ bonded × (1 − community_tax) ÷ total_reward_weight (Σ active alliance weights + 1), before validator commission; apr_gross = provisions ÷ bonded (what validator sites quote); CROSS-CHECK apr_daily_est = ampLUNA hub 30d daily rate ÷ (1 − protocol_reward_fee). SmartStake CSV (docs/Staking APR.csv) remains the human reference.",
+    "method": "apr_stakers = annual_provisions ÷ bonded × (1 − community_tax) ÷ total_reward_weight (Σ active alliance weights + 1) — the LUNA-provisions leg only, before validator commission; apr_gross = provisions ÷ bonded (what validator sites quote). NOT INCLUDED: alliance take-rate rewards paid to delegators in alliance assets (unmeasured — see take_rate_leg). ampluna_realized_apy_30d = the ampLUNA hub's own exchange-rate growth, everything included, after its validators' commission and its fee.",
+    "take_rate_leg": {
+      "status": "unmeasured",
+      "note": "Alliance take rates on alliance-staked assets are redistributed to LUNA delegators in those assets; not captured yet. ampLUNA realized minus the provisions leg bounds it from above."
+    },
     "references": {
       "allnodes_2026_08_26": 0.3778,
       "stakely_2026_08_26": 0.2813,
       "smartstake_csv": "docs/Staking APR.csv"
-    }
+    },
+    "ampluna_realized_apy_30d": 0.368633,
+    "ampluna_realized_apr_30d": 0.31394746,
+    "gap_vs_ampluna_pp": 9.57
   },
   "_errors": [
     {
@@ -652,10 +656,6 @@
     {
       "where": "yields:vault:12/varbluna:30d",
       "error": "exchange_rates(limit 30) returned 0 points"
-    },
-    {
-      "where": "yields:native:hub_fee",
-      "error": "no protocol_reward_fee in hub config"
     }
   ]
 }
