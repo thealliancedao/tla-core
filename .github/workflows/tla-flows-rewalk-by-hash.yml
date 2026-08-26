@@ -1,0 +1,87 @@
+name: tla-flows-rewalk-by-hash
+
+# Bring every flow record below classifier v4 to v4 BY TXHASH — no block walk
+# (2026-08-26, Portfolio P&L step 2). FCD-era hashes come from archive/fcd
+# locally (zero network); the 2026-06→08 window reads ~4,700 txs from the
+# archive LCD, one at a time. Records the live classifier rejects are RETRACTED
+# by label (never deleted): the stable bucket's take-rate distributions that v1
+# misread as member claims, and Votion vault compounds.
+# Classifier = platform-crons/tla-flows/index.js via dual checkout (no third copy).
+# Shares the `archive-node` concurrency group — queues behind the state sampler.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: '1 = classify + report, write nothing'
+        required: false
+        default: '1'
+      only_local:
+        description: '1 = FCD era only (no archive node touched)'
+        required: false
+        default: '0'
+      limit:
+        description: 'Cap archive reads this run (0 = all); re-dispatch continues (idempotent)'
+        required: false
+        default: '0'
+      req_delay_ms:
+        description: 'Spacing between archive reads (ms)'
+        required: false
+        default: '150'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: archive-node
+  cancel-in-progress: false
+
+jobs:
+  rewalk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - name: Checkout tla-core
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Checkout platform-crons (live classifier)
+        uses: actions/checkout@v4
+        with:
+          repository: thealliancedao/platform-crons
+          path: platform-crons
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Re-read by hash + re-classify
+        env:
+          ARCHIVE_LCD: ${{ secrets.ARCHIVE_LCD }}
+          TLA_CORE_DIR: .
+          PLATFORM_CRONS_DIR: ./platform-crons
+          DRY_RUN: ${{ inputs.dry_run || '1' }}
+          ONLY_LOCAL: ${{ inputs.only_local || '0' }}
+          LIMIT: ${{ inputs.limit || '0' }}
+          REQ_DELAY_MS: ${{ inputs.req_delay_ms || '150' }}
+        run: node .github/scripts/tla-flows/rewalk-by-hash.js
+      - name: Commit (rebase + retry)
+        if: inputs.dry_run != '1'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "tla-flows-rewalk[bot]"
+          git config user.email "actions@users.noreply.github.com"
+          git add tla-flows/events
+          git diff --cached --quiet && echo "no changes" && exit 0
+          git commit -m "tla-flows/events: rewalk-by-hash → classifier v4 (upgrades + labeled retractions)"
+          for i in 1 2 3 4 5 6 7 8; do
+            if git push; then exit 0; fi
+            echo "push rejected (attempt $i) — rebasing and retrying"
+            git pull --rebase origin main || { echo "rebase failed"; exit 1; }
+            sleep $((i * 5))
+          done
+          exit 1
+      - name: Rebuild events index (reads the month files just pushed via the API)
+        if: inputs.dry_run != '1'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node .github/scripts/tla-flows/rebuild-index.js

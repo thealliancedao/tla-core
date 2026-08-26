@@ -22,6 +22,10 @@ on:
         description: 'Spacing between archive requests (ms)'
         required: false
         default: '150'
+      lcd_override:
+        description: 'OPTIONAL public LCD to probe INSTEAD of the archive secret (e.g. https://terra-lcd.stakely.io) — answers "does this node hold deep state?"'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -48,8 +52,8 @@ jobs:
           node-version: 20
       - name: Probe (read-only)
         env:
-          ARCHIVE_LCD: ${{ secrets.ARCHIVE_LCD }}
-          ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
+          ARCHIVE_LCD: ${{ inputs.lcd_override != '' && inputs.lcd_override || secrets.ARCHIVE_LCD }}
+          ARCHIVE_RPC: ${{ inputs.lcd_override != '' && '' || secrets.ARCHIVE_RPC }}
           EPOCHS: ${{ inputs.epochs }}
           REQ_DELAY_MS: ${{ inputs.req_delay_ms }}
         run: node .github/scripts/dex-state-history/probe.js
