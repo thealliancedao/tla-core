@@ -68,11 +68,18 @@ gross-up was dropped (hub config no longer exposes protocol_reward_fee). Page:
 manual APR override + commission input carry the honesty note, now stating the
 take-rate gap explicitly.
 
-## 3c. Visual — the web (owner 2026-08-26)
-Home is a radial SVG on ≥900px: center LUNA node → 4 route hubs (live number
-each) → 3 leaves each, edges green/amber/red (keep / cost / give up), everything
-clickable; cards remain for narrow screens. Route screens draw colored spokes
-from the hub node to each tile.
+## 3c. Visual — the web (owner 2026-08-26, walked twice)
+Home is a radial SVG on ≥900px: the LUNA amount is a real input IN the center
+node (type any amount; chips 10K/100K/1M) → 4 route hubs → leaves, edges
+green/amber/red (keep / cost / give up), sub-leaves dashed; everything clickable;
+cards remain for narrow screens. Owner's second walk, all in: TLA hub shows the
+LST yield AND the VP ("same staking yield as native, underneath"); a sub-leaf off
+the lock: "sell it on Boost / Atrium at a discount"; Eris leaf names the
+LUNA-governance VP concentration; Votion's lock leaf carries the 2 + 2 year clock
+(vault unlock → TLA lock → sell or another 2-year clock; worst case 4 years) and a
+"degen: loop it" leaf (TLA ampLP is Credia collateral at 45% LTV; the Votion
+receipt is not) — both also as tiles on the Votion screen. Route screens draw
+colored spokes from the hub node to each tile.
 
 ## 4. Open capture issue found on the way
 `price-history/ratios` daily series STOPS at 2026-07-16 (heartbeat 07-17) —
