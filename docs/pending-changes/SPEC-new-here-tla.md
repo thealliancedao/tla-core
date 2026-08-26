@@ -21,8 +21,9 @@ yearly; monthly default), three routes side by side, every number live.
 
 Worked examples, all live: (a) native: X × APR → claimable per horizon, and
 compounded; (b) TLA: X max-locked → VP (fixed×10 convention, reconciled vs
-Eris) → drop into a pool with $B bribes and V votes → share = a/(V+a) × B weekly
-(the Vote Market optimizer math, reused); (c) lock resale: underlying × LUNA
+Eris) → VP votes in EVERY bucket at once (100% in each of the 4) → one pool per
+bucket, share = a/(V+a) × pot, weekly, SUMMED over buckets (owner catch 2026-08-26;
+the first cut wrongly took one pool); picker grouped by bucket, one pick each; (c) lock resale: underlying × LUNA
 price × (1 − discount), discount defaults to an observed Atrium/Boost value,
 draggable; (d) VP decay: VP today vs in 6 months untouched; (e) Votion: X → LST
 → vault APY + asset APY per horizon, and the mechanism popup (compounding of
@@ -53,6 +54,25 @@ and `agree === true`; arbLUNA hub — does Eris's arb vault answer
 `exchange_rates(limit)`? (unknown; fallback is the ratio series); a vault's
 30d headline vs the Votion UI within ~1 pp (their window may differ);
 `native_staking.apy_est` vs SmartStake's current figure.
+
+## 3b. FIRST LIVE YIELDS RUN — 2026-08-26 18:47 — what it said
+arbLUNA's hub DOES answer `exchange_rates(limit)`: 16.57% APY, contract = measured
+= the Eris UI "Asset APY 16.57%". ampLUNA 36.86%. Votion ampLUNA-MAX 59.3 +
+36.9 = 96.2%; arbLUNA-MAX 57.9 + 16.6 = 74.5%. bLUNA blank (no hub history, ratio
+series 42 d stale) — correct. NATIVE: bonded 316.1M → gross 30.5%, provisions leg
+to stakers 21.8% — below every published figure while ampLUNA's realized 36.9%
+is ABOVE gross: the missing leg is Alliance take-rate rewards paid to delegators
+in alliance assets (unmeasured; named in the product as `take_rate_leg`, with
+`ampluna_realized_apy_30d` as the ceiling and `gap_vs_ampluna_pp`). The hub-fee
+gross-up was dropped (hub config no longer exposes protocol_reward_fee). Page:
+manual APR override + commission input carry the honesty note, now stating the
+take-rate gap explicitly.
+
+## 3c. Visual — the web (owner 2026-08-26)
+Home is a radial SVG on ≥900px: center LUNA node → 4 route hubs (live number
+each) → 3 leaves each, edges green/amber/red (keep / cost / give up), everything
+clickable; cards remain for narrow screens. Route screens draw colored spokes
+from the hub node to each tile.
 
 ## 4. Open capture issue found on the way
 `price-history/ratios` daily series STOPS at 2026-07-16 (heartbeat 07-17) —

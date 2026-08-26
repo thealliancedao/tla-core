@@ -47,6 +47,13 @@ first hourly run walk SPEC §3 VERIFY (esp. whether the arbLUNA hub answers
 weights; gross = Allnodes' 37.78%, stakers' = SmartStake's 27.6% — the spread
 explained); the SmartStake CSV becomes a reference, not an input. After the
 yields deploy: eyes-on walk, then help-agent corpus.
+org-votion 1.4.0 FIRST YIELDS RUN (18:47): arbLUNA hub answers exchange_rates
+(16.57% = Eris UI); ampLUNA 36.9%; ampLUNA-MAX 96.2%; native provisions leg 21.8%
+vs realized ampLUNA 36.9% → the Alliance TAKE-RATE leg (paid in alliance assets) is
+the unmeasured remainder — named in the product; capture queue: measure it.
+new-here-tla: bribes now per BUCKET (VP votes in all 4 at once; one pick each;
+summed — owner catch), the web visual (SVG radial home + spokes on route
+screens), take-rate note. Gate 35/35.
 dex-state-history FIRST RUN VERIFIED (104/104, 0 depth failures) — SPEC §7b.
 QUEUED from it: ratio re-anchor (price-history/ratios `interpolated` rows are
 10–15% high in 2024–25 — P&L cost basis inherits it); bLUNA hub flat since
