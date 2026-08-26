@@ -1,0 +1,62 @@
+name: dex-state-history-probe
+
+# One-off, READ-ONLY (2026-08-26): samples pool reserves + LP supply, the
+# asset-compounder LP↔amplp totals, the 4 staking buckets and the 5 LST hubs at
+# a few TLA epoch-boundary heights on the ARCHIVE node. Proves query shapes and
+# archive depth before the state-history duty is built. Writes nothing to the
+# repo; read the run log and download the JSON artifact.
+#
+# Archive discipline: endpoint from repo secrets only (ARCHIVE_LCD preferred,
+# ARCHIVE_RPC fallback — same secrets the archive-walk uses), serial requests
+# with spacing, heights resolved from the committed event corpus (not by
+# searching the node). ~70 state reads per epoch sampled.
+
+on:
+  workflow_dispatch:
+    inputs:
+      epochs:
+        description: 'Comma-separated TLA epochs to sample at their start boundary (one FCD-era, one hole-era, one recent)'
+        required: false
+        default: '100,150,199'
+      req_delay_ms:
+        description: 'Spacing between archive requests (ms)'
+        required: false
+        default: '150'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: archive-node
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/dex-state-history
+            docs/epoch_1-300_date.json
+            member-data/tla-snapshot/current.json
+            tla-flows/events
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Probe (read-only)
+        env:
+          ARCHIVE_LCD: ${{ secrets.ARCHIVE_LCD }}
+          ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
+          EPOCHS: ${{ inputs.epochs }}
+          REQ_DELAY_MS: ${{ inputs.req_delay_ms }}
+        run: node .github/scripts/dex-state-history/probe.js
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dex-state-history-probe
+          path: dex-state-history-probe.json
+          if-no-files-found: warn
