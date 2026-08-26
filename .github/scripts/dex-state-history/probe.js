@@ -93,9 +93,13 @@ async function archiveGet(url, headers) {
     try { const r = await httpGet(url, headers); await sleep(REQ_DELAY); return r; }
     catch (e) {
       last = e;
-      // 4xx that are NOT rate limits are answers (e.g. contract absent at height) — return them to the caller
+      // Definitive answers are never retried: any 4xx that is not a rate limit, AND a 5xx whose body
+      // is the chain answering (cosmos REST wraps wasm errors — "no such contract", "failed to load
+      // state" — in HTTP 500). Retrying those only spends the node's patience (probe run #1: 22 absent
+      // pools × 4 attempts at epoch 100).
       const sc = e.statusCode;
-      if (sc && sc < 500 && sc !== 429 && !(sc === 403 && /rate/i.test(e.message))) throw e;
+      const chainAnswer = /codespace|no such contract|not found|failed to load state|version does not exist|Error parsing|unknown variant/i.test(e.body || e.message || '');
+      if (sc && sc !== 429 && !(sc === 403 && /rate/i.test(e.message)) && (sc < 500 || chainAnswer)) { e.chainAnswer = chainAnswer || sc < 500; throw e; }
       STATS.archive_retries++; await sleep(400 * a * a);
     }
   }
@@ -135,7 +139,7 @@ async function smartAt(addr, queryObj, height) {
     return { ok: true, data: decodeSmartResp(resp.value) };
   } catch (e) {
     const body = (e.body || e.message || '');
-    if (e.statusCode && e.statusCode < 500) { breaker(true); return { ok: false, ...classify(body) }; }
+    if (e.chainAnswer) { breaker(true); return { ok: false, ...classify(body) }; }
     breaker(false); return { ok: false, class: 'net', msg: mask(e.message).slice(0, 160) };
   }
 }
@@ -143,7 +147,7 @@ function classify(text) {
   const t = String(text);
   // depth first: "failed to load state at height N; version does not exist" must never read as a missing contract
   if (/failed to load state|height .*not available|pruned|no version|version does not exist|invalid height|cannot query with height|lowest height|is not available/i.test(t)) return { class: 'depth', msg: t.slice(0, 160) };
-  if (/contract: not found|not found: contract|no such contract|unknown contract|contract not found|address .* not found/i.test(t)) return { class: 'absent', msg: t.slice(0, 160) };
+  if (/no such contract|contract: not found|not found: contract|unknown contract|contract not found|address .* not found/i.test(t)) return { class: 'absent', msg: t.slice(0, 160) };
   if (/error parsing|unknown variant|missing field|Error parsing into type|query wasm contract failed/i.test(t)) return { class: 'query', msg: t.slice(0, 160) };
   return { class: 'query', msg: t.slice(0, 160) };
 }
@@ -291,6 +295,8 @@ async function sampleHeight(h) {
     log(`  pairs ok ${s.tally.pair_ok}/${pairs.length} · absent ${s.tally.absent} · depth ${s.tally.depth} · query ${s.tally.query} · net ${s.tally.net}`);
     log(`  compounder ${c.ok ? `${c.configs} configs, ${Object.keys(c.rates).length} rates` : `${c.class}: ${c.msg}`} · staking ok ${Object.values(s.staking).filter(x => x.ok).length}/4 · hubs ok ${Object.values(s.lst_hubs).filter(x => x.ok).length}/5`);
     for (const [k, v] of Object.entries(s.pairs)) if (!v.ok && v.class !== 'absent') log(`    ✗ ${k.slice(0, 60)} ${v.class}: ${v.msg}`);
+    const bornLater = pairs.filter(t => s.pairs[t.key] && s.pairs[t.key].class === 'absent' && t.first > hr.start_time).length;
+    if (s.tally.absent) log(`  absent ${s.tally.absent}: ${bornLater} first seen in events after this boundary (expected), ${s.tally.absent - bornLater} seen BEFORE it (look)`);
     report.epochs.push({ ...hr, sample: s });
   }
   STATS.elapsed_sec = Math.round((Date.now() - STATS.started) / 1000);
