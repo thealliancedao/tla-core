@@ -16,7 +16,8 @@ native-APR reference. Bribes per bucket (VP votes in all four at once, one pool 
 is a radial web (amount editable in the center node → hubs → leaves and dashed
 sub-leaves, colored edges); TLA hub = LST yield + VP; sell-the-lock, the Votion
 2 + 2 year clock, the degen loop and governance concentration as leaves; spokes on
-route screens. Third walk: route colors (orange/yellow/green/purple), bigger web
+route screens. Credia screen + loop popup show the 7-day LUNA borrow range from the new rate-history
+sidecar (dex-data 1.3.2). Third walk: route colors (orange/yellow/green/purple), bigger web
 with `?` mini-popups per leg, loop on Credia, LP boost simulator (your own TLA
 positions when a wallet is selected; emissions share (v+a)/(V+a), pool APY
 before/after, your $/yr, bribes vs best pot).
