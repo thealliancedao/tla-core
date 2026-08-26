@@ -184,6 +184,12 @@ nft-inventory 12/27/42/57, token-catalog 35 */6, dao-governance 25 */6 (then
 mirror in lib/cron-registry.js if a cadence changes — none do). Watch:
 tla-snapshot "votion: no recent file found" at :00 despite votion at :20.
 Footer v3.4: builder's note + copyable address.
+NEW HERE? (2026-08-25): new-here.html Rev 1.0 — seven-chapter crash course
+with live numbers (days backed since prop #4801, backing, unbroken, unminted,
+DAO total); header pill on every page, footer link, help page. Production kit
+docs/onboarding/NEW-HERE-KIT.md (5 episode scripts, image/video prompts, cut
+list, rules). Video slots are placeholders until films exist. index 4.10 +
+dao-dashboard 1.6: DAO Total Value + NFT strips captured daily; chart modal.
 QUEUE FROM THE WALK (in order):
 1. Remaining tla-stats tabs: LP Grades, LP Stats, TLA Stats — same method
    (screenshots + HAR, mechanical first, then presentation).
