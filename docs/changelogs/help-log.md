@@ -1,5 +1,12 @@
 # Help Page Changelog
 
+## v1.13.1 → v1.13.2 — 2026-08-25 — cron fleet + the New Here kit in the corpus
+
+`docs/CRON-FLEET.md` (every job, schedule, feeds) and
+`docs/onboarding/NEW-HERE-KIT.md` (the one-line pitch, sourced facts, episode
+scripts) so "when does X run" and "what is this NFT" answer from the record.
+
+
 ## v1.13.0 — 2026-08-25 — DAO page + lore in the corpus; governance products readable
 
 Corpus: `dao-governance-page.md` (grades incl. the Ally average, tiers, titles,

@@ -1,5 +1,15 @@
 # cron-member-data — changelog
 
+## dao-dashboard 1.6 · publishers 8× — 2026-08-25
+
+`dashboard.total_value` (tokens, TLA LPs, TLA locks from positions treasury
+summary, unminted NFT backing = per-NFT USD × unminted count, total — null if
+any part missing) and `dashboard.nft` (circulating, listed across BBL/Atrium/
+Boost, all-time sales + volume) on current + every daily archive. Isolated.
+tla-participants + adao-positions publishers: 8 attempts, 0.7–2.2 s growing
+jitter (the 23:00 branch race lost 4/4 at ~1 s).
+
+
 ## 2026-08-24 — dao-dashboard 1.5 — `last_claims` from tla-flows (the index popup's labels were hardcoded)
 
 `dashboard.last_claims = {deposit, vote, rebase, locks}` each `{date, txhash,

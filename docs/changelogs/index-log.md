@@ -1,5 +1,14 @@
 # Index Page Changelog
 
+## 4.10 — 2026-08-25 — DAO Total Value + NFT strips get history; "New here?" everywhere
+
+The two strips are captured daily by dao-dashboard 1.6 (`total_value`, `nft`)
+and open the chart modal: DAO Total Value (overlay: unminted NFT backing), TLA
+Locks (USD), NFTs Listed (overlay: cumulative sales), NFT Volume all-time.
+Series start at the first 1.6 run; captions say so. Header pill "New here?" on
+every page (site-header), footer links "New here? Start here" + "Docs"
+(site-footer v3.5), builder's note with copyable address (v3.4).
+
 ## 2026-08-25 — quick-audit engine moved to lib/prop-audit.js (shared with dao.html)
 
 The 194-line audit block (deepDecode, msgShape/shapeCompare/precedentOf,
