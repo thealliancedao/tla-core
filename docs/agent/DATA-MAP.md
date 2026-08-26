@@ -53,6 +53,16 @@ period. `entries` runs from period 96 (oldest) to the CURRENT settled period;
 "latest" = max(period) over entries, never a positional read (T10 miss,
 2026-08-21: the agent reported period 97 as latest).
 
+## Yields ("what does ampLUNA / a Votion vault / native staking pay right now?")
+`votion/yields/current.json` — per Votion vault and per LST (ampLUNA, arbLUNA,
+bLUNA): 7/14/30-day `apr_daily_contract` (chain `exchange_rates(limit).apr`) and
+`apr_daily_measured`, `apy_*` = (1+apr)^365.25 − 1, `agree`; vault
+`headline[w].total_apy = asset_apy + votion_apy`; `native_staking.apr_stakers`
+is chain-derived (provisions ÷ bonded × (1 − tax) ÷ alliance reward weights,
+before validator commission; `apr_gross` is the validator-site number; inputs
+published). Read `source` before quoting a number (`ratio_series_stale` means
+the fallback series is behind). Daily copies in `votion/yields/daily/`.
+
 ## Prices
 Live: `network-and-prices/daily/<date>.json` (15-day retention;
 `luna_market.usd_price`). Deeper daily LUNA: tla-snapshot dailies
