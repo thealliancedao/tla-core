@@ -12,6 +12,20 @@ help-agent 1.13.2 — all on main and running. New pages: new-here.html,
 tla-docs.html Rev 2.0. OWNER TO DO IN RENDER: the schedule stagger in
 docs/CRON-FLEET.md.
 
+## 2026-08-26 — MILESTONE A OPENED: Portfolio P&L / Member Portfolio rebuild
+Step 1 of 5 SHIPPED: **dex-state-history** (SPEC-dex-state-history.md). Probe #1
+on the real archive: LCD transport, zero depth failures back to epoch 100
+(2024-09), 67/67 pairs today. Duty built + gated (mock archive with the node's
+HTTP-500 wasm shapes; write-once, resumable, budgeted, checkpointed). OWNER:
+dispatch `dex-state-history` with defaults (≈2 h, ≈70 reads/epoch, serial);
+re-dispatch if it budget-stops; then walk SPEC §7 VERIFY. Build order after it:
+(2) re-walk the 5,551 non-v4 events (1,144 v1 FCD-era + 4,419 v3 in 2026-06/07,
+archive-only now) · (3) build-pnl v3 — measured amp-rate curve, value curve per
+epoch, FIFO round trips, attribution · (4) picker "View portfolio →" tile on
+every page + member-portfolio rebuild on the v3 products. Doctrine learned: the
+archive LCD wraps wasm answers in HTTP 500 — a chain answer is never a retry;
+absent-vs-depth must be decided by the body, depth checked first.
+
 ## NEXT MILESTONE CANDIDATES (owner picks one to open)
 A. **Portfolio P&L + Member Portfolio rebuild** — the announcement blocker
    (SPEC-portfolio-pnl; cost-basis coverage; Test 1 on Tools is the old build).
