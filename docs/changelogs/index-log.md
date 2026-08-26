@@ -1,5 +1,24 @@
 # Index Page Changelog
 
+## 2026-08-26 — new-here-tla.html 1.0 — "New here? → TLA"; header "New here?" is a two-track drop
+
+The LUNA holder's decision page: one input (any LUNA amount; 10K default),
+one horizon (weekly / monthly / yearly), four routes — native staking, TLA
+lock, Votion vault, lending on Credia — each with its own screen off a
+diagram home. Live: LUNA price (catalog), LST hub rates (live LCD → vaults.json
+fallback), pots + votes for the period Votion votes into (its worksheet;
+reward = pot × a/(V+a), the Vote Market's math), VP from lock length (pinned
+on real locks: 1 week = 1×, max = 10×), Credia LUNA market (supply/borrow APY,
+utilization, available liquidity, ampLP collateral LTV), yields from
+`votion/yields/current.json` (org-votion 1.4.0 Branch D — Eris's own APY
+formula; tiles blank with a note until it publishes), SmartStake CSV as the
+native-APR reference. Pool picker drawer, lock slider, resale discount slider,
+"how?" popups, compare strip on every screen, URL deep links. Gate
+`gate-new-here-tla.mjs` 27/27 on committed products. site-header: "New here?" is
+two pulsing pills beside the Terra globe on every page — aDAO (blue) and TLA
+(orange); the pill for the page you are on is solid; reduced-motion respected.
+site-footer maps the page's changelog.
+
 ## 4.10 — 2026-08-25 — DAO Total Value + NFT strips get history; "New here?" everywhere
 
 The two strips are captured daily by dao-dashboard 1.6 (`total_value`, `nft`)
