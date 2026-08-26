@@ -13,7 +13,10 @@ utilization, available liquidity, ampLP collateral LTV), yields from
 `votion/yields/current.json` (org-votion 1.4.0 Branch D — Eris's own APY
 formula; tiles blank with a note until it publishes), SmartStake CSV as the
 native-APR reference. Bribes per bucket (VP votes in all four at once, one pool per bucket, summed). Home
-is a radial web (center → hubs → leaves, colored edges); spokes on route screens.
+is a radial web (amount editable in the center node → hubs → leaves and dashed
+sub-leaves, colored edges); TLA hub = LST yield + VP; sell-the-lock, the Votion
+2 + 2 year clock, the degen loop and governance concentration as leaves; spokes on
+route screens.
 Pool picker drawer grouped by bucket, lock slider, resale discount slider,
 "how?" popups, compare strip on every screen, URL deep links. Gate
 `gate-new-here-tla.mjs` 27/27 on committed products. site-header: "New here?" is
