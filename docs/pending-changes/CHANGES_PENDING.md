@@ -10,8 +10,13 @@ is here. Order inside each group = priority.
 3. Paste Vercel's top-pages list (mobile) → sets the mobile walk order.
 4. Ask Philipp: the ampCAPA hub has not harvested since ~May (rate frozen 1.10553774) — Eris's row shows history as yield.
 
-**B · Foundations pass (NEXT, before mobile)** — one table: page → products read → cadence → last write → the page's
-tolerance in lib/cron-registry.js; then fix every mismatch. Known feeders, all found 2026-09-10:
+**B · Foundations pass — TABLE BUILT + FIXED 2026-09-10 (late): `docs/FOUNDATIONS-TABLE.md`.** Six mismatches fixed in
+one commit set: (1) NFT analytics + market-history DEAD since 08-23 (captureSnapshot returned nothing → the
+warm/full tails never ran; every NFT sales/volume figure was 18 days stale) — nfts/adao/index.js; (2) the Credia
+market row was DROPPED from tla-snapshot (cw20 receipt has no minter) — member-data 1.1.2 restores it named
+wBTC.creda.a with staked/depth from the org credia snapshot; (3) registry cadences: tla-voting hourly, nft-flows
+15-min; (4) registry entries added: eris-apr, credia, member-census; (5) nap 3.0.3 (earlier); (6) dex-data 1.3.5
+(validation marker, Credia name). Remaining B items below stay open:
 - Personal-repo close-out: DISPOSITION for all 24 in FINAL-SWEEP-CLEARANCE → ADDENDUM 2026-09-10 (20 delete now,
   archive-storage copied then delete, the two data repos probed — nothing to fold — delete; tla-chain-registry DELETED
   after archiving its frozen 2026-08-11 snapshot in tla-core/docs/archive/legacy-registry/ and repointing both tools).
