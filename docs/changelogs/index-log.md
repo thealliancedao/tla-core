@@ -1,6 +1,14 @@
 # Index Page Changelog
 
 
+## 4.13 — 2026-09-10 — five more popups on the multi-series renderer
+
+Treasury (stacked by token + LUNA price; sentence names the largest holding and the biggest mover), TLA Deposits
+(LPs + zLUNA stacked, est. APR on the right), Deposit rewards (unclaimed ampLUNA, lifetime-claimed staircase from
+the page's claim-cycle detection, USD on the right), Vote rewards (stacked by token), TLA Locks (USD vs
+LUNA-equivalent — the LUNA line is flat until the locks change, so every dollar wiggle is price). Gate on the
+committed dao-dashboard dailies 12/12 (bands sum to totals to the dollar; LUNA-equivalent spread 0.7%).
+
 ## 4.12 — 2026-09-10 — chart popups redesigned: what changed and why, on one screen
 
 One multi-series renderer (`MULTI_CHARTS` + `renderMultiChart`) for four popups; every other chart keeps its path.
