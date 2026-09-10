@@ -2,6 +2,18 @@
 
 ---
 
+## 2026-09-10 — 1.3.4 — eris-apr: trading leg source-verbatim
+
+Owner HAR of the Eris liquidity-hub chunk (`getPoolInfo`) resolved the 1.3.3
+gap: SkeletonSwap trading = `Promise.resolve(0)` by THEIR source (our 0 is
+exact, flag dropped); single gauges add the asset's OWN yield — xASTRO from
+Astroport tRPC `protocol.stakingApy.weekApr`, ampCAPA from hub
+`exchange_rates(14).apr × 365.25` (>0 on a frozen hub: stored points predate
+the freeze), Creda from `supply_apy`. `trading_apr_source` on every row; a
+failed read keeps the flag. Gates 82/82 mock (+M7d) · 50/50 real-fixture
+(Credia 5.85 vs 5.76; singles reproduce 19.65 / 33.08 to 0.00 pp given the
+leg). First live run reconciles the two source reads.
+
 ## 2026-09-10 — 1.3.3 — eris-apr: SS + Credia staked basis, single names, catalog decimals
 
 Audit vs the owner's Eris screen found every SkeletonSwap pool and the Credia
