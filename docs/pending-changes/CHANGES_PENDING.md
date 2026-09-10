@@ -10,7 +10,10 @@ audit on both pages via lib/prop-audit.js. BBL floor USD → LUNA × bLUNA hub r
 sale-time USD from dao-dashboard (was converted at today's bLUNA price). supporters 1.1 logs the LCD answer + tries
 coin_received.receiver — READ the next member-data log's `supporters:` lines: if both keys answer 0 rows, publicnode's
 tx index is not serving event queries and the cron needs a different source (by-hash from the page, or an indexer).
-Also: strip charts (DAO Total Value / NFT analytics) opened nothing — opener was closure-scoped, inline onclick could
+index 4.12: chart popups redesigned (backing LUNA+USD+floor; DAODAO staked as % of RELEASED supply — the old
+overlay was staked ÷ minted; DAO Total Value stacked composition + LUNA; NFT market floor/listed/sales) — gate 19/19.
+Remaining popups to walk with the same rule (queue): TLA VP (USD vs LUNA), Treasury (composition), Rewards
+(claimed vs unclaimed), LST ratio charts (ratio × price). Also: strip charts (DAO Total Value / NFT analytics) opened nothing — opener was closure-scoped, inline onclick could
 not reach it; fixed. Enterprise-staked AUDIT: clean by id (503 = 100 DAO broken + 403 holders, zero overlap);
 operator wallet `terra1nn7yrg…` owner-confirmed as an old council wallet → trust register; NEW nft-inventory product
 `nfts/adao/snapshots/dao-controlled.json` (1,000 ids by custody, 3 guards). Four truncated Enterprise-era addresses
