@@ -1,5 +1,13 @@
 # cron-member-data — changelog
 
+## tla-snapshot dead votion read retired · member-data 1.1.1 — 2026-09-10
+
+`sources.votion` was `false` every run: the snapshot still read
+`defipatriot/votion-data_2026` (retired with the parallel pairs; 404 for all
+epochs). The per-pool fields it attached were never read by tla-stats (Rev
+T4.1 reads `tla-core/votion/*`). Fetch, phase-7 attach and the `sources.votion`
+key removed; org-votion is the only votion source. No figure changes.
+
 ## dao-dashboard 1.6 · publishers 8× — 2026-08-25
 
 `dashboard.total_value` (tokens, TLA LPs, TLA locks from positions treasury

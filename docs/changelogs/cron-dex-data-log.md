@@ -2,6 +2,21 @@
 
 ---
 
+## 2026-09-10 — 1.3.3 — eris-apr: SS + Credia staked basis, single names, catalog decimals
+
+Audit vs the owner's Eris screen found every SkeletonSwap pool and the Credia
+market at staked $0 / APR 0 (SS adapter defers TVL to a downstream reserves ×
+prices join that eris-apr never did; Credia receipt supply `supply_vtotal` not
+published as `lp_total_supply`), singles unnamed, and `catalogPrice` reading a
+`decimals` field the catalog never had. Fixed with a labeled reserve-implied
+basis (any unpriced asset → null with reason), the Credia supply field, names
+from the catalog `effective` layer, and a NAMED gap flag
+`single_asset_yield_leg_unmeasured` (Eris shows a leg on single gauges beyond
+incentive − take: xASTRO +17.7 pp, ampCAPA +4.8 pp — not in the source-
+confirmed formula, so not guessed). Gates 71/71 mock + 40/40 real-fixture; 18
+Astroport rows byte-identical; SS/Credia within 0.5% of Eris (ATOM-LUNA 1.35%),
+26/26 priced (was 20/26).
+
 ## 2026-08-10 — 1.7.0 — history.js forward emitter: pool-status (strip step 4a)
 
 NEW PERMANENT module (not a fold): lean org-native gauge capture — the ONLY
