@@ -1,5 +1,29 @@
 # Index Page Changelog
 
+
+## 4.11 — 2026-09-10 — NFT supply = Locked vs Liquid · signal proposals · bLUNA doctrine pricing
+
+- **Supply modal rebuilt on the owner's framing.** Whole collection first: unminted 5,828 (58.3%) + DAO-controlled
+  broken 1,000 (10.0%) + DAODAO staked 1,657 (16.6%) + Enterprise holders 403 (4.0%) = **locked 8,888 (88.9%)**;
+  wallet-held 1,052 + listed 51 (BBL 45 · Atrium 2 · Boost 4) + 9 in the unstake window = **liquid 1,112 (11.1%)**.
+  Then the released slice: minted 4,172 − 1,000 = 3,172 → staked 2,060 (64.9%) / liquid 1,112 (35.1%). Sentence
+  written from the data; identity asserted to 10,000 and the sentence says so if it fails. "% of Circulating" is gone.
+- **Two wrong cells fixed.** "Enterprise Staked: 81" was `enterpriseStakers.length` — a WALLET count from the
+  deduped inventory's 81 unattributed entries — and "Liquid Supply: 1,425" was derived from it. The same live path
+  also overwrote the Enterprise TILE with 81 after the product path had written 403 (last writer won). Both writers
+  removed; the modal has ONE filler (applyDaodaoDeepDive) and the tile keeps the product count.
+- **Signal proposals** (0 executable messages): green SIGNAL chip on the card, quick-audit collapses to one line
+  ("no executable messages — nothing runs on pass"), no ledger / decoded / precedent / deep-check. Test is the
+  message count, not the title. Engine change in `lib/prop-audit.js` (shared with dao.html).
+- **BBL floor USD** priced LUNA × bLUNA hub ratio (doctrine: LSTs from the live ratio), not CoinGecko's market
+  print (~$30/day pool; $0.0769 vs $0.0785). Tooltip carries the source. **All-time volume** no longer converted
+  at today's bLUNA price (256,905 bLUNA read "$19,756"; sale-time total is ~$156K) — shows dao-dashboard's
+  `volume_usd_at_sale_total` or nothing.
+- Gate: jsdom on the committed inventory + summary, 11/11 — every cell asserted to the owner's numbers.
+- **Strip charts open again.** DAO Total Value and NFT Collection Analytics called `openChartModal` from inline
+  `onclick` (global scope) while the function lives inside the DOMContentLoaded closure — every click was a
+  ReferenceError. Exposed on window; tile bindings unchanged.
+
 ## 2026-08-26 — new-here-tla.html 1.0 — "New here? → TLA"; header "New here?" is a two-track drop
 
 The LUNA holder's decision page: one input (any LUNA amount; 10K default),

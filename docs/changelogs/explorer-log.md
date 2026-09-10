@@ -1,5 +1,18 @@
 # NFT Explorer Changelog
 
+
+## nft-inventory — dao-controlled.json (by token id) — 2026-09-10
+
+Owner audit of the Enterprise-staked count: the old enterprise contract holds 503 NFTs — 100 broken (the DAO's,
+`enterprise_dao_broken`) + 403 unbroken holders (`enterprise_staked`; 322 attributed, 81 legacy-unattributed). By id
+the sets never overlap and all 10,000 land in one bucket. The 100 were staked by `terra1nn7yrg…` — chain history
+(funded 2024-10-31, staked the hundred, then only Enterprise governance props 81–88) + owner confirmation = an old
+council operator wallet; now in the trust register. NEW product `nfts/adao/snapshots/dao-controlled.json`: the 1,000
+ids by custody (treasury 898 · enterprise 100 · DAO wallet 2) with three published guards — ids_total == 1000,
+all broken, enterprise `members{}` weight of the operator == enterprise-broken count (a member staking a broken NFT
+there breaks it). Guard failure → status `violation` + name, never a blank. Gate on the committed inventory: ok /
+100 / drift cases flip to violation. Pages and the P&L key DAO-controlled by id from here on.
+
 ## 2026-08-25 — floor history: real listing history, log scale, bounded oracle, chips, tab sync
 
 The listing band was built from listing-first-seen.json (a 7 KB cron log from

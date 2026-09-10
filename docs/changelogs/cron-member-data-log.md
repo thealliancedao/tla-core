@@ -1,5 +1,13 @@
 # cron-member-data — changelog
 
+
+## supporters 1.1 — 2026-09-10 — LCD answer visible; second event key
+
+The owner's 50 LUNA test gift (memo thanks_defi, block 22778110) did not appear after two hourly runs although the
+parser accepts that exact tx. The log now states what the LCD answered (rows, newest height, memo hits per page), and
+an empty first page under `transfer.recipient` is retried under `coin_received.receiver`. Mock: empty-first-key →
+second key finds it → +1 published; normal path unchanged. No figure changes.
+
 ## tla-snapshot dead votion read retired · member-data 1.1.1 — 2026-09-10
 
 `sources.votion` was `false` every run: the snapshot still read

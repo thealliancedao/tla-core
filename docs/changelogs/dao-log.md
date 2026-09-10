@@ -1,5 +1,12 @@
 # DAO Changelog
 
+
+## Rev 1.11 — 2026-09-10 — signal proposals
+
+Live strip shows a green "SIGNAL · text only" chip when a proposal carries no executable messages; the quick audit
+(shared `lib/prop-audit.js`) renders one green line instead of the empty ledger + precedent. Safe by definition —
+nothing runs on pass; any proposal with a message gets the full audit.
+
 ## 2026-08-25 — partner board in the aDAO format · Lion / PixelLions / Both views · quick audit on every proposal · image gateways
 
 Partner leaderboard rebuilt as the aDAO row (medal · tier avatar · name + earned
