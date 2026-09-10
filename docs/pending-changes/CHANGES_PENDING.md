@@ -1,5 +1,68 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## STATE AT 2026-09-10 — fleet + data AUDIT after a 2-week gap; dex-data 1.3.3 + member-data 1.1.1 DELIVERED
+
+**Fleet (Render 14/14 successful, owner screenshot; heartbeats on main 15:xx UTC):**
+every job inside its cadence and the CRON-FLEET stagger LANDED (dex-data :31,
+member-data :45, tla-flows :47, nft-flows :52, nft-inventory :42, token-catalog
+12:35). Not failures: tla-voting bribe-state/vote-state/pd-bribes write per
+PERIOD (last = E201 close 09-07 00:27; runway.json refreshes hourly, probed to
+P214); `price-history/heartbeat` (07-17) and `nfts/provenance` (07-08) are
+one-off backfills. 08-26 checklist closed: tla-flows-pnl ran 09-07
+(`retracted_events.claim = 1144`, 766 wallets), state-history added the 09-07
+boundary, `dex-data/credia/rates/` exists.
+
+**Data vs the owner's Eris screen (E202, same hour):** TVL $1.937M vs $1.90M,
+rewards/yr $788K vs $769K — both +2% = LUNA price at capture, not structure.
+Astroport rows: staked within 0.3%, Eris-formula APR within ~1 pp, rewards
+within 1%. tla-snapshot SS staked matches (LUNA-USDC SS $44,669 vs $44,740;
+USDC-USDt exact). Member-side VP 31.19M vs 31.23M (closed VP-tile audit).
+
+**FIXED (delivered, owner commits):**
+- dex-data **1.3.3** — eris-apr: every SkeletonSwap pool + Credia market were
+  staked $0 / APR 0 (SS reserves never joined to catalog prices; Credia
+  `supply_vtotal` not published as `lp_total_supply`); singles unnamed;
+  `catalogPrice` decimals bug (read a field the catalog never had). Gates
+  71/71 mock (+M7c) · 40/40 real-fixture vs the screen: 18 Astroport rows
+  byte-identical, SS/Credia within 0.5% (ATOM-LUNA 1.35%), 26/26 priced.
+  NAMED gap flag `single_asset_yield_leg_unmeasured` — Eris adds a leg on
+  single gauges (xASTRO +17.7 pp, ampCAPA +4.8 pp) the source formula lacks.
+- member-data **1.1.1** — tla-snapshot's votion read pointed at the retired
+  personal repo (404 every epoch) → `sources.votion:false` every run; fields
+  unread by tla-stats. Read + attach + key removed. No figure change.
+
+**OPEN from the audit (queue, priority order):**
+1. TWO LST ratio series: `network-and-prices/ratio-history.json` is LIVE (daily
+   to 09-09, one 08-11 hole; xASTRO gap 08-13→09-07 = hub read failures,
+   skipped honestly); `price-history/ratios/` FROZE 2026-07-16 (backfill
+   one-off) and is now only bLUNA's labeled fallback in votion/yields (56.6 d
+   stale, hub returns 0 points — paused). One-canonical-file law: fold or
+   retire the frozen path — do it inside the ratio re-anchor (Milestone A
+   step 3, which is next anyway).
+2. Single-gauge yield leg: measure what Eris adds (candidate: the asset's own
+   staking yield — xASTRO, ampCAPA, ampROAR) and add it VERBATIM once known;
+   until then the flag stands. Note ampCAPA hub ratio has been FROZEN at
+   1.10553774 since May while Eris shows ~4.8 pp on it — ask where that comes
+   from before wiring anything.
+3. `dex-data/pool-status` last wrote 08-11 (retired legacy cron; no site or
+   cron reader found) → archive candidate.
+4. LUNA-wstETH SS shows `active`, $6.1K staked, 143% APR (gauge fallback) but
+   is NOT on the Eris list — classify.
+5. system-health `bucket_vp_consistency` violation (bluechip 12.2%) = known
+   CHANGES_PENDING #4 (ghost/stray gauge votes + tally scope) — still open.
+
+**OWNER RUN LIST (in order):**
+1. Commit platform-crons.zip (dex-data 1.3.3, member-data 1.1.1) + tla-core.zip
+   (docs). Replace the project's PROJECT_KNOWLEDGE.md with the refreshed one.
+2. Render auto-deploys. dex-data's next :30 run: eris-apr meta
+   `pools_fully_priced` should read 26/26; SS rows carry basis
+   `staked_supply_ratio_x_reserve_implied_tvl (token-catalog/tla)`; wBTC.creda.a
+   ≈ $80.7K. member-data's :45 run: no `votion:` log line, `sources` has no
+   votion key.
+3. Then open Milestone A step 3 (ratio re-anchor → build-pnl v3), absorbing
+   audit item 1.
+
+
 ## STATE AT CLOSE 2026-08-25 (late) — the platform walk is DONE
 Every page has been walked with the owner (index, ally, alliances, rarity,
 release-history, verify, tla-stats all tabs, NFT explorer analytics, DAO, lore,
