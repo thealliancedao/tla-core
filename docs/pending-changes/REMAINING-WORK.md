@@ -1,3 +1,5 @@
+> **SUPERSEDED (2026-08-12 snapshot).** Current state lives in CHANGES_PENDING.md → "OPEN LEDGER" + newest STATE section, and PROJECT_KNOWLEDGE.md. Kept for history only (2026-09-10).
+
 # REMAINING WORK — after the dao-dashboard fold (2026-08-12)
 
 ## DELETE NOW — zero references, zero producers

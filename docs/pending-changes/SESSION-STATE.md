@@ -1,3 +1,5 @@
+> **SUPERSEDED (2026-08-19 snapshot).** Current state lives in CHANGES_PENDING.md → "OPEN LEDGER" + newest STATE section, and PROJECT_KNOWLEDGE.md. Kept for history only (2026-09-10).
+
 # SESSION-STATE — 2026-08-19 (read this FIRST in a new chat)
 
 Written so a new chat inherits real context instead of rediscovering it.

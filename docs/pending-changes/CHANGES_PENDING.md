@@ -1,5 +1,77 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER — 2026-09-10 (late) · the ONE list of what is still open. Everything below this section is history.
+Read this + the newest STATE section; do not mine older sections for queue items — every still-open item from them
+is here. Order inside each group = priority.
+
+**A · Owner actions**
+1. Commit index 4.13 (chart popups: 9 redesigned on one renderer) + this tla-core ZIP; replace PROJECT_KNOWLEDGE.
+2. Paste the full strings for the four Enterprise-era addresses (…6fygm0, …uctwye, …yk0uq0, …q3n5dr) → trust register.
+3. Paste Vercel's top-pages list (mobile) → sets the mobile walk order.
+4. Ask Philipp: the ampCAPA hub has not harvested since ~May (rate frozen 1.10553774) — Eris's row shows history as yield.
+
+**B · Foundations pass (NEXT, before mobile)** — one table: page → products read → cadence → last write → the page's
+tolerance in lib/cron-registry.js; then fix every mismatch. Known feeders, all found 2026-09-10:
+- Personal-repo close-out: tla-catalog.html + tla-chain-queries.html still read defipatriot/tla-chain-registry (repoint to
+  org token-catalog); nap LEGACY_REPO_RAW seed line (dead-safe, remove). Then ARCHIVE the personal repos (GitHub archive,
+  reversible), delete after two weeks of clean logs. nft-metadata already deleted 08-11 with no fallout.
+- Two LST ratio series: network-and-prices/ratio-history.json LIVE; price-history/ratios/ FROZEN 2026-07-16 (bLUNA's
+  labeled fallback in votion/yields, 56 d stale). Fold or retire inside the ratio re-anchor (D.1).
+- dex-data/pool-status: last write 08-11, retired cron, no readers → archive.
+- tla-snapshot names the Credia vproxy by raw key (resolver treats it as an LP) → name from catalog/credia product.
+- eris-apr meta.validation still says "pending ground-truth reconciliation" → reconciled 2026-09-10; Credia row
+  pool_name "ibc/88386A… (Credia market)" → wBTC.creda.a. (fold into the next dex-data touch)
+- system-health bucket_vp_consistency (bluechip 12.2%) — known #4, ghost/stray gauge votes + tally scope.
+- Gate-#0 NFT rows: BBL says 44 listed / 1,221 sales, we say 51 / 1,326 (ours incl. Atrium + Boost; theirs BBL-only).
+- token-catalog: xASTRO + wBTC.atom identity only via overrides (no discovered symbol) — fine, note it.
+- LUNA-wstETH SS shows `active`, $6.1K, 143% via gauge fallback, absent from the Eris list → classify.
+- supporters: VERIFIED working (gift captured 2026-09-10 19:32 run via transfer.recipient).
+
+**C · Mobile walk** — most users are mobile; site is desktop-first (inline CSS per page, ~0 media queries on most;
+index 1 MB / tla-stats 880 KB). Same method as the desktop walk: one page per pass, owner phone screenshots as
+truth. Default order index → tla-stats → new-here-tla unless Vercel says otherwise.
+
+**D · Milestone A — Portfolio P&L (announcement blocker)** — steps 1–2 DONE on main.
+1. Ratio re-anchor Action from dex-state-history hub ratios (price-history/ratios interpolated rows 10–15% high
+   2024–25) — absorb the frozen-series fold (B).
+2. build-pnl v3: measured amp-rate curve, value curve per wallet × epoch, FIFO round trips, attribution.
+3. member-portfolio rebuild + picker "View portfolio →" tile (owner's design: select an address → tile → portfolio).
+4. Genesis walk (PLAN-genesis-walk; archive clock) → feeds P&L. Then PLAN-archive-window-walk remainder:
+   classifyNftTx v2 (BBL payment leg), Credia leverage stream.
+
+**E · Page / product queue (after B–D unless cheap)**
+- Chart popups: DONE 4.12/4.13 (backing, DAODAO staked, DAO total value, NFT market, treasury, TLA deposits,
+  deposit rewards, vote rewards, TLA locks). Remaining special-path charts untouched: TLA Voting Power
+  (Current/Potential/DAO-share table), backing-per-NFT ampLUNA/APR toggle, avg daily gain.
+- Top-10 LIQUID NFT holders with last NFT action (stake/unstake/list/buy/break) — product from nft-flows, panel in
+  the supply modal.
+- index legacy chrome strip (changelogModal / bottom-nav residue on index + 5 tool pages); dead bottom-nav CSS.
+- new-here-tla.html eyes-on walk with live numbers; help-agent corpus for its four routes.
+- "In Development" tools (tla-catalog, tla-chain-queries, tla-catalog-edit): repoint (B) then walk or park.
+- Votion: daily write-once optimizer copy; per-pool VP daily; the 4th single gauge Votion weighs; LUNA-USDC drill
+  baseline (rollups vs locked-in); tla-snapshot bribes by gauge+bucket+funded period.
+- Advisor track record + compare-to-Votion (cron per epoch E201+, page shows adopted/outcome).
+- Capture gaps: Credia market lens, SkeletonSwap volume, per-pool LP holder concentration.
+- FUEL: buy/sell route helper (?token=FUEL into slippage.html); large-selloff watch (needs a trade stream).
+- LP/ampLP identity fold (136 legacy identities) + amplp_mappings duty; slim daily row-series crons (index perf).
+
+**F · Specs awaiting an owner decision** (all DRAFT; nothing built)
+- SPEC-governance-props (Terra gov capture/catalog/news) — approve or park.
+- SPEC-pd-bribe-drift — was "blocked on F2 (tainted USD)"; F2B shipped 2026-08-21, so UNBLOCKED — approve or park.
+- SPEC-news-feed — X needs a paid key; Agora/Telegram shapes unprobed — decide.
+- SPEC-lp-grades-rework — LP Grades v2 (five lenses) shipped 08-25; confirm this spec is superseded → mark closed.
+- SPEC-collection-registry — PARKED with the hub pivot (no new aDAO-specific assumptions; abstract later).
+
+**G · Housekeeping / dates**
+- Nov 2026 token rollover (Render tokens expire end-2026; nap-org + tla-help-agent carry their own).
+- Pre-announcement gate #0 (headline numbers vs Eris / Astroport / DAODAO; treasury recon after capture-engine 1.4.0;
+  LUNA price reconciled 2026-09-10 — Eris /prices vs our capture explains the 2% headline gap).
+- Films (New Here kit written; wire when cut). Font decision (Inter vs Outfit). address-catalog.html analytics tag.
+- Announcement — after D.3 and gate #0.
+
+**H · Superseded docs** (banners added 2026-09-10; kept for history, not to be read as state): SESSION-STATE.md
+(08-19), REMAINING-WORK.md (08-12), MASTER-PLAN.md (08-11).
+
 ## STATE AT 2026-09-10 — fleet + data AUDIT after a 2-week gap; dex-data 1.3.4 + member-data 1.1.1 DELIVERED
 
 **Later the same day — index 4.11 + dao 1.11 + supporters 1.1 DELIVERED (owner walk of the NFT strip):**
@@ -10,7 +82,7 @@ audit on both pages via lib/prop-audit.js. BBL floor USD → LUNA × bLUNA hub r
 sale-time USD from dao-dashboard (was converted at today's bLUNA price). supporters 1.1 logs the LCD answer + tries
 coin_received.receiver — READ the next member-data log's `supporters:` lines: if both keys answer 0 rows, publicnode's
 tx index is not serving event queries and the cron needs a different source (by-hash from the page, or an indexer).
-index 4.12: chart popups redesigned (backing LUNA+USD+floor; DAODAO staked as % of RELEASED supply — the old
+index 4.12 + 4.13: nine chart popups redesigned on one multi-series renderer (backing LUNA+USD+floor; DAODAO staked as % of RELEASED supply — the old
 overlay was staked ÷ minted; DAO Total Value stacked composition + LUNA; NFT market floor/listed/sales) — gate 19/19.
 Remaining popups to walk with the same rule (queue): TLA VP (USD vs LUNA), Treasury (composition), Rewards
 (claimed vs unclaimed), LST ratio charts (ratio × price). Also: strip charts (DAO Total Value / NFT analytics) opened nothing — opener was closure-scoped, inline onclick could

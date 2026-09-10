@@ -1,3 +1,5 @@
+> **SUPERSEDED (2026-08-11 snapshot).** Current state lives in CHANGES_PENDING.md → "OPEN LEDGER" + newest STATE section, and PROJECT_KNOWLEDGE.md. Kept for history only (2026-09-10).
+
 # MASTER-PLAN — finishing the strip
 
 Written 2026-08-11. Supersedes ad-hoc queue ordering for the remaining work.
