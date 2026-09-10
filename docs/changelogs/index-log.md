@@ -1,6 +1,23 @@
 # Index Page Changelog
 
 
+## 4.12 — 2026-09-10 — chart popups redesigned: what changed and why, on one screen
+
+One multi-series renderer (`MULTI_CHARTS` + `renderMultiChart`) for four popups; every other chart keeps its path.
+Point A/B and the delta boxes work on each chart's primary series; the data table shows one column per series.
+- **Backing per NFT** — backing in LUNA (ampLUNA × rate, never falls), backing in USD, and the base-tier floor in
+  USD on the same right axis (floor-history since 2026-08-17). Sentence: LUNA gain vs dollar gain ("the difference is
+  LUNA's price") and floor as a multiple of backing.
+- **DAODAO staked** — count + **% of RELEASED supply** (minted − the 1,000 DAO-controlled; was staked ÷ minted
+  labelled "% of circulating": 39.7% → 52.3%), unstake window as grey bars, Enterprise-inclusive share in the
+  tooltip/sentence. History corrects itself at render — no product rewrite.
+- **DAO Total Value** — stacked composition (NFT backing / treasury tokens / TLA LPs / TLA locks) + LUNA price on
+  the right axis; parts sum to the strip total to the dollar; sentence names the biggest mover and LUNA's move.
+- **NFT market** (was "NFTs listed" with all-time sales) — base-tier floor USD line, sales-that-day bars (USD at
+  sale, all marketplaces, from sales-enriched), listed count on the right.
+Gate: jsdom on rows built from the committed products (state-history, dao-dashboard dailies, backing-history,
+floor-history, sales-enriched), 19/19.
+
 ## 4.11 — 2026-09-10 — NFT supply = Locked vs Liquid · signal proposals · bLUNA doctrine pricing
 
 - **Supply modal rebuilt on the owner's framing.** Whole collection first: unminted 5,828 (58.3%) + DAO-controlled
