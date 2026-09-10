@@ -2,6 +2,24 @@
 
 ## STATE AT 2026-09-10 — fleet + data AUDIT after a 2-week gap; dex-data 1.3.4 + member-data 1.1.1 DELIVERED
 
+**Later the same day — index 4.11 + dao 1.11 + supporters 1.1 DELIVERED (owner walk of the NFT strip):**
+NFT supply modal rebuilt as Locked vs Liquid of the 10,000 (locked 8,888 / liquid 1,112; released 3,172 → 2,060
+staked / 1,112 liquid) — two wrong cells fixed ("Enterprise Staked 81" was a wallet count; "Liquid 1,425" derived
+from it; the same path overwrote the Enterprise TILE with 81). Signal proposals (0 messages) → green chip + one-line
+audit on both pages via lib/prop-audit.js. BBL floor USD → LUNA × bLUNA hub ratio (doctrine), all-time volume →
+sale-time USD from dao-dashboard (was converted at today's bLUNA price). supporters 1.1 logs the LCD answer + tries
+coin_received.receiver — READ the next member-data log's `supporters:` lines: if both keys answer 0 rows, publicnode's
+tx index is not serving event queries and the cron needs a different source (by-hash from the page, or an indexer).
+Also: strip charts (DAO Total Value / NFT analytics) opened nothing — opener was closure-scoped, inline onclick could
+not reach it; fixed. Enterprise-staked AUDIT: clean by id (503 = 100 DAO broken + 403 holders, zero overlap);
+operator wallet `terra1nn7yrg…` owner-confirmed as an old council wallet → trust register; NEW nft-inventory product
+`nfts/adao/snapshots/dao-controlled.json` (1,000 ids by custody, 3 guards). Four truncated Enterprise-era addresses
+(…6fygm0 funder/prop-5 executor, …uctwye, …yk0uq0, …q3n5dr) sit in `_needs_verification` until full strings arrive.
+QUEUE (new): top-10 LIQUID NFT holders with last NFT action (stake/unstake/list/buy/break) — a product from
+nft-flows events, then a panel in the modal; gate #0 rows: BBL listed 44 vs ours 51 (ours incl. Atrium+Boost),
+sales 1,221 vs 1,326; tla-snapshot names the Credia vproxy by raw key (resolver treats it as an LP) — name from
+the catalog/credia product. NEXT: the foundations table (page → products → cadence → last write → page tolerance).
+
 **Fleet (Render 14/14 successful, owner screenshot; heartbeats on main 15:xx UTC):**
 every job inside its cadence and the CRON-FLEET stagger LANDED (dex-data :31,
 member-data :45, tla-flows :47, nft-flows :52, nft-inventory :42, token-catalog
