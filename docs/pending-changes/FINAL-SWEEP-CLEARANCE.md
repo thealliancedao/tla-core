@@ -72,3 +72,31 @@ stale and fragile. Remove the readers rather than preserve the files.
 4. Fold dao-dashboard (or retire its 6 reader spots), then delete the last repo.
 5. Render: all `org-*` jobs remain; everything else already killed. Drop the
    `org-` prefix later once no legacy jobs exist to distinguish from.
+
+---
+
+## ADDENDUM 2026-09-10 — the 24 repos actually still on the account (owner screenshot), verified against org main
+
+Everything in sections A–D above LANDED: backing-history merged (org series starts 2026-04-13, `source:
+migrated`), the ten docs under `docs/archive-2026-08/`, both PD addresses in config, CAPA legacy fold (20 rows),
+FUEL F2B series, dao-dashboard folded (tla-snapshot-data's HOLD released), ally.html on org products.
+Live reads of any personal repo left on main after this commit: **one** — the two "In Development" tools read
+`defipatriot/tla-chain-registry/2026/current.json` (its shape — directory / contracts / tokens dict /
+amplp_mappings / wallets_catalog — is not the org catalog's; the repoint is the identity-fold job).
+
+| Repo | Disposition | Evidence |
+|---|---|---|
+| nft-inventory-data, marketplace-data, tla-snapshot-data, bribes-data, system-health-data, fuel-data, adao-positions-data, adao-allies-data, backing-data, ampcapa-data, cron-scripts, tla-participants-data, website-adao-core, tla-ext_json_storage, votion-data, tla_json_storage, adao_json_storage | **DELETE** | sections A–D, all verified on main 2026-09-10 |
+| tla-history-data_2026 | **DELETE** | engine ported into `.github/scripts/tla-voting/tla-voting-seed.js`; org tla-voting events run from 2024 |
+| price-history-data_2026 | **DELETE** | org `price-history/` is the same CoinGecko backfill, daily to 2022-10-31 |
+| tla-locks-data_2026 | **DELETE** | org `tla-voting/events/locks` (2024→) + participants (204 lock holders hourly) |
+| archive-storage | copy `alliance-dao-docs.html` → `docs/archive-2026-08/` (done in this commit), then **DELETE** | one file, the old Transaction Explorer documentation |
+| tla-vp-holders-data_2026 | **DELETE** — one current `holders.json` (2026-08-10, weekly mode), no weekly archive; org participants/positions carry the same holders hourly and per epoch | probed 2026-09-10 |
+| votion-positions-data_2026 | **DELETE** — dailies carry `retention: live_only` (current day only); nothing to fold | probed 2026-09-10 |
+| tla-chain-registry | **DELETE** (owner: no more repos). Its last write (2026-08-11 `2026/current.json`, which the tools had been reading frozen for a month) is archived as `tla-core/archive/legacy-registry/tla-chain-registry-2026-08-11.json` (labeled `_archived`, not a series) and both tools repointed to it; the live-org repoint stays the identity-fold job | the one live read — now none |
+
+Repos in the August list that are no longer on the account (already deleted): astroport-pool-data_2026,
+ss-pool-data_2026, network-and-prices-data_2026, nft-metadata.
+
+Cron side, same commit: network-and-prices 3.0.3 removes its last two legacy reads (ratio-history seed, heartbeat
+fallback) and retires the provenance gate (red since 2026-08-21, undeclared F2b/E12 edits). Behaviour gate 24/24.
