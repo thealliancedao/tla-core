@@ -235,3 +235,25 @@ self-discovers references from captures instead of hand-listed addresses).
 **Still open from this audit:** §Prescribed-fixes items 1–4 (votion-positions
 hub rates, APR/APY display convention, cron-published `eris_apr_pct`) remain
 queued as written; the canary neither replaces nor blocks them.
+
+## Addendum 2026-09-10 — the `trading` leg per pool kind (source-verbatim, HAR)
+
+Owner HAR of `terra/liquidity-hub?tab=liquidity` (chunk
+`101.f44f1501107e40cb.js`, `getPoolInfo` + the row composition). Composition
+re-confirmed byte-for-byte: `apy = aprToApy(.92·incentives) + trading − take`,
+`total = incentives − take + trading`, `trading ?? 0`. What `trading` IS:
+
+| pool kind | their source | ours (1.3.4) |
+|---|---|---|
+| Astroport pair | `365 × dayLpFeesUSD / TVL` (their Astroport info) | dex-data `fee_apr` (substitution, labeled) |
+| SkeletonSwap pair | `Promise.resolve(0)` — hard zero | 0, `trading_apr_source` says so; no "assumed" flag |
+| xASTRO (single) | Astroport tRPC `protocol.stakingApy` chainId neutron-1 → `weekApr`, "Staking APR" | same URL, `weekApr × 100` |
+| ampCAPA (single) | hub `exchange_rates{limit:14}.apr × 365.25`, "Staking APR" | same query; NOTE a frozen hub still reports >0 (stored points predate the freeze) |
+| Creda market | `metrics.assets[].supply_apy`, "Supply APR" | committed credia `raw.supply_apy` |
+| any other single | 0 | 0 |
+
+Singles' `price`/`tvl` in their code: xASTRO = ASTRO$ × (staking-contract ASTRO
+balance / xASTRO supply); ampCAPA = CAPA$ × exchange_rate, tvl = total_ustake ×
+price; Creda = total_supplied_usd / supply_vtotal (= our 1.3.3 receipt-supply
+basis). Their LUNA price is `backend.erisprotocol.com/prices` ($0.04399 on
+2026-09-10 vs our $0.04497 — the entire 2% TVL/rewards headline gap).

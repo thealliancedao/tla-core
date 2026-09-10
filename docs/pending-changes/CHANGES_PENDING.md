@@ -1,6 +1,6 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
-## STATE AT 2026-09-10 — fleet + data AUDIT after a 2-week gap; dex-data 1.3.3 + member-data 1.1.1 DELIVERED
+## STATE AT 2026-09-10 — fleet + data AUDIT after a 2-week gap; dex-data 1.3.4 + member-data 1.1.1 DELIVERED
 
 **Fleet (Render 14/14 successful, owner screenshot; heartbeats on main 15:xx UTC):**
 every job inside its cadence and the CRON-FLEET stagger LANDED (dex-data :31,
@@ -25,8 +25,16 @@ USDC-USDt exact). Member-side VP 31.19M vs 31.23M (closed VP-tile audit).
   `catalogPrice` decimals bug (read a field the catalog never had). Gates
   71/71 mock (+M7c) · 40/40 real-fixture vs the screen: 18 Astroport rows
   byte-identical, SS/Credia within 0.5% (ATOM-LUNA 1.35%), 26/26 priced.
-  NAMED gap flag `single_asset_yield_leg_unmeasured` — Eris adds a leg on
-  single gauges (xASTRO +17.7 pp, ampCAPA +4.8 pp) the source formula lacks.
+  Then **1.3.4** (same session, owner HAR of the liquidity-hub chunk): the
+  single-gauge leg is the asset's OWN yield, source-verbatim — xASTRO ←
+  Astroport tRPC `protocol.stakingApy.weekApr`, ampCAPA ← hub
+  `exchange_rates(14).apr × 365.25`, Creda ← `supply_apy`; SkeletonSwap
+  trading = `Promise.resolve(0)` BY THEIR SOURCE (our 0 is exact). Every row
+  publishes `trading_apr_source`; a failed read keeps the 1.3.3 flag. Gates
+  82/82 mock · 50/50 real-fixture (singles reproduce 19.65 / 33.08 to 0.00 pp
+  given the leg; first live run reconciles the two source reads). Also from
+  the HAR: Eris `/prices` LUNA $0.04399 vs our $0.04497 = the whole 2%
+  headline gap.
 - member-data **1.1.1** — tla-snapshot's votion read pointed at the retired
   personal repo (404 every epoch) → `sources.votion:false` every run; fields
   unread by tla-stats. Read + attach + key removed. No figure change.
@@ -39,11 +47,10 @@ USDC-USDt exact). Member-side VP 31.19M vs 31.23M (closed VP-tile audit).
    stale, hub returns 0 points — paused). One-canonical-file law: fold or
    retire the frozen path — do it inside the ratio re-anchor (Milestone A
    step 3, which is next anyway).
-2. Single-gauge yield leg: measure what Eris adds (candidate: the asset's own
-   staking yield — xASTRO, ampCAPA, ampROAR) and add it VERBATIM once known;
-   until then the flag stands. Note ampCAPA hub ratio has been FROZEN at
-   1.10553774 since May while Eris shows ~4.8 pp on it — ask where that comes
-   from before wiring anything.
+2. ~~Single-gauge yield leg~~ RESOLVED in 1.3.4 (see above). Residual fact
+   worth a word to Philipp: the ampCAPA hub has not harvested since ~May
+   (rate frozen 1.10553774; your 09-08 bond confirms it), so the "Staking
+   APR" Eris shows on that row is history, not current yield.
 3. `dex-data/pool-status` last wrote 08-11 (retired legacy cron; no site or
    cron reader found) → archive candidate.
 4. LUNA-wstETH SS shows `active`, $6.1K staked, 143% APR (gauge fallback) but
@@ -56,9 +63,13 @@ USDC-USDt exact). Member-side VP 31.19M vs 31.23M (closed VP-tile audit).
    (docs). Replace the project's PROJECT_KNOWLEDGE.md with the refreshed one.
 2. Render auto-deploys. dex-data's next :30 run: eris-apr meta
    `pools_fully_priced` should read 26/26; SS rows carry basis
-   `staked_supply_ratio_x_reserve_implied_tvl (token-catalog/tla)`; wBTC.creda.a
-   ≈ $80.7K. member-data's :45 run: no `votion:` log line, `sources` has no
-   votion key.
+   `staked_supply_ratio_x_reserve_implied_tvl (token-catalog/tla)` and
+   `trading_apr_source` "0 by Eris source"; wBTC.creda.a ≈ $80.7K; the
+   ampCAPA and xASTRO rows carry a `trading_apr_source` and NO
+   `single_asset_yield_leg_unmeasured` flag — expect eris_apr_pct ≈ 19.6 /
+   33.1 (vs the 09-10 screen). If either single still carries the flag, read
+   `meta.input_errors.single_yield_*`. member-data's :45 run: no `votion:` log
+   line, `sources` has no votion key.
 3. Then open Milestone A step 3 (ratio re-anchor → build-pnl v3), absorbing
    audit item 1.
 
