@@ -14,7 +14,7 @@ is here. Order inside each group = priority.
 tolerance in lib/cron-registry.js; then fix every mismatch. Known feeders, all found 2026-09-10:
 - Personal-repo close-out: DISPOSITION for all 24 in FINAL-SWEEP-CLEARANCE → ADDENDUM 2026-09-10 (20 delete now,
   archive-storage copied then delete, the two data repos probed — nothing to fold — delete; tla-chain-registry DELETED
-  after archiving its frozen 2026-08-11 snapshot in tla-core/archive/legacy-registry/ and repointing both tools).
+  after archiving its frozen 2026-08-11 snapshot in tla-core/docs/archive/legacy-registry/ and repointing both tools).
   Personal account → ZERO repos. Live-org repoint of the two tools stays the identity-fold job. nap 3.0.3 removes its last legacy reads + retires the provenance gate
   (found RED since 08-21 — undeclared F2b/E12 edits; foundations finding).
 - Two LST ratio series: network-and-prices/ratio-history.json LIVE; price-history/ratios/ FROZEN 2026-07-16 (bLUNA's

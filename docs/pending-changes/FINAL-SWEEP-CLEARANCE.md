@@ -93,7 +93,7 @@ amplp_mappings / wallets_catalog — is not the org catalog's; the repoint is th
 | archive-storage | copy `alliance-dao-docs.html` → `docs/archive-2026-08/` (done in this commit), then **DELETE** | one file, the old Transaction Explorer documentation |
 | tla-vp-holders-data_2026 | **DELETE** — one current `holders.json` (2026-08-10, weekly mode), no weekly archive; org participants/positions carry the same holders hourly and per epoch | probed 2026-09-10 |
 | votion-positions-data_2026 | **DELETE** — dailies carry `retention: live_only` (current day only); nothing to fold | probed 2026-09-10 |
-| tla-chain-registry | **DELETE** (owner: no more repos). Its last write (2026-08-11 `2026/current.json`, which the tools had been reading frozen for a month) is archived as `tla-core/archive/legacy-registry/tla-chain-registry-2026-08-11.json` (labeled `_archived`, not a series) and both tools repointed to it; the live-org repoint stays the identity-fold job | the one live read — now none |
+| tla-chain-registry | **DELETE** (owner: no more repos). Its last write (2026-08-11 `2026/current.json`, which the tools had been reading frozen for a month) is archived as `tla-core/docs/archive/legacy-registry/tla-chain-registry-2026-08-11.json` (labeled `_archived`, not a series) and both tools repointed to it; the live-org repoint stays the identity-fold job | the one live read — now none |
 
 Repos in the August list that are no longer on the account (already deleted): astroport-pool-data_2026,
 ss-pool-data_2026, network-and-prices-data_2026, nft-metadata.
