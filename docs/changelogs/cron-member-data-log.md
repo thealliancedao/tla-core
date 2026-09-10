@@ -1,6 +1,17 @@
 # cron-member-data — changelog
 
 
+
+## tla-snapshot — Credia market row restored · member-data 1.1.2 — 2026-09-10 (foundations table)
+
+The Credia gauge entry (`cw20:terra1jjvy…`, the wBTC.creda.a receipt) has no `minter{}`, so `resolvePoolId`
+threw and `enrichPool` returned null: the row was DROPPED (67/68 pools) and an active $80.7K single gauge was
+missing from every tla-stats tab. Now: cw20 without minter → `token_info{}` → cw20-single; name from the org
+token-catalog `effective.symbol` (`wBTC.creda.a`, falls back to token_info); staked + depth from the org
+credia snapshot (receipt ratio × market TVL — the eris-apr 1.3.3 basis; $80,538 vs Eris $80.72K); `dex:
+Credia`, `dex_subtype: lending_market`; `sources.credia`. Both org reads isolated — down → row still exists,
+name from token_info, staked honest-null. Gate 8/8 on the live products.
+
 ## supporters 1.1 — 2026-09-10 — LCD answer visible; second event key
 
 The owner's 50 LUNA test gift (memo thanks_defi, block 22778110) did not appear after two hourly runs although the

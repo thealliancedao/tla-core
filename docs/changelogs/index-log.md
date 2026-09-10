@@ -1,6 +1,14 @@
 # Index Page Changelog
 
 
+
+## lib/cron-registry.js — 2026-09-10 (foundations table)
+
+tla-voting judged HOURLY (was 15-min → "late" most of every hour); nft-flows judged 15-MIN (was daily → a dead
+walker took two days to go red); NEW entries eris-apr, credia (dead modules inside org-dex-data were invisible
+behind the astroport epochs heartbeat) and member-census (daily snapshots read by five pages). 23 entries. Every
+page's health dots and the system-health page pick these up unchanged.
+
 ## 4.13 — 2026-09-10 — five more popups on the multi-series renderer
 
 Treasury (stacked by token + LUNA price; sentence names the largest holding and the biggest mover), TLA Deposits

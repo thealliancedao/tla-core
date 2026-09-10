@@ -1,6 +1,16 @@
 # NFT Explorer Changelog
 
 
+
+## nft-inventory — analytics + market-history trigger fixed — 2026-09-10 (foundations table)
+
+`runWithAnalytics` decided on `result.runMode`, but `captureSnapshot()` never returned a value — `result` was
+undefined, `runMode` fell to the (unset) env var, and analytics + market-history skipped on every auto-escalated
+warm/full run. Both dead since 2026-08-23 (analytics-heartbeat and sales-enriched `maintained_at` frozen while
+full runs landed 09-09). Every NFT sales/volume number on the site was 18 days stale. Fix: captureSnapshot
+returns `{ runMode: effectiveMode, status, elapsed }`. Gate 7/7 (warm/full run, hot skips, env overrides,
+regression reproduced). First warm run after commit rebuilds analytics + sales-enriched + luna/bluna dailies.
+
 ## nft-inventory — dao-controlled.json (by token id) — 2026-09-10
 
 Owner audit of the Enterprise-staked count: the old enterprise contract holds 503 NFTs — 100 broken (the DAO's,

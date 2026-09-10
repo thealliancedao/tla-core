@@ -2,6 +2,12 @@
 
 ---
 
+
+## 2026-09-10 — 1.3.5 — eris-apr validation marker cleared · Credia row named
+
+`meta.validation` → "reconciled 2026-09-10 vs the Eris liquidity-hub screen…"; Credia rows take the catalog
+receipt symbol (`wBTC.creda.a`). No figure changes; mock 82/82, real-fixture 51/51.
+
 ## 2026-09-10 — 1.3.4 — eris-apr: trading leg source-verbatim
 
 Owner HAR of the Eris liquidity-hub chunk (`getPoolInfo`) resolved the 1.3.3
