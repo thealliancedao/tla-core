@@ -11,7 +11,7 @@ is here. Order inside each group = priority.
 4. Ask Philipp: the ampCAPA hub has not harvested since ~May (rate frozen 1.10553774) — Eris's row shows history as yield.
 
 **B · Foundations pass — TABLE BUILT + FIXED 2026-09-10 (late): `docs/FOUNDATIONS-TABLE.md`.** Six mismatches fixed in
-one commit set: (1) NFT analytics + market-history DEAD since 08-23 (captureSnapshot returned nothing → the
+one commit set — **VERIFIED 2026-09-10 23:43 warm run: analytics-heartbeat, sales-enriched (1,327) and explorer-bundle all rebuilt** — (1) NFT analytics + market-history DEAD since 08-23 (captureSnapshot returned nothing → the
 warm/full tails never ran; every NFT sales/volume figure was 18 days stale) — nfts/adao/index.js; (2) the Credia
 market row was DROPPED from tla-snapshot (cw20 receipt has no minter) — member-data 1.1.2 restores it named
 wBTC.creda.a with staked/depth from the org credia snapshot; (3) registry cadences: tla-voting hourly, nft-flows
@@ -34,9 +34,33 @@ wBTC.creda.a with staked/depth from the org credia snapshot; (3) registry cadenc
 - LUNA-wstETH SS shows `active`, $6.1K, 143% via gauge fallback, absent from the Eris list → classify.
 - supporters: VERIFIED working (gift captured 2026-09-10 19:32 run via transfer.recipient).
 
-**C · Mobile walk** — most users are mobile; site is desktop-first (inline CSS per page, ~0 media queries on most;
-index 1 MB / tla-stats 880 KB). Same method as the desktop walk: one page per pass, owner phone screenshots as
-truth. Default order index → tla-stats → new-here-tla unless Vercel says otherwise.
+**C · Mobile walk — OPENED 2026-09-10 (late).** Vercel 12-month: desktop 64% / mobile 35% / tablet 1% — a third,
+not the majority (the earlier "most users" read was wrong). Owner direction: APP look and feel — installable, Ally
+icon with the page name under it, Home · NFT · TLA · DAO · Help tabs, address remembered; drop what doesn't matter
+on a phone but keep a route to it. STEP 1 SHIPPED: site-header 1.5.0 app shell (per-tab manifests, icons, sw.js,
+tab bar, help bubble → tab) + vercel.json redirects for the dead URLs Vercel still records (capa_lp_converter 2%
+of visitors!). NEXT: page passes in visitor order — index (39%) → nft-explorer (8%) → ally (6%) → tla-stats (6%)
+→ release-history / alliances / lore / tools (3–4%). Below 3% waits. STEP 2 SHIPPED (same night): site-header
+1.6.0 device prefs (badge DAO · NFT/TLA default views · marketplace collection) + phone wallet bar (change/clear) +
+settings sheet + proposal badge (Badging API + tab dot; "new since you last looked" — background badges need Web
+Push, queued); index 4.14 (Pulse hidden on phones, link tree, compact rewards, default collection); dao 1.12 (marks
+seen). NEXT owner-eyes items from the brief: DAO info tiles + popup charts on a phone (design pass), marketplace
+redesign for phones (+ live-feed pill honours the default collection), then nft-explorer / ally / tla-stats passes.
+Later the same night: 1.6.1 (wallet bar phone-only), 1.7.0 (phone header compacted, Change → full-screen finder,
+16px inputs), 1.7.1 (sideways scroll locked), 1.8.0 (chip = name/…last4, New-here card + ⚙ links); index 4.15–4.17
+(link tree fixed, tiles as rows, marketplaces one line + expand, activity count, a stray CSS tail fixed).
+**DECISION 2026-09-11 — THREE VERSIONS (SPEC-mobile-app.md):** desktop untouched · mobile-browser = stripped
+reflow (what shipped tonight; keep modest) · **the APP = a separate `app.html` built from scratch for the phone,
+"what changed since you last looked"** (feed · Me/portfolio · Market · TLA · DAO glance; user picks 5 tabs; local
+diff engine; push later). app v0 shipped and REJECTED; app v1 (position companion, 55/55 gate) shipped through the night with the vote
+optimizer, activity feed, venue tiers, security alerts; owner verdict "still a desktop page" → **v2 BRIEF in
+SPEC-mobile-app.md (Today = ledger rows with a 24h/7d/14d window, zeros hidden, detail in sheets; NFTs = movement
+per collection + your NFTs by rank; tab merge proposal).** CAPTURE FINDINGS from the app work: (1) bribes harvested
+per epoch → mid-epoch bribes invisible (live capture needed); (2) nfts/adao/transfers has no 2026-09 file; (3) no
+per-wallet delegation capture; (4) no DAO staking rewards per wallet; (5) no marketplace offers; (6) no PL / TLA
+Locks activity ledgers. NEXT: Today v2 + NFTs v2 to the spec, then crons 1–2.
+Open: owner confirms planet-map / news redirect targets; the 7 pages without the shared header get no app layer;
+Web Push for real-time badges (needs a push sender in dao-governance + VAPID keys).
 
 **D · Milestone A — Portfolio P&L (announcement blocker)** — steps 1–2 DONE on main.
 1. Ratio re-anchor Action from dex-state-history hub ratios (price-history/ratios interpolated rows 10–15% high
