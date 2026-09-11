@@ -2,6 +2,65 @@
 
 
 
+
+
+
+## app.html v1 · install.html · site-header 1.9.0 · site-footer "Get the app" — 2026-09-11 (overnight)
+
+The app became a real page. **app.html v1** — position companion built from scratch on the org products: Today
+(your-position hero with device trend line, Needs you: claimable rewards, locks unlocked-N-weeks / unlocking,
+gauge votes stale, at-risk/inactive LPs, new proposals, epoch rolling; What changed vs the device snapshot;
+biggest 24h moves with sparklines + all-tokens sheet), Portfolio (allocation bar, VP share of TLA, locks → sheet,
+LPs with APR, gauge allocation, pending by token, wallet), Market (floor hero + sparkline, 7d/30d sales, cheapest
+unbroken as an image grid → NFT sheet with traits, venues with an Unbroken/Broken/Phoenix toggle showing each
+venue's tier floor and last sale vs floor now, recent sales newest-first with `notional_usd`), Vote (YOUR VOTING:
+est. bribes if you do nothing per bucket + total, every better pool valued with your VP added to its denominator,
+% of VP used per bucket, +VP from re-setting LST locks; proposals with yes/no/abstain bars; gauge with bribe pills),
+TLA (your pools, best APR at $5K+ staked, LSTs, buckets), NFTs (ACTIVITY feed: stakes/unstakes/listings/transfers/
+sales by day with a "you last looked" marker, filters, load-older; collection block), More (settings: five tabs,
+badge DAO, wallet). Onboarding (3 steps, scrollable — the pinned-button lock-up on iOS fixed), pull-to-refresh,
+bottom sheets, security alerts (NFT unstaked under your wallet from pending-claims; stake/NFT count drops).
+Data semantics learned: `price_usd_at_sale` = unit price, `notional_usd` = sale total; legacy BBL sales carry no
+marketplace label; explorer-bundle columns are bbl_rank(9) flags(10) listing_usd(11); Phoenix = grade 40;
+catalog symbol under `effective` → `discovered`; pool VP under `voting_power.vp_human`; APR is `approx_apr_pct`;
+bucket VP is `bucket_vp_human`. Gate 55/55 on committed products. **install.html** — device-aware install guide
+with the real Android install prompt. **site-header 1.9.0** — inside the installed app the phone bar's Home
+returns to app.html; **site-footer** — "Get the app" link on every page. All six manifests start the app.
+Owner verdict on v1: "still a desktop page" → v2 brief in docs/specs/SPEC-mobile-app.md.
+
+## site-header 1.6.0 · index 4.14 · dao 1.12 — 2026-09-10 (mobile, step 2: device prefs, wallet bar, badge, Home simplified)
+
+- **Device prefs** (`localStorage ally:prefs`, ⚙ in the phone header → bottom sheet): which DAO the badge counts (All /
+  aDAO / Lion DAO / Pixel Lions / PD / ampCAPA), what NFT Explorer opens on (Explorer / Analytics → `?view=`), what TLA
+  Stats opens on (Overview / Pools / LP Grades / TLA → `#tab`), marketplace collection (aDAO / pixeLions / TLA Locks).
+  The tab bar's links carry the defaults.
+- **Wallet bar** on phones: the remembered address as a chip + Change (focuses the picker) + Clear (`AddressPicker.clear()`),
+  so the iOS "own storage" first-open is a one-tap job and switching wallets is obvious.
+- **Proposal badge**: Home reports open proposals across the watched DAOs to the shell; the shell sets the home-screen
+  badge (Badging API, iOS 16.4+/Android) and a red dot on the Home tab = open proposals NOT yet seen, filtered by the
+  default DAO; opening the alert modal or the DAO page marks them seen (DAO names normalized: "Pixellions" == "Pixel
+  Lions"). Honest limit: updates while the app is open — background badges need Web Push (later).
+- **Home on phones**: Ecosystem Pulse hidden (the alert modal still fires for new proposals); the link tiles fold into a
+  "Links & tools" tree; DAO rewards card compact (sparklines off); marketplace tiles + listings open on the device's
+  default collection via the same code path as a tap. Desktop unchanged.
+- Gates: 11/11 prefs/wallet/badge + 8/8 Home/DAO hooks + earlier 21/21 app shell.
+
+## lib/site-header.js 1.5.0 + app shell — 2026-09-10 (mobile, step 1 of the walk)
+
+Owner: "app look and feel." Phone bar is now **Home · NFT · TLA · DAO · Help** (Lore leaves the bar; still in the
+desktop nav, one tap from Home); the help bubble hides on phones since Help is a tab. **Installable app**: every
+page on shared chrome declares a web-app manifest — per-tab manifests so the home-screen label reads the page
+(Home / NFT / TLA / DAO / Help; every other page installs as "Ally") — with the Ally chevron as icon (192 / 512 /
+maskable / apple-touch 180, `/assets/app/`), Apple + Android head tags, `viewport-fit=cover`, and a network-first
+service worker (`/sw.js`) that caches nothing but the icon set — by doctrine no data is ever served stale from a
+cache. Standalone mode gets safe-area padding and no rubber-band behind the bar. The address a visitor picks was
+already persisted by lib/address-picker.js (`tla:selected_wallet`), so an installed app reopens on their wallet.
+`vercel.json`: 301s for the old URLs still circulating (capa_lp_converter → ampcapa-tool, fuel_tracker → fuel-tool,
+nft-explorer → nft-explorer-index, tla_tool → tla-stats; planet-map → lore, news → home, test2 → test as 302s —
+owner to confirm targets), plus service-worker + manifest headers. Gate 21/21 (bar, active tab, per-page manifest,
+iOS label, idempotence, all six manifests, sw + vercel.json parse). Not on the app layer: the 7 tool/dev pages that
+don't load the shared header.
+
 ## lib/cron-registry.js — 2026-09-10 (foundations table)
 
 tla-voting judged HOURLY (was 15-min → "late" most of every hour); nft-flows judged 15-MIN (was daily → a dead
