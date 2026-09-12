@@ -1,4 +1,4 @@
-# nft-flows-derive — archives on main (archive/fcd/*, tla-flows/raw/*, nfts/raw/*) → nfts/<collection>/flows/
+# nft-flows-derive — archives on main (archive/fcd/*, tla-flows/raw/*, nfts/raw/*) → nfts/<collection>/ledger/ (the on-chain event ledger; nfts/adao/flows/ is the separate daily state-diff product)
 # (month files, primary-sales.json with USD at the day, lineage.json for locks, index.json with coverage + known gaps).
 # No node access: reads what is committed, writes what it derives. Idempotent; re-run after any walk or FCD harvest.
 name: nft-flows-derive
@@ -29,9 +29,9 @@ jobs:
             archive/fcd
             tla-flows/raw
             nfts/raw
-            nfts/adao/flows
-            nfts/pixel/flows
-            nfts/tla-locks/flows
+            nfts/adao/ledger
+            nfts/pixel/ledger
+            nfts/tla-locks/ledger
             nfts/adao/snapshots/luna-usd-daily.json
       - uses: actions/setup-node@v4
         with:
@@ -45,5 +45,5 @@ jobs:
       - name: commit
         run: |
           git config user.name "nft-flows-derive" && git config user.email "bot@thealliancedao.com"
-          git add nfts/*/flows
+          git add nfts/*/ledger
           git diff --cached --quiet && echo "nothing changed" || git commit -m "nft-flows derive $(date -u +%Y-%m-%dT%H:%M)Z" && git push
