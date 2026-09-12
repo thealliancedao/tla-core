@@ -45,7 +45,14 @@ function byMsg(events) {
   for (const e of events || []) { const i = e.msg_index == null ? 0 : Number(e.msg_index); if (!m.has(i)) m.set(i, []); m.get(i).push(e); }
   return m;
 }
-function wasmOf(events) { return (events || []).filter(e => e.type === 'wasm').map(e => ({ a: attrsAll(e), e })); }
+// Legacy (pre-0.47, 2023-era FCD) txs emit ONE flattened wasm event per message with every contract call's attributes
+// appended after its own `_contract_address` key. Split those at each `_contract_address` so every call reads on its own.
+function splitLegacyWasm(e) {
+  const at = e.attributes || []; const cuts = []; at.forEach((a, i) => { if (a.key === '_contract_address') cuts.push(i); });
+  if (cuts.length <= 1) return [e];
+  return cuts.map((c, k) => ({ type: 'wasm', msg_index: e.msg_index, attributes: at.slice(c, k + 1 < cuts.length ? cuts[k + 1] : at.length) }));
+}
+function wasmOf(events) { return (events || []).filter(e => e.type === 'wasm').flatMap(splitLegacyWasm).map(e => ({ a: attrsAll(e), e })); }
 function contractOf(w) { return first(w.a, '_contract_address'); }
 function actionsOf(w) { return w.a.action || []; }
 
@@ -54,7 +61,7 @@ function paymentLegs(events) {
   const legs = [];
   for (const e of events || []) {
     if (e.type === 'transfer') { const a = attrsAll(e); const amt = first(a, 'amount'); const to = first(a, 'recipient'), from = first(a, 'sender'); if (amt && to) for (const part of amt.split(',')) { const m = part.match(/^(\d+)(.+)$/); if (m) legs.push({ from, to, amount: m[1], denom: m[2] }); } }
-    if (e.type === 'wasm') { const a = attrsAll(e); if ((a.action || []).some(x => x === 'transfer' || x === 'send') && a.amount && a.from && a.to && !a.token_id) legs.push({ from: first(a, 'from'), to: first(a, 'to'), amount: first(a, 'amount'), denom: 'cw20:' + first(a, '_contract_address') }); }
+    if (e.type === 'wasm') for (const se of splitLegacyWasm(e)) { const a = attrsAll(se); if ((a.action || []).some(x => x === 'transfer' || x === 'send') && a.amount && a.from && a.to && !a.token_id) legs.push({ from: first(a, 'from'), to: first(a, 'to'), amount: first(a, 'amount'), denom: 'cw20:' + first(a, '_contract_address') }); }
   }
   return legs;
 }
@@ -162,7 +169,8 @@ function classifyNftTx(tx, reg, idx) {
       if (cuOut) { push({ kind: cuOut.role === 'daodao_voting' ? KIND.CLAIM : KIND.UNSTAKE_ENTERPRISE, collection: col.key, token_id: token, from, to, custodian: cuOut.role }); continue; }
       if (idx.launchByAddr[from] === col.key) {   // ---- primary sale: outbound from the launchpad holder; price = payment legs / tokens out in this msg
         const outs = W.filter(x => contractOf(x) === c && (actionsOf(x).includes('transfer_nft')) && first(x.a, 'sender') === from).length || 1;
-        const paid = legs.filter(l => l.from === to || l.to === from);
+        let paid = legs.filter(l => l.from === to || l.to === from);   // buyer → holder
+        if (!paid.length) paid = legs.filter(l => l.from === from);       // holder forwarding the attached funds to the proceeds wallet (PL launchpad shape)
         const total = paid.reduce((s, l) => s + Number(l.amount || 0), 0);
         push({ kind: KIND.MINT_PURCHASE, collection: col.key, token_id: token, from, to, price: paid.length ? { amount: String(Math.round(total / outs)), denom: paid[0].denom, tokens_in_tx: outs } : { amount: '0', denom: null, tokens_in_tx: outs }, price_reason: paid.length ? undefined : 'no_payment_leg_in_tx:free_or_admin_distribution' });
         continue;

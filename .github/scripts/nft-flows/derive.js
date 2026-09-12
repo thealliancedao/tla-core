@@ -17,7 +17,7 @@ const DRY = /^1|true$/i.test(String(process.env.DRY || ''));
 const ONLY = (process.env.COLLECTIONS || '').split(',').map(s => s.trim()).filter(Boolean);
 const P = (...s) => path.join(ROOT, ...s);
 const rj = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
-const rgz = (p) => JSON.parse(zlib.gunzipSync(fs.readFileSync(p)));
+const rgz = (p) => p.endsWith('.gz') ? JSON.parse(zlib.gunzipSync(fs.readFileSync(p))) : rj(p);
 const wj = (p, o) => { if (DRY) return; fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, JSON.stringify(o, null, 1) + '\n'); };
 const reg = rj(P('docs/curated/nft-collections.json')); const idx = buildIndex(reg);
 const cols = Object.keys(reg.collections).filter(k => !ONLY.length || ONLY.includes(k));
@@ -34,7 +34,7 @@ function usdAt(price, ts) {
 }
 
 // ---------------------------------------------------------------- archives on disk
-function listParts(dir) { try { return fs.readdirSync(dir).filter(f => /^part-\d+\.json\.gz$/.test(f)).sort().map(f => path.join(dir, f)); } catch { return []; } }
+function listParts(dir) { try { const all = fs.readdirSync(dir).filter(f => /^part-\d+\.json(\.gz)?$/.test(f)); const gz = new Set(all.filter(f => f.endsWith('.gz')).map(f => f.slice(0, -3))); return all.filter(f => f.endsWith('.gz') || !gz.has(f)).sort().map(f => path.join(dir, f)); } catch { return []; } }   // harvest writes .json; fcd-compact turns it into .json.gz — read either, never both
 function* archives() {
   // FCD harvests (per registry label) — txs carry events + decoded messages
   const fcdRoot = P('archive/fcd');
