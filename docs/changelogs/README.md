@@ -13,6 +13,7 @@ The old-repo copies are ABANDONED as of this date — append only here.
 | explorer-log.md | nft-explorer pages |
 | lore-log.md | adao-lore.html |
 | catalog-log.md | token catalog page |
+| app-log.md | app.html (Ally, the phone app) |
 
 Site pages fetch these raw with `?t=` cache-busting at modal-open time.
 Convention: newest revision on top, UTC times, one entry per delivery.
