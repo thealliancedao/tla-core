@@ -51,21 +51,27 @@ timelock / executed), pending-claims, tla-snapshot + dailies (APR, liquidity, po
 listing-history, backing-history, sales-enriched, explorer-bundle (listings, rank, tiers: broken flag, grade 40 =
 Phoenix), transfers ledger (aDAO, to Aug), known_contracts (staking / marketplace types).
 NEEDS A CRON (queued, in priority order):
-1. Live/hourly bribe capture in tla-voting (bribes posted mid-epoch are invisible until the epoch closes; Eris
-   shows them live — e.g. FUEL on LUNA-FUEL, 2026-09-11).
-2. nfts/adao/transfers has no 2026-09 file (tla-flows NFT aux stream) — restore.
+1. ~~Live/hourly bribe capture~~ RE-READ 2026-09-11: `tla-voting/events/bribes/` already captures adds live (the
+   Today "Bribes added" row reads it). What is per-epoch is `bribe-state` → `tla-snapshot pools[].bribes.active_now`,
+   which the vote optimizer values. Cron item = member-data folds bribe events since the last harvest into
+   `active_now` (labeled `source: event_stream`), so mid-epoch bribes (e.g. FUEL on LUNA-FUEL) value live.
+2. ~~nfts/adao/transfers has no 2026-09 file~~ NOT A GAP (2026-09-11): tla-flows is healthy (15-min walk, cursor at
+   head, aux on, no errors); no NFT-contract transfer has happened since 08-31. Absent ≠ failed; the app labels it.
 3. Per-wallet LUNA delegation capture: staking rewards to claim, undelegations (LUNA unstaked).
 4. DAO staking rewards per wallet per DAO (aDAO / Lion / PL).
 5. Marketplace OFFERS on listed tokens (nft-inventory phase 4 addition; check BBL warlock offers endpoint).
 6. Activity ledgers for Pixel Lions and TLA Locks (transfer streams like aDAO's).
 7. explorer-bundle rides the nft-inventory warm run (was frozen 08-23 → refreshed after the analytics fix).
 
-## Build order (next session)
-1. Today v2 to this spec (rows, window control, breakdown sheets) — owner phone screenshots as the test.
-2. NFTs v2 (collection switcher, sections, your NFTs by rank).
-3. Tab merge per owner decision. 4. Crons 1–2, then 3–6 as they unblock rows.
+## Build order
+1. ~~Today v2~~ SHIPPED 2.0 (2026-09-11) — owner phone screenshots as the test.
+2. ~~NFTs v2~~ SHIPPED 2.0.
+3. Tab merge: 2.0 ships the proposal (Today · NFTs · TLA · DAO · Me) as default, Vote/Market/Portfolio pickable — owner
+   to confirm or reshape. 4. Cron 1 (active_now fold), then 3–6 as they unblock rows.
 
 ## History
+v2.0 shipped 2026-09-11 (gate-app.mjs 70/70 on committed products; docs/changelogs/app-log.md): Today ledger with the
+24h/7d/14d window, NFTs movement per collection + your NFTs by BBL rank, tabs merged to the proposal.
 v0 (data cards) rejected 2026-09-11; v1 (position companion: Today / Portfolio / Market / Vote / TLA / NFTs /
 More, onboarding, sheets, sparklines, pull-to-refresh, activity feed, venue tiers, vote optimizer, security alerts)
 shipped through the night with 55/55 gate; owner verdict: "still a desktop page" — hence v2 above.

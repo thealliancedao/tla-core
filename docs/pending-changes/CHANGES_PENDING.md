@@ -5,6 +5,13 @@ Read this + the newest STATE section; do not mine older sections for queue items
 is here. Order inside each group = priority.
 
 **A · Owner actions**
+0. Commit app.html 2.0 + gate-app.mjs (aDAO-links-site ZIP) and this tla-core ZIP; replace PROJECT_KNOWLEDGE; walk Today
+   and NFTs on your phone (screenshots are the test). Decide the five tabs — 2.0 ships the proposal as default.
+0b. **nft-flows (2026-09-12, SPEC-nft-flows.md):** run `nft-flows-derive` once (publishes aDAO + TLA-locks flows from
+   archives already on main — no archive node needed for those two); FCD harvest presets pixel-collection /
+   pixel-voting / pixel-enterprise; `nft-flows-walk` collection=pixel 13737811→21481530 on ARCHIVE_RPC (self-chains,
+   PACE_MS 250), then 21481531→head with a public rpc_url; re-run derive after each. Send the PL launchpad holder's
+   full address (`terra1d2gjv4f…`) → registry → derive → PL primary-sales with USD at mint.
 1. Commit index 4.13 (chart popups: 9 redesigned on one renderer) + this tla-core ZIP; replace PROJECT_KNOWLEDGE.
 2. Paste the full strings for the four Enterprise-era addresses (…6fygm0, …uctwye, …yk0uq0, …q3n5dr) → trust register.
 3. Paste Vercel's top-pages list (mobile) → sets the mobile walk order.
@@ -58,7 +65,15 @@ SPEC-mobile-app.md (Today = ledger rows with a 24h/7d/14d window, zeros hidden, 
 per collection + your NFTs by rank; tab merge proposal).** CAPTURE FINDINGS from the app work: (1) bribes harvested
 per epoch → mid-epoch bribes invisible (live capture needed); (2) nfts/adao/transfers has no 2026-09 file; (3) no
 per-wallet delegation capture; (4) no DAO staking rewards per wallet; (5) no marketplace offers; (6) no PL / TLA
-Locks activity ledgers. NEXT: Today v2 + NFTs v2 to the spec, then crons 1–2.
+Locks activity ledgers. **app 2.0 SHIPPED 2026-09-11 (gate-app.mjs 70/70, docs/changelogs/app-log.md): Today v2 ledger
++ NFTs v2 + tabs merged to the proposal (Today · NFTs · TLA · DAO · Me).** Findings (1) and (2) RE-READ: (1) bribe adds
+are captured LIVE in `tla-voting/events/bribes/` (add at 15:59 UTC 09-11) — the Today row reads it; only `bribe-state`
+→ `tla-snapshot pools[].bribes.active_now` (what the optimizer values) is per-epoch, so cron 1 = fold events since the
+last harvest into `active_now` in member-data, not a new capture; (2) `nfts/adao/transfers/2026/09.json` is ABSENT
+because nothing moved — tla-flows 3.2.0 walks every 15 min, cursor at head, `aux_enabled`, `aux.nft: 0`, zero errors,
+the dex-liquidity sibling has 1,696 September events, and the only September NFT event (#7597 unstake) is on the voting
+module, not the NFT contract; absent ≠ failed — no cron change. NEXT: owner phone walk → cron 1 (active_now fold) →
+3–6 as they unblock rows.
 Open: owner confirms planet-map / news redirect targets; the 7 pages without the shared header get no app layer;
 Web Push for real-time badges (needs a push sender in dao-governance + VAPID keys).
 
@@ -3271,3 +3286,24 @@ The deving.zone outage exposed how a single third-party JSON endpoint hanging mi
 
 Phase 0 LOCKED IN as of 2026-06-06 after Rev 0.16 deploy.
 
+
+### I · nft-flows — NFT + lock backfill (BUILT 2026-09-12; SPEC-nft-flows.md)
+Two days of owner chain tests on Pixel Lions + the escrow produced fixtures for every path on every live venue: BBL
+(place_bid+settle, create_auction, cancel_auction, deposit, make_offer), Boost (launch-nft/setup · deposit_nft with the
+fee/royalty/seller split · cancel — price only in the msg body), Atrium (list_nft · reprice = cancel+list with carried
+expiry · make_offer_cw20 escrows funds · accept_offer → buy_nft with accepted_offer_id, royalty 0 for PL), DAODAO (stake ·
+unstake with 1-second claim_duration on PL · claim_nfts), escrow (ve/withdraw · migrate_lock = burn + zap + new id ·
+merge · create · split · change_lock_owner on transfer AND on listing — a listed lock's VP belongs to Atrium until
+cancel · deposit_for for adds, id only in wasm-metadata_changed). 2023 venues found in PL's first week: a P2P trade
+contract and an offers contract. Mint model: admin batch-mints (300/tx, 2023-06-09 h5,430,672) into a BBL launchpad
+holder; users pay the holder; several per tx → price = payment ÷ tokens out. Royalty is per venue (BBL → stewardship
+msig, Boost → terra1c690…). PL Enterprise legacy staking terra1qcmn…; distributor hook terra1krewrx5….
+BUILT: registry (docs/curated/nft-collections.json), classifier v1 (gate 38/38), derive (verified on a committed raw
+part + FCD part: aDAO 7,340 records incl. 67 backing_add, locks 20 with lineage), walk (mock: pacing on every call,
+write-once parts, report, self-chain), two workflows, FCD presets. FINDING: tla-flows/raw already covers
+13,737,811→21,481,530 for aDAO + escrow (registry superset) → their archive span is a derive, not a walk.
+OPEN: PL launchpad holder address; BBL withdraw/cancel-offer + Atrium cancel-offer/expiry verbs (other users' txs);
+USD series for LST/SOLID legs; PL + locks inventory with real-owner resolution (Atrium-listed locks → seller);
+explorer per collection; platform-crons vendors the classifier for forward capture. The second wallet
+terra1d0jq9l5narcgy46v5agnv8hqmn5m8kj3lkh93l holds 56 bLUNA + an orphaned 50 bLUNA offer inside BBL until their UI
+recovers — the first live fixture for the forgotten-balance row.
