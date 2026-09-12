@@ -7,10 +7,14 @@ is here. Order inside each group = priority.
 **A · Owner actions**
 0. Commit app.html 2.0.1 + gate-app.mjs (aDAO-links-site ZIP — 2.0's v2 CSS was dead on device, see app-log) and this tla-core ZIP; replace PROJECT_KNOWLEDGE; walk Today
    and NFTs on your phone (screenshots are the test). Decide the five tabs — 2.0 ships the proposal as default.
-0b. **nft-flows (2026-09-12 — BACKFILL DONE):** tla-core: commit forward.js + nft-flows-forward.yml (dispatch-only) +
-   derive.js + docs; dispatch `nft-flows-forward` once (closes aDAO + locks Jun→now); freeze-day walk per collection
-   (13728217→13737810, to_height set); derive. platform-crons: commit nfts/nft-flows/, create Render cron org-nft-flows
-   (hourly, `17 * * * *`, GITHUB_TOKEN with tla-core write), add to CRON-FLEET.
+0b. **NFT ledger milestone CLOSED 2026-09-12 21:1x UTC** — nft-collections/<slug>/ledger for adao (41,465), pixel-lions
+   (46,426), tla-locks (13,191), gaps 0 each; Render org-nft-flows-<slug> heartbeating (adao bootstrapped 22,809,971, hourly).
+   PURGE in tla-core (owner): nfts/pixel · nfts/raw/pixel · nfts/tla-locks · nfts/adao/ledger · archive/fcd/pixel-* ·
+   docs/curated/nft-collections.json · .github/scripts/nft-flows · .github/workflows/nft-flows-*.yml · fcd-harvest pixel-*
+   presets · docs/runbooks/RUNBOOK-add-a-collection.md (moved to nft-collections). Rename Render org-nft-flows →
+   org-nft-adao-daily (the daily state-diff; not the ledger). NEXT MILESTONES: (1) aDAO migration — tla-core/nfts/adao
+   products → nft-collections/adao/, crons + pages repointed one page per delivery, then tla-core = TLA data only;
+   (2) desktop untouched · mobile-browser index = desktop look fitted to the phone incl. chart popups · the app.
 1. Commit index 4.13 (chart popups: 9 redesigned on one renderer) + this tla-core ZIP; replace PROJECT_KNOWLEDGE.
 2. Paste the full strings for the four Enterprise-era addresses (…6fygm0, …uctwye, …yk0uq0, …q3n5dr) → trust register.
 3. Paste Vercel's top-pages list (mobile) → sets the mobile walk order.
@@ -3315,6 +3319,15 @@ derive #7: PL 46,426 records Jun 2023 → head 22,810,000, one gap = the FCD-fre
 Jun 2026 — the archive walk's end; the Render aux stream has aDAO Jun→Sep in a sibling schema the ledger does not read).
 FORWARD CAPTURE = Render cron org-nft-flows (platform-crons/nfts/nft-flows, hourly, global cursor, raw before ledger,
 mock 11/11); Actions nft-flows-forward is DISPATCH-ONLY (one-time fill Jun→now). Scheduled work lives on Render, by doctrine. RUNBOOK-add-a-collection.md = registry entry + 3 runs; nothing per-collection remains in code.
+RESTRUCTURED 2026-09-12 late (owner: "secondary collections built right from the start"): everything nft-flows lives in
+nft-collections — <slug>/collection.json `capture` block = registry entry AND data home (archive/fcd, raw, ledger,
+nft-flows/heartbeat), venues.json shared, scripts + one-time workflows (fcd-harvest · nft-flows-walk · nft-flows-derive ·
+nft-flows-forward · import-from-tla-core) with collection/node/role dropdowns, walk defaults = last covered → head.
+Render = ONE service per collection (platform-crons/nfts/nft-flows, env COLLECTION) — stop/delete/add without touching
+the others. Lessons banked: public RPC keeps a ~2.5-month ROLLING window (older = archive node); a walk past the node
+head must never claim coverage (head clamp); imported months re-key to the folder slug; archives that stay in tla-core
+are declared as capture.archives.external_coverage. LAWS: Actions = one-time, Render = scheduled, both write the same
+paths; docs in bulk at milestones; changed files only, byte-verified against a fresh pull.
 OPEN: BBL withdraw/cancel-offer + Atrium cancel-offer/expiry verbs (other users' txs);
 USD series for LST/SOLID legs; PL + locks inventory with real-owner resolution (Atrium-listed locks → seller);
 explorer per collection; platform-crons vendors the classifier for forward capture — and FIRST, the aux nft stream must
