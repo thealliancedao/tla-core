@@ -1,6 +1,7 @@
 # nft-flows-derive — archives on main (archive/fcd/*, tla-flows/raw/*, nfts/raw/*) → nfts/<collection>/ledger/ (the on-chain event ledger; nfts/adao/flows/ is the separate daily state-diff product)
 # (month files, primary-sales.json with USD at the day, lineage.json for locks, index.json with coverage + known gaps).
 # No node access: reads what is committed, writes what it derives. Idempotent; re-run after any walk or FCD harvest.
+# Dispatch only (one-time rebuilds); forward capture is the Render cron org-nft-flows, which merges incrementally.
 name: nft-flows-derive
 on:
   workflow_dispatch:
@@ -9,8 +10,6 @@ on:
         description: 'comma list of registry keys (blank = all)'
         required: false
         default: ''
-  schedule:
-    - cron: '20 3 * * 1'   # Mondays 03:20 UTC — picks up any parts landed during the week
 permissions:
   contents: write
 concurrency:
