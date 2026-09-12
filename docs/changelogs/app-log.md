@@ -9,6 +9,8 @@ Newest on top, UTC times, one entry per delivery. Spec: `docs/pending-changes/SP
 - Settings (Me) reachable from a gear in the top bar even when Me is not one of the five tabs (a migrated v1 custom tab set kept Today · Market · Vote · TLA · NFTs).
 - Gate 73/73.
 
+## NEXT for the app (2026-09-12, banked): read adao/ledger from nft-collections instead of tla-core/nfts/adao/transfers (then the tla-flows aux NFT stream retires); Vote tab bucket rows wrap; escrowed-balance rows (BBL bid account, Atrium offers); tab decision.
+
 ## 2.0.2 — 2026-09-12 · theme variables restored
 - The v1 CSS slice also began with the literal `<style>` tag, so the stylesheet opened with `<style> :root{…}` — an
   invalid selector — and the whole `:root` variable block was dropped: white body, black text, unstyled cards, in 2.0
