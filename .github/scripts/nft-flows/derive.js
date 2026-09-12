@@ -61,7 +61,7 @@ function txsOf(a) {
   for (const c of cols) { const fr = P('nfts', c, 'ledger'); if (!fs.existsSync(fr)) continue; for (const y of fs.readdirSync(fr).filter(d => /^\d{4}$/.test(d))) for (const m of fs.readdirSync(path.join(fr, y)).filter(f => /^\d{2}\.json$/.test(f))) { const recs = rj(path.join(fr, y, m)); if (!Array.isArray(recs)) { console.warn(`skip ${fr}/${y}/${m}: not a ledger month file`); continue; } const k = y + '/' + m.slice(0, 2); out[c].byMonth[k] = recs; recs.forEach(r => out[c].seen.add(recordKey(r))); } }
   let partsRead = 0, txsRead = 0;
   for (const a of archives()) {
-    const { txs, heights } = txsOf(a); partsRead++; txsRead += txs.length;
+    let { txs, heights } = txsOf(a); partsRead++; txsRead += txs.length;
     for (const tx of txs) {
       const recs = classifyNftTx(tx, reg, idx);
       for (const r of recs) {
@@ -74,7 +74,8 @@ function txsOf(a) {
       // venue-level (collection null) → every collection that lists on that venue keeps a copy under its own tree, so a wallet's BBL balance is visible from any collection page
       for (const r of recs.filter(x => !x.collection && x.venue)) for (const c of cols) { const cv = reg.collections[c].venues || []; if (!cv.includes(r.venue)) continue; const rr = Object.assign({}, r, { collection: c, source: a.source }); if (rr.price) Object.assign(rr, usdAt(rr.price, rr.ts)); const key = recordKey(rr); if (out[c].seen.has(key)) continue; out[c].seen.add(key); const mk = String(rr.ts).slice(0, 7).replace('-', '/'); (out[c].byMonth[mk] ||= []).push(rr); out[c].n++; }
     }
-    if (heights) for (const c of cols) { const cfg = reg.collections[c].archives || {}; const mine = (a.kind === 'fcd' && (cfg.fcd || []).some(l => a.source === 'fcd:' + l)) || (a.kind === 'raw' && (a.walked_for === c || (cfg.raw && a.source.startsWith(cfg.raw + ':')))); if (mine) (out[c].coverage[a.source] ||= { from: Infinity, to: 0, parts: 0 }); if (mine) { const cv = out[c].coverage[a.source]; cv.from = Math.min(cv.from, heights[0]); cv.to = Math.max(cv.to, heights[1]); cv.parts++; } }
+    if (a.kind === 'raw' && a.range) { const m = a.range.match(/^(\d+)-(\d+)$/); if (m) heights = [Number(m[1]), Number(m[2])]; }   // walked span, not matched-tx span
+    if (heights) for (const c of cols) { const cfg = reg.collections[c].archives || {}; const mine = (a.kind === 'fcd' && (cfg.fcd || []).some(l => a.source === 'fcd:' + l)) || (a.kind === 'raw' && (a.walked_for === c || (cfg.raw && a.source.startsWith(cfg.raw + ':')))); const partial = !mine && a.kind === 'raw' && a.source.startsWith('tla-flows/raw:'); if (mine || partial) { const cv = (out[c].coverage[a.source] ||= { from: Infinity, to: 0, parts: 0, partial: partial ? 'venue txs only — this collection was not in the archive walk watch set' : undefined }); cv.from = Math.min(cv.from, heights[0]); cv.to = Math.max(cv.to, heights[1]); cv.parts++; } }
   }
   for (const c of cols) {
     const o = out[c]; const col = reg.collections[c]; const base = P('nfts', c, 'ledger');
@@ -82,7 +83,12 @@ function txsOf(a) {
     const all = Object.values(o.byMonth).flat();
     const byKind = {}; all.forEach(r => { byKind[r.kind] = (byKind[r.kind] || 0) + 1; });
     // primary sales: first launchpad exit per token (aDAO: the provenance product is authoritative; this file is derived only when a launchpad address is registered)
-    if (col.launchpad && col.launchpad.address) {
+    const provDir = P('nfts', c, 'provenance', 'tokens');
+    if (fs.existsSync(provDir)) {   // provenance product is authoritative: sale_primary (paid phases) + mint_free (free claims); mint_treasury/stock moves are not sales
+      const first = {}; for (const f of fs.readdirSync(provDir).filter(x => /\.json$/.test(x)).sort()) for (const t of rj(path.join(provDir, f))) { const e = (t.events || []).find(x => x.type === 'sale_primary' || x.type === 'mint_free'); if (!e) continue; const price = e.cost ? { amount: e.cost.amount, denom: e.cost.denom } : { amount: '0', denom: null }; const u = usdAt(price, e.ts); first[t.token_id] = { token_id: t.token_id, buyer: e.to, ts: e.ts, height: e.height, txhash: e.txhash, phase: e.phase_id || null, price, usd: u.usd, usd_reason: u.usd_reason, luna_usd: u.luna_usd ?? null }; }
+      const paid = Object.values(first).filter(x => Number(x.price.amount) > 0);
+      wj(path.join(base, 'primary-sales.json'), { collection: c, source: 'nfts/' + c + '/provenance (authoritative)', tokens: Object.keys(first).length, paid: paid.length, free_or_admin: Object.keys(first).length - paid.length, total_luna: paid.reduce((s, x) => s + Number(x.price.amount) / 1e6, 0), total_usd: paid.reduce((s, x) => s + (x.usd || 0), 0), usd_unpriced: paid.filter(x => x.usd == null).length, by_token: first, generatedAt: new Date().toISOString() });
+    } else if (col.launchpad && col.launchpad.address) {
       const first = {}; all.filter(r => r.kind === KIND.MINT_PURCHASE).sort((a, b) => a.height - b.height).forEach(r => { if (!first[r.token_id]) first[r.token_id] = { token_id: r.token_id, buyer: r.to, ts: r.ts, height: r.height, txhash: r.txhash, price: r.price, usd: r.usd ?? null, usd_reason: r.usd_reason, luna_usd: r.luna_usd ?? null }; });
       const paid = Object.values(first).filter(x => x.price && Number(x.price.amount) > 0);
       wj(path.join(base, 'primary-sales.json'), { collection: c, launchpad: col.launchpad.address, tokens: Object.keys(first).length, paid: paid.length, free_or_admin: Object.keys(first).length - paid.length, total_usd: paid.reduce((s, x) => s + (x.usd || 0), 0), usd_unpriced: paid.filter(x => x.usd == null).length, by_token: first, generatedAt: new Date().toISOString() });
@@ -93,8 +99,8 @@ function txsOf(a) {
       wj(path.join(base, 'lineage.json'), { collection: c, edges, generatedAt: new Date().toISOString(), note: 'follow edges from an id to find its descendants; migrate/split/merge create or fold ids' });
     }
     // coverage + honest gaps: sorted ranges; anything between ranges (or before genesis / after the last range) is a gap
-    const ranges = Object.entries(o.coverage).map(([src, v]) => ({ source: src, from: v.from, to: v.to, parts: v.parts })).sort((a, b) => a.from - b.from);
-    const gaps = []; let cur = null; for (const r of ranges) { if (cur && r.from > cur + 1) gaps.push({ from_height: cur + 1, to_height: r.from - 1, reason: 'no archived part covers this span' }); cur = Math.max(cur || 0, r.to); }
+    const ranges = Object.entries(o.coverage).map(([src, v]) => ({ source: src, from: v.from, to: v.to, parts: v.parts, partial: v.partial })).sort((a, b) => a.from - b.from);
+    const gaps = []; let cur = null; for (const r of ranges.filter(r => !r.partial)) { if (cur && r.from > cur + 1) gaps.push({ from_height: cur + 1, to_height: r.from - 1, reason: 'no archived part covers this span' }); cur = Math.max(cur || 0, r.to); }
     const index = { product: 'nfts/' + c + '/ledger', schema: 'nft-flows-1.0', classifier: 'NFT FLOWS CLASSIFIER v1', collection: c, label: col.label, total: all.length, by_kind: byKind, months: Object.keys(o.byMonth).sort(), coverage: ranges, known_gaps: gaps, forward_stream: c === 'adao' ? 'nfts/adao/transfers (tla-flows aux, live)' : 'none yet — registry entry pending in platform-crons', added_this_run: o.n, skipped_duplicates: o.dup, generatedAt: new Date().toISOString() };
     wj(path.join(base, 'index.json'), index);
     wj(path.join(base, 'heartbeat.json'), { module: 'nft-flows', product: c + '/ledger', kind: 'derive', ran_at: new Date().toISOString(), parts_read: partsRead, txs_read: txsRead, records_total: all.length, added: o.n, ms: Date.now() - t0 });
