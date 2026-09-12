@@ -26,7 +26,7 @@ console.log('\n== BBL (PL #1234) ==');
     wasm(BLUNA, { action: 'transfer', amount: 800000, from: BBL, to: 'terra1jgk8dhtv0qf5s08jxrwecf4a04hdmeznqpty75' }, 1), wasm(BLUNA, { action: 'transfer', amount: 2000000, from: BBL, to: 'terra1xgg9cf94ws2mawr6lyrdvmyxt48xkwgp8gvtsrcg2yktqvk8w2rqxflq06' }, 1), wasm(BLUNA, { action: 'transfer', amount: 37200000, from: BBL, to: 'terra1mw650edddjqsz7mwmga0qm688j0wx9mdmu4n0w' }, 1),
     wasm(PL, { action: 'transfer_nft', recipient: ME, sender: BBL, token_id: 1234 }, 1), wasm(BBL, { action: 'settle_hook' }, 1)]));
   const s = one(r, KIND.SALE)[0]; ok(s && s.collection === 'pixel' && s.token_id === '1234' && s.venue === 'bbl', 'buy = sale on bbl for pixel #1234', r.map(x => x.kind));
-  ok(s && s.price.amount === '40000000' && s.price.denom === BLUNA && s.from === 'terra1mw650edddjqsz7mwmga0qm688j0wx9mdmu4n0w' && s.to === ME, 'sale price 40 bLUNA, seller → buyer', s);
+  ok(s && s.price.amount === '40000000' && s.price.denom === 'cw20:' + BLUNA && s.from === 'terra1mw650edddjqsz7mwmga0qm688j0wx9mdmu4n0w' && s.to === ME, 'sale price 40 bLUNA (cw20: spelling, same as create_auction), seller → buyer', s);
   ok(s && s.split && s.split.legs.length === 3 && s.split.legs.map(l => l.amount).join() === '800000,2000000,37200000', 'split legs 2% / 5% / seller', s && s.split);
   ok(one(r, KIND.BID).length === 1 && one(r, KIND.BID)[0].price.amount === '40000000', 'place_bid recorded as bid');
   const l = run(tx('FAEE', 22794610, '2026-09-11T19:26:45Z', [wasm(PL, { action: 'send_nft', sender: ME, recipient: BBL, token_id: 1234 }), wasm(BBL, { action: 'create_auction', auction_id: 17860, auction_type: 'buy_now', denom: 'cw20:' + BLUNA, nft_contract: PL, reserve: 100000000, seller: ME, token_id: 1234 })]));
