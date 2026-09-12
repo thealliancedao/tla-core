@@ -5,13 +5,12 @@ Read this + the newest STATE section; do not mine older sections for queue items
 is here. Order inside each group = priority.
 
 **A · Owner actions**
-0. Commit app.html 2.0 + gate-app.mjs (aDAO-links-site ZIP) and this tla-core ZIP; replace PROJECT_KNOWLEDGE; walk Today
+0. Commit app.html 2.0.1 + gate-app.mjs (aDAO-links-site ZIP — 2.0's v2 CSS was dead on device, see app-log) and this tla-core ZIP; replace PROJECT_KNOWLEDGE; walk Today
    and NFTs on your phone (screenshots are the test). Decide the five tabs — 2.0 ships the proposal as default.
-0b. **nft-flows (2026-09-12, SPEC-nft-flows.md):** run `nft-flows-derive` once (publishes aDAO + TLA-locks flows from
-   archives already on main — no archive node needed for those two); FCD harvest presets pixel-collection /
-   pixel-voting / pixel-enterprise; `nft-flows-walk` collection=pixel 13737811→21481530 on ARCHIVE_RPC (self-chains,
-   PACE_MS 250), then 21481531→head with a public rpc_url; re-run derive after each. Send the PL launchpad holder's
-   full address (`terra1d2gjv4f…`) → registry → derive → PL primary-sales with USD at mint.
+0b. **nft-flows (2026-09-12 — BACKFILL DONE):** tla-core: commit forward.js + nft-flows-forward.yml (dispatch-only) +
+   derive.js + docs; dispatch `nft-flows-forward` once (closes aDAO + locks Jun→now); freeze-day walk per collection
+   (13728217→13737810, to_height set); derive. platform-crons: commit nfts/nft-flows/, create Render cron org-nft-flows
+   (hourly, `17 * * * *`, GITHUB_TOKEN with tla-core write), add to CRON-FLEET.
 1. Commit index 4.13 (chart popups: 9 redesigned on one renderer) + this tla-core ZIP; replace PROJECT_KNOWLEDGE.
 2. Paste the full strings for the four Enterprise-era addresses (…6fygm0, …uctwye, …yk0uq0, …q3n5dr) → trust register.
 3. Paste Vercel's top-pages list (mobile) → sets the mobile walk order.
@@ -3298,12 +3297,28 @@ cancel · deposit_for for adds, id only in wasm-metadata_changed). 2023 venues f
 contract and an offers contract. Mint model: admin batch-mints (300/tx, 2023-06-09 h5,430,672) into a BBL launchpad
 holder; users pay the holder; several per tx → price = payment ÷ tokens out. Royalty is per venue (BBL → stewardship
 msig, Boost → terra1c690…). PL Enterprise legacy staking terra1qcmn…; distributor hook terra1krewrx5….
-BUILT: registry (docs/curated/nft-collections.json), classifier v1 (gate 38/38), derive (verified on a committed raw
-part + FCD part: aDAO 7,340 records incl. 67 backing_add, locks 20 with lineage), walk (mock: pacing on every call,
+BUILT + RUN 2026-09-12 15:56Z (nft-flows-derive #3): aDAO ledger 41,249 records back to the Dec-2023 mint (10,000
+mints, 1,204 sales, 1,093 breaks, 716 backing_add), TLA locks 9,896 with lineage from Aug 2024, PL 15 venue-side records
+from tla-flows/raw. derive 1.1 (same day): primary-sales from provenance (aDAO 1,952 paid + 1,191 free = 201,930 LUNA ≈
+$135.5K at the day — the launchpad rule had read the treasury's free distributions as $0 sales), coverage by walked range
+(the 18 'gaps' were 17 artifacts + the real FCD-freeze day 13,730,177→13,737,810), partial venue-only coverage labeled, walk (mock: pacing on every call,
 write-once parts, report, self-chain), two workflows, FCD presets. FINDING: tla-flows/raw already covers
 13,737,811→21,481,530 for aDAO + escrow (registry superset) → their archive span is a derive, not a walk.
-OPEN: PL launchpad holder address; BBL withdraw/cancel-offer + Atrium cancel-offer/expiry verbs (other users' txs);
+RESOLVED 2026-09-12 16:4x from archive/fcd/pixel-collection (harvest COMPLETE in one run: 17,241 txs, 35 parts,
+h5,429,415→13,728,216): launchpad holder = terra1d2gjv4f4elh0hsgjl8rzymg857k4ys6af0lutz6gw6vwf2kny6dsdewwdw; public
+mint = buyer executes `mint` on the holder with 10 LUNA per NFT attached (12 LUNA later in the mint), holder forwards to
+terra18qx2ql… and transfers the token; derive on parts 32–35: 2,782 primary sales (921 @10, 1,861 @12) = $23.8K at the
+day. Classifier 1.1: legacy flattened wasm events (2023 FCD era) split at each `_contract_address`; holder-forwarded
+payment leg; derive reads .json harvest parts as well as .json.gz.
+MILESTONE CLOSED 2026-09-12 evening: PL FCD presets + archive walk (26 chunks, ~1 h, tx_search) + retained walk landed;
+derive #7: PL 46,426 records Jun 2023 → head 22,810,000, one gap = the FCD-freeze day; aDAO 41,249, locks 9,896 (both to
+Jun 2026 — the archive walk's end; the Render aux stream has aDAO Jun→Sep in a sibling schema the ledger does not read).
+FORWARD CAPTURE = Render cron org-nft-flows (platform-crons/nfts/nft-flows, hourly, global cursor, raw before ledger,
+mock 11/11); Actions nft-flows-forward is DISPATCH-ONLY (one-time fill Jun→now). Scheduled work lives on Render, by doctrine. RUNBOOK-add-a-collection.md = registry entry + 3 runs; nothing per-collection remains in code.
+OPEN: BBL withdraw/cancel-offer + Atrium cancel-offer/expiry verbs (other users' txs);
 USD series for LST/SOLID legs; PL + locks inventory with real-owner resolution (Atrium-listed locks → seller);
-explorer per collection; platform-crons vendors the classifier for forward capture. The second wallet
+explorer per collection; platform-crons vendors the classifier for forward capture — and FIRST, the aux nft stream must
+carry `nft_contract` on bid/offer/sale records and split output per collection (2.0.1 found the owner's PL bids filed
+under nfts/adao/transfers). The second wallet
 terra1d0jq9l5narcgy46v5agnv8hqmn5m8kj3lkh93l holds 56 bLUNA + an orphaned 50 bLUNA offer inside BBL until their UI
 recovers — the first live fixture for the forgotten-balance row.
