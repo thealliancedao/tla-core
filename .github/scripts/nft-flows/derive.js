@@ -3,11 +3,11 @@
 //   inputs : docs/curated/nft-collections.json · archive/fcd/<label>/part-*.json.gz (FCD era, events + decoded msgs)
 //            tla-flows/raw/<from>-<to>/part-*.json.gz (archive walk, events only) · nfts/raw/<collection>/<from>-<to>/part-*.json.gz (nft-flows walk)
 //            nfts/adao/snapshots/luna-usd-daily.json (LUNA USD by day, 2022-05-28 →)
-//   outputs: nfts/<collection>/flows/YYYY/MM.json  (records; write-once per key, merge idempotent)
-//            nfts/<collection>/flows/primary-sales.json (per token: first exit from the launchpad, price, USD at that day)
-//            nfts/<collection>/flows/lineage.json (locks only: id graph from migrate/split/merge)
-//            nfts/<collection>/flows/index.json (counts, by_kind, coverage ranges, known_gaps — derived from what is on disk, never assumed)
-//            nfts/<collection>/flows/heartbeat.json
+//   outputs: nfts/<collection>/ledger/YYYY/MM.json   (NOT nfts/<collection>/flows/ — that path is the daily state-diff product of nfts/adao/flows.js)  (records; write-once per key, merge idempotent)
+//            nfts/<collection>/ledger/primary-sales.json (per token: first exit from the launchpad, price, USD at that day)
+//            nfts/<collection>/ledger/lineage.json (locks only: id graph from migrate/split/merge)
+//            nfts/<collection>/ledger/index.json (counts, by_kind, coverage ranges, known_gaps — derived from what is on disk, never assumed)
+//            nfts/<collection>/ledger/heartbeat.json
 // LAWS: blank beats phantom (USD null + reason when no series covers the denom); one canonical file per series; never-shrink
 //       (existing records are kept, new keys appended, identical keys skipped); every range in coverage names its source archive.
 const fs = require('fs'), path = require('path'), zlib = require('zlib');
@@ -58,7 +58,7 @@ function txsOf(a) {
   const t0 = Date.now();
   const out = {}; for (const c of cols) out[c] = { byMonth: {}, coverage: {}, seen: new Set(), n: 0, dup: 0 };
   // load existing month files (never-shrink)
-  for (const c of cols) { const fr = P('nfts', c, 'flows'); if (!fs.existsSync(fr)) continue; for (const y of fs.readdirSync(fr).filter(d => /^\d{4}$/.test(d))) for (const m of fs.readdirSync(path.join(fr, y)).filter(f => /^\d{2}\.json$/.test(f))) { const recs = rj(path.join(fr, y, m)); const k = y + '/' + m.slice(0, 2); out[c].byMonth[k] = recs; recs.forEach(r => out[c].seen.add(recordKey(r))); } }
+  for (const c of cols) { const fr = P('nfts', c, 'ledger'); if (!fs.existsSync(fr)) continue; for (const y of fs.readdirSync(fr).filter(d => /^\d{4}$/.test(d))) for (const m of fs.readdirSync(path.join(fr, y)).filter(f => /^\d{2}\.json$/.test(f))) { const recs = rj(path.join(fr, y, m)); if (!Array.isArray(recs)) { console.warn(`skip ${fr}/${y}/${m}: not a ledger month file`); continue; } const k = y + '/' + m.slice(0, 2); out[c].byMonth[k] = recs; recs.forEach(r => out[c].seen.add(recordKey(r))); } }
   let partsRead = 0, txsRead = 0;
   for (const a of archives()) {
     const { txs, heights } = txsOf(a); partsRead++; txsRead += txs.length;
@@ -77,7 +77,7 @@ function txsOf(a) {
     if (heights) for (const c of cols) { const cfg = reg.collections[c].archives || {}; const mine = (a.kind === 'fcd' && (cfg.fcd || []).some(l => a.source === 'fcd:' + l)) || (a.kind === 'raw' && (a.walked_for === c || (cfg.raw && a.source.startsWith(cfg.raw + ':')))); if (mine) (out[c].coverage[a.source] ||= { from: Infinity, to: 0, parts: 0 }); if (mine) { const cv = out[c].coverage[a.source]; cv.from = Math.min(cv.from, heights[0]); cv.to = Math.max(cv.to, heights[1]); cv.parts++; } }
   }
   for (const c of cols) {
-    const o = out[c]; const col = reg.collections[c]; const base = P('nfts', c, 'flows');
+    const o = out[c]; const col = reg.collections[c]; const base = P('nfts', c, 'ledger');
     for (const [mk, recs] of Object.entries(o.byMonth)) { recs.sort((a, b) => a.height - b.height || a.msg_index - b.msg_index); wj(path.join(base, mk + '.json'), recs); }
     const all = Object.values(o.byMonth).flat();
     const byKind = {}; all.forEach(r => { byKind[r.kind] = (byKind[r.kind] || 0) + 1; });
@@ -95,9 +95,9 @@ function txsOf(a) {
     // coverage + honest gaps: sorted ranges; anything between ranges (or before genesis / after the last range) is a gap
     const ranges = Object.entries(o.coverage).map(([src, v]) => ({ source: src, from: v.from, to: v.to, parts: v.parts })).sort((a, b) => a.from - b.from);
     const gaps = []; let cur = null; for (const r of ranges) { if (cur && r.from > cur + 1) gaps.push({ from_height: cur + 1, to_height: r.from - 1, reason: 'no archived part covers this span' }); cur = Math.max(cur || 0, r.to); }
-    const index = { product: 'nfts/' + c + '/flows', schema: 'nft-flows-1.0', classifier: 'NFT FLOWS CLASSIFIER v1', collection: c, label: col.label, total: all.length, by_kind: byKind, months: Object.keys(o.byMonth).sort(), coverage: ranges, known_gaps: gaps, forward_stream: c === 'adao' ? 'nfts/adao/transfers (tla-flows aux, live)' : 'none yet — registry entry pending in platform-crons', added_this_run: o.n, skipped_duplicates: o.dup, generatedAt: new Date().toISOString() };
+    const index = { product: 'nfts/' + c + '/ledger', schema: 'nft-flows-1.0', classifier: 'NFT FLOWS CLASSIFIER v1', collection: c, label: col.label, total: all.length, by_kind: byKind, months: Object.keys(o.byMonth).sort(), coverage: ranges, known_gaps: gaps, forward_stream: c === 'adao' ? 'nfts/adao/transfers (tla-flows aux, live)' : 'none yet — registry entry pending in platform-crons', added_this_run: o.n, skipped_duplicates: o.dup, generatedAt: new Date().toISOString() };
     wj(path.join(base, 'index.json'), index);
-    wj(path.join(base, 'heartbeat.json'), { module: 'nft-flows', product: c + '/flows', kind: 'derive', ran_at: new Date().toISOString(), parts_read: partsRead, txs_read: txsRead, records_total: all.length, added: o.n, ms: Date.now() - t0 });
+    wj(path.join(base, 'heartbeat.json'), { module: 'nft-flows', product: c + '/ledger', kind: 'derive', ran_at: new Date().toISOString(), parts_read: partsRead, txs_read: txsRead, records_total: all.length, added: o.n, ms: Date.now() - t0 });
     console.log(`${c}: ${all.length} records (${o.n} new, ${o.dup} dup) · kinds ${JSON.stringify(byKind)} · coverage ${ranges.map(r => r.from + '–' + r.to).join(', ') || 'none'} · gaps ${gaps.length}`);
   }
   console.log(`derive done: ${partsRead} parts, ${txsRead} txs, ${Date.now() - t0} ms${DRY ? ' (DRY — nothing written)' : ''}`);
