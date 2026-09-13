@@ -2,8 +2,9 @@
 
 > Source of truth for the **17 Render jobs** (14 console-verified 2026-08-25; +3 per-collection ledger crons
 > 2026-09-12, owner screenshots). All build from `thealliancedao/platform-crons` (root directory = the job folder,
-> `npm install`, `node <entry>`), auto-deploy on commit, region Oregon. Most jobs publish into
-> `thealliancedao/tla-core`; the three `org-nft-flows-<slug>` jobs publish into `thealliancedao/nft-collections/<slug>/`.
+> `npm install`, `node <entry>`), auto-deploy on commit, region Oregon. TLA jobs publish into `thealliancedao/tla-core`;
+> everything aDAO/NFT publishes into `thealliancedao/nft-collections/<slug>/` (aDAO migrated 2026-09-13; tla-core is
+> TLA data only). **tla-core has ZERO scheduled GitHub Actions since 2026-09-13** — every schedule is on Render; Actions are one-time.
 > Freshness is judged in two places from these cadences — the page-side `aDAO-links-site/lib/cron-registry.js` and the
 > `org-system-health` FRESHNESS_MAP — so **when a schedule or a job changes in the console, change it here and in
 > BOTH registries the same day** (the registration checklist is at the bottom).
@@ -16,12 +17,12 @@
 | nap-org | `network-and-prices/` · index.js | hourly `5 * * * *` | token prices, LST ratios, ratio history | every $ on the site (pricing doctrine), lp-grades, participants |
 | org-system-health | `system-health/` · index.js | hourly `10 * * * *` | fleet heartbeat roll-up, guards (1.0.5: reads the nft-collections heartbeats too) | system-health page, footer freshness |
 | org-votion | `votion/` · index.js | hourly `20 * * * *` | vault snapshots, holders, optimization worksheet (option set, plan, hysteresis), history, **yields** (1.4.0: vault/LST/native APR+APY from `exchange_rates`) | Vote Market (reproduced optimizer), Movers, Voting Leaders, lp-grades governance lens |
-| org-dex-data | `dex-data/` · index.js | hourly `31 * * * *` | Astroport + SkeletonSwap snapshots, daily CSVs, rolling 6-day, epoch aggregates, weekly-avg, Eris APR, Credia snapshot · Credia rate history (1.3.2: indexer hourly points, grow-only monthly + 7-day ranges in credia/rates/) | Pools charts, LP Grades work/efficiency lenses, PD tracker (weekly-avg), Top-by-APR |
+| org-dex-data | `dex-data/` · index.js | hourly `31 * * * *` | Astroport + SkeletonSwap snapshots, daily CSVs, rolling 6-day, epoch aggregates, weekly-avg, Eris APR, Credia snapshot · Credia rate history (1.3.2) · **state-history duty (1.4.0, 2026-09-13): the epoch-boundary pool-state sample, one epoch a week on the first run after Mon 00:00, PUBLIC LCD (archive = backfill knob only), folded from the retired dex-state-history Action** | Pools charts, LP Grades work/efficiency lenses, PD tracker (weekly-avg), Top-by-APR, portfolio value curve (state-history) |
 | org-member-data | `member-data/` · index.js | hourly `45 * * * *` | tla-snapshot (pools, VP, bribes, rewards model), participants (204 lock holders), positions (155 members + treasury), dao-dashboard, apr-history + pool-status-history rollups; census at 02:xx | every tla-stats tab, index tiles, Advisor, LP Grades v2 inputs |
-| org-tla-flows | `tla-flows/` · index.js | every 15 min `2,17,32,47 * * * *` | TLA flow events (claims, zaps, provides), pressure ledger (reward fates, token pressure); aux streams (votion, dex-liquidity, **nfts/adao/transfers**, price samples) | "Where the rewards go", dao-dashboard last_claims, NFT market history (transfers) |
-| org-nft-adao-daily (was org-nft-flows — rename pending in the console, 2026-09-12) | `nfts/adao/` · flows.js | every 15 min `7,22,37,52 * * * *` | aDAO **daily state-diff** of nfts.json (`nfts/adao/flows/`) — NOT the on-chain ledger | index NFT strip, help agent |
-| org-nft-inventory | `nfts/adao/` · index.js (chains analytics.js, market-history.js, compact-bundle.js) | every 15 min `12,27,42,57 * * * *` (hot); warm ≥23:30; full Sundays | nfts.json, summary, backing, listings, claims, floor/listing history, sales-enriched, analytics, explorer bundle | NFT Explorer, index NFT tiles, app, member-portfolio |
-| **org-nft-flows-adao** | `nfts/nft-flows/` · index.js, env `COLLECTION=adao` | hourly `4 * * * *` | on-chain event ledger → `nft-collections/adao/{ledger,raw/forward,nft-flows/heartbeat.json}` (block cursor) | app NFTs tab (next), explorer per collection (queued) |
+| org-tla-flows | `tla-flows/` · index.js | every 15 min `2,17,32,47 * * * *` | TLA flow events (claims, zaps, provides), pressure ledger (reward fates, token pressure); aux streams (votion, dex-liquidity, price samples → tla-core; **aDAO transfers → nft-collections/adao/transfers** via NFT_AUX_REPO/NFT_AUX_ROOT, 3.3.0) · **P&L rollup duty (3.4.0, 2026-09-13): weekly, first run at/after Mon 03:30 UTC, writes only changed files, folded from the retired tla-flows-pnl Action** | "Where the rewards go", dao-dashboard last_claims, NFT market history (transfers), member-portfolio P&L |
+| org-nft-adao-daily (renamed from org-nft-flows 2026-09-12) | `nfts/adao/` · flows.js · env `GITHUB_REPO=thealliancedao/nft-collections`, `NFT_ROOT=adao` | every 15 min `7,22,37,52 * * * *` | aDAO **daily state-diff** of nfts.json → `nft-collections/adao/flows/` — NOT the on-chain ledger | index NFT strip, help agent |
+| org-nft-inventory | `nfts/adao/` · index.js (chains analytics.js, market-history.js, compact-bundle.js) · env `GITHUB_REPO=thealliancedao/nft-collections`, `NFT_ROOT=adao` (TLA-side reads pinned to tla-core via DATA_REPO default) | every 15 min `12,27,42,57 * * * *` (hot); warm ≥23:30; full Sundays | → `nft-collections/adao/snapshots/` + `adao/claims/`: nfts.json, summary, backing, listings, claims, floor/listing history, sales-enriched, analytics, explorer bundle | NFT Explorer, index NFT tiles, app, member-portfolio |
+| **org-nft-flows-adao** | `nfts/nft-flows/` · index.js (1.1.1), env `COLLECTION=adao` | hourly `4 * * * *` | on-chain event ledger → `nft-collections/adao/{ledger,raw/forward,nft-flows/heartbeat.json}` (block cursor) | app NFTs tab (next), explorer per collection (queued) |
 | **org-nft-flows-pixel-lions** | `nfts/nft-flows/` · index.js, env `COLLECTION=pixel-lions` | hourly `24 * * * *` | same, `nft-collections/pixel-lions/` | same |
 | **org-nft-flows-tla-locks** | `nfts/nft-flows/` · index.js, env `COLLECTION=tla-locks` | hourly `44 * * * *` | same, `nft-collections/tla-locks/` (lock lineage) | same |
 | org-token-catalog | `token-catalog/` · token-catalog.js | every 6 h `35 */6 * * *` | token catalog (symbols, decimals, identities), CAPA + FUEL supply maps, wallets-daily | every name and decimal on the site, ampCAPA / FUEL tools |
@@ -36,13 +37,12 @@ day as `adao` (three crons taking turns on one cursor) and, because they were in
 The log line `org-nft-flows-<slug> · cursor … · watch N` is the check: the slug must match the service name.
 Minutes :04/:24/:44 sit on nothing else in the map; each steady-state run is ~10 s / ~60 blocks (budget 4,000).
 
-## Scheduled work still in GitHub Actions (tla-core) — doctrine says Render
-| workflow | schedule | disposition (2026-09-12 audit) |
-|---|---|---|
-| dex-state-history | Mon 02:50 | real weekly work → move to Render (needs the archive-LCD secret as a Render env) |
-| tla-flows-pnl | Mon 03:30 | real weekly work → move to Render |
-| tla-flows-walk-supervisor | every 2 h | supervises the archive walk, which completed at 21,481,530 → retire |
-| tla-flows-gap-fill | every 4 h | "until done, then exits in seconds"; tla-flows is at head → retire (keep `deepen` as dispatch-only if wanted) |
+## GitHub Actions in tla-core — one-time only (2026-09-13)
+No workflow in tla-core carries a `schedule:` any more. The last four were folded or deleted 2026-09-13: dex-state-history
+→ org-dex-data 1.4.0 duty (public LCD forward; `ARCHIVE_LCD` + `EPOCH_FROM`/`EPOCH_TO` on the service = a backfill run,
+then removed); tla-flows-pnl → org-tla-flows 3.4.0 duty; tla-flows-walk-supervisor and tla-flows-gap-fill deleted (the
+archive walk completed at 21,481,530). What remains under `.github/` is dispatch-only (harvests, walks, fills, one-off
+repairs). LAW: the archive node is for history the public endpoints cannot see — no scheduled job depends on it.
 
 ## Registration checklist — every time a job is added, renamed, or rescheduled
 1. This file (row + the minute map below).
@@ -50,6 +50,8 @@ Minutes :04/:24/:44 sit on nothing else in the map; each steady-state run is ~10
 3. `platform-crons/system-health/index.js` FRESHNESS_MAP — one row (`repo:` when it publishes outside tla-core).
 4. The job's own heartbeat must carry a timestamp the two registries read (`ran_at` / `capturedAt`).
 A job in the console but in none of these is invisible; the only thing that catches it is a human reading logs.
+5. A heartbeat that is FRESH but says `status: failed` is also invisible to the freshness rules (tla-locks, 2026-09-13:
+   every hourly run failed for 13 h with a fresh heartbeat) — system-health rule queued (CHANGES_PENDING).
 
 ## Why the 23:00 run failed (2026-08-25) and the stagger that fixes it
 At the top of every hour **four jobs commit to tla-core in the same minute**: tla-voting (:00), and the three
