@@ -1,6 +1,65 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
-## OPEN LEDGER — 2026-09-10 (late) · the ONE list of what is still open. Everything below this section is history.
+## OPEN LEDGER — 2026-09-13 (late) · the ONE list of what is still open. Everything below this section is history.
+Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
+
+**STATE 2026-09-13 — ORGANIZE + aDAO MIGRATION milestone CLOSED.** In two sessions (09-12 evening → 09-13 late):
+§A 0b purge done + audited · three collection crons fixed (all had run as `adao`), scheduled :04/:24/:44 and registered in
+CRON-FLEET / lib/cron-registry.js / system-health 1.0.5–1.0.6 · org-nft-flows → org-nft-adao-daily · aDAO crons take
+NFT_ROOT/DATA_REPO (Rev C.5, flows 0.2.0, market-history 1.2.0, analytics 1.1.0, compact-bundle 1.1.0) · tla-flows 3.3.0
+NFT_AUX_REPO/ROOT · import-from-tla-core v2 landed 147 files into nft-collections/adao/ · Render flipped and verified ·
+every site page + lib repointed (index 4.18, app 2.0.3, ally 3.6, explorer 4.31, test 1.1, member-portfolio 2.9, tla-stats
+T3.20, dao_treasury 3.2, release-history 1.7, new-here 1.1, verify 1.1; zero `nfts/adao` strings left) · crons repointed
+(system-health 1.0.6, member-data 1.1.3/dao-dashboard 1.7, help-agent v1.13.3, nfts/nft-flows) · **tla-core/nfts/adao
+DELETED — tla-core is TLA data only** · the two scheduled Actions FOLDED into the crons that own them (dex-data 1.4.0
+state-history duty on the PUBLIC LCD; tla-flows 3.4.0 weekly P&L duty) and walk-supervisor / gap-fill deleted — **tla-core
+has ZERO scheduled Actions** · deep stream audit (every writer, heartbeat, month-contiguity) → found and fixed the
+tla-locks forward-cron gzip bug (nft-flows 1.1.1). LAWS restated 2026-09-13: fold a duty into the job that owns its domain
+(no runners, no bridges); forward = public endpoints only, archive = one-time backfill; one ZIP per delivery with paths.
+
+**A · Owner actions**
+1. Watch Monday 2026-09-14: org-dex-data 00:31 → `✓ state-history: 1 sampled … public reads` and
+   `dex-data/state-history/epochs/203.json` (source: public); org-tla-flows 03:32 → `pnl: epoch 203 · 766 wallets …`;
+   org-tla-voting 00:00 flip (vote/bribe/distribution/pd-bribe state → period 202). Any of the three missing = tell me.
+2. Paste the full strings for the four Enterprise-era addresses (…6fygm0, …uctwye, …yk0uq0, …q3n5dr) → trust register.
+3. Ask Philipp: the ampCAPA hub has not harvested since ~May (rate frozen 1.10553774) — Eris's row shows history as yield.
+
+**B · Follow-ups opened by the migration + audit (small, in order)**
+1. system-health: a heartbeat that is FRESH but `status: failed` must be a violation (tla-locks failed every run for 13 h
+   on 2026-09-13 with a green freshness row). Add to heartbeat_freshness: status ∈ {failed, error} → stale-equivalent.
+2. `transfers/` aux leg retirement (option 2): `nft-collections/adao/ledger` now captures every aDAO transfer/sale/list;
+   the tla-flows NFT aux leg (adao/transfers) duplicates it in an older schema and mis-files PL bids. Repoint its readers
+   (index, app, market-history sales-enriched, resolve-market-exits, state-history-backfill, registry-backfill) to the
+   ledger, then drop the leg (NFT_AUX_* env, AUX nft job).
+3. Dispatch-only Actions/scripts that still name `nfts/adao/…` (repoint ONLY if ever re-run; nothing scheduled):
+   adao-provenance/derive.js, state-history-backfill/derive.js, nft-market-history/{recover-batch-sales,resolve-market-exits}.js
+   + their .yml, tla-voting/registry-backfill.js; data labels: catalog/trusted/current.json, docs/curated/trusted-addresses.json.
+4. votion aux stream: one event in 2025/02 then nothing until 2025/08 — confirm the vaults' launch date vs a capture gap.
+5. `price-history/heartbeat.json` is still the July backfill's file (nap writes the daily rows, never the heartbeat; nothing
+   watches it) → nap writes it, registries watch it.
+6. History holes that are NOT recoverable from public endpoints (recorded, not fixable forward): SkeletonSwap daily-csv 53
+   missing days before 2026-08 (dead-series era; the epoch state-history is the honest substitute); Astroport daily-csv
+   2026-08-02 (one cron outage).
+7. Gate drift found while repointing (pre-existing, identical on live main before the changes): gate-explorer-analytics 2
+   fails (label wording), gate-tla-stats 5 fails (vote-market numbers vs fixtures), gate-new-here-tla crashes on current
+   fixtures; nfts/adao mock-run-market-history / -compact-bundle / -custody fail (dated fixture expectations). Refresh the
+   fixtures + expectations in one pass.
+8. Bitdefender (owner's machine) quarantines `help-agent/server.js` downloads → server.js changes are delivered as
+   hand-edit instructions; everything else as one ZIP with paths.
+
+**C · Next milestones (unchanged order)**
+1. THREE VERSIONS: desktop untouched · mobile-browser index.html = desktop look fitted to the phone incl. the nine chart
+   popups (jsdom gate + owner phone screenshots) · the app (Vote tab bucket rows wrap; escrowed-balance rows; tab decision;
+   NFTs tab reads adao/ledger).
+2. Milestone A step 3: ratio re-anchor from state-history hub ratios → build-pnl v3 (inside tla-flows/pnl.js — the duty
+   is already there) → member-portfolio rebuild + picker tile; fold/retire the frozen price-history/ratios in the same change.
+3. PL + locks inventory (real owner incl. Atrium-listed locks) and explorer per collection, registry-driven.
+4. Standing: pre-announcement gate #0; genesis walk; LP/ampLP identity fold; slim daily row-series crons; FUEL route
+   helper; Advisor track record; capture gaps; films; Nov token rollover; bucket-VP #4; LUNA-wstETH SS classify;
+   dex-data/pool-status archive.
+
+---
+## (superseded) OPEN LEDGER — 2026-09-10 (late)
 Read this + the newest STATE section; do not mine older sections for queue items — every still-open item from them
 is here. Order inside each group = priority.
 
