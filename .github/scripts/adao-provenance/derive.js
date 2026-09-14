@@ -4,9 +4,11 @@
  *
  * Spec: docs/pending-changes/SPEC-adao-provenance.md (approved 2026-07-08)
  * Inputs (committed, complete): archive/fcd/adao-minter/  archive/fcd/adao-collection/
- * Output: nfts/adao/provenance/{index,heartbeat,summary}.json
- *         nfts/adao/provenance/tokens/part-00..09.jsonl
- *         nfts/adao/provenance/wallets/cost-basis.json
+ * Output: <DATA_DIR>/<NFT_ROOT>/provenance/{index,heartbeat,summary}.json      (DATA_DIR = a local checkout of
+ *         <DATA_DIR>/<NFT_ROOT>/provenance/tokens/part-00..09.jsonl                thealliancedao/nft-collections,
+ *         <DATA_DIR>/<NFT_ROOT>/provenance/wallets/cost-basis.json                 NFT_ROOT = adao)
+ * 2026-09-14 (B.3): repointed — aDAO products live in nft-collections/adao/ since the 2026-09-13 migration;
+ *         tla-core/nfts/adao no longer exists. Dispatch-only (no workflow); the provenance product is a completed one-off.
  *
  * Runs offline from repo root: `node .github/scripts/adao-provenance/derive.js`
  * No network. Fails hard (non-zero exit) on any invariant breach — never
@@ -14,15 +16,16 @@
  *
  * Coverage: chain genesis → FCD freeze (~2025-01-07, height ≈ 13,736,494).
  * `owner_at_freeze` is NOT current ownership — live state lives in
- * nfts/adao/snapshots (nft-inventory). See summary.known_gaps.
+ * nft-collections/adao/snapshots (org-nft-inventory). See summary.known_gaps.
  */
 'use strict';
 const fs = require('fs');
 const path = require('path');
 
 // ---------------------------------------------------------------- constants
-const ROOT = process.cwd();
-const OUT = path.join(ROOT, 'nfts', 'adao', 'provenance');
+const ROOT = process.env.DATA_DIR || process.cwd();          // 2026-09-14: a local checkout of thealliancedao/nft-collections
+const NFT_ROOT = process.env.NFT_ROOT || 'adao';              //             the collection folder inside it
+const OUT = path.join(ROOT, NFT_ROOT, 'provenance');
 const SCHEMA_REV = 1;
 
 const COLLECTION = 'terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9';
@@ -490,7 +493,7 @@ const summary = {
   breaks: { count: breaks },
   notable: {
     ampluna_backing: {
-      note: 'Origination of the collection ampLUNA backing, in-window facts only. Current per-NFT backing is owned by nfts/adao/snapshots (nft-inventory).',
+      note: 'Origination of the collection ampLUNA backing, in-window facts only. Current per-NFT backing is owned by nft-collections/adao/snapshots (org-nft-inventory).',
       initial_bond: initialBond,
       inflow_events: backingEvents,
       inflow_total: decode(AMPLUNA, backingIn.toString()),
@@ -511,7 +514,7 @@ const summary = {
     stream: 'nft provenance (transfers, sales, breaks, staking)',
     from_height_approx: 13736494, from_date_approx: '2025-01-07',
     to: 'org nft-flows capture start (coverage check pending — open queue item)',
-    note: 'FCD freeze → forward-capture start. owner_at_freeze is NOT current ownership; live state = nfts/adao/snapshots (nft-inventory).',
+    note: 'FCD freeze → forward-capture start. owner_at_freeze is NOT current ownership; live state = nft-collections/adao/snapshots (org-nft-inventory).',
   }],
 };
 fs.writeFileSync(path.join(OUT, 'summary.json'), JSON.stringify(summary, null, 2) + '\n');
