@@ -1,6 +1,13 @@
 // =============================================================================
 // state-history-backfill/derive.js — deep staked-count history from chain events
 // -----------------------------------------------------------------------------
+// 2026-09-14 (B.3): DISPATCH-ONLY, no workflow. Inputs and output moved with the aDAO migration (2026-09-13):
+//   LOCAL_DATA_DIR = a checkout of thealliancedao/nft-collections; NFT_ROOT = adao (default). Reads
+//   <NFT_ROOT>/transfers (the tla-flows NFT aux leg — being retired for <NFT_ROOT>/ledger, CHANGES_PENDING B.2; if this
+//   script is ever re-run after that retirement, read the ledger's transfer/stake records instead) and
+//   <NFT_ROOT>/snapshots/state-history; writes <OUT>/<NFT_ROOT>/snapshots/state-history. The 2025-01→2026-06 derive
+//   is DONE and committed; this is kept as the reproducible method, not a pending job.
+// -----------------------------------------------------------------------------
 // WHY: the legacy repos that tracked daily DAODAO/Enterprise staked counts were
 // deleted before the org migration folded them; org state-history begins
 // 2026-07-01. But the archive walk captured every NFT transfer back to
@@ -24,7 +31,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const ROOT = process.env.LOCAL_DATA_DIR || '.';
+const ROOT = process.env.LOCAL_DATA_DIR || '.';               // a checkout of thealliancedao/nft-collections (2026-09-14)
+const NFT_ROOT = process.env.NFT_ROOT || 'adao';
 const OUT = process.argv[2] || './out';
 const DAODAO = 'terra1c57ur376szdv8rtes6sa9nst4k536dynunksu8tx5zu4z5u3am6qmvqx47';
 const ENTERPRISE = 'terra1e54tcdyulrtslvf79htx4zntqntd4r550cg22sj24r6gfm0anrvq0y8tdv';
@@ -35,7 +43,7 @@ function readJson(p) { return JSON.parse(fs.readFileSync(p, 'utf8')); }
 
 // ---- 1) per-day net deltas from the transfers stream -------------------------
 const deltas = new Map(); // date -> {dao, ent}
-const tDir = path.join(ROOT, 'nfts/adao/transfers');
+const tDir = path.join(ROOT, NFT_ROOT, 'transfers');
 let evCount = 0;
 for (const y of fs.readdirSync(tDir).sort()) {
   for (const mf of fs.readdirSync(path.join(tDir, y)).sort()) {
@@ -56,7 +64,7 @@ for (const y of fs.readdirSync(tDir).sort()) {
 console.log(`events replayed: ${evCount}; days with staking flow: ${[...deltas.values()].filter(d => d.dao || d.ent).length}`);
 
 // ---- 2) anchors + captured era for the truth test ---------------------------
-const shDir = path.join(ROOT, 'nfts/adao/snapshots/state-history');
+const shDir = path.join(ROOT, NFT_ROOT, 'snapshots/state-history');
 const captured = new Map(); // date -> {dao, ent}
 for (const y of fs.readdirSync(shDir).sort()) {
   for (const mf of fs.readdirSync(path.join(shDir, y)).sort()) {
@@ -132,7 +140,7 @@ for (const [date, v] of series) {
 }
 for (const [ym, days] of byMonth) {
   const [y, m] = ym.split('-');
-  const dir = path.join(OUT, 'nfts/adao/snapshots/state-history', y);
+  const dir = path.join(OUT, NFT_ROOT, 'snapshots/state-history', y);
   fs.mkdirSync(dir, { recursive: true });
   const out = {
     meta: {
