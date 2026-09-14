@@ -596,7 +596,7 @@ function git(args, opts = {}) { return execFileSync('git', args, { cwd: CORE_DIR
 function checkpoint(msg) {
     if (MODE === 'walk' && !DRY) writeRunStatus('continue');
     if (DRY || !GIT_CHECKPOINT) { console.log(`  [${DRY ? 'dry' : 'no-checkpoint'}] would commit: ${msg}`); return; }
-    const addPaths = ['tla-voting/events', 'tla-voting/capture-registry.json', 'tla-voting/backfill-report.json', 'tla-flows/events', 'votion/events', 'dex-liquidity', 'nfts/adao/transfers', 'price-history/reserve-implied']
+    const addPaths = ['tla-voting/events', 'tla-voting/capture-registry.json', 'tla-voting/backfill-report.json', 'tla-flows/events', 'votion/events', 'dex-liquidity', 'price-history/reserve-implied']   // 2026-09-14: 'nfts/adao/transfers' dropped — the NFT aux leg writes to nft-collections via NFT_AUX_REPO (tla-flows 3.3+) and tla-core/nfts no longer exists (git add would fail on pathspec)
         .filter(pth => fs.existsSync(path.join(CORE_DIR, pth)));   // dirs/files are born on first write — add only what exists
     git(['add', ...addPaths]);
     try { git(['commit', '-m', msg]); } catch { console.log('  checkpoint: nothing to commit'); return; }
