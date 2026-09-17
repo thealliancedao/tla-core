@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-09-17",
+  "readme": "Alert thresholds — the ONE place the Alert Center's rules are tuned. Hosted at tla-core/docs/curated/alert-thresholds.json; the member-data cron (hourly) reads it, evaluates the TLA rules against the daily products and writes member-data/tla-alerts/current.json (fired rows + how often each rule fired at 0.5× / 1× / 2× of its thresholds). The site's Alert Center reads that product and shows this config in its ⚙ Thresholds tab, where you can adjust values and download a new copy of this file to upload here. Calibrated 2026-09-17 on 127 days of history: per-pool VP moves are routine noise (90th percentile 37% in a day) so pool_vp_move is OFF; bucket VP is quiet (95th percentile 2.4%) so a 3% within-epoch move is a real signal. Calibration replay (127 days, gate mock-run-tla-alerts.js): gauge_set_change 3.4/month · epoch_flip 4.4 · bucket_vp_move 3.7 · pool_liquidity_move 1.7 · pool_volume_spike and pool_apr_move tuned to stay under ~6/month.",
+  "tla": {
+    "gauge_set_change": {
+      "enabled": true,
+      "description": "A gauge added, removed, activated or dewhitelisted (pool status changed between two daily snapshots).",
+      "params": {}
+    },
+    "epoch_flip": {
+      "enabled": true,
+      "description": "One card per epoch rollover (Monday 00:00 UTC): bucket VP totals and what moved between buckets.",
+      "params": {}
+    },
+    "bucket_vp_move": {
+      "enabled": true,
+      "description": "A bucket's total VP moved inside an epoch (boundary days excluded).",
+      "params": {
+        "min_pct": 3,
+        "min_vp": 500000
+      }
+    },
+    "pool_vp_move": {
+      "enabled": false,
+      "description": "A single pool's VP moved inside an epoch. OFF by default — the history says this is routine vote shuffling.",
+      "params": {
+        "min_pct": 25,
+        "min_vp": 1000000
+      }
+    },
+    "pool_liquidity_move": {
+      "enabled": true,
+      "description": "Staked liquidity in a TLA pool changed in a day (both directions).",
+      "params": {
+        "min_pct": 25,
+        "min_usd": 25000
+      }
+    },
+    "pool_volume_spike": {
+      "enabled": true,
+      "description": "A pool's 24h DEX volume against its own trailing median.",
+      "params": {
+        "multiple_of_median": 4,
+        "min_usd": 20000,
+        "median_days": 28
+      }
+    },
+    "pool_apr_move": {
+      "enabled": true,
+      "description": "A gauge's Eris APR moved in a day (points AND relative). Epoch-boundary days are skipped — APR resets with the pots every Monday; the epoch_flip card carries that.",
+      "params": {
+        "min_points": 10,
+        "min_rel_pct": 40
+      }
+    }
+  },
+  "nft": {
+    "floor_drop_pct": 10,
+    "mass_unstake_n": 5,
+    "mass_unstake_pct": 1,
+    "mass_transfer_n": 5
+  },
+  "sensitivity": {
+    "multipliers": [
+      0.5,
+      1,
+      2
+    ],
+    "history_days": 90,
+    "keep_rows_days": 30,
+    "min_pool_vp_for_stats": 200000
+  }
+}
