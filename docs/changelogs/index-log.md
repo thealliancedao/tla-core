@@ -5,6 +5,18 @@
 
 
 
+## index 4.23 — 2026-09-17 — chain-only BBL listings on the BBL card (the #745 lesson)
+
+- nfts.json listings the inventory cron (C.6) labels `source:'chain_only'` (live on the BBL contract — is_settled false,
+  no bidder, end_time 0 — hidden by BBL's UI/API) are MERGED into the page's live BBL cache (warlock never serves them):
+  the card floor, "Currently Listed" (= visible on BBL + on-chain only), the tier rows, the cross-venue floor tile and the
+  listing cards all count them. Each is badged "on-chain only · not on BBL's UI"; the card floor is flagged when the
+  cheapest ask is one; "+N on-chain only" sits under the count; the listing card links to the explorer (BBL's page would
+  say "not listed"). The pipeline paint shows the cron's `chain_only_count` from the first paint.
+- The late warlock-count overwrite (`fetchBblListingCount`) adds the chain-only count so it agrees with the card.
+- Gate: `gate-index-chain-only.mjs` 11/11 (jsdom, real fixture STAGED — the cheapest BBL ask labeled chain_only and removed
+  from the stubbed warlock feed, exactly as C.6 writes it) · `gate-index-activity.mjs` still 24/24.
+
 ## app.html v1 · install.html · site-header 1.9.0 · site-footer "Get the app" — 2026-09-11 (overnight)
 
 The app became a real page. **app.html v1** — position companion built from scratch on the org products: Today

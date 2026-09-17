@@ -2,6 +2,23 @@
 
 
 
+## explorer 4.33 / style 6.2 · nft-inventory C.6 · compact-bundle 1.2.0 — 2026-09-17 — chain-only BBL auctions ARE listings (the #745 lesson)
+
+- nft-inventory **C.6**: a structurally live BBL auction absent from warlock (is_settled false · no bidder · end_time 0) is
+  INCLUDED as a listing, labeled `source:'chain_only'` / `warlock_visible:false` — every BBL listing now carries `source`
+  (chain | warlock_recovered | chain_only) + `warlock_visible` (true | false | null when warlock is down); the floor
+  (`summary.marketplaces.bbl.by_token.min`, floor-history tier floors) counts them; `chain_only_count` per venue; the
+  warning stays (`included:true`); a chain-only auction with a bidder or a timed end stays out under its own reason.
+  aDAO #745 sat at 200 bLUNA since Oct 2024, hidden by BBL's UI, and sold from the contract for $16.76 while the site said
+  $80 — the contract is the oracle, not the venue's UI. Gate `mock-run-chain-only.js` 22/22 under
+  `--max-old-space-size=200` (rss 135 MB): live functions on the real fixture + one auction in the #745 shape.
+- compact-bundle **1.2.0**: derived bit `listing_chain_only` (8192) so the explorer badges on the bundle boot; FLAG_BITS
+  untouched (`mock-run-compact-bundle` PASS, `gate-nft-root` 47/47).
+- explorer **4.33** / style **6.2**: the listing-price pill carries a third line "on-chain only · not on BBL's UI" (amber ring)
+  from `listing.source === 'chain_only'` (hydration) or the bundle bit (boot); the pill title names the contract as the
+  venue. Gate `gate-explorer-listing-pill.mjs` 14/14 (staged fixture; label verbatim; no other card badged).
+- Pre-existing, not this change: `mock-run-custody.js` W fails on today's fixture on live main too (stranded 9 vs 5).
+
 ## nft-inventory — analytics + market-history trigger fixed — 2026-09-10 (foundations table)
 
 `runWithAnalytics` decided on `result.runMode`, but `captureSnapshot()` never returned a value — `result` was
