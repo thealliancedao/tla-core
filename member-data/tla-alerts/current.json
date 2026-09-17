@@ -1,0 +1,677 @@
+{
+ "schemaVersion": 1,
+ "cron": "member-data",
+ "module": "tla-alerts",
+ "version": "1.0.0",
+ "generated_at": "2026-09-17T23:56:47.353Z",
+ "config": {
+  "path": "docs/curated/alert-thresholds.json",
+  "sha": "98b3496fe8b7",
+  "updatedAt": "2026-09-17",
+  "tla": {
+   "gauge_set_change": {
+    "enabled": true,
+    "description": "A gauge added, removed, activated or dewhitelisted (pool status changed between two daily snapshots).",
+    "params": {}
+   },
+   "epoch_flip": {
+    "enabled": true,
+    "description": "One card per epoch rollover (Monday 00:00 UTC): bucket VP totals and what moved between buckets.",
+    "params": {}
+   },
+   "bucket_vp_move": {
+    "enabled": true,
+    "description": "A bucket's total VP moved inside an epoch (boundary days excluded).",
+    "params": {
+     "min_pct": 3,
+     "min_vp": 500000
+    }
+   },
+   "pool_vp_move": {
+    "enabled": false,
+    "description": "A single pool's VP moved inside an epoch. OFF by default — the history says this is routine vote shuffling.",
+    "params": {
+     "min_pct": 25,
+     "min_vp": 1000000
+    }
+   },
+   "pool_liquidity_move": {
+    "enabled": true,
+    "description": "Staked liquidity in a TLA pool changed in a day (both directions).",
+    "params": {
+     "min_pct": 25,
+     "min_usd": 25000
+    }
+   },
+   "pool_volume_spike": {
+    "enabled": true,
+    "description": "A pool's 24h DEX volume against its own trailing median.",
+    "params": {
+     "multiple_of_median": 4,
+     "min_usd": 20000,
+     "median_days": 28
+    }
+   },
+   "pool_apr_move": {
+    "enabled": true,
+    "description": "A gauge's Eris APR moved in a day (points AND relative). Epoch-boundary days are skipped — APR resets with the pots every Monday; the epoch_flip card carries that.",
+    "params": {
+     "min_points": 10,
+     "min_rel_pct": 40
+    }
+   }
+  },
+  "nft": {
+   "floor_drop_pct": 10,
+   "mass_unstake_n": 5,
+   "mass_unstake_pct": 1,
+   "mass_transfer_n": 5
+  },
+  "sensitivity": {
+   "multipliers": [
+    0.5,
+    1,
+    2
+   ],
+   "history_days": 90,
+   "keep_rows_days": 30,
+   "min_pool_vp_for_stats": 200000
+  }
+ },
+ "history": {
+  "days": 90,
+  "from": "2026-06-19",
+  "snapshots": 91,
+  "apr_days": 47,
+  "volume_days": 84
+ },
+ "multipliers": [
+  0.5,
+  1,
+  2
+ ],
+ "stats": {
+  "gauge_set_change": {
+   "enabled": true,
+   "params": {},
+   "description": "A gauge added, removed, activated or dewhitelisted (pool status changed between two daily snapshots).",
+   "fired_30d": 5,
+   "fired_90d": 10,
+   "per_month_at": {
+    "1": 3.4,
+    "2": 3.4,
+    "0.5": 3.4
+   }
+  },
+  "epoch_flip": {
+   "enabled": true,
+   "params": {},
+   "description": "One card per epoch rollover (Monday 00:00 UTC): bucket VP totals and what moved between buckets.",
+   "fired_30d": 4,
+   "fired_90d": 13,
+   "per_month_at": {
+    "1": 4.4,
+    "2": 4.4,
+    "0.5": 4.4
+   }
+  },
+  "bucket_vp_move": {
+   "enabled": true,
+   "params": {
+    "min_pct": 3,
+    "min_vp": 500000
+   },
+   "description": "A bucket's total VP moved inside an epoch (boundary days excluded).",
+   "fired_30d": 2,
+   "fired_90d": 10,
+   "per_month_at": {
+    "1": 3.4,
+    "2": 3,
+    "0.5": 4.1
+   }
+  },
+  "pool_vp_move": {
+   "enabled": false,
+   "params": {
+    "min_pct": 25,
+    "min_vp": 1000000
+   },
+   "description": "A single pool's VP moved inside an epoch. OFF by default — the history says this is routine vote shuffling.",
+   "fired_30d": 0,
+   "fired_90d": 0,
+   "per_month_at": {
+    "1": 0,
+    "2": 0,
+    "0.5": 0
+   }
+  },
+  "pool_liquidity_move": {
+   "enabled": true,
+   "params": {
+    "min_pct": 25,
+    "min_usd": 25000
+   },
+   "description": "Staked liquidity in a TLA pool changed in a day (both directions).",
+   "fired_30d": 2,
+   "fired_90d": 5,
+   "per_month_at": {
+    "1": 1.7,
+    "2": 0.3,
+    "0.5": 7.8
+   }
+  },
+  "pool_volume_spike": {
+   "enabled": true,
+   "params": {
+    "multiple_of_median": 4,
+    "min_usd": 20000,
+    "median_days": 28
+   },
+   "description": "A pool's 24h DEX volume against its own trailing median.",
+   "fired_30d": 6,
+   "fired_90d": 18,
+   "per_month_at": {
+    "1": 6.1,
+    "2": 2.4,
+    "0.5": 18.6
+   }
+  },
+  "pool_apr_move": {
+   "enabled": true,
+   "params": {
+    "min_points": 10,
+    "min_rel_pct": 40
+   },
+   "description": "A gauge's Eris APR moved in a day (points AND relative). Epoch-boundary days are skipped — APR resets with the pots every Monday; the epoch_flip card carries that.",
+   "fired_30d": 7,
+   "fired_90d": 8,
+   "per_month_at": {
+    "1": 2.7,
+    "2": 0.3,
+    "0.5": 13.2
+   }
+  }
+ },
+ "rows": [
+  {
+   "ts": "2026-09-16T00:00:00Z",
+   "date": "2026-09-16",
+   "rule": "gauge_set_change",
+   "kind": "status",
+   "gauge_pool_id": "cw20:terra14lul8rjcad0jeuu680n4q7dwgxjkr6mqzx8umyewj8c6xn93squqllleht",
+   "name": "LUNA-ASTRO",
+   "bucket": "project",
+   "label": "LUNA-ASTRO: voted_but_below_threshold → active",
+   "value": "active",
+   "raw": {
+    "from": "voted_but_below_threshold",
+    "to": "active"
+   }
+  },
+  {
+   "ts": "2026-09-15T00:00:00Z",
+   "date": "2026-09-15",
+   "rule": "gauge_set_change",
+   "kind": "status",
+   "gauge_pool_id": "cw20:terra1hqq6pnx74q0wae7eqqu2wgddzr2xn8l9gvd33sfwqfew50qawj0sfn69fh",
+   "name": "cw20:terra1hqq6pnx74q0wae7eqqu2wgddzr2xn8l9gvd33sf",
+   "bucket": "single",
+   "label": "cw20:terra1hqq6pnx74q0wae7eqqu2wgddzr2xn8l9gvd33sf: active → voted_but_below_threshold",
+   "value": "voted_but_below_threshold",
+   "raw": {
+    "from": "active",
+    "to": "voted_but_below_threshold"
+   }
+  },
+  {
+   "ts": "2026-09-14T00:00:00Z",
+   "date": "2026-09-14",
+   "rule": "epoch_flip",
+   "kind": "epoch",
+   "epoch": 203,
+   "label": "Epoch 203 started — 112.7M VP across 4 buckets",
+   "value": "stable +0.4% · project +0.4% · bluechip +0.4% · single +0.4%",
+   "raw": {
+    "buckets": [
+     {
+      "bucket": "stable",
+      "from": 27918981.012129005,
+      "to": 28041426.79952,
+      "pct": 0.4385754169817334
+     },
+     {
+      "bucket": "project",
+      "from": 28035453.701243997,
+      "to": 28148310.740271002,
+      "pct": 0.40255114195636404
+     },
+     {
+      "bucket": "bluechip",
+      "from": 28005799.397021003,
+      "to": 28117096.981945004,
+      "pct": 0.39740906283803507
+     },
+     {
+      "bucket": "single",
+      "from": 28257150.973498996,
+      "to": 28367440.754794,
+      "pct": 0.3903075062253822
+     }
+    ]
+   }
+  },
+  {
+   "ts": "2026-09-10T00:00:00Z",
+   "date": "2026-09-10",
+   "rule": "gauge_set_change",
+   "kind": "added",
+   "gauge_pool_id": "cw20:terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc",
+   "name": "wBTC.creda.a",
+   "bucket": "single",
+   "label": "wBTC.creda.a joined the single bucket",
+   "value": "active",
+   "raw": {
+    "status": "active"
+   }
+  },
+  {
+   "ts": "2026-09-10T00:00:00Z",
+   "date": "2026-09-10",
+   "rule": "bucket_vp_move",
+   "bucket": "single",
+   "label": "single bucket VP up 8.5% inside epoch 202",
+   "value": "26.02M → 28.23M VP",
+   "raw": {
+    "from": 26020917.971068997,
+    "to": 28229350.32235,
+    "pct": 8.487142358837676
+   }
+  },
+  {
+   "ts": "2026-09-10T00:00:00Z",
+   "date": "2026-09-10",
+   "rule": "pool_apr_move",
+   "gauge_pool_id": "native:ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6",
+   "name": "xASTRO",
+   "bucket": "single",
+   "label": "xASTRO APR up 15.6 pts (90%)",
+   "value": "17.4% → 33.0%",
+   "raw": {
+    "from": 17.40073843374793,
+    "to": 33.00778710004367,
+    "pts": 15.607048666295743,
+    "rel": 89.6918755817086
+   }
+  },
+  {
+   "ts": "2026-09-07T00:00:00Z",
+   "date": "2026-09-07",
+   "rule": "epoch_flip",
+   "kind": "epoch",
+   "epoch": 202,
+   "label": "Epoch 202 started — 109.4M VP across 4 buckets",
+   "value": "stable +0.4% · project +0.3% · bluechip +0.3% · single +0.1%",
+   "raw": {
+    "buckets": [
+     {
+      "bucket": "stable",
+      "from": 27666701.521965,
+      "to": 27767410.629379,
+      "pct": 0.36400836338963394
+     },
+     {
+      "bucket": "project",
+      "from": 27785969.958210997,
+      "to": 27877060.892860994,
+      "pct": 0.32783068140861604
+     },
+     {
+      "bucket": "bluechip",
+      "from": 27757894.353407007,
+      "to": 27847470.38044401,
+      "pct": 0.3227046904082174
+     },
+     {
+      "bucket": "single",
+      "from": 25881003.314190004,
+      "to": 25903609.223832,
+      "pct": 0.0873455691325602
+     }
+    ]
+   }
+  },
+  {
+   "ts": "2026-09-07T00:00:00Z",
+   "date": "2026-09-07",
+   "rule": "pool_volume_spike",
+   "pool_address": "terra1cupwgntu082ypw2ztgtxfzcenexcu6ggp5zzunn3yzfwgrvdcclqgjrjqg",
+   "name": "LUNA-ampLUNA",
+   "bucket": "project",
+   "label": "LUNA-ampLUNA volume 9.9× its 28d median",
+   "value": "$183,549 vs median $18,614",
+   "raw": {
+    "vol": 183549,
+    "median": 18614.2,
+    "multiple": 9.860697746881412
+   }
+  },
+  {
+   "ts": "2026-09-07T00:00:00Z",
+   "date": "2026-09-07",
+   "rule": "pool_volume_spike",
+   "pool_address": "terra1ys7edvw89krf47n4zsz4c4m9das7ppltjtfv2epw85thqpvl6hhqn55m6y",
+   "name": "USDC-EURe",
+   "bucket": "bluechip",
+   "label": "USDC-EURe volume 8.7× its 28d median",
+   "value": "$38,899 vs median $4,465",
+   "raw": {
+    "vol": 38899,
+    "median": 4464.51,
+    "multiple": 8.712938261981718
+   }
+  },
+  {
+   "ts": "2026-09-06T00:00:00Z",
+   "date": "2026-09-06",
+   "rule": "gauge_set_change",
+   "kind": "status",
+   "gauge_pool_id": "cw20:terra14lul8rjcad0jeuu680n4q7dwgxjkr6mqzx8umyewj8c6xn93squqllleht",
+   "name": "LUNA-ASTRO",
+   "bucket": "project",
+   "label": "LUNA-ASTRO: active → voted_but_below_threshold",
+   "value": "voted_but_below_threshold",
+   "raw": {
+    "from": "active",
+    "to": "voted_but_below_threshold"
+   }
+  },
+  {
+   "ts": "2026-09-01T00:00:00Z",
+   "date": "2026-09-01",
+   "rule": "pool_apr_move",
+   "gauge_pool_id": "native:ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6",
+   "name": null,
+   "bucket": "single",
+   "label": "native:ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6 APR up 16.9 pts (53%)",
+   "value": "31.9% → 48.8%",
+   "raw": {
+    "from": 31.90275864972829,
+    "to": 48.83258496512562,
+    "pts": 16.929826315397328,
+    "rel": 53.066966719950145
+   }
+  },
+  {
+   "ts": "2026-08-31T00:00:00Z",
+   "date": "2026-08-31",
+   "rule": "epoch_flip",
+   "kind": "epoch",
+   "epoch": 201,
+   "label": "Epoch 201 started — 108.5M VP across 4 buckets",
+   "value": "stable +1.5% · project +1.4% · bluechip +1.4% · single +1.6%",
+   "raw": {
+    "buckets": [
+     {
+      "bucket": "stable",
+      "from": 27150355.12465,
+      "to": 27554162.805106003,
+      "pct": 1.487301652601153
+     },
+     {
+      "bucket": "project",
+      "from": 27275872.463010997,
+      "to": 27670002.129777,
+      "pct": 1.444975471638844
+     },
+     {
+      "bucket": "bluechip",
+      "from": 27249247.92514699,
+      "to": 27641926.524938002,
+      "pct": 1.441062156539847
+     },
+     {
+      "bucket": "single",
+      "from": 25181403.549572002,
+      "to": 25596703.583579,
+      "pct": 1.6492330667329171
+     }
+    ]
+   }
+  },
+  {
+   "ts": "2026-08-30T00:00:00Z",
+   "date": "2026-08-30",
+   "rule": "bucket_vp_move",
+   "bucket": "stable",
+   "label": "stable bucket VP down 4.1% inside epoch 200",
+   "value": "28.32M → 27.15M VP",
+   "raw": {
+    "from": 28321542.287733,
+    "to": 27150355.12465,
+    "pct": -4.135322685411374
+   }
+  },
+  {
+   "ts": "2026-08-28T00:00:00Z",
+   "date": "2026-08-28",
+   "rule": "pool_apr_move",
+   "gauge_pool_id": "cw20:terra14n22zd24nath0tf8fwn468nz7753rjuks67ppddrcqwq37x2xsxsddqxqc",
+   "name": "LUNA-stLUNA",
+   "bucket": "project",
+   "label": "LUNA-stLUNA APR down 30.0 pts (50%)",
+   "value": "59.6% → 29.6%",
+   "raw": {
+    "from": 59.60413298733805,
+    "to": 29.58079356951752,
+    "pts": -30.023339417820527,
+    "rel": 50.37123755193035
+   }
+  },
+  {
+   "ts": "2026-08-25T00:00:00Z",
+   "date": "2026-08-25",
+   "rule": "pool_volume_spike",
+   "pool_address": "terra1v3lqxl0eyte9x3nhdgcj8hwvjq76aupnnzz0yll8mxs5cckc29pqvg2scu",
+   "name": "LUNA-USDC",
+   "bucket": "stable",
+   "label": "LUNA-USDC volume 4.5× its 28d median",
+   "value": "$79,697 vs median $17,734",
+   "raw": {
+    "vol": 79696.8,
+    "median": 17733.5,
+    "multiple": 4.49413821298672
+   }
+  },
+  {
+   "ts": "2026-08-24T00:00:00Z",
+   "date": "2026-08-24",
+   "rule": "epoch_flip",
+   "kind": "epoch",
+   "epoch": 200,
+   "label": "Epoch 200 started — 107.2M VP across 4 buckets",
+   "value": "stable +0.2% · project +0.1% · bluechip +0.1% · single +0.0%",
+   "raw": {
+    "buckets": [
+     {
+      "bucket": "stable",
+      "from": 28122566.752772003,
+      "to": 28168492.305288,
+      "pct": 0.16330498179533323
+     },
+     {
+      "bucket": "project",
+      "from": 27067208.137576006,
+      "to": 27103391.198917996,
+      "pct": 0.1336785868645193
+     },
+     {
+      "bucket": "bluechip",
+      "from": 27037272.880012006,
+      "to": 27072120.316614,
+      "pct": 0.12888665493979815
+     },
+     {
+      "bucket": "single",
+      "from": 24807834.279002,
+      "to": 24808407.700779002,
+      "pct": 0.0023114544000637435
+     }
+    ]
+   }
+  },
+  {
+   "ts": "2026-08-24T00:00:00Z",
+   "date": "2026-08-24",
+   "rule": "pool_volume_spike",
+   "pool_address": "terra1v3lqxl0eyte9x3nhdgcj8hwvjq76aupnnzz0yll8mxs5cckc29pqvg2scu",
+   "name": "LUNA-USDC",
+   "bucket": "stable",
+   "label": "LUNA-USDC volume 7.6× its 28d median",
+   "value": "$134,701 vs median $17,734",
+   "raw": {
+    "vol": 134701,
+    "median": 17733.5,
+    "multiple": 7.595849663067076
+   }
+  },
+  {
+   "ts": "2026-08-22T00:00:00Z",
+   "date": "2026-08-22",
+   "rule": "pool_volume_spike",
+   "pool_address": "terra1cupwgntu082ypw2ztgtxfzcenexcu6ggp5zzunn3yzfwgrvdcclqgjrjqg",
+   "name": "LUNA-ampLUNA",
+   "bucket": "project",
+   "label": "LUNA-ampLUNA volume 6.5× its 28d median",
+   "value": "$107,763 vs median $16,607",
+   "raw": {
+    "vol": 107763,
+    "median": 16607.1,
+    "multiple": 6.488971584442799
+   }
+  },
+  {
+   "ts": "2026-08-22T00:00:00Z",
+   "date": "2026-08-22",
+   "rule": "pool_volume_spike",
+   "pool_address": "terra1v3lqxl0eyte9x3nhdgcj8hwvjq76aupnnzz0yll8mxs5cckc29pqvg2scu",
+   "name": "LUNA-USDC",
+   "bucket": "stable",
+   "label": "LUNA-USDC volume 7.6× its 28d median",
+   "value": "$131,603 vs median $17,373",
+   "raw": {
+    "vol": 131603,
+    "median": 17372.5,
+    "multiple": 7.575363361634768
+   }
+  },
+  {
+   "ts": "2026-08-21T00:00:00Z",
+   "date": "2026-08-21",
+   "rule": "gauge_set_change",
+   "kind": "status",
+   "gauge_pool_id": "cw20:terra14n22zd24nath0tf8fwn468nz7753rjuks67ppddrcqwq37x2xsxsddqxqc",
+   "name": "LUNA-stLUNA",
+   "bucket": "project",
+   "label": "LUNA-stLUNA: voted_but_below_threshold → active",
+   "value": "active",
+   "raw": {
+    "from": "voted_but_below_threshold",
+    "to": "active"
+   }
+  },
+  {
+   "ts": "2026-08-21T00:00:00Z",
+   "date": "2026-08-21",
+   "rule": "pool_liquidity_move",
+   "gauge_pool_id": "cw20:terra1xkt5etsaptddec6achnjlqnx884fwxwuk795fs885v6eyygu6eus7uauhc",
+   "name": "LUNA-EURe",
+   "bucket": "stable",
+   "label": "LUNA-EURe staked liquidity up 27%",
+   "value": "$128,791 → $164,035",
+   "raw": {
+    "from": 128790.93928748401,
+    "to": 164035.44306088635,
+    "pct": 27.36567026251001
+   }
+  },
+  {
+   "ts": "2026-08-21T00:00:00Z",
+   "date": "2026-08-21",
+   "rule": "pool_apr_move",
+   "gauge_pool_id": "cw20:terra1e6k3u9uwysataqnysfdn7y5v254pawm0gcuflumugtd7l4w74slq0qww44",
+   "name": "LUNA-FUEL",
+   "bucket": "project",
+   "label": "LUNA-FUEL APR down 44.7 pts (46%)",
+   "value": "96.8% → 52.1%",
+   "raw": {
+    "from": 96.82115923108215,
+    "to": 52.13705673487584,
+    "pts": -44.68410249620631,
+    "rel": 46.15117485792458
+   }
+  },
+  {
+   "ts": "2026-08-21T00:00:00Z",
+   "date": "2026-08-21",
+   "rule": "pool_apr_move",
+   "gauge_pool_id": "native:ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6",
+   "name": null,
+   "bucket": "single",
+   "label": "native:ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6 APR up 12.7 pts (67%)",
+   "value": "18.9% → 31.6%",
+   "raw": {
+    "from": 18.886146516863242,
+    "to": 31.607388402496525,
+    "pts": 12.721241885633283,
+    "rel": 67.35753042196629
+   }
+  },
+  {
+   "ts": "2026-08-19T00:00:00Z",
+   "date": "2026-08-19",
+   "rule": "pool_liquidity_move",
+   "gauge_pool_id": "cw20:terra1xkt5etsaptddec6achnjlqnx884fwxwuk795fs885v6eyygu6eus7uauhc",
+   "name": "LUNA-EURe",
+   "bucket": "stable",
+   "label": "LUNA-EURe staked liquidity down 31%",
+   "value": "$182,208 → $126,557",
+   "raw": {
+    "from": 182207.66550820292,
+    "to": 126556.88718733157,
+    "pct": -30.54250114321671
+   }
+  },
+  {
+   "ts": "2026-08-19T00:00:00Z",
+   "date": "2026-08-19",
+   "rule": "pool_apr_move",
+   "gauge_pool_id": "cw20:terra1xkt5etsaptddec6achnjlqnx884fwxwuk795fs885v6eyygu6eus7uauhc",
+   "name": "LUNA-EURe",
+   "bucket": "stable",
+   "label": "LUNA-EURe APR up 28.2 pts (56%)",
+   "value": "50.6% → 78.8%",
+   "raw": {
+    "from": 50.59948539771287,
+    "to": 78.7992289389838,
+    "pts": 28.199743541270934,
+    "rel": 55.731285248496974
+   }
+  },
+  {
+   "ts": "2026-08-19T00:00:00Z",
+   "date": "2026-08-19",
+   "rule": "pool_apr_move",
+   "gauge_pool_id": "cw20:terra1e6k3u9uwysataqnysfdn7y5v254pawm0gcuflumugtd7l4w74slq0qww44",
+   "name": "LUNA-FUEL",
+   "bucket": "project",
+   "label": "LUNA-FUEL APR up 51.4 pts (121%)",
+   "value": "42.3% → 93.7%",
+   "raw": {
+    "from": 42.31189656849614,
+    "to": 93.68719228046939,
+    "pts": 51.37529571197325,
+    "rel": 121.42045116981446
+   }
+  }
+ ]
+}
