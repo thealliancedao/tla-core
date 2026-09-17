@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "updatedAt": "2026-09-17",
-  "readme": "Curated ecosystem alerts — the ONE upstream list. token-catalog stamps `alert` on every token whose denom appears here (kind asset); lp-grades stamps `alerts` on every pool holding such a token or named by a forum entry; pages and the Advisor read those stamps, never this file directly. Add an entry the day you learn of it; flip status to `retired` when it no longer applies (never delete — history). Fields: id · kind (asset | forum | notice) · status (migrating | winding_down | watch | discussion | voting | retired) · headline · action · dates · source_url · affects.",
+  "readme": "Curated ecosystem alerts — the ONE upstream list. token-catalog stamps `alert` on every token whose denom appears here (kind asset); lp-grades stamps `alerts` on every pool holding such a token or named by a forum entry; pages and the Advisor read those stamps, never this file directly. Add an entry the day you learn of it; flip status to `retired` when it no longer applies (never delete — history). Fields: id · kind (asset | forum | notice) · status (migrating | winding_down | watch | discussion | voting | retired) · headline · action · dates · source_url · affects. `body` = the full text of the announcement / post as published (verbatim, for the full-page card); `links` = every link a reader might need.",
   "alerts": [
     {
       "id": "usdc-noble-winddown",
@@ -11,12 +11,37 @@
       "denom": "ibc/2C962DAB9F57FE0921435426AE75196009FAA1981BF86991203C8411F8980FDB",
       "headline": "Noble USDC (USDC.n) is being wound down by Circle — migrate to Injective USDC (USDC.inj)",
       "action": "Move USDC.n to USDC.inj with Skip:Go's guided flow (go.skip.build) before Oct 31, when legacy CCTP burn limits start stepping down. Do not leave USDC.n in pools past Jan 12, 2027: only USDC in a wallet you control at Circle's snapshot qualifies for manual redemption.",
-      "replacement": { "symbol": "USDC.inj", "denom": null, "note": "native USDC issued by Circle on Injective, reaches Terra via CCTP v2 + IBC; Terra denom to be filled in when the first pool exists" },
-      "dates": { "announced": "2026-09-11", "migration_open": "2026-09-11", "mint_stop": "2026-10-13", "burn_limits_step_down": "2026-10-31", "exits_limited": "2026-12-01", "snapshot": "2027-01-12", "end": "2027-01-13" },
+      "replacement": {
+        "symbol": "USDC.inj",
+        "denom": null,
+        "note": "native USDC issued by Circle on Injective, reaches Terra via CCTP v2 + IBC; Terra denom to be filled in when the first pool exists"
+      },
+      "dates": {
+        "announced": "2026-09-11",
+        "migration_open": "2026-09-11",
+        "mint_stop": "2026-10-13",
+        "burn_limits_step_down": "2026-10-31",
+        "exits_limited": "2026-12-01",
+        "snapshot": "2027-01-12",
+        "end": "2027-01-13"
+      },
       "deadline": "2026-10-31",
       "source_url": "https://go.skip.build",
       "source_label": "Circle wind-down schedule for USDC on Noble (Cosmos Labs announcement, 2026-09-11)",
-      "affects": { "note": "every TLA gauge whose pool holds this denom — derived by lp-grades from the token-catalog underlyings, not listed here" }
+      "affects": {
+        "note": "every TLA gauge whose pool holds this denom — derived by lp-grades from the token-catalog underlyings, not listed here"
+      },
+      "links": [
+        {
+          "label": "Skip:Go manual migration doc (step by step)",
+          "url": "https://docs.skip.build/go/app/usdc-n-manual-migration"
+        },
+        {
+          "label": "Skip:Go guided migration flow",
+          "url": "https://go.skip.build"
+        }
+      ],
+      "body": "Circle has published the wind-down schedule for USDC on Noble. Nothing changes today for anyone holding Noble USDC (USDC.n). The community can now migrate USDC from Noble to Injective on Skip:Go, and the Cosmos ecosystem has until January 12, 2027 to complete the move to Injective USDC (USDC.inj).\n\nTimeline\n• September 11 to October 12, 2026: migration of USDC from Noble to Injective is open. No other change. Circle Mint access for Noble continues as normal, including withdrawals, express routes, and redemptions.\n• October 13, 2026 to January 12, 2027: new minting of USDC to Noble through Circle Mint stops. Redemptions from Noble through Circle Mint remain available. Legacy CCTP burn limits remain active but step down gradually to zero from October 31, 2026 through January 12, 2027. After December 1, 2026, CCTP exits from Noble may be limited to destination chains that still support legacy CCTP burns.\n• From January 13, 2027: Noble is no longer accessible through Circle Mint or CCTP. Remaining USDC on Noble can only be redeemed through Circle's manual redemption process (opens January 13 via Circle's Help Center). To qualify, USDC must be in a holder-controlled wallet included in Circle's January 12 snapshot and holders must meet Circle's compliance and security requirements. USDC held in pools or smart contracts at snapshot time will not qualify.\n\nWhat is changing\nInjective USDC (USDC.inj) is native USDC issued by Circle on Injective and is the replacement for Noble USDC across Cosmos. It reaches Cosmos chains through Injective's CCTP v2 deployment and IBC, routed by Skip:Go. Since August 28, USDC minted through Noble displays as USDC.n across the Cosmos Chain Registry, Mintscan, and Skip:Go.\n\nHow to migrate (Skip:Go)\n1. Open go.skip.build, select USDC.n on your chain as the source, and USDC.inj on the same chain as the destination.\n2. Sign two transactions: one on your origin chain and one on Injective. A Skip relayer executes the intermediate CCTP steps. No EVM wallet or additional gas tokens are required.\n3. USDC.inj arrives on your origin chain.\nSupported at launch: dYdX, Osmosis, Cosmos Hub, Terra 2.0, Neutron, ZIGChain, XPLA, Initia.\n\nWhat this means for you\n• If you hold USDC in Cosmos: migrate USDC.n to USDC.inj before October 31, when legacy CCTP burn limits begin stepping down. After December 1, exits may be limited to fewer destination chains. Check that your destination asset reads USDC.inj, not USDC.n.\n• If you provide liquidity on a DEX: do not leave USDC.n in pools past January 12 — only USDC in holder-controlled wallets at Circle's snapshot qualifies for manual redemption. Move liquidity to USDC.inj pairs as they become available.\n• What happens if I do nothing? New Noble minting stops October 13. Burn limits step down from October 31 to zero on January 12, 2027, so transfers off Noble become progressively harder. After January 12 the only path is Circle's manual redemption, subject to Circle's compliance review and timelines; USDC left in pools or contracts will not qualify.\n• A one-click migration is planned (depends on Injective's chain upgrade later this year) — do not wait for it; the guided flow live now is the recommended path."
     },
     {
       "id": "capapult-bribe-renewal-2026-09",
@@ -26,11 +51,27 @@
       "headline": "Forum: renew 300k CAPA per week from the Solid community pool as TLA bribes (15.6M CAPA total, until depleted)",
       "action": "Open for input on the Capapult forum — not yet in governance. Read and weigh in.",
       "summary": "Renews the Sept-2025 allocation that depletes this month: 300,000 CAPA/week to the LUNA-CAPA (Astroport), USDC-SOLID (Astroport) and ampCAPA (Eris single-asset) venues. Cited: SOLID at $0.9983 (0.17% peg deviation); ampCAPA holds 31.3% of CAPA supply.",
-      "dates": { "opened": "2026-09-17" },
+      "dates": {
+        "opened": "2026-09-17"
+      },
       "deadline": null,
       "source_url": "https://common.xyz/capapult/discussion/1313264-allocate-300k-capa-per-week-from-the-community-pool-as-bribes-for-capasolid-liquidity-pools-on-tla-to-boost-ecosystem-liquidity-and-adoption-until-funds-are-depleted-total-156m-capa",
       "source_label": "common.xyz / capapult discussion 1313264",
-      "affects": { "pool_names": ["LUNA-CAPA", "USDC.n-SOLID", "ampCAPA"], "note": "USDC-SOLID as proposed is the USDC.n pool — see usdc-noble-winddown; a bribe target that is itself winding down" }
+      "affects": {
+        "pool_names": [
+          "LUNA-CAPA",
+          "USDC.n-SOLID",
+          "ampCAPA"
+        ],
+        "note": "USDC-SOLID as proposed is the USDC.n pool — see usdc-noble-winddown; a bribe target that is itself winding down"
+      },
+      "links": [
+        {
+          "label": "Discussion on common.xyz (Capapult forum)",
+          "url": "https://common.xyz/capapult/discussion/1313264-allocate-300k-capa-per-week-from-the-community-pool-as-bribes-for-capasolid-liquidity-pools-on-tla-to-boost-ecosystem-liquidity-and-adoption-until-funds-are-depleted-total-156m-capa"
+        }
+      ],
+      "body": "Summary\nThis proposal renews the allocation of 300k CAPA tokens per week from the Solid protocol's community pool as incentives (bribes) to the CAPA and SOLID liquidity pools on Terra Liquidity Alliance (TLA). The goal is the same as the previous allocation: enhance liquidity, attract more users, stabilize the $SOLID peg, and drive long-term growth for the Solid protocol on Terra 2.0. The allocation will be ongoing until the total 15.6M CAPA is depleted.\n\nPools: LUNA-CAPA (Astroport) · USDC-SOLID (Astroport) · ampCAPA (Eris single asset)\n\nWhy renew\nThe first allocation ran from September 2025 and depletes this month. It did what it was set up to do: SOLID trades at $0.9983, peg deviation 0.17%. A CDP stablecoin that held its peg through a year in which LUNA fell to four cents is the result worth pointing at. The incentives kept liquidity in place while the market went against everything.\n\nCurrent state of the three venues: ampCAPA (Eris) 156,554,653 CAPA staked · USDC-SOLID 43,523 USDC / 43,595 SOLID · LUNA-CAPA 666,781 LUNA / 24,584,658 CAPA. ampCAPA now holds 31.3% of total CAPA supply, roughly ten times what this programme emitted over the year. CAPA paid out as incentives has largely been staked rather than sold. Letting the incentives lapse now removes support from the pools at the point where liquidity is thinnest and hardest to replace.\n\nAllocation\n300,000 CAPA per week · total 15,600,000 CAPA · continues until depleted."
     }
   ]
 }
