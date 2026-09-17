@@ -1,6 +1,67 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
-## OPEN LEDGER — 2026-09-13 (late) · the ONE list of what is still open. Everything below this section is history.
+## OPEN LEDGER — 2026-09-17 · the ONE list of what is still open. Everything below this section is history.
+Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
+
+**STATE 2026-09-17 — week one after the fold CLOSED (09-14 → 09-17), one long session + timers.** Everything below
+was gated (mock or jsdom, real fixtures), byte-verified on main after each commit, and is running now.
+- Heap: dex-data 1.4.1→1.4.2 and tla-flows 3.4.1 fold event months one at a time (both Action-folded duties OOM'd at
+  256 MB — state-history at the first boundary, pnl on every run Mon 03:30 → Tue 16:29). Mocks run under a 200 MB cap.
+- Boundary: public LCDs are pruned → state-history samples LIVE at the first run after the boundary (sample_mode,
+  boundary_height, delta_sec); org-dex-data moved to `1 * * * *` (owner). Epoch 203 complete 67/67 (delta 10,930 s —
+  first run after the fix; from 09-21 ~60 s). Archive knob = exact re-sample only.
+- system-health 1.0.7/1.0.8 (fresh-but-failed = violation, hb_status on every row, price-history writer heartbeat
+  written by token-catalog); lib/cron-registry.js treats `failed` as broken; gate-cron-registry.mjs 8/8.
+- nft-flows 1.1.2 (luna-usd-daily repoint — silent 404 since the migration) · 1.1.3 (same-day re-price, labeled) ·
+  1.1.4 (buy-now = sale; every venue event read). REPAIR buy-now-settle-1.1.4: 317 sales re-derived from held raw txs
+  (135 aDAO / 182 PL), labeled, old exits superseded_by, reports in <slug>/ledger/repairs/. aDAO 135/135 match
+  sales-enriched.
+- token-catalog: price-history/heartbeat.json written each run (ok | failed + reason); fuel-supply probes the chain-
+  registry Neutron list (publicnode dead since 08-27; rest-lb.neutron.org serves HTML; solva.solutions live) — FUEL ok.
+- B.3: 4 tla-core scripts repointed/env-driven, registry-backfill's dead `git add nfts/adao/transfers` removed, 4 one-off
+  recovery files deleted; trusted-addresses label fixed. B.4 closed (vaults launched 2025-08-07). B.5 closed.
+- B.7: nine gates refreshed from literals to fixture-derived relations (explorer-analytics, new-here 46/46, slippage
+  20/20, tla-stats V1/V1b, three nfts/adao mocks all PASS on NFTC_DIR); tla-stats still has 10 pot-funding literals.
+- Site: index 4.19→4.22 (tile % on load; feed honours actions; 7d/30d + type toggles; ledger in the feed; no twins;
+  mobile = desktop tiles fitted, marketplaces three-up uniform) · explorer 4.32 / style 6.1 (listing pill CSS) ·
+  gate-index-activity.mjs 24/24 · gate-explorer-listing-pill.mjs 8/8.
+- Standing violations: bucket_vp_consistency (#4), bucket_label_agreement (finding A). votion positions daily → partial
+  by cadence (known). Monday 09-14 all four watch items landed.
+
+### A — watch (owner)
+1. Monday 2026-09-21: dex-data 00:01 `state-history: 1 sampled … live-after-boundary` with delta_sec ≈ 60 ·
+   tla-flows 03:32 `pnl: epoch 204` · tla-voting 01:00 → period 203 (the 00:00 run is pre-flip, partial by design).
+
+### B — crons session (one delivery each; every mock under --max-old-space-size=200)
+1. org-nft-inventory: chain-only BBL auctions (is_settled false, no bidder, end_time 0) ARE listings — `source: chain_only`,
+   `warlock_visible: false`, keep the warning, floor includes them; site: badge "on-chain only · not on BBL's UI" on
+   explorer cards + marketplace cards (owner wants these surfaced as buying opportunities). The #745 lesson.
+2. tla-flows aux classifier: bid denom from the same-tx cw20/bank send → feed drops "currency not in record".
+3. nft-flows: usdAt prices bLUNA via adao/snapshots/bluna-usd-daily.json; the 1.1.3 re-price pass covers
+   no_usd_series_for_denom rows (290 of the 317 repaired sales are bLUNA).
+4. Heap-cap sweep: every duty folded from an Action gets its mock run under the cap on the real months.
+5. state-history: fold from index.json's per-pool stats + the current month only (still re-reads 26 months weekly).
+6. Docs: CRON-FLEET stagger row for dex-data :01 (member-data at :45 reads a 44-min-old pool snapshot) — done in this bulk.
+
+### C — B.2, then building
+1. B.2 retire the transfers leg: walk the residual (5 enriched-only / 23 ledger-only; likely Atrium/Boost vs FCD-era
+   batch settles), then readers in order — index.html, app.html, nfts/adao/market-history.js sales-enriched,
+   nfts/adao/flows.js, help-agent/server.js (hand-edit), then drop NFT_AUX_* from tla-flows. adao/flows missed #745
+   too (third classifier, same blind spot) — retire or fix with B.2.
+2. Milestone A step 3: ratio re-anchor on state-history hub ratios → build-pnl v3 in tla-flows/pnl.js → member-portfolio.
+3. THREE VERSIONS (b)/(c) as owner screenshots arrive; app on adao/ledger.
+
+### D — parked / small
+tla-stats gate literal refresh (mid-epoch, fixture-derived) · staked_le_depth dust tolerance · Astroport stuck counts
+runs not days · unstake ids resolve at claim (feed count later) · help-agent server.js prompt text still says nfts/adao
+(cosmetic, hand-edit) · standing items (gate #0, genesis walk, identity fold, row-series slimming, FUEL helper, Advisor
+track record, films, Nov rollover, bucket-VP #4, LUNA-wstETH SS, pool-status archive).
+
+### E — Pixel Lions / Lion DAO — ON HOLD until B + C.1 close (owner, 2026-09-15)
+Order when it starts: PL streams end-to-end (inventory, listings across its venues, ledger-vs-old-leg parity) → pages:
+Lion DAO DeFi positions, per-collection registry-driven NFT explorer.
+
+## (superseded) OPEN LEDGER — 2026-09-13 (late)
 Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
 
 **STATE 2026-09-13 — ORGANIZE + aDAO MIGRATION milestone CLOSED.** In two sessions (09-12 evening → 09-13 late):
