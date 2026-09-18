@@ -42,6 +42,13 @@ on main, and running. The home page changed shape; the curated layer got two fil
   at 0.5×/1×/2×). gate-index-alert-center.mjs 63/63 · gate-index-chain-only.mjs 11/11 · gate-explorer-listing-pill 14/14
   · gate-tla-stats-alerts 10/10 · mock-run-chain-only 22/22 · mock-run-nft-bid 15/15 · nft-flows mock 40/40 ·
   lp-grades/token-catalog alert gates 8/8, 6/6 · mock-run-tla-alerts PASS.
+- **Prices, one source (2026-09-18 late, owner):** the ORG PRICE ORACLE tla-core/price-history/YYYY/MM.json (every catalog
+  symbol daily since 2022-05, paid CoinGecko backfill once, token-catalog appends daily, bLUNA carried as LUNA×ratio through
+  CoinGecko's 2024-04 → 2025-09 hole) is the ONLY source for past USD. Audit: no cron or page calls CoinGecko for history;
+  the two per-collection copies (luna/bluna-usd-daily) matched the oracle on LUNA (1,572/1,572 days) but bLUNA differed on
+  261/379 days (worst 29.6%). nft-flows 1.3.0 prices from the oracle month-by-month and re-prices the 214 copy-priced rows
+  (usd_prev kept when the number moved); market-history 1.4.0 reads the oracle first and REBUILDS both copies from it (kept
+  only for app / release-history / nft-explorer, which still read them — repoint queued, then delete the copies).
 - Known: nft-flows 1.2.0's reprice pass only walked recent months — 2024/10 (95 rows) and 2025/06 (17) still say
   no_usd_series_for_denom for the bLUNA buy-now repairs; 2026/08 priced. Pre-existing gate drift unchanged (mock-run-custody
   W 9 vs 5 on today's fixture; lp-grades mock-run-v2 6/2; gate-index-activity 22/24 depends on heartbeat age).
@@ -53,12 +60,13 @@ on main, and running. The home page changed shape; the curated layer got two fil
 2. USDC.n clock: Oct 13 mint stop · **Oct 31 CCTP step-down** · Jan 12 snapshot. The Capapult thread targets the USDC.n pool.
 
 ### B — crons (one delivery each; every mock under --max-old-space-size=200)
-1. nft-flows 1.2.1: the reprice pass walks EVERY ledger month once (read → stamp/price → write → drop) so the 2023–2025
-   bLUNA buy-now repairs get USD; heartbeat reports months touched.
+1. DONE 09-18: nft-flows 1.2.1 → 1.3.0 (full sweep, oracle pricing) · market-history 1.3.0 / 1.4.0 (symbols, oracle first,
+   copies rebuilt). NEXT: repoint app.html, release-history.html, nft-explorer-app.js from luna/bluna-usd-daily to
+   price-history months, then delete the two copies and their writer in market-history.
 2. Heap-cap sweep of every Action-folded duty on the real months (was B.4 on 09-17; still open).
 3. state-history: fold from index.json's per-pool stats + the current month only.
-4. nfts/adao/market-history: listing-history segments carry `denom_symbol` (stamped upstream like everything else); the
-   index DEN fallback map then goes.
+4. DONE 09-18 (market-history 1.3.0): listing-history segments carry `denom_symbol`. NEXT: delete the index DEN fallback map
+   once the stamped product is on main.
 5. nft-inventory: capture offers (the only NFT alert with no source); dao-governance: execution timestamp (Executed today
    = vote closed in window).
 
