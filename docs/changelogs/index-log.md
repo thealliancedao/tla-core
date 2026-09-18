@@ -5,17 +5,17 @@
 
 
 
-## index 4.23 — 2026-09-17 — chain-only BBL listings on the BBL card (the #745 lesson)
+## index 4.24 → 4.33 · lib/alert-center.js 1.0 → 1.8.0 · lib/denoms.js 1.0.0 · app 2.0.4 — 2026-09-17/18 — the Alert Center
 
-- nfts.json listings the inventory cron (C.6) labels `source:'chain_only'` (live on the BBL contract — is_settled false,
-  no bidder, end_time 0 — hidden by BBL's UI/API) are MERGED into the page's live BBL cache (warlock never serves them):
-  the card floor, "Currently Listed" (= visible on BBL + on-chain only), the tier rows, the cross-venue floor tile and the
-  listing cards all count them. Each is badged "on-chain only · not on BBL's UI"; the card floor is flagged when the
-  cheapest ask is one; "+N on-chain only" sits under the count; the listing card links to the explorer (BBL's page would
-  say "not listed"). The pipeline paint shows the cron's `chain_only_count` from the first paint.
-- The late warlock-count overwrite (`fetchBblListingCount`) adds the chain-only count so it agrees with the card.
-- Gate: `gate-index-chain-only.mjs` 11/11 (jsdom, real fixture STAGED — the cheapest BBL ask labeled chain_only and removed
-  from the stubbed warlock feed, exactly as C.6 writes it) · `gate-index-activity.mjs` still 24/24.
+- 4.24 Alert Center replaces Ecosystem Pulse (hidden) and the launch popup; 4.25 full-page window, Props from the
+  dao-governance corpus (full description, decoded messages, Quick audit), registry cards with full text + links; 4.26 NFT
+  cards with both parties + holdings, token status, USD then/now + spread, Boost rows name the token, superseded rows
+  skipped; 4.27 denom → symbol from lib/denoms.js (token-catalog effective layer) — feed hand maps deleted; 4.28 7-day
+  default window, "seen" marks new, Live Activity rows expand into the same card; 4.29 the facts inline in the feed row on
+  desktop; 4.30/4.31 TLA tile + ⚙ Thresholds (member-data/tla-alerts, docs/curated/alert-thresholds.json), gauge rows in
+  plain words; 4.32 alert vs activity — colour follows alerts only; 4.33 TLA tile off the home page (owner), registry cards
+  expanded and sticky until inactive. Gates: gate-index-alert-center.mjs 63/63 · gate-index-chain-only.mjs 11/11.
+- app 2.0.4: transfers rows labeled superseded_by are skipped.
 
 ## app.html v1 · install.html · site-header 1.9.0 · site-footer "Get the app" — 2026-09-11 (overnight)
 
