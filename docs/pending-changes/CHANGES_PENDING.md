@@ -1,6 +1,85 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
-## OPEN LEDGER — 2026-09-17 · the ONE list of what is still open. Everything below this section is history.
+## OPEN LEDGER — 2026-09-18 · the ONE list of what is still open. Everything below this section is history.
+Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
+
+**STATE 2026-09-18 — the Alert Center day (09-17 → 09-18, one long session).** Everything below is COMMITTED, byte-verified
+on main, and running. The home page changed shape; the curated layer got two files that are now the owner's knobs.
+- **Curated (tla-core/docs/curated/)**: `alerts.json` — the ONE upstream list of ecosystem alerts (kind asset | forum |
+  notice; full `body` + `links`; an entry stays on the board until its status is set inactive/retired by hand). First two
+  entries: USDC.n → USDC.inj wind-down (Circle; mint stop 10-13, CCTP step-down 10-31, snapshot 2027-01-12), Capapult forum
+  post on renewing 300k CAPA/week TLA bribes. `alert-thresholds.json` — every Alert Center rule's numbers (TLA + NFT),
+  calibrated 09-17 on 127 days of history (mock-run-tla-alerts.js: each enabled rule ≤ 12/month and not dead).
+- **Upstream stamps**: token-catalog 1.8.0 stage 2c stamps `alert` on tokens from alerts.json → lp-grades 2.1.0 stamps
+  `alerts` on pools through their catalog underlyings (10 USDC.n gauges = 39.6% of graded VP, ~$897K staked — four
+  SkeletonSwap "USDC" pools included; name-matching would have missed them) + forum entries by pool name → tla-stats
+  T3.21 Advisor never recommends a winding-down pool (aDAO votes 50% of its stable bucket on LUNA-USDC.n; shift out is
+  material by itself; held only by the earned-streak bar until epoch 204).
+- **Symbols, once**: platform-crons/lib/denom-symbol.js (crons) + site lib/denoms.js — denom → symbol from the token-catalog
+  effective layer, every spelling normalised, unknown = null with a reason, collection- and venue-agnostic. nft-flows 1.2.0
+  stamps `denom_symbol`/`denom_decimals` on every priced record, USD per SYMBOL (LUNA, bLUNA series; stables 1:1 by catalog
+  symbol; `usd_basis`), reprice pass stamps + fills. tla-flows 3.4.3 stamps aux records. index feed maps deleted.
+- **tla-flows 3.4.2**: the seven "aDAO bids · currency not in record" were Pixel Lions buy-nows captured by the contract-wide
+  BBL leg (fourth classifier with the first-event blind spot) — unwatched-collection bids dropped, settle-in-tx never a bid,
+  bid denom from the same-tx payment leg. Rows labeled `superseded_by: tla-flows-3.4.2` in nft-collections (write-once);
+  index 4.26+ and app 2.0.4 skip superseded rows.
+- **nft-inventory C.6** (the #745 lesson): structurally-live chain-only BBL auctions ARE listings (source chain_only,
+  warlock_visible false), floor counts them, chain_only_count per venue; compact-bundle 1.2.0 bit; explorer 4.33 / style 6.2
+  badge "on-chain only · not on BBL's UI"; index card + listing rows badged. #745: listed 2024-10-18 (tx 4C1A517…), never on
+  warlock (a BBL indexer miss — neighbouring auctions 13806/15901 are served), bought from the contract 2026-09-12 (tx
+  C50E1FF…, place_bid hook + settle, buyer terra1sw7x43… who also swept three PL buy-nows that weekend).
+- **Alert Center (index 4.24 → 4.33, lib/alert-center.js 1.8.0, SPEC-alert-center)**: the default window replaces Ecosystem
+  Pulse (hidden, JS still present) and the launch popup. Tiles Ecosystem (Projects · PD · Assets) · Props (Live · Veto
+  lock · Executed) · NFTs aDAO (Marketplace · Staking/Breaks · P2P). Colour follows ALERTS only (a live vote, veto lock,
+  wind-down, open forum post, floor drop, chain-only listing, mass unstake/transfer, break, your wallet); sales, listings,
+  executed props are grey activity. 7-day window (30d toggle); "seen" marks rows new, never hides the week. Full-page
+  window with rich cards: proposals from the dao-governance corpus (fast paint; full description, decoded messages, Quick
+  audit), registry cards fully expanded with the full text + links, NFT cards with both parties (registered name else
+  address) + holdings (total · listed · liquid · staked · broken), token status, token amount with USD at the time vs now
+  and the spread. Live Activity rows carry the same facts inline on desktop (AlertCenter.itemInline), expand on phones.
+  TLA tile + ⚙ Thresholds tab built but OFF on the home page (owner: confusing there) — `opts.tla = true` restores; the
+  member-data 1.2.0 tla-alerts duty keeps writing member-data/tla-alerts/current.json (rows 30d + per-rule fire rates
+  at 0.5×/1×/2×). gate-index-alert-center.mjs 63/63 · gate-index-chain-only.mjs 11/11 · gate-explorer-listing-pill 14/14
+  · gate-tla-stats-alerts 10/10 · mock-run-chain-only 22/22 · mock-run-nft-bid 15/15 · nft-flows mock 40/40 ·
+  lp-grades/token-catalog alert gates 8/8, 6/6 · mock-run-tla-alerts PASS.
+- Known: nft-flows 1.2.0's reprice pass only walked recent months — 2024/10 (95 rows) and 2025/06 (17) still say
+  no_usd_series_for_denom for the bLUNA buy-now repairs; 2026/08 priced. Pre-existing gate drift unchanged (mock-run-custody
+  W 9 vs 5 on today's fixture; lp-grades mock-run-v2 6/2; gate-index-activity 22/24 depends on heartbeat age).
+
+### A — watch (owner)
+1. Monday 2026-09-21: dex-data 00:01 `state-history: 1 sampled … live-after-boundary` (delta ≈ 60 s) · tla-flows 03:32 `pnl:
+   epoch 204` · tla-voting 01:00 → period 203. Advisor: LUNA-USDT / LUNA-EURe reach 4/4 → the stable-bucket shift off
+   LUNA-USDC.n becomes proposable.
+2. USDC.n clock: Oct 13 mint stop · **Oct 31 CCTP step-down** · Jan 12 snapshot. The Capapult thread targets the USDC.n pool.
+
+### B — crons (one delivery each; every mock under --max-old-space-size=200)
+1. nft-flows 1.2.1: the reprice pass walks EVERY ledger month once (read → stamp/price → write → drop) so the 2023–2025
+   bLUNA buy-now repairs get USD; heartbeat reports months touched.
+2. Heap-cap sweep of every Action-folded duty on the real months (was B.4 on 09-17; still open).
+3. state-history: fold from index.json's per-pool stats + the current month only.
+4. nfts/adao/market-history: listing-history segments carry `denom_symbol` (stamped upstream like everything else); the
+   index DEN fallback map then goes.
+5. nft-inventory: capture offers (the only NFT alert with no source); dao-governance: execution timestamp (Executed today
+   = vote closed in window).
+
+### C — B.2, then building
+1. B.2 retire the tla-flows NFT aux transfers leg for adao/ledger (also ends the phantom-bid source): walk the residual
+   (5 enriched-only / 23 ledger-only), then readers one per delivery — index, app, market-history sales-enriched,
+   adao/flows, help-agent (hand-edit) — then drop NFT_AUX_* from tla-flows.
+2. Milestone A step 3: ratio re-anchor on state-history hub ratios → build-pnl v3 in tla-flows/pnl.js → member-portfolio.
+3. Alert Center Phase 2 (when wanted): prune the hidden Pulse DOM + JS; Pixel Lions / TLA Locks tiles (same code path);
+   TLA tile home (tla-stats?) or on; treasury token maps (index ×2, adao-live-data, dao_treasury) onto the catalog gecko ids.
+
+### D — parked / small
+tla-stats 10 pot-funding literals · staked_le_depth dust tolerance · Astroport stuck counts runs not days · unstake ids
+resolve at claim · help-agent prompt text · standing items (gate #0, genesis walk, identity fold, row-series slimming,
+FUEL helper, Advisor track record, films, Nov rollover, bucket-VP #4, LUNA-wstETH SS, pool-status archive) · the unnamed
+single gauge terra1hqq6pn… that lost 489k VP on 09-15 (identify it).
+
+### E — Pixel Lions / Lion DAO — ON HOLD until B + C.1 close
+Order when it starts: PL streams end-to-end → pages: Lion DAO DeFi positions, per-collection NFT explorer.
+
+## (superseded) OPEN LEDGER — 2026-09-17 · the ONE list of what is still open. Everything below this section is history.
 Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
 
 **STATE 2026-09-17 — week one after the fold CLOSED (09-14 → 09-17), one long session + timers.** Everything below

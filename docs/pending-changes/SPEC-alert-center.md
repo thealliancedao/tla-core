@@ -1,6 +1,17 @@
 # SPEC — Alert Center (index.html default window; replaces Ecosystem Pulse and the launch popup)
 
-Status: DRAFT for approval · Author: Claude + DeFi_Patriot · 2026-09-17
+Status: BUILT (v1 live 2026-09-18 — index 4.33 · lib/alert-center.js 1.8.0) · Author: Claude + DeFi_Patriot · 2026-09-17/18
+Rulings that changed the draft (owner, 2026-09-17): five tiles not six (TLA off the home window — built, `opts.tla = true`
+restores; its rules live in docs/curated/alert-thresholds.json, product member-data/tla-alerts); default window 7 days
+(30d toggle), the "seen" marker marks rows NEW instead of shrinking the window; ALERT vs ACTIVITY — colour follows alerts
+only (live vote, veto lock, wind-down, open forum post, floor drop, chain-only listing, mass unstake/transfer, break, your
+wallet); sales/listings/executed props/epoch flips are grey activity; Marketplace counts every venue event; a tile opens a
+FULL-PAGE window (rail of every counter, rich cards); registry cards carry the full text + links, expanded, and stay until
+their status is set inactive/retired; NFT cards show both parties (name else address) with holdings, token status, USD at
+the time vs now + spread; Live Activity rows carry the same facts inline on desktop. Thresholds: every rule's numbers in
+the curated config, calibrated on 127 days (per-pool VP moves are noise → off), fire rates at 0.5×/1×/2× shown in the
+⚙ tab with a download + the GitHub edit link. Still open: Pulse DOM/JS prune, Pixel Lions / TLA Locks tiles, offers
+capture, execution timestamps, Projects/PD diffs.
 Supersedes SPEC-landing-pulse.md (the Pulse tile is retired). Sibling: SPEC-mobile-app.md (Today tab shares the rules).
 
 ## Purpose (owner, 2026-09-17, verbatim intent)
