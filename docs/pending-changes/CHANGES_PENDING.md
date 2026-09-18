@@ -1,6 +1,6 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
-## OPEN LEDGER — 2026-09-18 · the ONE list of what is still open. Everything below this section is history.
+## OPEN LEDGER — 2026-09-18 (late) · the ONE list of what is still open. Everything below this section is history.
 Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
 
 **STATE 2026-09-18 — the Alert Center day (09-17 → 09-18, one long session).** Everything below is COMMITTED, byte-verified
@@ -49,6 +49,13 @@ on main, and running. The home page changed shape; the curated layer got two fil
   261/379 days (worst 29.6%). nft-flows 1.3.0 prices from the oracle month-by-month and re-prices the 214 copy-priced rows
   (usd_prev kept when the number moved); market-history 1.4.0 reads the oracle first and REBUILDS both copies from it (kept
   only for app / release-history / nft-explorer, which still read them — repoint queued, then delete the copies).
+- **Closed 09-18 late — one price, one series, no copies:** nft-flows 1.3.0 swept all 34 aDAO months from the oracle
+  (796 rows priced/corrected, 5,751 symbols stamped; second run touches nothing); token-catalog 1.9.0 publishes
+  `price-history/series/<SYMBOL>.json` (36 symbols, seeded from all 53 month files, one day appended per run — LUNA 1,575
+  days, bLUNA 920 continuous); app 2.0.5 + nft-explorer 4.34 read the series; market-history 1.5.0 neither reads nor
+  writes the copies; `adao/snapshots/luna-usd-daily.json` + `bluna-usd-daily.json` DELETED by owner; index 4.35 deletes the
+  last hand denom map (DEN) — listing-history segments carry denom_symbol (market-history 1.3.0, 3,172 stamped on main).
+  The 3.4.2 aux classifier (phantom bids) is finally on main (it had been left out of the 3.4.3 commit).
 - Known: nft-flows 1.2.0's reprice pass only walked recent months — 2024/10 (95 rows) and 2025/06 (17) still say
   no_usd_series_for_denom for the bLUNA buy-now repairs; 2026/08 priced. Pre-existing gate drift unchanged (mock-run-custody
   W 9 vs 5 on today's fixture; lp-grades mock-run-v2 6/2; gate-index-activity 22/24 depends on heartbeat age).
@@ -60,15 +67,16 @@ on main, and running. The home page changed shape; the curated layer got two fil
 2. USDC.n clock: Oct 13 mint stop · **Oct 31 CCTP step-down** · Jan 12 snapshot. The Capapult thread targets the USDC.n pool.
 
 ### B — crons (one delivery each; every mock under --max-old-space-size=200)
-1. DONE 09-18: nft-flows 1.2.1 → 1.3.0 (full sweep, oracle pricing) · market-history 1.3.0 / 1.4.0 (symbols, oracle first,
-   copies rebuilt). NEXT: repoint app.html, release-history.html, nft-explorer-app.js from luna/bluna-usd-daily to
-   price-history months, then delete the two copies and their writer in market-history.
-2. Heap-cap sweep of every Action-folded duty on the real months (was B.4 on 09-17; still open).
-3. state-history: fold from index.json's per-pool stats + the current month only.
-4. DONE 09-18 (market-history 1.3.0): listing-history segments carry `denom_symbol`. NEXT: delete the index DEN fallback map
-   once the stamped product is on main.
-5. nft-inventory: capture offers (the only NFT alert with no source); dao-governance: execution timestamp (Executed today
+1. DONE 09-18 (all of it): oracle pricing end to end, series product, copies deleted, DEN map gone — see STATE.
+2. DONE 09-18: heap-cap sweep — pnl 9/9, nft-flows 46/46 (cap in the spawn), state-history 24/24 on the 09-14 fixture.
+   Small: dex-data/mock-run-state-history.js asserts a pre-flip fixture (epoch 203 now complete) — stage a 202-complete
+   index so it runs on any day.
+3. state-history: fold from index.json's per-pool stats + the current month only (works, wasteful).
+4. nft-inventory: capture offers (the only NFT alert with no source); dao-governance: execution timestamp (Executed today
    = vote closed in window).
+5. market-history: `fillDailyFromPriceHistory` / `syncDailyFromOracle` are dead code since 1.5.0 — remove on the next touch.
+6. CRON-FLEET.md rows: member-data tla-alerts duty (23:xx / TLA_ALERTS=1 → member-data/tla-alerts/current.json),
+   token-catalog series (price-history/series/), nft-flows 1.3.0 (reads price-history months, no per-collection series).
 
 ### C — B.2, then building
 1. B.2 retire the tla-flows NFT aux transfers leg for adao/ledger (also ends the phantom-bid source): walk the residual
