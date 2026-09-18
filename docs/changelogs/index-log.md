@@ -5,6 +5,16 @@
 
 
 
+## index 4.34 → 4.35 · app 2.0.5 · nft-explorer 4.34 — 2026-09-18 — the price oracle everywhere
+
+- index 4.34: USD-at-the-time on Alert Center cards / Live Activity rows from tla-core/price-history months; "now" falls
+  back to the oracle's latest day for symbols without a live feed. 4.35: the DEN hand map deleted — listing-history
+  segments carry denom_symbol (market-history 1.3.0+), everything else resolves through lib/denoms.js.
+- app 2.0.5: LUNA history from price-history/series/LUNA.json (the 14d change now reads the sorted map — it had been
+  silently falling back). nft-explorer 4.34 / app.js cache-bust 6.3: both oracle URLs → price-history/series/{LUNA,bLUNA}.json;
+  bLUNA-priced listing periods 2025-09 → 2026-05 move 5–13% (the correction, not a regression).
+- The per-collection luna/bluna-usd-daily copies are deleted from nft-collections; nothing on the site reads them.
+
 ## index 4.24 → 4.33 · lib/alert-center.js 1.0 → 1.8.0 · lib/denoms.js 1.0.0 · app 2.0.4 — 2026-09-17/18 — the Alert Center
 
 - 4.24 Alert Center replaces Ecosystem Pulse (hidden) and the launch popup; 4.25 full-page window, Props from the
