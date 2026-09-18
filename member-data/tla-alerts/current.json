@@ -3,20 +3,22 @@
  "cron": "member-data",
  "module": "tla-alerts",
  "version": "1.0.0",
- "generated_at": "2026-09-17T23:56:47.353Z",
+ "generated_at": "2026-09-18T01:27:43.594Z",
  "config": {
   "path": "docs/curated/alert-thresholds.json",
-  "sha": "98b3496fe8b7",
+  "sha": "6853a78ea0fa",
   "updatedAt": "2026-09-17",
   "tla": {
    "gauge_set_change": {
     "enabled": true,
-    "description": "A gauge added, removed, activated or dewhitelisted (pool status changed between two daily snapshots).",
-    "params": {}
+    "description": "A gauge joins or leaves the TLA list, or crosses the vote threshold (starts / stops earning TLA emissions). Only gauges carrying at least min_vp votes — dust gauges flip daily and mean nothing.",
+    "params": {
+     "min_vp": 200000
+    }
    },
    "epoch_flip": {
     "enabled": true,
-    "description": "One card per epoch rollover (Monday 00:00 UTC): bucket VP totals and what moved between buckets.",
+    "description": "One card per epoch rollover (Monday 00:00 UTC): total VP locked, and each bucket's VP against the day before — the moment votes settle and rewards distribute.",
     "params": {}
    },
    "bucket_vp_move": {
@@ -80,10 +82,10 @@
  },
  "history": {
   "days": 90,
-  "from": "2026-06-19",
-  "snapshots": 91,
-  "apr_days": 47,
-  "volume_days": 84
+  "from": "2026-06-20",
+  "snapshots": 90,
+  "apr_days": 48,
+  "volume_days": 85
  },
  "multipliers": [
   0.5,
@@ -93,20 +95,22 @@
  "stats": {
   "gauge_set_change": {
    "enabled": true,
-   "params": {},
-   "description": "A gauge added, removed, activated or dewhitelisted (pool status changed between two daily snapshots).",
+   "params": {
+    "min_vp": 200000
+   },
+   "description": "A gauge joins or leaves the TLA list, or crosses the vote threshold (starts / stops earning TLA emissions). Only gauges carrying at least min_vp votes — dust gauges flip daily and mean nothing.",
    "fired_30d": 5,
    "fired_90d": 10,
    "per_month_at": {
     "1": 3.4,
-    "2": 3.4,
+    "2": 1.4,
     "0.5": 3.4
    }
   },
   "epoch_flip": {
    "enabled": true,
    "params": {},
-   "description": "One card per epoch rollover (Monday 00:00 UTC): bucket VP totals and what moved between buckets.",
+   "description": "One card per epoch rollover (Monday 00:00 UTC): total VP locked, and each bucket's VP against the day before — the moment votes settle and rewards distribute.",
    "fired_30d": 4,
    "fired_90d": 13,
    "per_month_at": {
@@ -123,11 +127,11 @@
    },
    "description": "A bucket's total VP moved inside an epoch (boundary days excluded).",
    "fired_30d": 2,
-   "fired_90d": 10,
+   "fired_90d": 9,
    "per_month_at": {
-    "1": 3.4,
-    "2": 3,
-    "0.5": 4.1
+    "1": 3,
+    "2": 2.7,
+    "0.5": 3.7
    }
   },
   "pool_vp_move": {
@@ -201,11 +205,14 @@
    "gauge_pool_id": "cw20:terra14lul8rjcad0jeuu680n4q7dwgxjkr6mqzx8umyewj8c6xn93squqllleht",
    "name": "LUNA-ASTRO",
    "bucket": "project",
-   "label": "LUNA-ASTRO: voted_but_below_threshold → active",
-   "value": "active",
+   "label": "LUNA-ASTRO is back above the vote threshold — it earns TLA emissions again this epoch (VP 0.26M → 0.39M, +48%)",
+   "value": "status voted_but_below_threshold → active · 0.39M VP now",
    "raw": {
     "from": "voted_but_below_threshold",
-    "to": "active"
+    "to": "active",
+    "vp_from": 259679.211448,
+    "vp_to": 385166.380776,
+    "vp_pct": 48.32391804806772
    }
   },
   {
@@ -216,11 +223,14 @@
    "gauge_pool_id": "cw20:terra1hqq6pnx74q0wae7eqqu2wgddzr2xn8l9gvd33sfwqfew50qawj0sfn69fh",
    "name": "cw20:terra1hqq6pnx74q0wae7eqqu2wgddzr2xn8l9gvd33sf",
    "bucket": "single",
-   "label": "cw20:terra1hqq6pnx74q0wae7eqqu2wgddzr2xn8l9gvd33sf: active → voted_but_below_threshold",
-   "value": "voted_but_below_threshold",
+   "label": "an unnamed single gauge (terra1hqq6pn…) dropped below the vote threshold — it stops earning TLA emissions until votes return (VP 0.49M → 0.00M, -100%)",
+   "value": "status active → voted_but_below_threshold · 0.00M VP now",
    "raw": {
     "from": "active",
-    "to": "voted_but_below_threshold"
+    "to": "voted_but_below_threshold",
+    "vp_from": 488838.476084,
+    "vp_to": 0.259349,
+    "vp_pct": -99.99994694587012
    }
   },
   {
@@ -229,8 +239,8 @@
    "rule": "epoch_flip",
    "kind": "epoch",
    "epoch": 203,
-   "label": "Epoch 203 started — 112.7M VP across 4 buckets",
-   "value": "stable +0.4% · project +0.4% · bluechip +0.4% · single +0.4%",
+   "label": "Epoch 203 started — votes settled, rewards distributed · 112.7M VP locked across 4 buckets",
+   "value": "bucket VP at the flip vs the day before: stable +0.4% · project +0.4% · bluechip +0.4% · single +0.4%",
    "raw": {
     "buckets": [
      {
@@ -257,7 +267,8 @@
       "to": 28367440.754794,
       "pct": 0.3903075062253822
      }
-    ]
+    ],
+    "total_vp": 112674275.27653001
    }
   },
   {
@@ -268,10 +279,11 @@
    "gauge_pool_id": "cw20:terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc",
    "name": "wBTC.creda.a",
    "bucket": "single",
-   "label": "wBTC.creda.a joined the single bucket",
-   "value": "active",
+   "label": "wBTC.creda.a joined the TLA gauge list (single bucket)",
+   "value": "2.20M VP · active",
    "raw": {
-    "status": "active"
+    "status": "active",
+    "vp": 2202418.853901
    }
   },
   {
@@ -309,8 +321,8 @@
    "rule": "epoch_flip",
    "kind": "epoch",
    "epoch": 202,
-   "label": "Epoch 202 started — 109.4M VP across 4 buckets",
-   "value": "stable +0.4% · project +0.3% · bluechip +0.3% · single +0.1%",
+   "label": "Epoch 202 started — votes settled, rewards distributed · 109.4M VP locked across 4 buckets",
+   "value": "bucket VP at the flip vs the day before: stable +0.4% · project +0.3% · bluechip +0.3% · single +0.1%",
    "raw": {
     "buckets": [
      {
@@ -337,7 +349,8 @@
       "to": 25903609.223832,
       "pct": 0.0873455691325602
      }
-    ]
+    ],
+    "total_vp": 109395551.126516
    }
   },
   {
@@ -378,11 +391,14 @@
    "gauge_pool_id": "cw20:terra14lul8rjcad0jeuu680n4q7dwgxjkr6mqzx8umyewj8c6xn93squqllleht",
    "name": "LUNA-ASTRO",
    "bucket": "project",
-   "label": "LUNA-ASTRO: active → voted_but_below_threshold",
-   "value": "voted_but_below_threshold",
+   "label": "LUNA-ASTRO dropped below the vote threshold — it stops earning TLA emissions until votes return (VP 1.10M → 0.24M, -78%)",
+   "value": "status active → voted_but_below_threshold · 0.24M VP now",
    "raw": {
     "from": "active",
-    "to": "voted_but_below_threshold"
+    "to": "voted_but_below_threshold",
+    "vp_from": 1100908.509843,
+    "vp_to": 241829.629488,
+    "vp_pct": -78.03363064906391
    }
   },
   {
@@ -407,8 +423,8 @@
    "rule": "epoch_flip",
    "kind": "epoch",
    "epoch": 201,
-   "label": "Epoch 201 started — 108.5M VP across 4 buckets",
-   "value": "stable +1.5% · project +1.4% · bluechip +1.4% · single +1.6%",
+   "label": "Epoch 201 started — votes settled, rewards distributed · 108.5M VP locked across 4 buckets",
+   "value": "bucket VP at the flip vs the day before: stable +1.5% · project +1.4% · bluechip +1.4% · single +1.6%",
    "raw": {
     "buckets": [
      {
@@ -435,7 +451,8 @@
       "to": 25596703.583579,
       "pct": 1.6492330667329171
      }
-    ]
+    ],
+    "total_vp": 108462795.0434
    }
   },
   {
@@ -488,8 +505,8 @@
    "rule": "epoch_flip",
    "kind": "epoch",
    "epoch": 200,
-   "label": "Epoch 200 started — 107.2M VP across 4 buckets",
-   "value": "stable +0.2% · project +0.1% · bluechip +0.1% · single +0.0%",
+   "label": "Epoch 200 started — votes settled, rewards distributed · 107.2M VP locked across 4 buckets",
+   "value": "bucket VP at the flip vs the day before: stable +0.2% · project +0.1% · bluechip +0.1% · single +0.0%",
    "raw": {
     "buckets": [
      {
@@ -516,7 +533,8 @@
       "to": 24808407.700779002,
       "pct": 0.0023114544000637435
      }
-    ]
+    ],
+    "total_vp": 107152411.521599
    }
   },
   {
@@ -572,11 +590,14 @@
    "gauge_pool_id": "cw20:terra14n22zd24nath0tf8fwn468nz7753rjuks67ppddrcqwq37x2xsxsddqxqc",
    "name": "LUNA-stLUNA",
    "bucket": "project",
-   "label": "LUNA-stLUNA: voted_but_below_threshold → active",
-   "value": "active",
+   "label": "LUNA-stLUNA is back above the vote threshold — it earns TLA emissions again this epoch (VP 0.22M → 0.28M, +27%)",
+   "value": "status voted_but_below_threshold → active · 0.28M VP now",
    "raw": {
     "from": "voted_but_below_threshold",
-    "to": "active"
+    "to": "active",
+    "vp_from": 223235.962913,
+    "vp_to": 283306.702667,
+    "vp_pct": 26.90907816560493
    }
   },
   {
