@@ -1,5 +1,66 @@
 # NFT Explorer Changelog
 
+## explorer 4.47 / style 7.6 · lib/site-header.js 1.11.5 — 2026-09-19 — Lion DAO live; toggles legible
+
+- `tenants.json` liondao `live: true` (the ally dropdown shows on every page; the hero tagline is empty until Lion DAO gives one).
+- **4.47**: on a tenant collection every display toggle is on by default (owner); aDAO keeps its four.
+- **site-header 1.11.5**: on tenant pages the status/display toggles are legible — brighter labels and match counts, a visible
+  switch track with an accent thumb, a lit slider track. Gate 50/50.
+
+## explorer 4.46 / style 7.5 · lib/site-header.js 1.11.4 — 2026-09-19 — the fourth look: a dark page that is Lion DAO's
+
+- The yellow PAGE fought every semi-transparent tile and the footer (olive panels, yellow-on-yellow) — the registry goes back
+  to a black page (`mode: dark`, `bg #0b0b0b`) and the yellow does the work instead: tiles on the tenant's surface with
+  dark-gold borders, no translucent tiles (`--tw-bg-opacity:1`), yellow section rules, the tab frame and hero in a 2 px yellow
+  frame with hard shadows, yellow chips/toggles/primary buttons, headings in the accent. `mode: light` stays available.
+- **4.46**: a collection without a grade column reads "Rank N · top X%" (Pixel Lions = BBL's statistical rank, ties share a
+  rank), never "Rarity —"; the leaderboard's custody note names the collection's DAO; the rank-system label says which
+  oracle when there is no toggle. Gate 50/50.
+
+## explorer 4.45 / style 7.4 · lib/site-header.js 1.11.3 — 2026-09-19 — the third live look ("aDAO pretending to be Lion DAO")
+
+- **The page was never yellow**: the header lib's own uniform-chrome rule (`html,body{background:#0a0b0f!important}`) and its
+  cyan/violet mesh backdrop outranked the theme. 1.11.3: the tenant's page colour is `!important` too and the mesh is repainted
+  in the tenant's colours (`theme.mesh` optional).
+- **The chrome is the ally's**: `tenants.json` `nav.hide` drops another ally's tabs (aDAO Lore on Lion DAO), `nav.new_here:false`
+  drops the aDAO/TLA onboarding pills; the default tenant is untouched.
+- **4.45 — the collection hero** above the tabs for a non-default tenant: the collection mark, name, tenant, the registry's
+  one-line tagline (`tenants.json hero.tagline`) and four live numbers (supply · holders · listed · floor). aDAO's page has none.
+- **Floor history**: the listing band's top edge is now the 90th-percentile ask once a period has ≥ 5 listings (a 200,000-bLUNA
+  lion made every Pixel Lions period a $15K bar and squashed the sales into a sliver); the true max and the count above the edge
+  stay on the tooltip, never hidden. Applies to aDAO too (its vanity 9,999-bLUNA asks) — the axis reads $10–$1.1K instead of
+  $10–$2.7K. Gate 48/48.
+
+## explorer 4.44 / style 7.3 · lib/collection-context.js 1.1.1 · mirror-images 1.1.0 — 2026-09-19 — images without a Cloudflare account
+
+- `mirror-images` target **repo** (default): the images land in `<slug>/images/<id>.png` in nft-collections (the collection's
+  own folder), committed in batches of 500 by the Action, served through jsDelivr's GitHub CDN with raw.githubusercontent as
+  the fallback; no account, no cost. `images.cdn_fallback` in the manifest → the context's `assets.image_fallback` → the
+  card's on-error source (4.44). Workflows on Node 24.
+
+## explorer 4.43 / style 7.2 · lib/site-header.js 1.11.2 · nft-collections mirror-images 1.0.0 — 2026-09-19 — the second live look
+
+- **Images**: the HAR says it plainly — ipfs.io answers 403 and dweb.link 429 to a gallery's worth of hot-linked PNGs; no public
+  gateway will serve 5,000 images. aDAO solved this in 2024 by mirroring to Cloudflare Images; `mirror-images.yml` (one-time
+  Action, secrets CF_ACCOUNT_ID · CF_IMAGES_TOKEN · CF_ACCOUNT_HASH · IPFS_GATEWAY) does the same for any collection and prints
+  the `images.cdn_pattern` to set — after which the page needs no change (4.42 already images through the context).
+- **Holder names**: names come from EVERY DAO of the tenant (a Pixel Lions staker's name lives in the pixel-lions DAO members
+  file, not Lion DAO's); a later DAO never blanks a name. **System wallets** from the manifest (the DAO core, custodians by
+  registry label) — aDAO's "DAO Unminted / DAO Broken" literals never label another collection's holders.
+- **site-header 1.11.2**: the 1.11.1 page-text rule reached into nested tiles (the leaderboard's addresses went dark on dark);
+  it now touches only labels sitting directly on the page. `theme.style: "pixel"` — square corners, 2 px borders, hard offset
+  shadows in the accent, uppercase pixel-font labels, crisp image scaling (registry knob; Lion DAO uses it).
+- Gate 45/45 (member names from the second DAO, system labels, theme rules, pixel style).
+
+## explorer 4.42 / style 7.1 · lib/site-header.js 1.11.1 — 2026-09-19 — the Lion DAO look (owner, first live look)
+
+- **site-header 1.11.1**: LIGHT-PAGE themes — a bright `bg` (or `mode: "light"`) paints every panel, card, dropdown, input and
+  the header chrome dark (`surface`, default #141414) on the page colour, page-level text dark; `surface`/`surface2`/`text`/
+  `border` are optional registry knobs. `tenants.json` liondao theme: yellow page (#ffe600), black tiles, the pixel font.
+- **4.42**: card titles are the collection's ("pixeLion #710", not "aDAO #710"); an IPFS-pattern image falls back to a second
+  public gateway (dweb.link) on error. The "Rank 1" on many Pixel Lions is BBL's own statistical rank (ties at the top — 16
+  tokens share rank 1 in rarity.json), not a page bug.
+
 ## explorer 4.41 / style 7.0 · lib/collection-context.js 1.1.0 · lib/site-header.js 1.11.0 — 2026-09-19 — E3, Pixel Lions lit
 
 - **site-header 1.11.0**: the TENANT THEME — for a non-default tenant, `tenants.json`'s theme (accent · accent2 · bg · font)
