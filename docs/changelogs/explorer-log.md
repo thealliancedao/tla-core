@@ -1,5 +1,30 @@
 # NFT Explorer Changelog
 
+## explorer 4.35 → 4.38 / style 6.4 → 6.7 · lib/nft-history.js 1.0.0 → 1.2.1 · nft-flows 1.4.0 — 2026-09-18 — the on-chain journey
+
+- **4.35** the sheet's ON-CHAIN JOURNEY: the token's whole history from `nft-collections/<slug>/ledger/by-token/<shard>.json`
+  (nft-flows 1.4.0: every live ledger row of the token, superseded rows never included; shard = floor(id/100)), folded by
+  `/lib/nft-history.js` (one fold, shared with the app and the portfolio later). Rows in plain words with a tx link; summary
+  chips (minted for · changed hands · listed N× · days on market · sold N · listed now · in custody · ⚠ gaps · unpriced).
+  Rules: a same-owner delist → relist inside 24 h is a price change inside one listing episode; hands changed = ownership
+  moves only; contract labels from the collection manifest (`optsFromManifest`), names from the member registry, USD then
+  from the record, USD now from the oracle series (labeled with its day); a move the ledger never saw is ⚠ on the row it
+  lands on, never filled in; an unknown token → an honest empty state.
+- **4.36** P&L two ways per round trip: USD (paid → received at each day's oracle) and LUNA terms (LUNA-equivalent at the
+  day's oracle ratio); a free mint = basis 0; arrived by transfer = "basis unknown", proceeds still stated; chips for the
+  last round trip and the current holder's basis (paid then / now, days held).
+- **4.37** SECTIONS — one per holder (how it began, what happened on their watch, how it ended, their stats); treasury /
+  admin sections dashed and collapsed behind a toggle; LUNA terms n/a when the sale had no LUNA leg (USDC / SOLID).
+- **4.38** BOUNDARY TILES between the sections: ✨ MINTED · 💸 SOLD (venue · amount · seller side: days on market, price
+  changes, P&L USD + LUNA, held, paid · buyer side: holdings NOW, paid then/now, LUNA-equivalent) · 🤝 HANDED TO (amber on a
+  ledger gap). The acquisition row lives in its tile, never as a line in a section.
+- lib 1.1.1: operator moves (an admin wallet moving a token it never held — the Council multisig's 2024 migration) read as
+  "Moved into The Alliance DAO core by aDAO Council multisig (operator)", no ⚠; distribution-wallet labels from the manifest.
+- Gates: gate-explorer-journey.mjs 50/50 (#745 · #4513 · #3022 · #716 · #9068 · #3445 · #1128 + a synthetic SOLID sale);
+  gate-explorer-listing-pill's cache-bust/rev literal is a relation now (14/14).
+- Queued: holdings "at the time of the buy" (by-wallet shards, nft-flows 1.5.0); pixel-art tile badges per tenant; the
+  manifest-driven page + tenant dropdown (labels, filters, status set incl. `unminted` → "DAO held", theme, PL/BL strip).
+
 
 
 ## explorer 4.33 / style 6.2 · nft-inventory C.6 · compact-bundle 1.2.0 — 2026-09-17 — chain-only BBL auctions ARE listings (the #745 lesson)
