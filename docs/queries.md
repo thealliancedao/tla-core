@@ -893,10 +893,13 @@ Q-Bbl-AuctionByContract
   Used by:       nft-inventory cron Phase 4
   Input shape:   { "auction_by_contract": {
                      "nft_contract": "terra1phr9fngj...w3apw9",
-                     "limit": 30,
-                     "start_after": "<last auction_id>"
+                     "limit": 100
                   }}
-  Inputs:        nft_contract (collection address), limit (default 30), start_after (auction_id)
+  Inputs:        nft_contract (collection address), limit (asked 100 — the contract answered every live auction in one
+                 page on both collections, 2026-09-19), start_after (DOCUMENTED as an auction_id but MEASURED to never
+                 advance: page 1 is the `limit` largest token-id strings — the contract iterates its (nft_contract, token_id)
+                 index descending — and any start_after value returns the same window; nft-inventory D.2 tries auction_id
+                 then token_id, warns once, and completes the set from cw721 ownership with `auction{}` / `nft_auction{}`)
   Output shape:  {
                    "auctions": [
                      {
