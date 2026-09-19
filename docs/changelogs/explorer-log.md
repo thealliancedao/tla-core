@@ -1,5 +1,38 @@
 # NFT Explorer Changelog
 
+## explorer 4.40 / style 6.9 — 2026-09-19 — E2, the page is manifest-driven
+
+- **4.40**: supply, token name (`token_name_pattern`, new in both manifests), the bundle's trait columns (from the bundle's own
+  dict/fields — nothing assumed), the rank file's shape (aDAO intended_rank · grade · percentile; Pixel Lions rank ·
+  top_percent), and whether a second rank oracle exists (BBL's rarity file: aDAO only) all come from the collection. The
+  trait system follows the manifest's `traits[]`: dropdowns for every multi-select trait, the Planet/Inhabitant
+  slider-direction sections only where those traits exist, trait/wallet toggles from the first columns, the Rarity grade
+  dropdown and grade sorts only with a Rarity column. Status filters follow the features: Rewards (broken/unbroken) only with
+  a break mechanism, P+I matching only with Planet+Inhabitant, the mint filter reads "DAO held" where nothing is unminted.
+  Gate: booted as aDAO the whole filter panel DOM is identical to 4.38's; booted as Lion DAO, 5,000 Pixel Lions render with
+  six trait dropdowns Back … Prop, every record ranked from PL's rarity file, every owner resolved (36/36). Still
+  `live:false` — E3 does the theme, logo, collection strip, and analytics on the seeded market-history.
+
+## explorer 4.39 / style 6.8 · lib/collection-context.js 1.0.0 · lib/site-header.js 1.10.0 — 2026-09-19 — E1, the tenant layer
+
+- **lib/collection-context.js 1.0.0** reads `tla-core/docs/curated/tenants.json` + `nft-collections/<slug>/collection.json`
+  and hands a page every collection URL, trait column, feature flag (backing · break · tiers · custody · Enterprise ·
+  portfolio · name registry), asset (metadata, rarity, images) and label. Tenant precedence: `?tenant=` → `/<slug>` path →
+  device pref (`ally:prefs.tenant`) → the registry default; a URL choice becomes the device's choice. A fallback block
+  reproduces the aDAO context byte for byte when the registry is unreachable (the site never blanks; gated against the
+  registry). aDAO's metadata/rarity stay on the site's edge-served assets.
+- **site-header 1.10.0**: the ALLY dropdown under the logo (aDAO · Lion DAO from the registry; live tenants + the one
+  selected), remembered per device, a change reloads; the logo swaps to the tenant's mark. The lib loads collection-context
+  itself when a page did not. `vercel.json`: `/liondao` rewrites to index.html (the path sets the tenant).
+- **4.39**: every collection read (7 snapshot products, metadata, rarity ×2, members.csv, the journey slug) resolves through
+  the context at boot — aDAO to the same literals as 4.38 (gate: the page requests exactly the same product URL set),
+  Lion DAO to pixel-lions/…. NOT lit yet: the page still asserts aDAO's supply on the bundle and needs the BBL rarity file
+  (E2 makes it manifest-driven; E3 lights Pixel Lions) — `tenants.json` carries `liondao.live:false` until then, so the
+  dropdown does not offer it. Owner ruling folded for E2: a tenant with several collections shows them ALL in one grid,
+  with one filter set per collection.
+- Gates: gate-explorer-tenant 29/29 (registry ⇄ literals ⇄ fallback, precedence, header under jsdom, URL sets under both
+  tenants vs the committed page); explorer-journey 50/50 (version checks turned into relations); listing-pill 14/14.
+
 ## explorer 4.35 → 4.38 / style 6.4 → 6.7 · lib/nft-history.js 1.0.0 → 1.2.1 · nft-flows 1.4.0 — 2026-09-18 — the on-chain journey
 
 - **4.35** the sheet's ON-CHAIN JOURNEY: the token's whole history from `nft-collections/<slug>/ledger/by-token/<shard>.json`
