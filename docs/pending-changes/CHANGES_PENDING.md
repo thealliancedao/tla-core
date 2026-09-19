@@ -1,6 +1,106 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
-## OPEN LEDGER — 2026-09-18 (late-2) · the ONE list of what is still open. Everything below this section is history.
+## OPEN LEDGER — 2026-09-19 · the ONE list of what is still open. Everything below this section is history.
+Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
+
+**STATE 2026-09-19 — LION DAO IS LIVE ON THE EXPLORER.** Everything below is COMMITTED, byte-verified on main, running.
+- **nft-inventory Rev D.2 (BBL completeness from cw721 ownership)**: measured — BBL's `auction_by_contract` returns the `limit`
+  largest token-id strings and its cursor NEVER advances (aDAO 30/43, PL 30/72 were the one-page sweep; warlock carried the
+  rest). The sweep asks for 100 (the contract answered all 43 / 73 in one page), tries both cursors and warns once when stuck;
+  every BBL-held token the sweep missed is fetched by auction_id (warlock's id → a real chain row) or by token (`nft_auction`
+  → chain-only), field names self-resolving from the contract's serde errors. `listing_resolver_warnings` aDAO 13 → 0, PL 42 →
+  1 (**#2124, on-chain at 60 bLUNA / $4.76, hidden from BBL's UI since 2025-12-13 — the inverse #745, now the PL floor**).
+  dao-controlled only with a `custody` block (PL's stale file deleted). Heartbeat `stats.rev` D.2 (the 🚀 banner literal still
+  says C.6 — cosmetic, next index.js touch). Gates: chain-only 31, collection-config 18 (run-ally PATH case, venues as a
+  relation), nft-root 47.
+- **system-health 1.0.9 — INV 8 `nft_listings_reconcile`**: per collection (tenants.json), listings OPEN per the event ledger
+  (list opens; delist/sale/venue_out/transfer close; superseded never) == the inventory's listed set, per venue and per token;
+  a difference inside the two products' lag window is `recent_unconfirmed`. Fired on exactly #2124 on its first run, green
+  since. + PL inventory freshness row. Mock 67/67.
+- **market-history 1.6.0 — sourced from the ledger; seeds a new collection** (B.2 leg + B.6): `ledgerToEvents()` (legs by
+  recipient; Boost/Atrium flat split; superseded skipped), one ledger month + oracle month in memory; a collection with no
+  docs is seeded from its whole ledger (PL: 2,012 sales, 0 unpriced; 4,962 listing records, ACTIVE 81 == inventory 81 to the
+  token; 25 unmatched closes reported). Lifecycle fixes: relist closes the open record (#1657), close-before-open at equal
+  height (Atrium price update = delist+list in one tx, #6192), venue_out closes as venue_exit/unknown; sentinel = live
+  venue_out rows. Stables at par by catalog symbol. Gate: the aDAO ledger reproduces 1,320/1,328 committed sales with money
+  fields identical, LUNA prices to 1e-6, ACTIVE == inventory (49). nft-analytics.json (explorer feed) for PL landed on the
+  second warm run.
+- **nft-flows 1.4.1 + derive 1.1**: THE pricing rule lives in `nfts/nft-flows/lib/oracle-usd.js` (moved, not copied); the
+  nft-collections derive/forward Actions check platform-crons + a sparse tla-core out at run time and require it
+  (`nft-flows-derive.yml` REPAIRED — differential on PL's real archives: 14,276 priced rows, 0 disagreements); by-token
+  progress line every 20 shards. Mock 57/57.
+- **THE TENANT LAYER (site)**: `lib/collection-context.js` 1.1.1 (tenants.json + `<slug>/collection.json` → every URL,
+  trait column, feature flag, asset, label; precedence `?tenant=` → `/<slug>` → device pref → default; aDAO fallback block
+  gated === the registry), `lib/site-header.js` 1.11.5 (ally dropdown under the logo; the tenant THEME injected for a
+  non-default tenant — accent/bg/surface/border/font/`style:pixel`/`mode`; `nav.hide` + `nav.new_here`; nothing injected for
+  aDAO), `vercel.json` `/liondao` rewrite. **Explorer 4.47**: manifest-driven (supply, token name, trait columns from the
+  bundle, rank-file shape, second rank oracle optional, filters/toggles/status set/labels by the manifest and its features);
+  images through the manifest (`cdn_pattern` + `cdn_fallback`); holder names from EVERY DAO of the tenant; system wallets
+  from the manifest; analytics tab by features (Floor now + Holders where aDAO shows backing; one floor row; no
+  Broken/Phoenix buttons); a collection HERO for non-default tenants (mark · name · tenant · optional registry tagline · four
+  live numbers); PL reads "Rank N · top X%" (BBL's statistical rank, ties share a rank — 16 tokens are rank 1); every display
+  toggle on by default on a tenant collection; the floor-history listing band's top edge = p90 ask once ≥ 5 listings (a
+  200,000-bLUNA lion made every period a $15K bar; hi_max + the count above stay on the tooltip; aDAO's axis $10–$1.1K now).
+  aDAO's page is byte-identical throughout (gate: same URL set, same filter-panel DOM, same analytics text outside the
+  floor-history card). Gate explorer-tenant 50/50 (real registry, real seed via `gate-stage-pixel-lions.js`, jsdom under both
+  tenants), journey 50/50, listing-pill 14/14.
+- **Registry**: `tenants.json` liondao `live: true`, theme = black page (#0b0b0b) + yellow doing the work (owner ruling after
+  the yellow-page attempt went olive: "maybe this page shift is bad idea" — yes), `nav.hide: [adao-lore]`, hero tagline EMPTY
+  (owner will not write Lion DAO's copy — theirs when they give one); aDAO logo path fixed. Manifests: `token_name_pattern`,
+  `images.mark` (tenant logo ≠ collection mark), PL `images.cdn_pattern` = Atrium's proxy (DEAD 09-19 ~15Z, see A.1).
+- **Owner rulings this session**: a tenant with several collections shows them ALL in one grid with one filter set per
+  collection (built at Burning Lions, gated on two real collections) · PL is purely BBL's rank system, never "Rarity —" ·
+  BBL's tokened Pinata gateway is never hardcoded on the site · no Cloudflare account (the aDAO image CDN is not the owner's)
+  → images live in the collection's own folder in nft-collections via jsDelivr · the explorer preview link for Lion DAO is
+  `nft-explorer-index.html?tenant=liondao`.
+
+### A — NOW (owner, in this order)
+1. **IMAGES (Pixel Lions cards are "Image Error" again)**: Atrium's proxy now refuses cross-site embedding (HAR: status 0 /
+   ERR_FAILED), ipfs.io 403, dweb.link 429 — no third party will serve 5,000 hot-linked PNGs. Run `mirror-images`
+   (nft-collections Actions; target `repo`; `IPFS_GATEWAY` secret = BBL's tokened gateway template with the LITERAL
+   placeholders `{cid}/{path}` — the 15:1xZ run failed because the secret lacked them). Then `pixel-lions/collection.json`
+   `images.cdn_pattern` = `https://cdn.jsdelivr.net/gh/thealliancedao/nft-collections@main/pixel-lions/images/{id}.png`,
+   `cdn_fallback` = the raw.githubusercontent equivalent. RUNBOOK 3c.
+2. Monday 2026-09-21: dex-data 00:01 `state-history: 1 sampled … live-after-boundary` · tla-flows 03:32 `pnl: epoch 204` ·
+   tla-voting 01:00 → period 203. Advisor: LUNA-USDT / LUNA-EURe reach 4/4 → the stable-bucket shift off LUNA-USDC.n.
+3. USDC.n clock: Oct 13 mint stop · **Oct 31 CCTP step-down** · Jan 12 snapshot.
+4. Hand Lion DAO the preview link; collect their tagline (`tenants.json hero.tagline`) and any theme asks (four knobs).
+
+### B — data completeness (one delivery: classify 1.1.6 + re-derive + labeled repairs; every mock under 200 MB)
+1. classify gaps surfaced by the seed: **Boost sales with no payment denom** (9 aDAO, paid in SOLID → unpriced) · **2023
+   offer-contract sales with no seller** (9 PL, `from:null`) · Atrium `list` rows without a listing id · Boost `list` rows
+   without a price · 25 PL unmatched closes (delists for listings never seen open; 2023 FCD era) · the 10 PL 2023-06-10
+   transfers classify 1.1.5 produces that the ledger lacks (PL never re-derived after 1.1.5). Then derive (repaired) on both,
+   reprice.
+2. Labeled repairs on aDAO's committed sales-enriched (prior-verbatim law: label, never rewrite silently): **190 bLUNA/SOLID
+   rows priced from the retired copies** (up to 14 % off the oracle) · 28 BBL rows whose fee/royalty split the old pipeline
+   assumed at 1.5 %/5.5 % where the chain legs say 2 %/5 % · **5 "Boost sales" the ledger records as delists back to the
+   lister** (#1255 …, the old delist→sale upgrade guessed) · 61 pre-ledger listing records.
+3. Pending-claim tracker behind on both (aDAO 6, PL 28 unattributed — "unstaker not among known addresses").
+4. Carried: nft-flows 1.5.0 by-wallet shards · gap contracts to name (terra1wm7rag… 31, terra10lznz8… 86, terra1ettjrq… 48,
+   terra175qc8z… 33) · fold the three org-nft-flows-<collection> services onto run-ally per ally · state-history
+   current-month fold · offers capture · dao-governance execution timestamp · market-history dead code
+   (`fillDailyFromPriceHistory` / `syncDailyFromOracle`) · the 🚀 banner literal · queries.md §13 corrected (this bulk).
+
+### C — pages (priority order)
+1. **Home + DAO page per tenant** (index.html / dao.html read the context; Lion DAO's DAOs = lion-dao + pixel-lions), then
+   `/liondao` as a real landing (the rewrite exists; it lands on aDAO's Home today).
+2. **Burning Lions onboarding (timed)** — RUNBOOK: folder from _template, manifest, fcd-harvest → walk → derive (repaired) →
+   forward; tenants.json liondao.collections; **the collection strip** (every collection of the tenant in one grid, one
+   filter set per collection — owner ruling 09-19); mirror-images for its images.
+3. B.2's remaining readers of the tla-flows NFT aux transfers leg (index, app, adao/flows, help-agent) → drop NFT_AUX_*.
+4. Milestone A step 3 (ratio re-anchor → pnl v3 → member-portfolio; the NFT leg from lib/nft-history) — after Monday.
+5. Alert Center Phase 2 when wanted.
+
+### D — parked / small
+provenance re-derive (Phase 2a + the two governance mints; 8ywv as operator) · tla-stats 10 pot-funding literals ·
+staked_le_depth dust · Astroport stuck counts · unstake ids resolve at claim · help-agent prompt text · standing items
+(gate #0, genesis walk, identity fold, row-series slimming, FUEL helper, Advisor track record, films, Nov rollover,
+bucket-VP #4, LUNA-wstETH SS, pool-status archive) · the unnamed gauge terra1hqq6pn… (−489k VP 09-15) · `mode: light`
+theme stays available but needs a purpose-built light layout, not overrides · PL top-percent vs tied rank display choice ·
+badge-key modal prose per feature (done: hidden per feature) · workflows on Node 24 (mirror-images done; derive/forward carry 20).
+
+## (superseded) OPEN LEDGER — 2026-09-18 (late-2) · the ONE list of what is still open. Everything below this section is history.
 Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
 
 **STATE 2026-09-18 late-2 — the Lion DAO spec opened; the explorer got its journey; the inventory engine went tenant-agnostic.**
