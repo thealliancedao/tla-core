@@ -1,5 +1,21 @@
 # NFT Explorer Changelog
 
+## explorer 4.41 / style 7.0 · lib/collection-context.js 1.1.0 · lib/site-header.js 1.11.0 — 2026-09-19 — E3, Pixel Lions lit
+
+- **site-header 1.11.0**: the TENANT THEME — for a non-default tenant, `tenants.json`'s theme (accent · accent2 · bg · font)
+  is injected on every page as CSS variables + overrides where the site's chrome uses cyan (the Google font loaded once);
+  the default tenant gets no injection, so aDAO renders byte for byte. `<html data-tenant=…>` from the header on.
+- **collection-context 1.1.0**: `assets.mark` (the collection's own mark — `images.mark`, new in both manifests: the ROAR
+  logo is the tenant, the "DON'T BUY!!" pixel-lion is the collection), `image(id, variant)`.
+- **4.41**: card images through the context (aDAO's Cloudflare rule verbatim; Pixel Lions from the manifest's IPFS pattern);
+  the analytics tab by the collection's features — Floor now + Holders tiles where aDAO shows its backing, one floor row
+  ("All") without a break mechanism, no Broken/Phoenix chart buttons, the supply bar says "DAO held" and drops "DAO
+  broken"; badge-key entries hidden per feature. Gate 44/44 on the seed + explorer feed built by the real cron code
+  (2,012 sales, $112,631 all-time). Journey 50/50, listing-pill 14/14.
+- NOT in this delivery: the collection strip (every collection of the tenant in one grid, one filter set per collection —
+  owner ruling 2026-09-19) is built when Burning Lions is onboarded, so it can be gated on two real collections. Flip
+  `liondao.live:true` after the 2026-09-19 warm run seeds PL's market-history on main (the analytics tab reads it).
+
 ## explorer 4.40 / style 6.9 — 2026-09-19 — E2, the page is manifest-driven
 
 - **4.40**: supply, token name (`token_name_pattern`, new in both manifests), the bundle's trait columns (from the bundle's own
