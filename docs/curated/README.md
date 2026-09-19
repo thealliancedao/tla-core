@@ -3,6 +3,10 @@
 Human-curated inputs the catalog and token crons read. Edited by hand (or via the
 token-catalog viewer's override download → PR), not written by a cron.
 
+- `tenants.json` — the ONE list of ALLIES (tenants): label, logo, `collections` (nft-collections slugs), DAOs, Render
+  services, theme tokens, `default: true` for the site's default tenant. Read by `nfts/nft-inventory/run-ally.js` (which
+  collections an ally's service runs) and by the site (header tenant dropdown, `/<slug>` default). Add an ally = a block;
+  add a collection to an ally = a line. (2026-09-18)
 - `known_contracts.json` — labeled contract addresses (gauges, staking, vaults, etc.)
 - `protocols.json` — protocol directory (Eris, Solid, Astroport, Votion…)
 - `token_overrides.json` — token identity overrides (display name, subtype, coingecko_id,
