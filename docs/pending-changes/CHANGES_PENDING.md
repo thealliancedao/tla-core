@@ -1,6 +1,105 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
-## OPEN LEDGER — 2026-09-19 · the ONE list of what is still open. Everything below this section is history.
+## OPEN LEDGER — 2026-09-19 (late) · the ONE list of what is still open. Everything below this section is history.
+Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
+
+**STATE 2026-09-19 (late) — IMAGES MIRRORED · CLASSIFY 1.1.6 / DERIVE 1.2.1 · MESSAGE BODIES · EXPLORER 4.49.** Everything below
+is COMMITTED and byte-verified on main unless marked (pending).
+- **Pixel Lions images: mirrored** — `mirror-images` (target repo, IPFS_GATEWAY = BBL's tokened template with the literal
+  `{cid}/{path}`) landed 5,000/5,000 PNGs in `pixel-lions/images/` (82 MB, mirror-report.json every id ok); manifest
+  `images.cdn_pattern` = jsDelivr, `cdn_fallback` = raw.githubusercontent. The explorer renders every lion. (`cdn_note` still
+  describes the Atrium interim — cosmetic, next manifest touch.)
+- **classify 1.1.6** (both repos, byte-identical): ONE root cause behind four B.1 gaps — raw walk parts carry `msg_index` only as
+  an event ATTRIBUTE; the classifier read the field, so every multi-message tx was one group and each cw721 move paired with the
+  venue's FIRST event (Atrium price update = cancel+list in one tx → list with no id/price; a Boost multi-token listing gave every
+  token the first token's id → market-history dropped the rest as "ref seen" → 16 PL unmatched closes; 8 of 9 Boost no-denom
+  sales). Fixes: msg_index from the attribute (field wins); venue event paired to ITS token_id; cw20 `transfer_from`/`send_from`
+  are payment legs (Boost's allowance pull); a 2023 offer sale names the seller from the payout leg; (e) send_nft bodies matched
+  by token across the tx, several unstake events in one group pair positionally with the unstake messages. Gate 58/58, cron mock 59/59.
+- **derive 1.2.1 — LABELED REPAIRS**: same key + a null the classifier now fills → repaired in place (`repaired_by` /
+  `repaired_fields` / `repaired_at`, USD re-read as a set); a re-keyed twin (true msg_index, the token's own listing id, a
+  token-less unstake once the body names the tokens) → new row appended, old row `superseded_by` + `superseded_reason`; a
+  never-shrink gate before any write; `EXTERNAL_RAW_DIRS` re-reads tla-core/tla-flows/raw (workflow input `external_raw`, ~1.4 GB
+  sparse checkout, 4 GB heap — an Action, not a mock); `<slug>/raw/msg-bodies.json` attached to archived txs with no `m`.
+  RESULTS on main: PL 326 new / 9 repaired / 316 superseded, then +67 repaired (62 Boost list prices, 5 Atrium denoms, USD) +
+  104 unstakes resolved to token rows (47,532 records, 602 superseded); aDAO 449 new / 13 repaired (9 Boost cw20 sales now
+  priced — SOLID at par, ampLUNA via ratio; 12 offer sellers) / 449 superseded. Unmatched closes PL 25 → 9, aDAO 73 → 12: the
+  remainder are offers accepted on UNLISTED tokens — not listing closes (market-history should count a via_offer sale with nothing
+  open as a sale-without-listing; small change, B.4).
+- **Message bodies**: `platform-crons/nfts/nft-flows/lib/tx-body.js` — a 60-line protobuf reader (no library) → the FCD
+  `messages` shape; **forward cron 1.5.0** archives `m` on every matched raw record at walk time; **walk 1.1** (nft-collections)
+  does the same from tx_search / block bytes (workflow checks platform-crons out at _crons); **resolve-msg-bodies** Action fetches
+  the finite backlog by hash (public RPC, then ARCHIVE_RPC) → `<slug>/raw/msg-bodies.json`. PL: 155/155 resolved (8 public, 147
+  archive), 0 failed. Backlog left: aDAO 102 txs (163 rows), tla-locks 62.
+- **PL market docs RE-SEEDED 18:03Z** from the corrected ledger (owner deleted sales-enriched + listing-history together; a half
+  seed is refused by design): 2,012 sales all sellers named; listing-history 4,978 (+16 Boost listings), 81 active == inventory.
+  Lesson: run-ally's hourly runs are HOT — analytics + market-history run only on warm/full or `NFT_ANALYTICS=always`.
+- **Explorer 4.48 / 4.49** (4.48 on main; 4.49 pending — app.js delivered, index.html needs `nft-explorer-style.css?v=7.7` and
+  `rev: '4.49'`): leaderboard trend = the wallet's WHOLE marketplace history, one bar per month (buys up / sells down, counts,
+  hover per month, "N bought · M sold · net ±K"), name column fixed 230 px, bars fill the free width; Mint Status filter only where a
+  collection has an unminted reserve (custody block) — gone on PL; "Owned by DAO" badge = the tenant's logo (ROAR on Lion DAO);
+  analytics tab rebuilds after owner hydration (the "exited for everyone" race); hero Floor = cheapest live ask as USD · token ·
+  venue, re-rendered after hydration; aDAO's footer literals (rarity-explained, SCV audit) hidden on a tenant collection, the
+  contract link = the collection's. Gates: tenant 52/52 (+3), journey 50/50 (date-literal made count-independent), listing-pill 14/14.
+- **Delivery constraint (both of the owner's machines, 2026-09-19)**: ZIPs of scripts and the explorer HTML page are blocked as
+  "Virus detected" (content heuristic; `.txt` rename does not help); loose `.js`/`.mjs` go through. HTML changes ship as exact
+  find/replace tokens for the GitHub editor; keep HTML diffs to version tokens where possible.
+
+### A — NOW (owner, in this order)
+1. Explorer 4.49: `nft-explorer-app.js` + the two index.html tokens (style `v=7.7`, `rev: '4.49'`). Until then three gates fail on
+   main on the style/app cache-buster mismatch left by 4.48.
+2. `resolve-msg-bodies` → adao, then `nft-flows-derive` → adao with **external_raw on**; same pair for tla-locks. Expect aDAO
+   ~122 Boost list prices + 37 Atrium denoms repaired, 4 unstakes resolved.
+3. Monday 2026-09-21: dex-data 00:01 `state-history: 1 sampled … live-after-boundary` · tla-flows 03:32 `pnl: epoch 204` ·
+   tla-voting 01:00 → period 203. Advisor: LUNA-USDT / LUNA-EURe reach 4/4 → the stable-bucket shift off LUNA-USDC.n.
+4. USDC.n clock: Oct 13 mint stop · **Oct 31 CCTP step-down** · Jan 12 snapshot.
+5. Hand Lion DAO the preview link; collect their tagline (`tenants.json hero.tagline`) and any theme asks.
+
+### B — data completeness (what is left of B.1 + B.2)
+1. (done: classify 1.1.6 · derive 1.2.1 · bodies) — remaining: the aDAO / tla-locks resolve+derive runs (A.2).
+2. Labeled repairs on aDAO's committed sales-enriched (prior-verbatim law: label, never rewrite silently): **190 bLUNA/SOLID rows
+   priced from the retired copies** (up to 14 % off the oracle) · 28 BBL rows whose fee/royalty split the old pipeline assumed
+   at 1.5 %/5.5 % where the chain legs say 2 %/5 % · **5 "Boost sales" the ledger records as delists back to the lister** · 61
+   pre-ledger listing records · the 12 offer sellers + 9 Boost denoms the ledger now has (same mechanism: `repaired_by`).
+3. Pending-claim tracker behind on both (aDAO 6, PL 28 unattributed — "unstaker not among known addresses"); the 104 resolved PL
+   unstake rows now name the unstaker per token — the tracker can attribute from the ledger.
+4. market-history: a via_offer sale with no open listing = sale-without-listing, not "unmatched" (PL 9, aDAO 12); the
+   incremental pass re-counts already-closed events in its overlap window as unmatched (the 16 in the heartbeat) — count only
+   closes with no record at all.
+5. Carried: nft-flows 1.5.x by-wallet shards · gap contracts to name (terra1wm7rag… 31, terra10lznz8… 86, terra1ettjrq… 48,
+   terra175qc8z… 33) · fold the three org-nft-flows-<collection> services onto run-ally per ally · state-history current-month
+   fold · offers capture · dao-governance execution timestamp · market-history dead code · the 🚀 banner literal (C.6 → D.2) ·
+   manifest `cdn_note` · workflows on Node 20 (derive/forward/walk/resolve carry 20).
+
+### C — pages (priority order)
+1. **Explorer analytics for Lion DAO (owner asks 2026-09-19, after the first full look) — one delivery, gated on both tenants:**
+   - default sort = price low → high (listed first); a **Rank 1** filter toggle (PL ties: 16 tokens share rank 1 — the owner
+     counted ~5; show the true count on the toggle).
+   - Mark price tile: SAY what it is (lower of last-sales floor and cheapest ask; which one won, with both numbers).
+   - All-time volume tile: USD at time of sale vs the same LUNA at today's price, and the LUNA total.
+   - Floor now tile: USD / token amount (the ask's own token) · venue.
+   - Supply card: locked supply (staked + custody) with %, liquid supply with %, listed as a share of liquid — read like a token.
+   - Floor by tier on PL: **Base** and **Rank 1** rows (aDAO keeps Broken/Unbroken/Phoenix).
+   - Trading character tile "under-delivers": flips vs holds by count AND value, median hold, share of sales that are round trips,
+     the biggest gain / loss round trip (USD + LUNA, P&L two ways), holders who bought and never sold — from sales-enriched +
+     by-token, no new product.
+   - Hero Floor: done in 4.49 (USD · token · venue).
+2. **Home + DAO page per tenant** (index.html / dao.html read the context; Lion DAO's DAOs = lion-dao + pixel-lions), then
+   `/liondao` as a real landing.
+3. **Burning Lions onboarding (timed)** — RUNBOOK: folder from _template, manifest, fcd-harvest → walk 1.1 (bodies from the
+   start) → derive → forward; tenants.json liondao.collections; the collection strip; mirror-images.
+4. B.2's remaining readers of the tla-flows NFT aux transfers leg → drop NFT_AUX_*.
+5. Milestone A step 3 (ratio re-anchor → pnl v3 → member-portfolio) — after Monday.
+6. Alert Center Phase 2 when wanted.
+
+### D — parked / small
+provenance re-derive (Phase 2a + the two governance mints; 8ywv as operator) · tla-stats 10 pot-funding literals ·
+staked_le_depth dust · Astroport stuck counts · help-agent prompt text · standing items (gate #0, genesis walk, identity fold,
+row-series slimming, FUEL helper, Advisor track record, films, Nov rollover, bucket-VP #4, LUNA-wstETH SS, pool-status archive)
+· the unnamed gauge terra1hqq6pn… (−489k VP 09-15) · `mode: light` theme needs a purpose-built light layout · PL top-percent vs
+tied rank display choice · a hero CSS `.ch-sub` rule in site-header (4.49 inlines the style) · walk/derive workflows on Node 24.
+
+## (superseded) OPEN LEDGER — 2026-09-19 · the ONE list of what is still open. Everything below this section is history.
 Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
 
 **STATE 2026-09-19 — LION DAO IS LIVE ON THE EXPLORER.** Everything below is COMMITTED, byte-verified on main, running.
