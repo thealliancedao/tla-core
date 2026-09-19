@@ -1,6 +1,106 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
-## OPEN LEDGER — 2026-09-18 (late) · the ONE list of what is still open. Everything below this section is history.
+## OPEN LEDGER — 2026-09-18 (late-2) · the ONE list of what is still open. Everything below this section is history.
+Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
+
+**STATE 2026-09-18 late-2 — the Lion DAO spec opened; the explorer got its journey; the inventory engine went tenant-agnostic.**
+Everything below is COMMITTED, byte-verified on main and running (six heartbeats ok at 23:57Z).
+- **aDAO mint story is on the ledger (REPAIR mint-phase-1.1.5)**: the registry had the mint-era treasury stock as the
+  launchpad; the paid mints actually left THREE candy machines (50 / 75 / 100-115-130 LUNA) fed from that stock. classify.js
+  1.1.5 (`launchpad.addresses`, launchpad → distribution wallet = stock returned, never a $0 sale; byte-identical in both
+  repos, gate 44/44) + `adao/collection.json` (candy machines, `distribution_wallets` = treasury stock + Council multisig
+  with `distribution_wallet_labels`, `custody`, `tiers.phoenix.token_ids`, `backing.token.address`). Re-derived from the
+  held FCD raw: **1,954 paid mints** priced from the oracle (127@50 · 527@75 · 197@100 · 459@115 · 644@130 = 202,080 LUNA /
+  $135,558), 3,653 stock moves relabeled, 5,607 old rows `superseded_by` (never deleted); report in adao/ledger/repairs/.
+  Two governance-executed DAO mints (#3022, #1379) that provenance's Phase 2a count (525) misses — provenance re-derive queued.
+  `index.json` now carries `by_kind_live` + `superseded` beside the never-shrink totals.
+- **Council multisig `terra1yq…8ywv` = operator**: it moved the 5,828 unsold tokens from the treasury stock into the DAODAO
+  core in Oct–Nov 2024 as an approved operator (cw721 stamps the executor as sender; no stock→multisig transfer exists) — that
+  IS `unminted_count 5828`; plus 100 broken tokens → terra1nn7yrg… (the enterprise_dao_broken set). Registered as a
+  distribution wallet; the journey reads it as "Moved into The Alliance DAO core by aDAO Council multisig (operator)".
+- **nft-flows 1.4.0 — by-token shards**: `<slug>/ledger/by-token/<shard>.json` + index.json, 100 tokens per shard, every
+  live row verbatim (superseded excluded), rebuilt for the shards a run touches (new / re-priced records), first run builds
+  all (aDAO 101 shards · 40,659 rows in 2.9 s under the 200 MB cap; PL 51 · 46,324; TLA Locks 24 · 10,442); changed shards
+  only. index.js 1.3.1 watches `launchpad.addresses`. mock 55/55. The read shape for "open an NFT → its journey", the app's
+  NFT sheet and the portfolio's NFT leg.
+- **Explorer 4.35 → 4.38 / style 6.4 → 6.7 / lib/nft-history.js 1.0.0 → 1.2.1 (the ONE fold, shared by pages)**: the sheet
+  shows the token's on-chain journey — SECTIONS per holder (held N days · listed N× · price changes · days on market · how it
+  ended) and TILES between them: ✨ MINTED · 💸 SOLD (seller: days on market, price changes, P&L USD + LUNA terms, days held,
+  paid; buyer: holdings NOW, paid then/now, LUNA-equivalent) · 🤝 HANDED TO (amber when the ledger flagged a gap). Rules
+  (owner): a same-owner delist → relist inside 24 h is a price change inside one listing episode; hands changed = ownership
+  moves only; P&L two ways per round trip — USD (paid → received at each day's oracle) and LUNA terms (LUNA-equivalent at
+  the day's oracle ratio; n/a when paid in USDC/SOLID — no LUNA leg); a free mint has basis 0; arrived by transfer = basis
+  unknown, said so; a move the ledger never saw is ⚠ on the row it lands on, never filled in. Contract labels from the
+  collection manifest (custodians, candy machines, distribution wallets, DAO core), names from the registry, USD then from
+  the record, USD now from the oracle series (labeled with its day). gate-explorer-journey 50/50 on #745 · #4513 · #3022 ·
+  #716 · #9068 · #3445 · #1128 (+ synthetic SOLID sale); gate-explorer-listing-pill's version literal is now a relation.
+- **nft-inventory Rev D.1 → D.1.2 — COLLECTION-AGNOSTIC, engine renamed `nfts/adao/` → `nfts/nft-inventory/`**: every
+  address / token-id set / feature is a COLLECTION CONFIG; COLLECTION unset or adao = the aDAO literals verbatim (gate:
+  configFromManifest(adao/collection.json) === the literals field by field; aDAO bundle byte-identical; live: same numbers
+  after the switch — unminted 5,828 · treasury 898 · Enterprise 403 · DAODAO 1,654 · BBL 43). COLLECTION=<slug> loads
+  `<slug>/collection.json`: DAO core + DAODAO module from `governance`, Enterprise by custodian ROLE, backing (none → Phase
+  6 off), break mechanism, Phoenix ids, venues from `marketplaces`; NFT_ROOT = the slug (D.1.1) and handed to the in-process
+  sub-modules (D.1.2). compact-bundle 1.3.0 columns/supply/metadata/rarity from the manifest; analytics 1.1.1. Gate 15/15.
+- **Crons per ALLY (owner rule)**: `nfts/nft-inventory/run-ally.js` — one Render service per ally runs each of its
+  collections as its own process, the list from **`tla-core/docs/curated/tenants.json`** (the ONE list of allies: label,
+  logo, collections, DAOs, services, theme; `default: true` = the site's default tenant). Services: `org-nft-inventory`
+  (ALLY=adao) · **`org-nft-inventory-liondao`** (ALLY=liondao, `9,24,39,54`) · `org-nft-adao-daily` (flows.js, root moved).
+  Adding Burning Lions = its folder + one line in the liondao block. Removing an ally = its block, its services, its folders.
+- **Pixel Lions inventory LIVE** (first run 23:52Z, 77 s): 5,000 tokens · DAODAO 2,928 (290 stakers) · Enterprise 676 (552
+  attributed, 124 legacy) · BBL 72 · floor $5.55 · 742 owners · bundle 211 KB (PL's 127 trait values). The run found PL
+  tokens owned by Atrium (2) and Boost (6) while the manifest said bbl only → `pixel-lions/collection.json` marketplaces =
+  all three (the chain is the oracle; the registry follows). `Unminted 1` = one token in the pixeLions DAO core (flag
+  vocabulary caveat — the manifest-driven page labels it "DAO held").
+- Pre-existing, unchanged: mock-run-custody W 12 vs 8 on today's fixture; pending-claim tracker behind (aDAO 6, PL 28 —
+  unstaker not among known addresses); Staker-resolution warnings 87/152 (indexer lag).
+
+### A — watch (owner)
+1. Monday 2026-09-21: dex-data 00:01 `state-history: 1 sampled … live-after-boundary` · tla-flows 03:32 `pnl: epoch 204` ·
+   tla-voting 01:00 → period 203. Advisor: LUNA-USDT / LUNA-EURe reach 4/4 → the stable-bucket shift off LUNA-USDC.n.
+2. USDC.n clock: Oct 13 mint stop · **Oct 31 CCTP step-down** · Jan 12 snapshot.
+3. PL inventory on its 15-min schedule; next PL run resolves the Atrium/Boost listings (9 "marketplace-owned without listing"
+   should read 0); aDAO inventory unchanged.
+
+### B — crons (D.2, one delivery; every mock under --max-old-space-size=200)
+1. **BBL chain sweep is capped at one page (30)**: aDAO `chain 30 / warlock 43`, PL `chain 30 / warlock 72` — warlock
+   silently carries the rest and the C.6 chain-only detection can only see page 1 (the inverse #745). Paginate
+   fetchBblListings; the warning count should drop to 0 on both.
+2. dao-controlled product only when the manifest has a `custody` block (PL fired aDAO's ids_total / operator guards).
+3. gate-collection-config: a run-ally PATH case (D.1 gated config resolution, not the root under the wrapper — the 23:34Z run
+   wrote a stray nft-collections/nfts/adao/, deleted). by-token build: a progress line every 20 shards.
+4. **nft-flows-derive.yml (nft-collections Action) is BROKEN and must not be run as is**: it curls the deleted
+   tla-core/nfts/adao/snapshots/luna-usd-daily.json and its derive.js prices from it; onboarding (RUNBOOK step 3) needs it →
+   derive.js prices from tla-core/price-history months like nft-flows 1.3.0 (one rule, no copy). Required before Burning Lions.
+5. nft-flows 1.5.0 — **by-wallet shards** (`<slug>/ledger/by-wallet/`): holdings at a date for the SOLD tile's buyer side
+   ("at the time of the buy" — shown as NOW until then) and the portfolio's NFT leg.
+6. market-history **seed-from-ledger** for a new collection: PL has 2,012 sales / 4,978 listings on its ledger but no
+   sales-enriched / listing-history (aDAO's were seeded from the old transfers stream) → analytics reads 0 sales, no ATH.
+7. Fold the three `org-nft-flows-<collection>` services onto run-ally per ally (org-nft-flows-liondao) when convenient.
+8. Carried: state-history current-month fold (wasteful, not wrong); nft-inventory offers capture; dao-governance execution
+   timestamp; market-history dead code (`fillDailyFromPriceHistory` / `syncDailyFromOracle`); CRON-FLEET rows kept current.
+
+### C — B.2, then building (priority order)
+1. **Delivery 5 — the explorer goes manifest-driven + the tenant dropdown**: labels, filters, status set, theme tokens and
+   the collection strip from `collection.json` + `tenants.json`; `lib/site-header` grows the dropdown (aDAO · Lion DAO,
+   remembered like the address; `/liondao` = a Vercel rewrite setting the default); `unminted` labeled per collection;
+   Pixel Lions lit with the journey panel and P&L for free. Then index / DAO page per tenant, then Burning Lions (timed).
+2. B.2 retire the tla-flows NFT aux transfers leg for adao/ledger (readers one per delivery — index, app, market-history
+   sales-enriched, adao/flows, help-agent — then drop NFT_AUX_*). Folds into delivery 5's index work.
+3. Identify the ledger's gap contracts (moves arriving from an address the ledger never saw hold the token):
+   `terra1wm7rag…` (31), `terra10lznz8…` (86), `terra1ettjrq…` (48), `terra175qc8z…` (33) — venues / escrows / operators;
+   the inventory's contract-info query names them; then venues.json / custodians turn the ⚠ into rows.
+4. Milestone A step 3 (ratio re-anchor → pnl v3 → member-portfolio) — after Monday's flip.
+5. Alert Center Phase 2 when wanted (Pulse prune; PL / TLA Locks tiles on the same code path; TLA tile home; treasury maps
+   onto the catalog).
+
+### D — parked / small
+provenance re-derive (Phase 2a + the two governance mints; 8ywv as operator) · tla-stats 10 pot-funding literals ·
+staked_le_depth dust · Astroport stuck counts · unstake ids resolve at claim · help-agent prompt text · standing items
+(gate #0, genesis walk, identity fold, row-series slimming, FUEL helper, Advisor track record, films, Nov rollover,
+bucket-VP #4, LUNA-wstETH SS, pool-status archive) · the unnamed gauge terra1hqq6pn… (−489k VP 09-15) · pixel-art tile
+badges per tenant (tenants.json theme).
+
+## (superseded) OPEN LEDGER — 2026-09-18 (late) · the ONE list of what is still open. Everything below this section is history.
 Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
 
 **STATE 2026-09-18 — the Alert Center day (09-17 → 09-18, one long session).** Everything below is COMMITTED, byte-verified
