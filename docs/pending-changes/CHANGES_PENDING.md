@@ -1,6 +1,82 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
-## OPEN LEDGER 2026-09-20 (supersedes 2026-09-19 late-2; that ledger stays below as history)
+## OPEN LEDGER 2026-09-20 late (supersedes 2026-09-20; that ledger stays below as history)
+
+### Verified at session start (17:05Z)
+- nft-flows 1.5.3 on main (byte-level the delivered file). The PL forward heartbeat at 16:49Z was still 1.5.2 (`by_wallet:
+  all · 33 rebuilt · 2 written` = the symptom); the first run AFTER the commit is the one that reads
+  `by-wallet: all (engine changed) · 33 shard(s) rebuilt`. Owner: confirm on the next PL heartbeat + index.json `engine`
+  1.5.3 + ~4,974 positions / 0 acquired:null; aDAO has no by-wallet index yet (its first run reads `all`).
+- CHANGES_PENDING was not in the project files — only PROJECT_KNOWLEDGE. Keep both attached.
+
+### Delivered this session — Live Activity rethink (commit pending, four ZIPs + PROJECT_KNOWLEDGE loose)
+platform-crons (7 files):
+- `nfts/nft-flows/lib/activity.js` NEW 1.0.0 — THE episode fold (see index.js header). `nfts/nft-flows/index.js` 1.6.0 —
+  `activityDuty()` every run → `<slug>/ledger/activity.json` (35 d window, 12 tx hashes per episode + tx_count) and, for the
+  escrow, `<slug>/ledger/activity-known.json` (wallets with a lock before the window; first run reads every month once).
+  `nfts/nft-flows/gate-activity.mjs` NEW (real ledgers, 28/28; also writes the seed products). `mock-run.js` (spawns
+  index.js; 86/86 incl. the 1.6.0 product assertions). `README.md`.
+- `member-data/supporters.js` 1.2 + `mock-run-supporters.js` (8/8) — targets from the curated registry.
+aDAO-links-site (7 files): `index.html` 4.36 · `lib/live-activity.js` NEW 1.0.0 · `lib/alert-center.js` 1.9.0 ·
+  `lib/site-footer.js` 3.7 · `supporters.html` 1.1 · `gate-index-activity.mjs` (24/24) · `gate-index-alert-center.mjs`
+  (63/63; hardcoded fixture paths → TLA_CORE_DIR; 4.26–4.29 row-shape probes rewritten for episodes).
+nft-collections (3 NEW files): `adao/ledger/activity.json`, `pixel-lions/ledger/activity.json`,
+  `tla-locks/ledger/activity.json` — SEEDS from the committed ledgers (engine `seed:gate-activity`) so the page is live at
+  commit; the crons overwrite them on their next runs (engine 1.6.0). Commit the platform-crons files FIRST.
+tla-core (4 files): `docs/curated/alert-thresholds.json` (+`live_activity` block — deal filter 25/10, lock VP 100k, mass
+  10, big sale $500, ids shown 5) · `docs/curated/supporters.json` NEW (4 targets) · `docs/changelogs/index-log.md` ·
+  `docs/changelogs/cron-member-data-log.md` · this file.
+
+### Verify after commit (owner)
+- Site: index 4.36 in the footer; Live Activity shows the three feeds (aDAO · Lion DAO · TLA Locks) on the All tab, 7d, deal
+  filter on, Lock housekeeping chip off; a lock restructure reads "Restructured N locks · merge, auto-max on" (grey); the
+  All-Time Volume rows read "$154,686 at sale time / $… now / BBL's UI: 256,905 bLUNA · 1,221 sales"; the banner has
+  Ecosystem · Props only; the footer and supporters.html#allies list the three treasuries.
+- Crons: next org-nft-flows runs print `activity: N rows → M episodes (35d)`; heartbeat carries `activity`; tla-locks writes
+  `activity-known.json` once. member-data prints `supporters[adao] / [liondao] / [pixel-lions]` lines and writes
+  `member-data/supporters/{adao,liondao,pixel-lions}.json` (each count 0 until a memo gift lands).
+- Lock class "Unlocking" assumes the escrow's `lock_end` epoch = the site's epoch label; check one lock against Eris
+  (a one-off offset would be a label bug, not a data bug).
+
+### Findings (this session)
+- **Boost "listed 5d ago" rows were phantoms.** The aDAO ledger's last Boost list/delist rows are April 2026; #8149 was
+  listed Dec 2025, #1169 / #4291 / #1258 in April. The flows stream (Boost API state-diff) re-emits delist+list pairs for
+  the same four tokens on API blips (2026-08-01, 2026-09-15). The episode feed is right not to show them; the flows
+  stream stays as the aDAO daily state-diff product but is no longer a feed input.
+- **B.6 (NEW, classify.js): venue-only bid events file under every collection on the venue.** aDAO ledger 2026/09 has a
+  `bid` on #826 / auction 17821 (09-14) that is the BBL buy-now of pixeLion #826 (the same tx carries the PL sale). The
+  4.26 phantom-bids bug (seven PL bids labeled superseded by hand) is alive upstream. Fix: a bid with no collection
+  contract in its events names its collection through the auction (auction_id → the collection's list row) or is labeled
+  `venue_only: true` and filed under no collection; the aDAO #826 row gets `superseded_by` (never deleted). Then re-derive.
+- **terra1lsasu5** restructures its locks around the clock — 1,860 housekeeping rows in 35 days → 38 quiet episodes, never
+  two inside an hour. Its 51 dust locks (1 VP total) in one hour are one `lock_new ×51` episode.
+- **BBL count vs ours:** 1,286 sales / $154,686 at sale time (sales-enriched) vs BBL's UI 1,221 / 256,905 bLUNA ≈ $156k. The
+  65 extra rows are `marketplace: 'BBL'` (uppercase) chain-captured 2024 sales (market-history 1.0.0) that BBL's count does
+  not carry; USD within 1 %. `value_today_usd` on sales-enriched is stale ($545 total) — the tile computes "now" from token
+  amounts × live prices instead; market-history should either maintain that field or drop it (small, queued).
+- Pixel Lions floor-history begins 2026-09-19, so PL listings before that day carry `floor_then: null` ("no base floor to
+  compare") — honest; fills forward as the series grows.
+- Pre-existing gate drift: gate-index-alert-center relied on `/home/claude/build/p3core/...` and `/home/claude/build/corpus/`
+  fixtures (fixed to TLA_CORE_DIR; the corpus still needs dao-originations/<dao>/governance/proposals.json at
+  /home/claude/build/corpus/<dao>.json — noted in the gate).
+
+### Owner's to-do
+- Commit in order: platform-crons ZIP → nft-collections ZIP (seeds) → tla-core ZIP → aDAO-links-site ZIP; swap
+  PROJECT_KNOWLEDGE.md into the project files (and attach this file). Byte-verify the md5 table in the chat.
+- Render: nothing to change (no new services, no env). tla-help-agent: unchanged.
+- Verify list above. Then start the next chat from PROJECT_KNOWLEDGE opener 0 (TLA Stats).
+
+### Next (in order)
+- TLA STATS page (owner: "then we can move to TLA stats next") — the scattered issues + the Votion/TLA tracking audit
+  (epoch, VP, bribe pots, pool APR basis) with findings labeled, nothing estimated.
+- B.6 the venue-only bid classification (above), then B.2 / B.3 / B.4 / B.5 as before.
+- Explorer: the journey sheet's buyer tile "holdings at the time of the buy" from by-wallet (`asOf(height)`).
+- Live Activity follow-ups (parked until the owner has looked at it live): synthetic market rows ("floor −12% this week",
+  "volume 3× last week"), holder-concentration events (top-10 entries/exits), listing age on featured cards, offers/bids
+  capture (still not captured — the feed says so), the tenant home reading the same product, the app's Today tab.
+- E.1 the collection runbook, then Burning Lions (timed); Home + DAO per tenant; /liondao landing.
+
+## (superseded) OPEN LEDGER 2026-09-20 (supersedes 2026-09-19 late-2; that ledger stays below as history)
 
 ### Delivered this session — D.1 (commit pending, loose files: ZIPs of scripts are blocked on both machines)
 platform-crons (7 files):
