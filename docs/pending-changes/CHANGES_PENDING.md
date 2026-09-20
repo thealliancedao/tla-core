@@ -1,5 +1,50 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER 2026-09-19 late-2 (supersedes 2026-09-19 late; that ledger stays below as history)
+
+### Shipped this session (aDAO-links-site)
+- Explorer 4.50 — COMMITTED, byte-verified (C.1: price-asc default on a tenant, Rank 1 toggle on a tie-sharing rank oracle,
+  tiles that say what they show, Base + Rank 1 tiers, trading-character card; aDAO untouched).
+- Explorer 4.51 — COMMITTED (owner saw it live): tenant kept in the URL writer, poster from the registry, the analytics tab
+  re-presented on both collections.
+- Explorer 4.52 — DELIVERED, commit pending: `nft-explorer-app.js` (394,182 B · md5 97c414e5b7afb377fc6c210e582a86ef),
+  `gate-explorer-tenant.mjs` (md5 92b9f1cba56195462ae8cbd6bd11eded), `gate-explorer-analytics.mjs` (md5
+  73311fb753421eab2c04b88cfd522a75); index.html tokens line 36 `css?v=7.9`→`8.0`, line 524 `app.js?v=7.9`→`8.0`, line 551
+  `rev: '4.51'`→`'4.52'`. Content: URL shows the tenant from first paint (replaceState); poster share "of max supply"
+  (117 of 5,000); analytics waits for hydration / says if it failed; ROOT-CAUSE FIX — calculateRanks() after hydration
+  (every aDAO card read "Rarity —", Phoenix tier 0, cap under-counted, poster rarest counts missing — live since 4.41);
+  aDAO supply as a plain breakdown, PL pixel grid softened (globalAlpha .78); the gate stub serves relative assets (aDAO's
+  analytics had been gated on bundle records — hydration 404'd silently inside the gate).
+- Explorer 4.53 — DELIVERED (supersedes 4.52's app.js and tenant gate; analytics gate unchanged from 4.52): the tier ladders are
+  horizontal bars with the number on the bar; the supply is one plain breakdown on every collection (pixel grid removed — owner:
+  "too much to look at"). Tokens: line 36 `css?v=7.9`→`8.1`, line 524 `app.js?v=7.9`→`8.1`, line 551 `rev: '4.51'`→`'4.53'`
+  (if 4.52 was already committed: 8.0→8.1 and 4.52→4.53). md5s in the chat delivery.
+- Gates after 4.52: tenant 61/61 · analytics PASS · journey 50/50 · listing-pill 14/14. Note: aDAO market cap on the new tab
+  ($277,629) is HIGHER than the committed 4.51 page showed ($254,948): the 20 Phoenix are marked at $1.2K now instead of base.
+
+### Owner's to-do (Actions)
+- A.2 CLOSED 2026-09-20 00:43Z / 00:55Z: both derives ran with external_raw ON (gate-classify 58/58, 869 parts, 1,144,222 txs,
+  coverage gaps 0). The bodies had already been applied by the run before these two (the logs read "0 repaired" because there
+  was nothing left): aDAO's ledger carries 172 rows `repaired_by: classify-1.1.6` (Boost list prices + Atrium denoms filled in
+  place); 61 list rows stay null with `msg_body_not_archived` — their txs have no fetchable body (pre-ledger era; the B.2 set).
+  tla-locks 16,250 records, gaps 0. Superseded rows on aDAO: 6,194 (the re-keyed twins, prior rows verbatim).
+- (was) DERIVES NOT RUN: `nft-flows-derive` · adao · external_raw ON; then
+  tla-locks. Expect aDAO ~122 Boost list prices + 37 Atrium denoms `repaired_by`, 4 unstakes `superseded_by`; tla-locks
+  smaller numbers, never-shrink gate green. Paste the summary lines.
+- Commit 4.52 (order: app.js → HTML tokens → the two gates). Then look once at: aDAO cards ("Rarity 40, Rank 1" on #16),
+  the aDAO Floor by tier (Phoenix 20 tokens · 2 listed on BBL), the address bar on Lion DAO.
+
+### Next (in order)
+- D.1 nft-flows 1.5.x by-wallet shards (per-address history incl. past holdings; the journey's "buyer holdings at the time"
+  and the bot both need it) → help-agent v1.14 + DATA-MAP NFT section (routes: token journey · address history · floor/volume/
+  mark · who owns what · Pixel Lions as a collection). Mock-gated, --max-old-space-size=200.
+- B.2 / B.3 / B.4 as before (aDAO sales-enriched labeled repairs; pending-claim tracker; sale-without-listing count).
+- E.1 nft-collections/RUNBOOK-add-a-collection.md rewritten from the PL pains, then Burning Lions (timed) against it.
+- Home + DAO per tenant; /liondao landing.
+- Parked: PL supply grid as a lion silhouette (pixel mask); aDAO explainer texts still say "midpoint" for the mark (the code
+  uses the lower — a D-list text fix); the product's `flips` (hold from any acquisition, 663 on aDAO) vs the card's round trips
+  (marketplace buy→sale, 238) — two honest measures, both labeled; decide whether the product keeps the wider one.
+
 ## OPEN LEDGER — 2026-09-19 (late) · the ONE list of what is still open. Everything below this section is history.
 Read this + the newest STATE section; do not mine older sections for queue items. Order inside each group = priority.
 
