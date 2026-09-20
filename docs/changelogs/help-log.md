@@ -1,5 +1,16 @@
 # Help Page Changelog
 
+## v1.13.3 → v1.14.0 — 2026-09-20 — NFT routes (D.1)
+
+Two tools on the nft-flows shards: `nft_wallet` (an address's whole NFT history
+per collection — holdings now by state, PAST holdings with what closed them and
+P&L two ways, counts, events) and `nft_token` (a token's journey). Collections
+from the tenant registry. `read_product key` lifts a wallet's or a token's block
+and compacts its events instead of cutting the JSON. DATA-MAP.md: an NFT section
+(which product answers counts, floor/volume/mark, journeys, address histories)
+with the staked-vs-held discipline — "676 held by the Enterprise contract: 552
+attributed to stakers, 124 unattributed", never one "staked" number.
+
 ## v1.13.1 → v1.13.2 — 2026-08-25 — cron fleet + the New Here kit in the corpus
 
 `docs/CRON-FLEET.md` (every job, schedule, feeds) and
