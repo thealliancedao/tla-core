@@ -178,6 +178,11 @@ tla-core (4 files): `docs/curated/alert-thresholds.json` (+`live_activity` block
   provisions / alliance weights / price basis), and the page's Top-by-APR leaderboard does not read the eris-apr product at all
   (it matches Eris; the product is 25–59 % low) — TWO APR SOURCES on one page; (2) bucket totals need not be identical
   (withdrawn); (3) the Aug-2 APR validation was a one-off, not a gate — it drifted. Order of work in §11 of the audit.
+- **STEP 1 DELIVERED — tla-stats T6.1 (vocabulary, in place; owner: "that other chat isn't working, do it here")**: see
+  docs/changelogs/tla-log.md T6.1. Files: aDAO-links-site/tla-stats.html + gate-tla-stats.mjs (B1/V5 follow the vocabulary).
+  F0 freeze proven: headings / ids / section classes byte-identical to T3.21. Still open in step 1: Breakdown's four bucket
+  totals get the "VP used in this bucket" subline (needs Eris's live per-bucket VP from the vote page fixture — a data read, so
+  it moves to step 3's gate); the "Votion has cast" state (Movers) is a data-state change → step 5.
 - **SCOPE RULING (owner): videos of tla-stats are being made — the live page's SHAPE is frozen (order, names, layout) until they
   land; steps 1–5 fix in place; the §D restructure is staged on test.html and flips only on the owner's word. (handover §F0)
 - **HANDOVER written** (owner: "jumping chats loses all that context"): `docs/pending-changes/HANDOVER-tla-stats-2026-09-20.md` —
