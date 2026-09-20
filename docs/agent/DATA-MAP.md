@@ -47,6 +47,34 @@ daodao_staked_count, enterprise_staked_count, treasury_held_count to 2025-01
 (derived era is source-labeled `derived:transfers-replay`; every count traces to
 transactions).
 
+## NFT collections — counts, floor, journeys, address histories (v1.14.0, 2026-09-20)
+Collections: `adao` (AllianceDAO NFTs), `pixel-lions` (pixeLions · Lion DAO), `tla-locks` (TLA lock NFTs).
+Everything lives in the nft-collections repo: `nft-collections/<slug>/…` via read_product.
+- **How many / who holds** → `snapshots/summary.json` (org-nft-inventory, every 15 min): staked, listed, liquid,
+  broken, custody counts, `per_owner_counts`. STAKED-VS-HELD: `enterprise_staked_count` = tokens the legacy
+  Enterprise staking contract HOLDS; `enterprise_unattributed_count` = of those, the ones no staker record names
+  (unstaked-but-unclaimed / legacy). Say the split — "676 held by the contract: 552 attributed to stakers, 124
+  unattributed" — never one "staked" number. Same for `daodao_staked_count` vs `daodao_custody_unattributed_count`.
+- **Floor / mark / volume / supply / hold time** → `snapshots/nft-analytics.json` (the explorer's analytics tab;
+  mark = the lower of the last-sales floor and the cheapest ask; floor per tier; volume USD-at-sale and in LUNA).
+  `snapshots/floor-history.json` per period · `snapshots/sales-enriched.json` every priced sale ·
+  `snapshots/listing-history.json` every listing episode (a same-owner delist→relist within 24 h is a price change).
+- **One token's journey** → the `nft_token` tool (reads `ledger/by-token/<floor(id/100)>.json` → `tokens[<id>]`):
+  mint, mint_purchase (mint price), transfers, listings, sales with price/USD/buyer/seller, stakes/unstakes/claims,
+  breaks, locks. Or read_product with `key:"<id>"` on the shard.
+- **An address's history, past holdings included** → the `nft_wallet` tool (reads `ledger/by-wallet/<last char of
+  the address>.json` → `wallets[<address>]`; nft-flows 1.5.1): `holdings_now` per token with its state (liquid ·
+  listed:<venue> · staked · staked_enterprise · staked:<legacy role> · unstaking · escrow · locked), `held_past`
+  (closed positions: what closed them, held days, P&L two ways — USD at each end and LUNA-terms only when both ends
+  were LUNA), counts, first/last seen, events. A wallet with nothing now but held_past rows DID hold before — say
+  what and when. `acquired:null` / "acquisition unknown" = the ledger saw the wallet list/stake/release the token
+  but never receive it (pre-ledger, 2023 FCD era) — labeled, never a guess. System addresses (contract,
+  custodians, venues, launchpads, DAO cores) have no block; `by-wallet/index.json` lists them.
+  Never use `search_address_txs` for NFT history (sender-side only, no prices, no custody).
+- **Rarity**: aDAO has grades + rank; pixeLions is BBL's statistical rank only ("Rank N · top X%", ties share a
+  rank) — never "Rarity —" for a lion.
+- **Names**: from the DAO registries / trusted catalog already in the corpus; never invent one.
+
 ## Rewards / distributions per epoch
 `tla-voting/distributions/history.json` (NOT under events/) — gauge payouts per
 period. `entries` runs from period 96 (oldest) to the CURRENT settled period;
