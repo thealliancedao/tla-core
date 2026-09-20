@@ -178,6 +178,11 @@ tla-core (4 files): `docs/curated/alert-thresholds.json` (+`live_activity` block
   provisions / alliance weights / price basis), and the page's Top-by-APR leaderboard does not read the eris-apr product at all
   (it matches Eris; the product is 25–59 % low) — TWO APR SOURCES on one page; (2) bucket totals need not be identical
   (withdrawn); (3) the Aug-2 APR validation was a one-off, not a gate — it drifted. Order of work in §11 of the audit.
+- **STEP 2 DELIVERED — tla-stats T6.2 + member-data epoch-history-rollup 1.0.0 (see tla-log.md T6.2)**. Commit order:
+  platform-crons (member-data/epoch-history-rollup.js NEW + index.js) → tla-core (seed member-data/tla-snapshot/epoch-history.json
+  NEW + tla-log.md + this file) → aDAO-links-site (tla-stats.html + gate-tla-stats.mjs). Still open from step 2: bribes per
+  epoch (oracle join to price past pots — part of step 3/4's data work); retire epoch-band-history.json once the rollup has run
+  on Render (never by hand).
 - **STEP 1 DELIVERED — tla-stats T6.1 (vocabulary, in place; owner: "that other chat isn't working, do it here")**: see
   docs/changelogs/tla-log.md T6.1. Files: aDAO-links-site/tla-stats.html + gate-tla-stats.mjs (B1/V5 follow the vocabulary).
   F0 freeze proven: headings / ids / section classes byte-identical to T3.21. Still open in step 1: Breakdown's four bucket
