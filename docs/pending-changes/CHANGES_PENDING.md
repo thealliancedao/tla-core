@@ -21,6 +21,22 @@ nft-collections (2 files): `pixel-lions/collection.json` — capture.custodians 
 tla-core (4 docs): `docs/agent/DATA-MAP.md` (NFT section), `docs/changelogs/help-log.md` (v1.14.0), `docs/CRON-FLEET.md`
   (nft-flows 1.5.1 / help-agent v1.14.0 rows), this file. platform-crons READMEs: `nfts/nft-flows/README.md`, `help-agent/README.md`.
 
+### Post-commit (2026-09-20 16:27Z → evening) — landed, then two fixes
+- D.1 committed (all three repos). PL shards built at 16:27Z on 1.5.1; aDAO/tla-locks on their next slots.
+- **1.5.2**: the first PL build ran one commit before `pixel-lions/collection.json` landed → staking v1 built as a "wallet"
+  and the index (now existing) meant "nothing dirty" forever. Fix: the index carries `system_key` (hash of the registry's
+  system set); a registry change rebuilds every shard on the next run (`mode: all (registry changed)`). Landed 16:47Z.
+- **1.5.3**: the 16:47Z rebuild wrote only 2 shards — index.js passed the projector the system SET but not the custodian
+  ROLES, so a transfer into a custodian was a release on Render (live PL: 2,721 acquired:null, #6 with no holder, 29 double
+  holders) while gate-by-wallet (which passes custodians itself) was green. Fix at the one call; the index carries `engine`
+  and a new engine rebuilds once (`mode: all (engine changed)`); mock asserts a stake into a registry custodian keeps the
+  holder's position. Mock 81/81 · gate 25/25. **Commit pending** (platform-crons: nfts/nft-flows/index.js, mock-run.js,
+  README.md). Verify after the next PL run: `by-wallet: all (engine changed) · 33 shard(s) rebuilt · N written`, then
+  `ledger/by-wallet/index.json` engine 1.5.3 and, reading all shards, ~4,974 open positions, 0 tokens held by two wallets,
+  0 acquired:null (the numbers the gate reports for PL).
+- Law learned: **a gate that does not run the entry point gates a different program** — the lib gate proved the rule, the
+  cron never received the roles. mock-run.js runs index.js; that is where the custodian case now lives.
+
 ### What the by-wallet product is (read shape)
 `<slug>/ledger/by-wallet/<shard>.json` — shard = the LAST character of the bech32 address (32 shards; `_` for non-terra ids);
 `wallets[<address>]` = every live ledger row naming it (+ `role` from/to/self/holder), `holdings_now` per token with its state
@@ -52,7 +68,7 @@ per service (no index) rebuilds all 33 in groups of 8 (`BY_WALLET_GROUP`), ~2 mi
   with token ids in unarchived bodies; B.2).
 
 ### Owner's to-do
-- Commit the 7 platform-crons files (order: `nfts/nft-flows/lib/by-wallet.js` → `index.js` → `mock-run.js` → `gate-by-wallet.mjs`
+- DONE 2026-09-20. (was) Commit the 7 platform-crons files (order: `nfts/nft-flows/lib/by-wallet.js` → `index.js` → `mock-run.js` → `gate-by-wallet.mjs`
   → `help-agent/lib/nft-tools.js` → `server.js` → `gate-nft-tools.mjs`), `pixel-lions/collection.json`, the docs. Byte-verify the
   md5s above.
 - Render: nothing to change. Next hourly runs of org-nft-flows-{adao,pixel-lions,tla-locks} write `ledger/by-wallet/` (first
