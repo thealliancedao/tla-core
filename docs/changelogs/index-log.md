@@ -1,5 +1,34 @@
 # Index Page Changelog
 
+## index 4.35 → 4.36 · lib/live-activity.js 1.0.0 · lib/alert-center.js 1.9.0 · lib/site-footer.js 3.7 · supporters 1.1 — 2026-09-20 — Live Activity rethought (episodes)
+
+- Live Activity reads nft-collections/<slug>/ledger/activity.json (org-nft-flows 1.6.0, lib/activity.js — THE fold) for
+  every collection in tenants.json + TLA locks: one act = one row (a same-owner delist+relist inside 24 h is a price
+  change; bulk stakes / unstakes / transfers / listings fold with their ids, 5 shown + "more"; a lock restructure's verbs
+  are one row per tx and per hour). lib/live-activity.js classifies: FEATURED (amber) = Enterprise unstakes, DAODAO
+  stakes, breaks, mints, under-floor listings, a wallet's first TLA lock, a listed or sold lock (with its backing and
+  price/backing), big locks / unlocks (≥ 100k VP), big sales, mass moves; QUIET = lock housekeeping, small lock
+  additions, legacy Enterprise stakes. The DEAL FILTER hides listings more than 25 % over their class floor on the
+  tenant's collections and 10 % on the others (Show all reveals them; floor-history per tier, a class with no floor
+  hides nothing). Windows 24h / 7d / 30d; every collection on by default; the Lock-housekeeping chip off by default;
+  "since you last looked" dots; details card (who · tokens · why this row · txs · journey link). Thresholds live in
+  docs/curated/alert-thresholds.json `live_activity`. The hand-assembled flows / transfers / tla-voting-locks feed is
+  gone — those Boost "listed 5d ago" rows were API-blip re-announcements of Dec-2025 / Apr-2026 listings.
+- All Current Listings: class filter per collection (aDAO Base / Phoenix from the registry tier set · Pixel Lions Base /
+  1/1 = rank 1 · TLA locks ampLUNA / arbLUNA / bLUNA × Auto-max / Under max / Unlocking from the lock's own ledger rows)
+  and a USD low↔high sort flip.
+- Marketplace tiles: all-time volume and sales count from OUR record (sales-enriched: every sale the chain shows), shown
+  two ways — at sale time and at today's prices — with BBL's own published count beside it (1,286 vs 1,221: the 65 are
+  chain-captured 2024 sales BBL's UI does not carry); Boost's "$0.00" was Boost's number. One source-pill grammar on all
+  three tiles (floor & listings live from the venue · volume & sales from the ledger).
+- Alert Center 1.9.0: the NFTs aDAO tile is off the home window (ecosystem-specific alerts only; opts.nfts brings it
+  back — the legacy per-token rows are still built for its rules).
+- Support an ally: the footer and the Supporters page carry the ally treasuries (aDAO thanks_adao · Lion DAO
+  thanks_liondao · Pixel Lions DAO thanks_pixel_lions) from docs/curated/supporters.json, each with its own record.
+- Gates: gate-index-activity 24/24 on seed products from the real ledgers; gate-index-alert-center 63/63 (the 4.26–4.29
+  row-shape assertions rewritten for episodes; two hardcoded fixture paths replaced by TLA_CORE_DIR).
+
+
 
 
 

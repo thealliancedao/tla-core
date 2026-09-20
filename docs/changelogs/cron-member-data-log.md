@@ -1,5 +1,14 @@
 # cron-member-data — changelog
 
+## supporters 1.2 — 2026-09-20 (owner) — ally treasuries by memo
+
+TARGETS come from tla-core/docs/curated/supporters.json: the builder's wallet (thanks_defi → member-data/supporters/
+current.json, unchanged) plus every ally treasury — aDAO `thanks_adao`, Lion DAO `thanks_liondao`, Pixel Lions DAO
+`thanks_pixel_lions` — each walked from the LCD by its own memo into its own product (member-data/supporters/<key>.json,
+write-once / never-shrink, `target` block on the product). Targets are isolated; a gift with the wrong memo to the
+right treasury is not counted; an unreadable registry falls back to the builder's wallet alone. Mock 8/8.
+
+
 
 
 ## tla-snapshot — Credia market row restored · member-data 1.1.2 — 2026-09-10 (foundations table)
