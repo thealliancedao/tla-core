@@ -1,5 +1,22 @@
 # TLA Stats Changelog
 
+## T6.2 — 2026-09-20 — the hero tiles' own history (step 2, in place)
+
+- NEW cron rollup `member-data/epoch-history-rollup.js` (runs after the daily archive with the other rollups): ONE per-epoch
+  series for the six hero tiles, folded from the daily archives that already hold the tiles' own basis — tla-snapshot
+  dailies (130 files, every epoch since E184: TVL, active pools all/Astro/Skeleton, rewards, voting VP = max bucket, LUNA
+  price) and eris-apr dailies (from 2026-08-02 → APR from E196, TVL-weighted per gauge). Rule: an epoch's reading = the
+  LAST daily of that epoch; the epoch average rides beside it; never shrinks. Bribes are NOT folded yet (pricing a pot in
+  FUEL / ampLUNA / ROAR on a past day needs the oracle join) — the tile keeps its live point and the file says so.
+- Seed `member-data/tla-snapshot/epoch-history.json` (20 epochs, E184–E203) ships so the popups are live at commit; the cron
+  overwrites it nightly.
+- tla-stats.html T6.2: the popups read the rollup for every tile except bribes; the band product (T5.3) is used only for
+  epochs the rollup lacks — the band counted pools and TVL WITHOUT the three singles (the tile's August definition); the
+  popups had been mixing the two. Rollup vs band: 15 of 16 epochs agree exactly on the singles-inclusive count; E199 differs
+  by one day at the boundary (the band read Monday 08-24, which the daily file itself stamps E200). Modal footer says where
+  history comes from. No layout change; headings and ids byte-identical; gate-tla-stats 52/69 (+H1–H4, same 17 pre-existing
+  fixture-drift failures as the live page).
+
 ## T6.1 — 2026-09-20 — one vocabulary, in place (the live page's shape is frozen while videos are being made)
 
 - "voting VP" (the VP on gauges at lock-in, the max-bucket total) everywhere the page said "all TLA VP" — Voting Leaders,
