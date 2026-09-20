@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-09-17",
+  "updatedAt": "2026-09-20",
   "readme": "Alert thresholds — the ONE place the Alert Center's rules are tuned. Hosted at tla-core/docs/curated/alert-thresholds.json; the member-data cron (hourly) reads it, evaluates the TLA rules against the daily products and writes member-data/tla-alerts/current.json (fired rows + how often each rule fired at 0.5× / 1× / 2× of its thresholds). The site's Alert Center reads that product and shows this config in its ⚙ Thresholds tab, where you can adjust values and download a new copy of this file to upload here. Calibrated 2026-09-17 on 127 days of history: per-pool VP moves are routine noise (90th percentile 37% in a day) so pool_vp_move is OFF; bucket VP is quiet (95th percentile 2.4%) so a 3% within-epoch move is a real signal. Calibration replay (127 days, gate mock-run-tla-alerts.js): gauge_set_change 3.4/month · epoch_flip 4.4 · bucket_vp_move 3.7 · pool_liquidity_move 1.7 · pool_volume_spike and pool_apr_move tuned to stay under ~6/month.",
   "tla": {
     "gauge_set_change": {
@@ -72,5 +72,20 @@
     "history_days": 90,
     "keep_rows_days": 30,
     "min_pool_vp_for_stats": 200000
+  },
+  "live_activity": {
+    "readme": "Live Activity (index.html + the tenant home): how loud each episode is and which listings the DEAL FILTER hides. The episodes themselves come from nft-collections/<collection>/ledger/activity.json (org-nft-flows 1.6.0, facts only); lib/live-activity.js reads these numbers. Edit here, upload to tla-core/docs/curated/alert-thresholds.json.",
+    "deal_filter": {
+      "own_tenant_over_floor_pct": 25,
+      "other_over_floor_pct": 10,
+      "note": "a listing (or a price change) priced more than this % over its class floor on the day is hidden by default — 25% on the tenant you are viewing, 10% on the other collections; Show all reveals them. Classes: aDAO base / broken / Phoenix, Pixel Lions base / Rank 1, from floor-history per_tier. A class with no floor hides nothing. Listings UNDER their class floor are featured."
+    },
+    "lock_new_big_vp": 100000,
+    "lock_unlock_big_vp": 100000,
+    "lock_add_big_vp": 100000,
+    "mass_count": 10,
+    "big_sale_usd": 500,
+    "fold_ids_shown": 5,
+    "notes": "lock_*_big_vp: a new lock / unlock / addition at or above this voting power is featured (VP as the escrow reports it, ÷1e6); mass_count: this many tokens in one folded act is featured; big_sale_usd: a sale at or above this USD (at the time) is featured; fold_ids_shown: ids shown before '+N more'. Always featured regardless of numbers: a wallet's first TLA lock, a listed or sold lock, Enterprise unstakes, DAODAO stakes, breaks, mints, under-floor listings. Always quiet: lock housekeeping (merge / split / migrate / auto-max), small lock additions, legacy Enterprise stakes."
   }
 }
