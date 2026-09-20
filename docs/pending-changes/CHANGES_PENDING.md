@@ -1,6 +1,79 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
-## OPEN LEDGER 2026-09-19 late-2 (supersedes 2026-09-19 late; that ledger stays below as history)
+## OPEN LEDGER 2026-09-20 (supersedes 2026-09-19 late-2; that ledger stays below as history)
+
+### Delivered this session — D.1 (commit pending, loose files: ZIPs of scripts are blocked on both machines)
+platform-crons (7 files):
+- `nfts/nft-flows/lib/by-wallet.js` NEW 1.0.0 (19282 B · md5 b24d4a639bb8a87c50dfe9e2dac295d3) — THE per-wallet replay rule.
+- `nfts/nft-flows/index.js` 1.5.1 (41929 B · md5 7769ee5fbc6bc3f925210dae5449951b) — by-wallet duty beside by-token; heartbeat `by_wallet`.
+- `nfts/nft-flows/mock-run.js` (38910 B · md5 d673e3b8432d89aba28c3ca56ead94f1) — 76/76 (failing assertions now print what they saw).
+- `nfts/nft-flows/gate-by-wallet.mjs` NEW (7421 B · md5 3e7dc727a7e2e59bcf0b334ca69141de) — REAL ledgers vs REAL inventory: 25/25
+  (aDAO agrees on 3982/3983 tokens, PL 4798/4819 = 99.56 %; no token held by two wallets; heap 47 / 93 MB). Needs the
+  nft-collections checkout beside platform-crons (or `NC=…`) with `<slug>/ledger/` + `<slug>/snapshots/nfts.json`.
+- `help-agent/server.js` v1.14.0 (86850 B · md5 040162a0035b8bf084cf7ed43af5a96a) — tools `nft_wallet` + `nft_token`; `read_product key` lifts
+  `wallets[<addr>]` / `tokens[<id>]` and compacts events; prompt rule 14 (NFT data map, staked-vs-held discipline).
+- `help-agent/lib/nft-tools.js` NEW 1.0.0 (8912 B · md5 940cda4c5b7d46e8d8b6f738876894ab) — the tools' logic; requires
+  `../nfts/nft-flows/lib/by-wallet.js` for the shard rule (no copy; Render clones the whole repo).
+- `help-agent/gate-nft-tools.mjs` NEW (7400 B · md5 424f05171c9e3a1022ca0c24bb498abf) — 16/16 on real shards; `gate-nftc-routing.mjs` 19/19.
+nft-collections (2 files): `pixel-lions/collection.json` — capture.custodians += `terra1exj6fxvrg6xuukgx4l90ujg3vh6420540mdr6scrj62u2shk33sqnp0stl`
+  role `legacy_staking` (pixeLions staking v1, 2023-06-11 → 2024-10-17; surfaced by the gate, contract label NOT yet read from
+  chain — verify with a contract_info query when convenient); `README.md` (by-wallet layout line).
+tla-core (4 docs): `docs/agent/DATA-MAP.md` (NFT section), `docs/changelogs/help-log.md` (v1.14.0), `docs/CRON-FLEET.md`
+  (nft-flows 1.5.1 / help-agent v1.14.0 rows), this file. platform-crons READMEs: `nfts/nft-flows/README.md`, `help-agent/README.md`.
+
+### What the by-wallet product is (read shape)
+`<slug>/ledger/by-wallet/<shard>.json` — shard = the LAST character of the bech32 address (32 shards; `_` for non-terra ids);
+`wallets[<address>]` = every live ledger row naming it (+ `role` from/to/self/holder), `holdings_now` per token with its state
+(liquid · listed:<venue> · staked · staked_enterprise · staked:<legacy role> · unstaking · escrow · locked, since when, acquired
+by what and for how much), `held_past` (closed positions: what closed them, held days, P&L two ways — USD at each end, LUNA-terms
+only when both ends were LUNA), counts, realized totals. Registry custodians = custody moves (still the wallet's); a
+custodian→custodian migration (the 2023 v1 → Enterprise move of 4,199 lions) re-labels the holder's state; a stale position closes
+as a labeled `gap` when the ledger next sees the token elsewhere; a release with no acquisition is labeled "acquisition unknown".
+System addresses (contract, custodians, venues, launchpads, DAO cores — every terra1 in the registry's capture/governance blocks
++ venues.json) get no block and are listed in `by-wallet/index.json`. Rebuilt for the shards a run's wallets touch; the first run
+per service (no index) rebuilds all 33 in groups of 8 (`BY_WALLET_GROUP`), ~2 min; `BY_WALLET_ALL=1` forces it.
+
+### Findings (this session)
+- **The ledger names a holder for every custody-unattributed token**: PL 154 of the inventory's 180 (the 124 Enterprise-unattributed
+  + 28 DAODAO custody-unattributed + …), aDAO 189 of 189. That is B.3's pending-claim tracker input — the by-wallet state for those
+  tokens reads `staked_enterprise` (no unstake cw721 move yet); the inventory's "unattributed" means the staker query fails, not
+  that the holder is unknown. The chatbot's 676 answer (2026-09-19) = `enterprise_staked_count` (tokens the contract holds);
+  552 = `staked_nfts` pagination; 124 = the difference = `enterprise_unattributed`. Both right; the honest sentence is the split.
+- **pixeLions staking v1** (`terra1exj6fxvr…sqnp0stl`): 5,161 transfers in from holders, 962 back out, 4,199 bulk-staked into
+  Enterprise on 2023-11-24/25 — a custodian the registry did not name (collection.json's own `enterprise_legacy_derivation` note
+  predicted it). Registered now. A re-derive would relabel its 2023 transfers stake_enterprise/unstake_enterprise with custodian
+  `legacy_staking` (new rows, old rows `superseded_by`) — queued as B.5, not required for the replay.
+- **Gap contracts to name** (contract-held tokens the inventory attributes to one contract while the ledger last saw another):
+  `terra1ed3qw4y4ca3lpj82ugg2jqsjr9czd0yyldcpp5n5yd7hu6udqafslz0nmg` ↔ `terra1u348d9jyrxh64kpugh9htzaylukvtpu8kpc8qznqxmshxc35mpuqdfvyf4`
+  (20 PL tokens + aDAO #7519), `terra1655tux08qla5rsl7w55xwx9nu4km9wuguy90ghqjxmcuh0c3zksq6jae9v` (PL #957). Add to the list from
+  2026-09-19 (terra1wm7rag…, terra10lznz8…, terra1ettjrq…, terra175qc8z…).
+- Honest labels on the real data: PL 60 releases without an acquisition, 52 gap-closed positions, 0 open positions with
+  acquired:null; aDAO 33 / 129 / 11 (5 aDAO tokens read `staked` where the inventory says pending claim — the DAODAO unstake rows
+  with token ids in unarchived bodies; B.2).
+
+### Owner's to-do
+- Commit the 7 platform-crons files (order: `nfts/nft-flows/lib/by-wallet.js` → `index.js` → `mock-run.js` → `gate-by-wallet.mjs`
+  → `help-agent/lib/nft-tools.js` → `server.js` → `gate-nft-tools.mjs`), `pixel-lions/collection.json`, the docs. Byte-verify the
+  md5s above.
+- Render: nothing to change. Next hourly runs of org-nft-flows-{adao,pixel-lions,tla-locks} write `ledger/by-wallet/` (first
+  run: `by-wallet: all · 33 shard(s) rebuilt`); tla-help-agent redeploys on push — check its log for no `by-wallet rule unavailable`
+  (if it appears, the Render root dir clones only help-agent/ — then set the service's root to the repo root with start
+  `node help-agent/server.js`, or vendor nothing: report it).
+- Ask the bot: "what does terra1hr8zsfpch47qygc96c8e6rzkd2t7mafqx77ulw hold on adao" (expect 296 staked, 13 sold, P&L two ways),
+  "what happened to pixeLion #2124", and the Enterprise question again (expect the 676 / 552 / 124 split).
+
+### Next (in order)
+- Explorer: the journey sheet's buyer tile reads "holdings at the time of the buy" from by-wallet (replay to the sale's height —
+  needs a small `asOf(height)` in lib/by-wallet.js, or the sheet counts from the wallet's events ≤ height). Then the Lion DAO
+  journey copy check.
+- B.2 / B.3 / B.4 as before; B.3 now starts from by-wallet's `staked_enterprise` positions whose token the inventory calls
+  unattributed. B.5 (new, small): re-derive PL with the `legacy_staking` custodian.
+- E.1 nft-collections/RUNBOOK-add-a-collection.md rewritten from the PL pains (add: "the walk surfaces custodians the registry
+  did not name — run gate-by-wallet before calling a collection done"), then Burning Lions (timed) against it.
+- Home + DAO per tenant; /liondao landing.
+- Parked: PL supply grid as a lion silhouette; aDAO mark explainer says "midpoint" (code uses the lower); `flips` vs round trips.
+
+## (superseded) OPEN LEDGER 2026-09-19 late-2 (supersedes 2026-09-19 late; that ledger stays below as history)
 
 ### Shipped this session (aDAO-links-site)
 - Explorer 4.50 — COMMITTED, byte-verified (C.1: price-asc default on a tenant, Rank 1 toggle on a tie-sharing rank oracle,
