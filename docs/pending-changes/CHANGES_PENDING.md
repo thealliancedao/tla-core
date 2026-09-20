@@ -84,6 +84,108 @@ tla-core (4 files): `docs/curated/alert-thresholds.json` (+`live_activity` block
 - Render: nothing to change (no new services, no env). tla-help-agent: unchanged.
 - Verify list above. Then start the next chat from PROJECT_KNOWLEDGE opener 0 (TLA Stats).
 
+### TLA STATS — batch 1 (owner's paste 2026-09-20 ~19:30Z, screenshots vs Votion's own pages) — the next chat's work
+- **Tile history popups show one point (E203) on Rewards / Bribes / Avg APR, and E199 → E203 on Pools / TVL.** Cause found:
+  `store.previousEpochData` is only ever set to null (tla-stats.html 3338; the setter is gone), so the modal has no previous
+  point; Pools/TVL get E184–E199 from `member-data/tla-snapshot/epoch-band-history.json` (backfill, last E199, generated
+  2026-08-21) and nothing after; the dex-data epoch files `dex-data/astroport/epochs/astroport-epoch-184…203.json` (20
+  epochs, on main) are never read for history. FIX: build every tile's history from those epoch files (metric.getValue on
+  each, LUNA price from the file), the band product only as deeper history; extend epoch-band-history past E199 or retire it.
+- **Vote Market — the model IS what the owner wanted** (add $X to a pot → re-solve Votion's objective → which pools lose VP to
+  yours): lib votionWaterFill = the exact KKT solution of Σ bribe·x/(V+x) with the vault's VP as budget, both max vaults,
+  per bucket, on `votion/optimization/current.json` (captured 18:20Z, period 203). INPUT CHECK vs Votion's pages (calculated
+  11:30 local): the captured optimized shares match Votion's screenshots bucket by bucket within ~0.5 pp (arbLUNA-Max
+  PROJECT 64.32/28.51/7.17 vs 64.66/28.28/7.06; BLUECHIP 55.41/20.57/19.12/4.91 vs 55.27/20.60/19.18/4.95; ampLUNA-Max
+  SINGLE 76.83/12.96/10.21 vs 76.69/12.96/10.35). One difference: ampLUNA-Max STABLE reads LUNA-USDC 100 % in our capture,
+  Votion shows 91.76 / 8.24 to LUNA-EURe (the pot funded through p206 but not p203).
+- **Vote Market — the SOLVER does not reproduce Votion's plan (FINDING, labeled).** Re-solving the captured inputs with $0
+  added (the page's own formula, python replica) lands a mean Σ|Δ| of ~30 pp per bucket from Votion's published allocation
+  (best bucket 16 pp, worst 58 pp); subtracting the vault's own active votes from V makes it worse (36 pp). So the page's
+  claim "Votion's own solver stops 1–2 % short of the optimum — this is where it is aiming" is NOT what today's inputs
+  show, and the "+$X → Votion votes" numbers are our model's output, not a reproduction of Votion. Either Votion's
+  objective has a term we do not model (emissions per vote? the rebalance threshold — buckets it marks "skipped" keep their
+  current split; the 1-week/12-week vaults; V defined as votes of everyone but ALL Votion vaults, solved jointly) or the
+  worksheet capture is a different snapshot than the plan. AUDIT NEXT: (1) re-derive the objective from Votion's worksheet
+  fields; (2) back-test against every captured plan (does `votion/optimization` keep history?); (3) until it reproduces
+  Votion within a few pp, label the column "our model's projection" and show the back-test error beside "how it's estimated".
+- **Movers this epoch — accounting is right in principle**: users = live on-chain VP per pool minus the locked-in baseline
+  (Votion's vaults do not move on chain until they cast), Votion = published plan minus its current votes, projected = the
+  two. Caveat: between Votion's cast (end of period, ~4 h from the screenshot) and the epoch flip, the on-chain delta
+  contains Votion's cast AND "Votion plans" may still show plan − current → double count for those hours; the baseline should
+  mark "Votion has cast" (its current_vp = plan) and zero the plan column then. Also the "users −4.54M on LUNA-WBTC" row is
+  one wallet's pull — worth naming when the gate allows.
+- **VOTION'S MODEL, SETTLED (owner's HAR captures of votion.money, 2026-09-20 19:30Z — backend.erisprotocol.com
+  /votion/liquidity-alliance/<vault>/optimization).** (1) The reward model is EXACTLY expected = bribe × x ÷ (V + x) with V =
+  the option's `votingPower` as served (it excludes the vault's own votes): both `diff.currentExpectedRewards` and
+  `diff.optimizedRewards` reproduce to the cent for every bucket. (2) Votion's optimizer is NOT the optimum of its own
+  objective: our exact water-fill scores higher under the same formula — ampLUNA-Max stable $2.56 vs $2.56, project $26.89
+  vs $26.48 (+1.5 %), bluechip $19.67 vs $18.23 (+7.9 %), single $24.42 vs $23.77 (+2.7 %) — while the allocations differ
+  by up to 40 pp (a flat objective: many splits are near-optimal). So the page's "1–2 % short" is true for most buckets, not
+  all, and "where the VP comes from" cannot be read off any optimizer, ours or theirs. (3) The skip rule is in the payload:
+  `diff.isWorthChanging` with `totalDeviation` and `rewardLoss` and a message ("Keep current: only 20.8% deviation, would gain
+  $-0.22"); on the 8 buckets seen, worth = gain > $0 (arbLUNA-Max kept 3 of 4 buckets with gains −$0.22 / −$1.61 / −$0.73;
+  moved bluechip +$8.01; ampLUNA-Max moved all four, gains +$0.22 … +$2.05). Our votion cron already stores diff / newVoted
+  and honours isWorthChanging for `planned_vp` (Movers, Vote Breakdown, "Votion's next move") — CORRECT. The Vote Market's
+  "+$X → Votion votes" column does NOT: `votionSimulate` re-solves from scratch with our water-fill, ignores the threshold
+  (a $10 add that does not flip isWorthChanging moves nothing) and reports an allocation Votion's own solver would not
+  produce. FIX (next chat): keep the exact solve as the upper bound, project Votion's move as "crosses the threshold? then
+  their published plan re-run with X added through THEIR reward model, else nothing", show the back-test error per bucket
+  beside "how it's estimated", and store the HAR-shape payload (already the cron's) as the audit fixture. No docs/GitHub for
+  Votion's optimizer exist that we know of — the HAR is the documentation; keep capturing one per epoch.
+- **Batch 2 (owner's screenshots of the rest of tla-stats, 2026-09-20 ~19:45Z) — data checks to run:** (a) epoch labels
+  disagree across sections: Vote Market "Epoch 203 · live", Vote Breakdown "203 (locked-in) / 204 (planned)", Bribe Runway
+  "period 202" (stale — the vote cast at the end of period 203 sets epoch 204; one vocabulary, one source); (b) the four
+  bucket totals in Vote Breakdown should be identical (every VP votes in every bucket) and read 28.66 / 28.77 / 28.74 /
+  28.99M — the ~330K spread is unallocated or unsynced VP, name it; (c) "TLA holds $1.93M staked" (liquidity panel) vs
+  "$2.01M" (TVL tile) vs Pool Health's per-pool sums — three names for one number, or three bases (Astro+SS gauges vs all
+  incl. single) — label the basis on each; (d) Utilization Leaders is all 100 % (uninformative) — invert it to "VP left
+  idle" (who is not voting all of it); (e) Runway's "only 16.8K VP (0.05 %) unlocks in 8 weeks" is consistent with the
+  auto-max electorate — keep, but the 66 pending withdrawals ($1.5K) are the more useful list; (f) Top Bribers lists the
+  Astroport take-rate distributions as bribers ($18.4K stable / $5.6K project / $2.4K bluechip) — right by the rewalk
+  ruling, but say "take-rate, not a briber's choice" on the row.
+- **Presentation (owner: "a lot … really confusing … keep the user in mind"):** proposal for the next chat — organise the page
+  by the three questions a reader brings, each a section that opens with one sentence written from data: (1) WHAT IS
+  HAPPENING THIS EPOCH (movers + Votion's plan + runway, one story, one epoch vocabulary), (2) WHERE SHOULD MY VP / MY BRIBE
+  GO (the Vote Market as a decision tool: pick your lock type, pick a pool or a $, read the answer and its confidence — the
+  back-test error), (3) IS TLA HEALTHY (liquidity real vs headline, pool health, exit pressure). Leaderboards become a
+  drawer. Every number states its basis and its epoch once, in the same words everywhere.
+- **Batch 3 — ERIS TILE AUDIT (owner's erisprotocol.com screenshots, 2026-09-20 ~19:50Z; Eris Vote page: Total Voting Power
+  32.08M VP for epoch 203, round ends in ~4 h):**
+  · TVL: Eris LP list sums to $1,970,711 staked (26 rows; $1,654,231 without the three singles xASTRO / ampCAPA / wBTC.creda);
+    our TVL tile $2.01M (+2 %), our liquidity panel "$1.93M staked" (−2 %) — same base, two price/timing bases; label both.
+  · Avg APR tiles: Eris non-amp simple mean 47.7 % / TVL-weighted 46.0 % vs ours 43.7 %; amp mean 65.3 % / weighted 59.1 % vs
+    ours 60.7 % — ours is the TVL-weighted average (non-amp runs ~5 % low); say "TVL-weighted across N pools" on the tile.
+  · Top by APR (amp): 11 of 15 within ±4 % of Eris; FOUR are off — LUNA-SOLID −11.6 %, LUNA-USDC.n −21.2 %, LUNA-USDT −21.6 %,
+    LUNA-INJ −29.1 % (ours lower). All Astroport; not explained by price. AUDIT: which epoch's emission share and which
+    staked-TVL denominator feed those four (Eris uses this epoch's locked-in share and its own staked $); the ones that match
+    prove the formula, the four prove one input is on a different epoch.
+  · VP: Eris Total 32.08M vs our "all TLA VP 28.99M" — ours is the VP that VOTED at lock-in, Eris's is every lock's VP; show
+    "32.08M total · 29.0M voting (90 %)" and stop calling the voting figure "all TLA VP". CORRECTION to batch 2: bucket totals
+    are NOT required to be identical — Eris's own per-bucket voted VP reads stable 31.89M / project 30.43M / bluechip 29.19M /
+    single 30.53M (VP is used partially per bucket). Ours (28.66–28.99M, locked-in 203) sit 0.5–3.2M below Eris's LIVE
+    numbers, and the stable-bucket gap ≈ the users' moves since lock-in the Movers panel already shows (+1.06M USDT, +963K
+    USDC.n, +111K EURe) — consistent; the "Epoch 204 (planned)" view is the one to compare with Eris live.
+  · Bribe pots: 14 pots match Eris within 0.4–1.2 % (one LUNA price basis ~1 % apart: ours $0.0555). ONE discrepancy: LUNA-EURe
+    reads $9.99 (1 asset, 0.15–1.54 %) on Eris for this round while ours says "not funded for p203 (through p206)" — the
+    period-keyed funding rule mis-reads this pot's start period, or Eris shows a pot that only pays from p204; check the bribe
+    manager's period fields for that pot before the round closes.
+  · Rates: Eris shows a per-pool bribe-rate RANGE (e.g. 1.76–17.67 %) where we show one "$/1M VP" — ours is the mid of the same
+    idea; consider showing the range the way Eris does so members recognise it.
+- **DEEP-DIVE AUDIT written: `docs/pending-changes/AUDIT-tla-stats-2026-09-20.md`** (owner: "before any changes, go over all the
+  docs … we may have been wrong in the past") — every section's origin ruling, what we believed, what we know now, keep / change /
+  retire, and the order of work. Headline corrections to earlier notes in this ledger: (1) the four "off" APRs are NOT four
+  inputs — our eris-apr `incentives_usd_per_year` is uniformly −14.8 % vs Eris's Rewards $ on every pool (one stage-2 input:
+  provisions / alliance weights / price basis), and the page's Top-by-APR leaderboard does not read the eris-apr product at all
+  (it matches Eris; the product is 25–59 % low) — TWO APR SOURCES on one page; (2) bucket totals need not be identical
+  (withdrawn); (3) the Aug-2 APR validation was a one-off, not a gate — it drifted. Order of work in §11 of the audit.
+- **SCOPE RULING (owner): videos of tla-stats are being made — the live page's SHAPE is frozen (order, names, layout) until they
+  land; steps 1–5 fix in place; the §D restructure is staged on test.html and flips only on the owner's word. (handover §F0)
+- **HANDOVER written** (owner: "jumping chats loses all that context"): `docs/pending-changes/HANDOVER-tla-stats-2026-09-20.md` —
+  every screenshot transcribed (ours §A, Votion §B, Eris §C), the visual plan in full (§D), settled facts (§E), order (§F) — and
+  `docs/fixtures/2026-09-20/{votion-optimization,eris-lp-list,eris-vote-page}.json` (the HAR payloads verbatim + the Eris
+  numbers). A new chat reads these first; PROJECT_KNOWLEDGE opener 0 names them.
+- Owner: "will stop here; the next batch will work on the rest, with TLA data audits." Eris tile audit done above.
+
 ### Next (in order)
 - TLA STATS page (owner: "then we can move to TLA stats next") — the scattered issues + the Votion/TLA tracking audit
   (epoch, VP, bribe pots, pool APR basis) with findings labeled, nothing estimated.
