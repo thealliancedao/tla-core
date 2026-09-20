@@ -1,5 +1,18 @@
 # TLA Stats Changelog
 
+## T6.3 — 2026-09-20 — the Bribes popup gets its history (epoch-history-rollup 1.1.0, the oracle join)
+
+- Rollup 1.1.0: each day's active pots priced at THAT day's oracle price — denom → symbol through lib/denom-symbol.js (the
+  token-catalog effective layer, the same resolver nft-flows uses), price from price-history/YYYY/MM.json. A day with any
+  unpriced asset is null, never partial. Proven against the live tile: today's pots at the oracle's day price = $1,202; the
+  tile's $1.3K is the same pots at the live LUNA price (0.0555 vs the oracle's 0.0468 — a 19 % intraday move; timing, not
+  definition). Eight pot denoms, all resolvable: LUNA, ASTRO, CAPA, USDC.n, FUEL, ROAR, SOLID, ampLUNA.
+- Coverage: E185–E187 and E200–E203 price fully; E184, E188–E199 are null because the ORACLE has no USDC.n row before
+  2026-08-31 (and no FUEL on 08-02). Finding for token-catalog / price-history: a stablecoin without a daily price is an
+  oracle gap — seed USDC.n (and USDt) daily; the rollup fills those epochs on its next run once the oracle does.
+- tla-stats.html T6.3: the Bribes popup reads the rollup like the other tiles; the footer says why an epoch can be missing.
+  Requires `../lib/denom-symbol.js` beside member-data (already in platform-crons/lib). Gate 52/69 (H4 rewritten).
+
 ## T6.2 — 2026-09-20 — the hero tiles' own history (step 2, in place)
 
 - NEW cron rollup `member-data/epoch-history-rollup.js` (runs after the daily archive with the other rollups): ONE per-epoch
