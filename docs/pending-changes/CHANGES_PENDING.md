@@ -27,6 +27,24 @@ tla-core (4 files): `docs/curated/alert-thresholds.json` (+`live_activity` block
   10, big sale $500, ids shown 5) · `docs/curated/supporters.json` NEW (4 targets) · `docs/changelogs/index-log.md` ·
   `docs/changelogs/cron-member-data-log.md` · this file.
 
+### Follow-up after the owner's first live look (delivered as a second ZIP pair — commit AFTER the first four)
+- index 4.37 + lib/live-activity.js 1.1.0: lock TOP-UPS and DUST LOCKS are housekeeping (hidden with the chip off; a top-up is
+  featured by what was ADDED ≥ $1,000, never by the size of the lock it landed in — "Added to #754 · 4.38 ampLUNA · now
+  1,215,766 VP" was featured for the wrong reason); a new lock under 1,000 VP is a dust lock; "Backing added" (the DAO's
+  routine deposits, ~daily) is out of the feed; rows in an off chip still show when featured; lock ids are plain text (they
+  linked to a chainscope "address"); the marketplace header's phone-only summary hid on desktop (it rendered raw as
+  "Unbroken from$96.4141 listed"). Config knobs: `lock_add_big_usd` 1000, `lock_new_min_vp` 1000 (`lock_add_big_vp` gone).
+- docs/curated/supporters.json: ONE memo for every DAO treasury — `thanks_adao` (owner, confirmed); the address says which
+  treasury the gift went to; the builder keeps `thanks_defi`. Products already written under the first memos hold no gifts.
+- Commit mistake caught 2026-09-20 ~18:40Z: the four nft-flows files were saved one folder up into member-data/ (member-data
+  cron died on `./lib/classify.js`); platform-crons-repair.zip restored member-data/index.js + README.md and placed the
+  1.6.0 files; `member-data/mock-run.js` and `member-data/gate-activity.mjs` are strays to delete by hand.
+- terra1lsasu5…f7y2 (what the "51 locks · 704 VP" rows are): real and automated — 720 locks of exactly 0.1 ampLUNA created
+  this month in batches of ~51 and every one merged into its permanent lock #2500 (6.96M VP; 801 merges). Why it routes
+  0.1 ampLUNA through a fresh lock instead of lock_add the chain does not say; the feed files it as housekeeping.
+- gate-index-activity's two "DAODAO tile on load" checks depend on the fixture summary.json being < 2 h old (the page's own
+  freshness gate) — refresh the fixture before reading them as failures.
+
 ### Verify after commit (owner)
 - Site: index 4.36 in the footer; Live Activity shows the three feeds (aDAO · Lion DAO · TLA Locks) on the All tab, 7d, deal
   filter on, Lock housekeeping chip off; a lock restructure reads "Restructured N locks · merge, auto-max on" (grey); the
