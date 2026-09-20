@@ -1,5 +1,21 @@
 # TLA Stats Changelog
 
+## T6.1 — 2026-09-20 — one vocabulary, in place (the live page's shape is frozen while videos are being made)
+
+- "voting VP" (the VP on gauges at lock-in, the max-bucket total) everywhere the page said "all TLA VP" — Voting Leaders,
+  Movers' % and footnote; the footnote says why Eris's "Total Voting Power" (every lock, 32.08M on 2026-09-20) reads higher.
+- Vote Market chip: "Voting round N · live", tooltip carries the one rule (round N's votes set epoch N+1's emissions).
+- Bribe Runway header: "state as of period N · date" (the harvest product's own period — it was reading one behind and the
+  page called it "the" period).
+- The liquidity line ("TLA holds $X staked · this chart's basis") and the TLA TVL tile each name their basis in words; the
+  Avg APR tiles say "TVL-weighted" and map dotted = linear APR / flame = APY to Eris's numbers; Epoch Rewards names the
+  eris-apr chain read.
+- The Vote Market's model text says what the owner's Votion HAR proved (0–8 % solver gap, flat objective, isWorthChanging
+  skip rule) instead of "1–2 % short of the optimum".
+- No layout, no data, no calculation change; headings, element ids and section classes byte-identical to T3.21;
+  gate-tla-stats 48/65 = the same 17 pre-existing fixture-drift failures as the live page (B1 / V5 follow the vocabulary).
+
+
 ## T3.20 — 2026-08-25 — LP Grades tab rebuilt (v2 lenses · Vote Advisor v2 · PD Bribe Tracker · guide) · Pools tab (LP Stats + TLA Stats merged) · dead tab + inline chrome stripped
 
 **LP Grades:** five-lens grade per pool from lp-grades 2.0.0 (Purpose · Work ·
