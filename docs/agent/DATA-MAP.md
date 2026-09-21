@@ -225,3 +225,24 @@ sale of #6192 the same day instead of by owner luck two days later.
   prior-verbatim law forbids. The live-mark path is a P&L-feature design
   decision, tracked in CHANGES_PENDING.
 
+## What the site shows and why (2026-09-20) — Live Activity, tile popups, APR price, pots, the Vote Market, reporting
+Read `docs/ecosystem-knowledge/site-reading-guide.md` first for any "why does the page say X" / "is this right" / "how do I
+report" question — it holds the rules and the known gaps in plain words. Products behind it:
+- `nft-collections/<slug>/ledger/activity.json` — Live Activity EPISODES (one act = one row) for adao, pixel-lions, tla-locks;
+  facts per episode (tier, floor that day, vs-floor %, VP, backing of a listed lock, days on market); thresholds are the
+  page's (`tla-core/docs/curated/alert-thresholds.json` → live_activity). Hourly (org-nft-flows 1.6.0).
+- `member-data/tla-snapshot/epoch-history.json` — the hero tiles' per-epoch series (last daily reading of each epoch): TVL,
+  active pools (all/Astro/Skeleton), rewards, voting VP (max bucket), LUNA price, APR from E196, bribes at that day's oracle
+  price (null when an asset had no price that day). Nightly (member-data epoch-history-rollup).
+- `dex-data/eris-apr/current.json` `meta.luna_price_used_usd / luna_price_source / luna_price_as_of` — which LUNA price
+  priced the APRs (live feed vs catalog day price) — the first thing to check when an APR "looks off" on a volatile day.
+- `tla-voting/bribe-state/runway.json` — pots per period (`by_denom[].per_period`) = the funded-for-period truth; the page's
+  live read of the manager prices the same pots at today's prices. `current_period` is the harvest's, one round behind
+  until Monday.
+- `member-data/supporters/{current,adao,liondao,pixel-lions}.json` — gifts by memo (thanks_defi; thanks_adao for the three
+  treasuries); registry `docs/curated/supporters.json`.
+- `votion/optimization/current.json` — Votion's own optimizer worksheet incl. `diff.isWorthChanging` per bucket (its skip
+  rule); the Vote Market's back-test chip and "Votion's rule today" lines come from it.
+Wrong-object guard: "all TLA VP" is NOT a number — say total VP (every lock) or voting VP (on gauges). "Not funded" on the
+page means no tokens for that period, never "unpriced".
+
