@@ -1,15 +1,16 @@
 {
  "schemaVersion": 1,
  "product": "member-data/tla-snapshot/epoch-history",
- "version": "1.0.0",
- "generatedAt": "2026-09-20T22:31:12.869Z",
- "rule": "one row per epoch = the LAST daily reading of that epoch (what the page showed at the end of the week); `avg` = mean of the epoch's dailies; voting_vp = max bucket VP (Eris convention); APR = TVL-weighted eris-apr per gauge (null before 2026-08-02, the first eris-apr daily); bribes_usd = null until the oracle join prices past pots (the tile keeps its live point)",
+ "version": "1.1.0",
+ "generatedAt": "2026-09-21T00:54:21.087Z",
+ "rule": "one row per epoch = the LAST daily reading of that epoch (what the page showed at the end of the week); `avg` = mean of the epoch's dailies; voting_vp = max bucket VP (Eris convention); APR = TVL-weighted eris-apr per gauge (null before 2026-08-02, the first eris-apr daily); bribes_usd = that day's active pots at that day's oracle price (token-catalog resolver + price-history); null when any asset of the day is unpriced",
  "basis": {
   "tla_tvl_usd": "tla-snapshot totals.tla_tvl_usd (TLA-staked gauges, that day's LUNA price)",
   "active_pools": "tla-snapshot totals.active_pools_count; astro/ss from pools[].dex where status=active",
   "rewards": "tla-snapshot totals.rewards (annual/weekly emissions USD at that day's price)",
   "voting_vp": "max(buckets[].bucket_vp_human)",
-  "apr": "eris-apr daily eris_apr_pct / eris_apy_pct weighted by tla_staked_usd"
+  "apr": "eris-apr daily eris_apr_pct / eris_apy_pct weighted by tla_staked_usd",
+  "bribes": "tla-snapshot pools[].bribes.active_now assets × price-history/<day>[symbol].usd (symbol via lib/denom-symbol.js, token-catalog effective layer)"
  },
  "epochs": [
   {
@@ -31,6 +32,9 @@
    "bribes_usd": null,
    "apr_pools": 0,
    "apr_tvl_usd": null,
+   "bribes_unpriced": [
+    "FUEL"
+   ],
    "avg": {
     "tla_tvl_usd": 3086631.8844,
     "active_pools": 33,
@@ -63,9 +67,10 @@
    "voting_vp": 24148646.416847,
    "apr_non_amp_pct": null,
    "apr_amp_pct": null,
-   "bribes_usd": null,
+   "bribes_usd": 1526.57,
    "apr_pools": 0,
    "apr_tvl_usd": null,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 3070434.7515,
     "active_pools": 33,
@@ -78,7 +83,7 @@
     "voting_vp": 24131937.0137,
     "apr_non_amp_pct": null,
     "apr_amp_pct": null,
-    "bribes_usd": null
+    "bribes_usd": 1526.57
    },
    "source": "tla-snapshot daily (last reading of the epoch)"
   },
@@ -98,9 +103,10 @@
    "voting_vp": 24421952.296598,
    "apr_non_amp_pct": null,
    "apr_amp_pct": null,
-   "bribes_usd": null,
+   "bribes_usd": 1210.7,
    "apr_pools": 0,
    "apr_tvl_usd": null,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 2898900.1893,
     "active_pools": 33,
@@ -113,7 +119,7 @@
     "voting_vp": 24351681.6447,
     "apr_non_amp_pct": null,
     "apr_amp_pct": null,
-    "bribes_usd": null
+    "bribes_usd": 1209.4157
    },
    "source": "tla-snapshot daily (last reading of the epoch)"
   },
@@ -133,9 +139,10 @@
    "voting_vp": 24703069.813276,
    "apr_non_amp_pct": null,
    "apr_amp_pct": null,
-   "bribes_usd": null,
+   "bribes_usd": 1167.53,
    "apr_pools": 0,
    "apr_tvl_usd": null,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 2885133.2033,
     "active_pools": 33.1429,
@@ -148,7 +155,7 @@
     "voting_vp": 24555977.7672,
     "apr_non_amp_pct": null,
     "apr_amp_pct": null,
-    "bribes_usd": null
+    "bribes_usd": 1180.9929
    },
    "source": "tla-snapshot daily (last reading of the epoch)"
   },
@@ -168,9 +175,10 @@
    "voting_vp": 24849719.622682,
    "apr_non_amp_pct": null,
    "apr_amp_pct": null,
-   "bribes_usd": null,
+   "bribes_usd": 973.67,
    "apr_pools": 0,
    "apr_tvl_usd": null,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 2505871.1198,
     "active_pools": 34,
@@ -183,7 +191,7 @@
     "voting_vp": 24789726.9896,
     "apr_non_amp_pct": null,
     "apr_amp_pct": null,
-    "bribes_usd": null
+    "bribes_usd": 1086.3814
    },
    "source": "tla-snapshot daily (last reading of the epoch)"
   },
@@ -203,9 +211,10 @@
    "voting_vp": 24957693.061257,
    "apr_non_amp_pct": null,
    "apr_amp_pct": null,
-   "bribes_usd": null,
+   "bribes_usd": 1006.1,
    "apr_pools": 0,
    "apr_tvl_usd": null,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 2176925.8478,
     "active_pools": 34,
@@ -218,7 +227,7 @@
     "voting_vp": 24934819.0152,
     "apr_non_amp_pct": null,
     "apr_amp_pct": null,
-    "bribes_usd": null
+    "bribes_usd": 1002.6814
    },
    "source": "tla-snapshot daily (last reading of the epoch)"
   },
@@ -238,9 +247,10 @@
    "voting_vp": 25148870.212748,
    "apr_non_amp_pct": null,
    "apr_amp_pct": null,
-   "bribes_usd": null,
+   "bribes_usd": 1127.76,
    "apr_pools": 0,
    "apr_tvl_usd": null,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 2253745.2089,
     "active_pools": 34,
@@ -253,7 +263,7 @@
     "voting_vp": 24372305.8251,
     "apr_non_amp_pct": null,
     "apr_amp_pct": null,
-    "bribes_usd": null
+    "bribes_usd": 1146.3086
    },
    "source": "tla-snapshot daily (last reading of the epoch)"
   },
@@ -273,9 +283,10 @@
    "voting_vp": 25309021.096318,
    "apr_non_amp_pct": null,
    "apr_amp_pct": null,
-   "bribes_usd": null,
+   "bribes_usd": 1027.24,
    "apr_pools": 0,
    "apr_tvl_usd": null,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 2220003.2152,
     "active_pools": 34,
@@ -288,7 +299,7 @@
     "voting_vp": 25274158.1369,
     "apr_non_amp_pct": null,
     "apr_amp_pct": null,
-    "bribes_usd": null
+    "bribes_usd": 1068.93
    },
    "source": "tla-snapshot daily (last reading of the epoch)"
   },
@@ -308,9 +319,10 @@
    "voting_vp": 25755722.613336,
    "apr_non_amp_pct": null,
    "apr_amp_pct": null,
-   "bribes_usd": null,
+   "bribes_usd": 1048.22,
    "apr_pools": 0,
    "apr_tvl_usd": null,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 2186366.9347,
     "active_pools": 34,
@@ -323,7 +335,7 @@
     "voting_vp": 25655045.1235,
     "apr_non_amp_pct": null,
     "apr_amp_pct": null,
-    "bribes_usd": null
+    "bribes_usd": 1026.3829
    },
    "source": "tla-snapshot daily (last reading of the epoch)"
   },
@@ -343,9 +355,10 @@
    "voting_vp": 25905955.789235,
    "apr_non_amp_pct": null,
    "apr_amp_pct": null,
-   "bribes_usd": null,
+   "bribes_usd": 1026.62,
    "apr_pools": 0,
    "apr_tvl_usd": null,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 2189025.4909,
     "active_pools": 32.2857,
@@ -358,7 +371,7 @@
     "voting_vp": 25889191.9332,
     "apr_non_amp_pct": null,
     "apr_amp_pct": null,
-    "bribes_usd": null
+    "bribes_usd": 1041.6614
    },
    "source": "tla-snapshot daily (last reading of the epoch)"
   },
@@ -378,9 +391,10 @@
    "voting_vp": 26069497.289509,
    "apr_non_amp_pct": null,
    "apr_amp_pct": null,
-   "bribes_usd": null,
+   "bribes_usd": 1008.61,
    "apr_pools": 0,
    "apr_tvl_usd": null,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 2125905.3878,
     "active_pools": 31,
@@ -393,7 +407,7 @@
     "voting_vp": 26046324.214,
     "apr_non_amp_pct": null,
     "apr_amp_pct": null,
-    "bribes_usd": null
+    "bribes_usd": 1020.6586
    },
    "source": "tla-snapshot daily (last reading of the epoch)"
   },
@@ -413,9 +427,10 @@
    "voting_vp": 26407779.406754,
    "apr_non_amp_pct": null,
    "apr_amp_pct": null,
-   "bribes_usd": null,
+   "bribes_usd": 981.76,
    "apr_pools": 0,
    "apr_tvl_usd": null,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 1938176.3891,
     "active_pools": 31,
@@ -428,7 +443,7 @@
     "voting_vp": 26327875.5761,
     "apr_non_amp_pct": null,
     "apr_amp_pct": null,
-    "bribes_usd": null
+    "bribes_usd": 986.6129
    },
    "source": "tla-snapshot daily (last reading of the epoch)"
   },
@@ -451,6 +466,9 @@
    "bribes_usd": null,
    "apr_pools": 2,
    "apr_tvl_usd": 148681.46,
+   "bribes_unpriced": [
+    "FUEL"
+   ],
    "avg": {
     "tla_tvl_usd": 1883846.1898,
     "active_pools": 31,
@@ -463,7 +481,7 @@
     "voting_vp": 27176654.804,
     "apr_non_amp_pct": 22.4215,
     "apr_amp_pct": 24.7434,
-    "bribes_usd": null
+    "bribes_usd": 948.35
    },
    "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
   },
@@ -483,9 +501,10 @@
    "voting_vp": 27476865.358936,
    "apr_non_amp_pct": 29.8849,
    "apr_amp_pct": 35.4155,
-   "bribes_usd": null,
+   "bribes_usd": 974.25,
    "apr_pools": 21,
    "apr_tvl_usd": 1632214.32,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 1926900.0422,
     "active_pools": 31.7143,
@@ -498,7 +517,7 @@
     "voting_vp": 27409455.2311,
     "apr_non_amp_pct": 29.815,
     "apr_amp_pct": 35.3126,
-    "bribes_usd": null
+    "bribes_usd": 941.0586
    },
    "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
   },
@@ -518,9 +537,10 @@
    "voting_vp": 27836510.17026,
    "apr_non_amp_pct": 31.5787,
    "apr_amp_pct": 38.1153,
-   "bribes_usd": null,
+   "bribes_usd": 1041.61,
    "apr_pools": 21,
    "apr_tvl_usd": 1584928.46,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 1964233.8402,
     "active_pools": 31,
@@ -533,7 +553,7 @@
     "voting_vp": 27706208.1382,
     "apr_non_amp_pct": 30.9512,
     "apr_amp_pct": 37.1815,
-    "bribes_usd": null
+    "bribes_usd": 1058.5729
    },
    "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
   },
@@ -553,9 +573,10 @@
    "voting_vp": 28122566.752772,
    "apr_non_amp_pct": 35.0841,
    "apr_amp_pct": 42.8269,
-   "bribes_usd": null,
+   "bribes_usd": 1206.99,
    "apr_pools": 20,
    "apr_tvl_usd": 1673492.98,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 1936900.6178,
     "active_pools": 31.4286,
@@ -568,7 +589,7 @@
     "voting_vp": 27962267.1917,
     "apr_non_amp_pct": 33.8024,
     "apr_amp_pct": 41.3811,
-    "bribes_usd": null
+    "bribes_usd": 1147.4414
    },
    "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
   },
@@ -588,9 +609,10 @@
    "voting_vp": 27500570.671217,
    "apr_non_amp_pct": 35.56,
    "apr_amp_pct": 44.1362,
-   "bribes_usd": null,
+   "bribes_usd": 1148.16,
    "apr_pools": 21,
    "apr_tvl_usd": 1624142.89,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 1951334.1691,
     "active_pools": 32,
@@ -603,7 +625,7 @@
     "voting_vp": 28143586.1902,
     "apr_non_amp_pct": 34.7124,
     "apr_amp_pct": 42.7497,
-    "bribes_usd": null
+    "bribes_usd": 1147.7357
    },
    "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
   },
@@ -623,9 +645,10 @@
    "voting_vp": 28008431.140667,
    "apr_non_amp_pct": 30.3994,
    "apr_amp_pct": 37.2973,
-   "bribes_usd": null,
+   "bribes_usd": 1479.65,
    "apr_pools": 21,
    "apr_tvl_usd": 1734318.37,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 1969840.9366,
     "active_pools": 31.8571,
@@ -638,7 +661,7 @@
     "voting_vp": 27948465.7925,
     "apr_non_amp_pct": 31.2639,
     "apr_amp_pct": 38.5063,
-    "bribes_usd": null
+    "bribes_usd": 1430.2843
    },
    "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
   },
@@ -658,9 +681,10 @@
    "voting_vp": 28257150.973499,
    "apr_non_amp_pct": 33.6402,
    "apr_amp_pct": 42.1657,
-   "bribes_usd": null,
+   "bribes_usd": 1459.16,
    "apr_pools": 26,
    "apr_tvl_usd": 1882099.02,
+   "bribes_unpriced": [],
    "avg": {
     "tla_tvl_usd": 1991629.7997,
     "active_pools": 31.5714,
@@ -673,46 +697,48 @@
     "voting_vp": 28215757.55,
     "apr_non_amp_pct": 33.6927,
     "apr_amp_pct": 42.6527,
-    "bribes_usd": null
+    "bribes_usd": 1461.53
    },
    "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
   },
   {
    "epoch": 203,
-   "date": "2026-09-19",
-   "days": 6,
+   "date": "2026-09-20",
+   "days": 7,
    "first_date": "2026-09-14",
-   "tla_tvl_usd": 2022000.3942968606,
+   "tla_tvl_usd": 2123586.3950816984,
    "active_pools": 31,
    "active_pools_astro": 20,
    "active_pools_ss": 8,
-   "rewards_annual_usd": 847836.2484261,
-   "rewards_weekly_usd": 16248.74398078768,
+   "rewards_annual_usd": 990100.5799499999,
+   "rewards_weekly_usd": 18975.2335650924,
    "rewards_annual_luna": 17672478,
-   "luna_price_usd": 0.04797495,
-   "voting_vp": 28886959.745543,
-   "apr_non_amp_pct": 33.9407,
-   "apr_amp_pct": 42.7956,
-   "bribes_usd": null,
+   "luna_price_usd": 0.056025,
+   "voting_vp": 28989657.151138,
+   "apr_non_amp_pct": 38.9191,
+   "apr_amp_pct": 51.8388,
+   "bribes_usd": 1432.98,
    "apr_pools": 26,
-   "apr_tvl_usd": 1903816.11,
+   "apr_tvl_usd": 2004098.49,
+   "bribes_unpriced": [],
    "avg": {
-    "tla_tvl_usd": 1999005.2404,
-    "active_pools": 31.1667,
+    "tla_tvl_usd": 2016802.5482,
+    "active_pools": 31.1429,
     "active_pools_astro": 20,
     "active_pools_ss": 8,
-    "rewards_annual_usd": 807427.4795,
-    "rewards_weekly_usd": 15474.3117,
+    "rewards_annual_usd": 833523.6367,
+    "rewards_weekly_usd": 15974.4434,
     "rewards_annual_luna": 17672478,
-    "luna_price_usd": 0.0457,
-    "voting_vp": 28590987.8862,
-    "apr_non_amp_pct": 32.1724,
-    "apr_amp_pct": 40.5885,
-    "bribes_usd": null
+    "luna_price_usd": 0.0472,
+    "voting_vp": 28647940.6383,
+    "apr_non_amp_pct": 33.1362,
+    "apr_amp_pct": 42.1957,
+    "bribes_usd": 1201.6143
    },
    "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
   }
  ],
- "days_read": 130,
- "eris_days_read": 49
+ "days_read": 131,
+ "eris_days_read": 50,
+ "bribes_priced": true
 }
