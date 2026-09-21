@@ -95,7 +95,9 @@ gauges; it is no longer mixed in.
 
 - **"Not funded" vs unpriced.** A pot that holds tokens is funded even if a price is missing. The LUNA-EURe pot ($10 of
   USDC.n for each of periods 202–206) showed "not funded" for hours because two of our products named the same token
-  differently (USDC.n vs USDC). Fixed: live pots price through the token catalog's own price when the feed lacks the symbol.
+  differently (USDC.n vs USDC). Fixed at the source 2026-09-21: the price feed keys the stables by the catalog's symbol
+  (USDC.n / USDt / EURe) and the cron publishes any registry-vs-catalog symbol drift (`catalog_symbol_drift`); a symbol the
+  feed does not carry shows on the row as unpriced (never $0, never "not funded").
 - **What "+$X → Votion votes" means.** Our exact solve of Votion's objective (bribe × votes ÷ (gauge votes + votes)) with
   your $X added — a projection of HOW MUCH VP your dollars move, NOT of which pools Votion pulls from: the objective is
   flat, many splits are near-optimal, and Votion's own solver lands 0–8% below the optimum. The header chip "model vs
@@ -107,9 +109,8 @@ gauges; it is no longer mixed in.
 
 ## 8. Known gaps (say them plainly)
 
-1. Four pools' trading-fee leg under Eris (§6). 2. Bribes history missing for 13 epochs until the oracle backfills USDC.n
-(§5). 3. Bribe Runway one round behind until each Monday harvest (§4). 4. network-and-prices keys stables "USDC" while the
-catalog says "USDC.n" — bridged on the page, to be fixed at the source. 5. Marketplace offers/bids are not captured yet — the
+1. Four pools' trading-fee leg under Eris (§6). 2. (closed 2026-09-21: the oracle carries USDC.n back to 2022-10, labeled alias; Bribes history
+now fills E185–E203 except E184/E196, where FUEL has no oracle row) (§5). 3. Bribe Runway one round behind until each Monday harvest (§4). 4. (closed 2026-09-21: the feed keys the stables by the catalog symbol) 5. Marketplace offers/bids are not captured yet — the
 feed says so rather than showing an empty toggle. 6. A venue-only bid event on BBL can be filed under the wrong collection
 (one known case: pixeLion #826's buy-now appeared as an aDAO bid) — being fixed in the classifier.
 
