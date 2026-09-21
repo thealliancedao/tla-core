@@ -10,6 +10,53 @@ section). Closed by the owner: the three-question restructure (test-3 deleted). 
 yet; delete test-3.html + gate-test-3.mjs; swap PROJECT_KNOWLEDGE into the project and attach this file. Next chat: opener 0.
 
 
+### 2026-09-21 (opener 0 chat) — verified, then TLA queue item 2 DELIVERED (commit pending: tla-core-13 + platform-crons)
+- **Verified from a fresh pull (00:10Z)**: tla-stats T6.6 live; test-3.html + gate-test-3.mjs gone; the member-data strays gone;
+  docs bulk (site-reading-guide, DATA-MAP, this ledger) on main; epoch-history.json rebuilt by the cron 22:31Z (20 epochs,
+  E184–E203, version 1.0.0 — the 1.1.0 rollup with the bribe join runs on the NEXT daily archive or `FORCE_ROLLUPS=1`);
+  eris-apr current + daily/2026-09-21 stamp `network-and-prices/astroport (live)`; activity.json engine 1.6.0 ×3 (rebuilt
+  23:26 / 23:46 / 00:06Z); supporters adao/liondao/pixel-lions present. Nothing from 09-20 is unfinished.
+- **Help bot + site-reading-guide (finding)**: the guide is NOT in the help agent's always-on CORPUS_SOURCES (server.js 1.14.0
+  lists 38 fixed files); it is reachable only through DATA-MAP's "read this first" line → `read_product docs/ecosystem-
+  knowledge/site-reading-guide.md` (docs/ is in PRODUCT_PREFIXES, but it costs one of the bot's three tool calls). Owner to
+  ask the bot "how do I report a wrong number" on the site; if the answer is not the guide's, v1.14.2 = one line adding the
+  guide to CORPUS_SOURCES (fold into the next platform-crons ZIP).
+- **ITEM 2 — oracle USDC.n backfill (DELIVERED, gated 15/15)**. Cause: the token-catalog renamed Noble USDC
+  (`ibc/2C962DAB…`) `USDC` → `USDC.n` on 2026-08-28 (both keys that day, same price 0.999977). Every reader resolves the denom
+  through the catalog (lib/denom-symbol.js) and reads the oracle by THAT symbol, so every day before the rename read "no row
+  for USDC.n": epoch-history bribes null E188–E199; nft-flows priced USDC.n sales as `stable_1_1`. Fix = a labeled alias, the
+  rule in the writer's own folder: `platform-crons/token-catalog/repair-oracle-symbol.js` (one-off, local, exports the pure
+  `aliasMonth` + `buildSeries`) — every day ≤ 2026-08-31 written under `USDC` gets a `USDC.n` row copied VERBATIM (usd / src /
+  confidence untouched) + `aliased_from: 'USDC'`, `repair: 'oracle-symbol-alias'`, `repaired_at`; the `USDC` row stays,
+  `superseded_by: 'USDC.n'` (never deleted); one `meta.repairs` record per month file; `price-history/series/USDC.n.json`
+  rebuilt in the cron's own shape (24 → 1,421 days, `rebuilt_by`). 47 month files (2022-10 → 2026-08), 1,397 days aliased,
+  1,398 rows labeled; every other symbol's row byte-identical; 2026/09.json untouched (the cron's live month).
+  Eras under the old key, both labeled by their `src`: 2026-06-26 → 08-27 rich `tla` capture = the SAME stream that writes
+  USDC.n from 08-28; 2022-10 → 2026-06-25 thin `coingecko` (usd-coin) = the proxy the oracle already used for USDC then.
+  **USDT is NOT aliased to USDt**: pre-06-26 `USDT` is thin CoinGecko tether; USDt (from 06-26) is the Terra denom priced on the
+  TLA pools — a different source object ("past prices have one source"); no product needed it (no USDt in any unpriced list).
+  Gate `token-catalog/mock-run-repair-oracle-symbol.js` (15 checks; TLA_CORE_DIR, --max-old-space-size=200; passes on a checkout before
+  OR after the repair — it reconstructs the pre-state): invariants above + member-data's REAL epoch-history fold on the real
+  dailies: E188–E199 price (E188 $973.67 · E189 $1,006.10 · E190 $1,127.76 · E191 $1,027.24 · E192 $1,048.22 · E193
+  $1,026.62 · E194 $1,008.61 · E195 $981.76 · E197 $974.25 · E198 $1,041.61 · E199 $1,206.99); E184 + E196 stay null on FUEL
+  only (no FUEL row in the oracle on 05-13 / 08-02 — honest blank, not this item); every epoch priced before prices to the
+  same cent after. Series gate 1.9.0 still PASS. Knock-on (expected): nft-flows' next derive prices USDC.n sales at the day's
+  oracle row instead of `stable_1_1` (sub-0.1 % shifts, basis relabeled `price-history:<day> (src)`).
+  **Owner**: commit platform-crons (2 files) then tla-core (48 files); trigger org-member-data with `FORCE_ROLLUPS=1` once (or
+  wait for the 23:xx daily archive) → epoch-history.json version 1.1.0 with the Bribes column filled E185–E203 except E196;
+  the tla-stats Bribes tile popup then shows the history. Byte-verify the md5 table in the chat.
+- **ITEM 1 — stables keyed by the catalog symbol (AUDITED, NOT DELIVERED — a wider change than the queue line)**. Registry keys
+  `USDC` / `USDT` / `EURE` vs catalog `USDC.n` / `USDt` / `EURe`. Readers that key on the OLD spelling and must move in the same
+  delivery: member-data/tla-snapshot.js `IBC_REGISTRY` (pool valuation goes pool-derived / prev-daily on a miss), member-data/
+  dao-dashboard.js `DENOM_MAP` (treasury USDC → $0), dex-data/epochs-skeletonswap.js `buildPriceLookup` + its alias table (SS
+  USDC pool TVL → null), the price canary's `ANCHORS` (already blind to Astroport's `USDC.n` today — only the SS `USDC` anchor
+  and Astroport `USDT` work; a bug of the same class), index.html's seeded gecko cache (`token_prices[info.name]`), dao_treasury
+  colour/label maps, network-and-prices mock fixtures; readers already on the catalog symbol (supporters.html, tla-stats px,
+  lp-grades px, the pot code) start finding the stables. Then drop the T6.5 page bridge (catPx fallback). Four more registry ↔
+  catalog mismatches found (WBTC→wBTC.atom, WSTETH→wstETH, BNB→wBNB.axl, ETH not in the catalog) — publish as a drift list in
+  current.json (the cron keeps the gate, Δ published), do not rename. Denom-keyed lookups (`prices.astroport.address`) wherever a
+  reader has the denom. Own delivery, each cron's mock re-run, the owner checking the DAO + TLA pages after commit.
+
 ### Verified at session start (17:05Z)
 - nft-flows 1.5.3 on main (byte-level the delivered file). The PL forward heartbeat at 16:49Z was still 1.5.2 (`by_wallet:
   all · 33 rebuilt · 2 written` = the symptom); the first run AFTER the commit is the one that reads
@@ -239,8 +286,8 @@ tla-core (4 files): `docs/curated/alert-thresholds.json` (+`live_activity` block
 - Owner: "will stop here; the next batch will work on the rest, with TLA data audits." Eris tile audit done above.
 
 ### Next (in order)
-- TLA STATS page (owner: "then we can move to TLA stats next") — the scattered issues + the Votion/TLA tracking audit
-  (epoch, VP, bribe pots, pool APR basis) with findings labeled, nothing estimated.
+- TLA queue item 1 (above, own gated delivery), then items 3–6 per PROJECT_KNOWLEDGE opener 0; Lion DAO Home (Milestone 2)
+  is the next milestone.
 - B.6 the venue-only bid classification (above), then B.2 / B.3 / B.4 / B.5 as before.
 - Explorer: the journey sheet's buyer tile "holdings at the time of the buy" from by-wallet (`asOf(height)`).
 - Live Activity follow-ups (parked until the owner has looked at it live): synthetic market rows ("floor −12% this week",
