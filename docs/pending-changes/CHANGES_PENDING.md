@@ -178,6 +178,36 @@ tla-core (4 files): `docs/curated/alert-thresholds.json` (+`live_activity` block
   provisions / alliance weights / price basis), and the page's Top-by-APR leaderboard does not read the eris-apr product at all
   (it matches Eris; the product is 25–59 % low) — TWO APR SOURCES on one page; (2) bucket totals need not be identical
   (withdrawn); (3) the Aug-2 APR validation was a one-off, not a gate — it drifted. Order of work in §11 of the audit.
+- **CORPUS PASS (owner: "make sure the chat bot has answers for everything we learned today … and a way to report")**: NEW
+  docs/ecosystem-knowledge/site-reading-guide.md; DATA-MAP.md routed; tla-docs-content.json v1.1 (section + glossary);
+  help-log.md v1.14.1. No help-agent code change: it reads the corpus. Verify: ask the bot "why does the page say voting VP",
+  "is LUNA-USDC.n's APR right", "how do I report a wrong number".
+- **STEP 6 CLOSED (owner, after seeing test-3): "I like the old better — leave the old alone and call it good."** The three-
+  question restructure (handover §D) is retired, not parked: delete aDAO-links-site/test-3.html + gate-test-3.mjs (the tools.html
+  tile goes with the file). tla-stats.html stays T6.6 — steps 1–5 live and gated. The video freeze is moot: no layout change is
+  planned. Known, LABELED gaps that remain (not errors): four trading-leg pools under Eris on APY (needs Eris's fee endpoint);
+  Bribes history null for 13 epochs (oracle lacks USDC.n before 08-31); Bribe Runway one round behind until each Monday harvest.
+- (superseded) **STEP 6 STAGED — test-3.html (T7.0-test-3; see tla-log.md).** tools.html probes FIXED slot names (test-2.html … test-5.html,
+  hyphenated) and reads `<meta name="test-desc">` for the tile label; the first delivery was named test3.html and never showed —
+  renamed. Files: aDAO-links-site/test-3.html + gate-test-3.mjs (delete test3.html / gate-test3.mjs if they were committed).
+  Slots 1–2 are member-portfolio.html and test-2.html (owner's) — untouched. tla-stats.html stays T6.6 until the owner says flip.
+- **STEP 5 DELIVERED — tla-stats T6.6 (Vote Market honesty; see tla-log.md T6.6).** Cumulative file: committing this
+  tla-stats.html lands steps 1–5 together (T6.1–T6.6). Files: aDAO-links-site/tla-stats.html + gate-tla-stats.mjs.
+  NEXT: step 6 = the three-question restructure (handover §D) STAGED on test.html only; live page unchanged until the owner
+  says flip (videos). Then the TLA-side queue: network-and-prices stable symbols; oracle USDC.n backfill (bribes history
+  E188–E199); bribe-state period roll; Eris fee endpoint (four trading-leg pools); Breakdown 'VP used in this bucket' subline;
+  Movers 'Votion has cast' state.
+- **STEP 4 DELIVERED — tla-stats T6.5 (LUNA-EURe pot; see tla-log.md T6.5).** Files: aDAO-links-site/tla-stats.html +
+  gate-tla-stats.mjs. Finding: symbol mismatch (catalog USDC.n vs network-and-prices USDC) made a funded $10 pot read $0 →
+  "not funded". Queued: network-and-prices keys stables by the catalog symbol. Also seen: runway.json `current_period` 202
+  while index says last_harvested 202 (updatedAt 09-14) — the bribe-state cron rolls at the boundary, so 'state as of period
+  202' (T6.1's label) is the honest reading until the 09-21 harvest.
+- **STEP 3 DELIVERED — APR (dex-data 1.4.3 + tla-stats T6.4; see tla-log.md T6.4 and dex-data/CHANGELOG.md).** Commit:
+  platform-crons (dex-data/lib/eris-apr.js, index.js, mock-run.js, CHANGELOG.md) → tla-core (docs) → aDAO-links-site
+  (tla-stats.html). Render: nothing to change (dex-data already reads tla-core raw files; one more URL). AUDIT CORRECTIONS:
+  no second APR source (one product, two runs); the −14.8 % was the stale catalog day price, not stage 2. OPEN: the four
+  trading-leg pools — find Eris's fee source (a HAR of erisprotocol.com from a device that can open it would show the
+  endpoint) or accept the label; a same-minute Eris LP-list screenshot set is the gate fixture for closing it.
 - **STEP 2b DELIVERED — Bribes history (rollup 1.1.0 + tla-stats T6.3; see tla-log.md T6.3).** Commit: platform-crons
   (member-data/epoch-history-rollup.js 1.1.0 — replaces 1.0.0) → tla-core (seed epoch-history.json regenerated + docs) →
   aDAO-links-site (tla-stats.html T6.3 + gate). ORACLE GAP found: price-history has no USDC.n before 2026-08-31 (FUEL missing
