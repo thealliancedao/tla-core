@@ -2,6 +2,14 @@
 
 ## OPEN LEDGER 2026-09-20 late (supersedes 2026-09-20; that ledger stays below as history)
 
+### CLOSE OF THE 2026-09-20 CHAT — state in one paragraph
+Live: index 4.37 (Live Activity on episodes; nft-flows 1.6.0 writes activity.json hourly), member-data supporters 1.2 (four
+memo targets), tla-stats T6.6 (steps 1–5 in place: vocabulary · tile history via epoch-history rollup 1.1.0 · APR at the live
+LUNA (dex-data 1.4.3) · LUNA-EURe pot · Vote Market honesty), help corpus v1.14.1 (site-reading-guide + DATA-MAP + docs
+section). Closed by the owner: the three-question restructure (test-3 deleted). Owner to-do: commit tla-core-12 (corpus) if not
+yet; delete test-3.html + gate-test-3.mjs; swap PROJECT_KNOWLEDGE into the project and attach this file. Next chat: opener 0.
+
+
 ### Verified at session start (17:05Z)
 - nft-flows 1.5.3 on main (byte-level the delivered file). The PL forward heartbeat at 16:49Z was still 1.5.2 (`by_wallet:
   all · 33 rebuilt · 2 written` = the symptom); the first run AFTER the commit is the one that reads
