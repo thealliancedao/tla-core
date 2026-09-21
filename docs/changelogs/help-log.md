@@ -1,5 +1,14 @@
 # Help Page Changelog
 
+## v1.14.0 → v1.14.1 — 2026-09-20 — the corpus knows what the site shows and how to report
+
+`docs/ecosystem-knowledge/site-reading-guide.md` (Live Activity episodes/tiers/deal filter, listings classes, tile volume
+two ways vs BBL, the two support memos, TLA Stats vocabulary, tile-popup basis, the APR price + the four trading-leg pools,
+"not funded" vs unpriced, the Vote Market's +$X meaning and Votion's rule, known gaps, the report path and what a report
+needs); DATA-MAP routes the new products (activity.json, epoch-history.json, eris-apr price meta, runway per_period,
+supporters, Votion's isWorthChanging) with a wrong-object guard ("all TLA VP" is not a number); tla-docs-content.json gains
+the "Reading the Site & Reporting a Problem" section + three glossary terms (docs.html = the same text the bot reads).
+
 ## v1.13.3 → v1.14.0 — 2026-09-20 — NFT routes (D.1)
 
 Two tools on the nft-flows shards: `nft_wallet` (an address's whole NFT history
