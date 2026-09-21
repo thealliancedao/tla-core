@@ -1,5 +1,15 @@
 # TLA Stats Changelog
 
+## T6.7 — 2026-09-21 — pots price off the feed by the catalog symbol; the T6.5 page bridge is gone (TLA queue item 1)
+
+- network-and-prices 3.1.0 keys `token_prices` by the token-catalog symbol for the stables (USDC.n / USDt / EURe), so
+  `fetchLivePots` prices a pot straight off the feed by the symbol the catalog resolves — the T6.5 fallback to the catalog's
+  own price is removed. A symbol the feed does not carry stays UNPRICED on the row (never $0, never "not funded"); the cron's
+  `catalog_symbol_drift` gate is what catches a drift now, not the page. Gate L5 rewritten (feed keyed USDC.n → $10),
+  L6 new (feed keyed the old way → unpriced, symbol named), L7 reads the real feed once 3.1.0 has run. No layout change.
+- Item 2 (same day, tla-core): the oracle carries USDC.n back to 2022-10 (labeled alias of the pre-rename USDC rows), so the
+  Bribes popup history (T6.3) fills E185–E203 except E184 / E196 (FUEL has no oracle row those days).
+
 ## T6.3 — 2026-09-20 — the Bribes popup gets its history (epoch-history-rollup 1.1.0, the oracle join)
 
 - Rollup 1.1.0: each day's active pots priced at THAT day's oracle price — denom → symbol through lib/denom-symbol.js (the

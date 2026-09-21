@@ -1,5 +1,13 @@
 # cron-dex-data — changelog
 
+## 1.4.4 — 2026-09-21 — epochs-skeletonswap prices pool assets by DENOM first (TLA queue item 1)
+
+- network-and-prices 3.1.0 keys the stables by the catalog symbol (USDC.n / USDt / EURe); SkeletonSwap spells the same
+  denoms USDC / USDt / EURe. `buildPriceLookup` now also indexes every feed entry by its phoenix-1 address (+ `uluna`) and
+  `computePoolTvl` asks `priceForAsset` — denom first, the venue's symbol second; the alias table stays as the fallback
+  (usdc / axlusdc → USDC.n). Mock 89/89 (five new checks: SS LUNA-USDC TVL prices the USDC side by denom; no-denom asset by
+  symbol; unknown asset → honest null with the symbol named; the denom wins over a wrong symbol).
+
 ---
 
 

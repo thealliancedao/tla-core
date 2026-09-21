@@ -1,5 +1,11 @@
 # DAO Changelog
 
+## dao_treasury 3.3 — 2026-09-21 — USDC.n is USDC across the rename
+
+- dao-dashboard 1.8 names and prices the treasury's Noble USDC by the catalog symbol `USDC.n` (network-and-prices 3.1.0 keys
+  the feed by it). The "What changed" matching normalizes `USDC.n` = `USDC` so the boundary epoch does not read as a DAO
+  action, and the colour map carries `USDC.n` / `USDt`.
+
 
 ## Rev 1.11 — 2026-09-10 — signal proposals
 

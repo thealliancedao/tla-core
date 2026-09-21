@@ -3,6 +3,25 @@
 > Log created 2026-08-21 (this cron family previously had no entry file in the
 > single changelog home).
 
+## 2026-09-21 — 3.1.0: stables keyed by the CATALOG symbol; canary anchored by denom; registry ↔ catalog gate (TLA queue item 1)
+
+- `token_prices` keys `USDC.n` / `USDt` / `EURe` (were USDC / USDT / EURE) — the token-catalog effective symbols every reader
+  resolves a denom to. One symbol across products: the LUNA-EURe pot read $0 because the page asked for USDC.n and the feed
+  said USDC (T6.5 bridged it on the page; T6.7 removes the bridge).
+- Price canary anchors by DENOM: Astroport's captures already spell the Noble denom `USDC.n` where the old anchor list said
+  `USDC`, so the Astroport USDC anchor was blind (only SS `USDC` + Astroport `USDT` worked). `keyOf(asset)` maps
+  asset.denom → registry key (LST market addresses included); the venue's spelling never decides.
+- The reconciliation becomes a gate the cron keeps: `catalogSymbolDrift(catalog)` compares every registry entry with a
+  phoenix-1 denom to the catalog's symbol for that denom and PUBLISHES the Δ as `snapshot.catalog_symbol_drift` (+
+  `heartbeat.stats.catalog_symbol_drift` count). Today: WBTC → wBTC.atom, WSTETH → wstETH, BNB → wBNB.axl, ETH not in the
+  catalog — visible, not renamed here. A stable drifting logs a loud warning; the run never fails on it.
+- Readers moved in the same delivery: member-data 1.2.1 (tla-snapshot IBC_REGISTRY, dao-dashboard 1.8 DENOM_MAP), dex-data
+  1.4.4 (epochs-skeletonswap prices SS pool assets by denom first), site index 4.38 (seed by address), tla-stats T6.7,
+  dao_treasury 3.3. Older `daily/` archives keep the old keys (history is not rewritten); readers that diff two captures by
+  symbol see USDC → USDC.n once at the boundary.
+- Gate: mock-run.js 34/34 (fixture token-prices.json re-keyed to the 3.1.0 output; canary matched by denom under both
+  venues' spellings; drift gate on a fixture catalog and, with TLA_CORE_DIR, on the real catalog).
+
 ## 2026-08-21 — F1: outage carry-forward (AUDIT-price-artifact-2026-08 §4)
 - New `applyCarryForward`: tokens whose `final_price_usd` would land null
   (CoinGecko/Astroport outage) now carry the prior run's final, flagged

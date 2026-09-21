@@ -1,5 +1,11 @@
 # Index Page Changelog
 
+## index 4.37 → 4.38 — 2026-09-21 — price seed looks feed entries up by denom
+
+- The CoinGecko-shaped price seed (volume displays, unclaimed rewards before CoinGecko answers) looked `token_prices` up by
+  the page's own token name; network-and-prices 3.1.0 keys the stables by the catalog symbol (USDC.n / USDt / EURe), so the
+  seed now finds each entry by its phoenix-1 address first (`prices.astroport.address`), the name second. No visible change.
+
 ## index 4.35 → 4.36 · lib/live-activity.js 1.0.0 · lib/alert-center.js 1.9.0 · lib/site-footer.js 3.7 · supporters 1.1 — 2026-09-20 — Live Activity rethought (episodes)
 
 - Live Activity reads nft-collections/<slug>/ledger/activity.json (org-nft-flows 1.6.0, lib/activity.js — THE fold) for

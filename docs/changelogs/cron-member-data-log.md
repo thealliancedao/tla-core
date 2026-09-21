@@ -1,5 +1,13 @@
 # cron-member-data — changelog
 
+## 1.2.1 — 2026-09-21 — stables named by the catalog symbol (TLA queue item 1)
+
+- tla-snapshot `IBC_REGISTRY`: USDC → USDC.n, USDT → USDt, EURE → EURe (the PriceResolver's direct lookup against
+  network-and-prices 3.1.0 would otherwise miss the stables and fall to pool-derived / prev-daily). `lp_health.asset_N.symbol`
+  on the stable pools now reads the catalog symbol, as the pool names already did.
+- dao-dashboard 1.8 `DENOM_MAP`: Noble USDC → USDC.n; treasury token named + priced by the catalog symbol (dao_treasury 3.3
+  matches it to USDC across the boundary).
+
 ## supporters 1.2 — 2026-09-20 (owner) — ally treasuries by memo
 
 TARGETS come from tla-core/docs/curated/supporters.json: the builder's wallet (thanks_defi → member-data/supporters/

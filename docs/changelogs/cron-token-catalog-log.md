@@ -1,5 +1,12 @@
 # Token-Catalog Cron — Changelog
 
+## repair-oracle-symbol (one-off) — 2026-09-21 — USDC.n aliased back to 2022-10 (TLA queue item 2)
+
+Delivered and committed 2026-09-21 ~00:45Z: 47 month files, 1,397 days aliased USDC → USDC.n (verbatim, labeled
+`aliased_from` / `repair: oracle-symbol-alias`), 1,398 USDC rows labeled `superseded_by`, series/USDC.n.json 24 → 1,421
+days. Gate 15/15 (member-data's real epoch-history fold prices E188–E199). USDT deliberately not aliased to USDt (thin
+CoinGecko tether vs the Terra denom priced on the TLA pools). Verified live: epoch-history 1.1.0 at 00:54Z, Bribes filled.
+
 ## fuel-supply v1.0 — 2026-08-24 — FUEL map: Boost DAO on Neutron + Terra IBC, sum-guarded
 
 The owner asked for Boost DAO members' positions on the FUEL whales panel;
