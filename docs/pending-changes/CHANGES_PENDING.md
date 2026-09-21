@@ -1,5 +1,45 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER 2026-09-21 late (supersedes 2026-09-20 late; that ledger stays below as history)
+
+### CLOSE OF THE 2026-09-21 LATE CHAT — state in one paragraph
+LION DAO POSITIONS LIVE. tenants.json carries the Lion DAO roster (4 wallets + roles), validator (operator + the CORRECT account
+terra1pet430t…as43fnu — a prefix swap is not an address), staking, burn (pyROAR = terra1pez3qw6…l0ngsy, found on the Enterprise
+core's asset whitelist; festival receiver = the Enterprise core terra17c6ts8g…), roar20 (pump.fun mint), home, gate0_reference.
+`platform-crons/ally-positions/` 1.0.2 runs as Render `org-ally-positions-liondao` hourly at :20 → dao-originations/lion-dao/
+positions/ (current + daily from 2026-09-21 + heartbeat); GATE #0 published in the product: ours $188,105 vs phoenix.money
+$189,983 (−1.0 %), gap = three labeled rows (Credia no reader · wBTC.atom feed drift · one compounder receipt). Lion DAO home v1
+is live at /liondao/ (home-tiles 1.0.2, site-header 1.12.0 tenant homes, vercel rewrite) and the owner judged it UNDER-DELIVERED:
+v2 = aDAO's exact layout themed + every tile opens a full page with charts, after the products exist. NEXT: HANDOVER-liondao-
+home-v2-2026-09-21.md §C in order (burn ledger, validator tracker, ROAR20, supply map, compounder-rate + Credia readers, feed
+symbol drift, alliance ledger) then the pages (§B). Registrations owed: CRON-FLEET / cron-registry / FRESHNESS_MAP for the
+new service. Start the next chat from PROJECT_KNOWLEDGE opener 0.
+
+### Committed this chat (verified live)
+- tla-core: docs/curated/tenants.json (liondao wallets · validator · staking · burn · roar20 · home · gate0_reference),
+  trusted-addresses.json (Lew, Ryan, validator account).
+- platform-crons: ally-positions/{index.js 1.0.2, mock-run.js 16/16, package.json} — NEW folder; Render org-ally-positions-liondao.
+- aDAO-links-site: liondao/index.html 1.0 · liondao/home.json · lib/home-tiles.js 1.0.2 · lib/site-header.js 1.12.0 ·
+  vercel.json (/liondao → /liondao/index.html) · gate-liondao-home.mjs 60/60. No aDAO page changed (index.html untouched).
+- dao-originations: lion-dao/positions/ written by the cron (not a manual commit).
+
+### Found this chat
+- terra17c6ts8g… ("Lion DAO Treasury" in the tweets) is the ENTERPRISE core, migrated to v2 (enterprise_treasury_api); its asset
+  whitelist = 47 cw20s. pyROAR "Burnt ROAR" supply 109,690,675,868 = the frozen burn ledger (bricked DAO).
+- ROAR live supply 893.21B vs 1T minted → 106.79B gone; tweets report 117B: a 10.2B gap to explain (minter query / unburned).
+- publicnode's tx index reaches ~2 weeks; `/cosmos/tx/v1beta1/txs?query=` (SDK 0.50), `events=` rejected;
+  `/cosmwasm/wasm/v1/contracts/creator/{addr}` and `/code/{id}/contracts` work for discovery.
+- None of the four Lion DAO wallets delegates LUNA; msig 19 pixeLions, treasury 5, Lew 1, none staked (PL stakes are aDAO's).
+- ROAR20: 1B fixed (mint authority revoked at create), immutable metadata, creator bought 33.7 % at launch (13.75 SOL).
+
+### NEW LAWS (2026-09-21 late)
+- **A prefix swap is not an address.** bech32 checksums depend on the prefix; derive the account by decode/re-encode, and let
+  the LCD's error name the checksum it expected.
+- **A successful empty read is 0; null is a failed read.** Never let an empty list collapse into "unknown".
+- **Reported figures are theirs.** A partner's published number is carried with its source beside ours, never merged into ours.
+- **Depth is a product, not a page.** A page with charts and trends is a daily archive with a renderer; build the archive first.
+- **The ally's home mirrors the default's layout.** Same sections, same places; theme, words and data are the ally's.
+
 ## OPEN LEDGER 2026-09-20 late (supersedes 2026-09-20; that ledger stays below as history)
 
 ### CLOSE OF THE 2026-09-21 CHAT — state in one paragraph
