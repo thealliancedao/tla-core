@@ -1,7 +1,7 @@
 # The cron fleet — what runs, when, what it feeds
 
-> Source of truth for the **17 Render jobs** (14 console-verified 2026-08-25; +3 per-collection ledger crons
-> 2026-09-12, owner screenshots). All build from `thealliancedao/platform-crons` (root directory = the job folder,
+> Source of truth for the **19 Render jobs** (14 console-verified 2026-08-25; +3 per-collection ledger crons
+> 2026-09-12, owner screenshots; +org-nft-inventory-liondao 2026-09-18; +org-ally-positions-liondao 2026-09-21). All build from `thealliancedao/platform-crons` (root directory = the job folder,
 > `npm install`, `node <entry>`), auto-deploy on commit, region Oregon. TLA jobs publish into `thealliancedao/tla-core`;
 > everything aDAO/NFT publishes into `thealliancedao/nft-collections/<slug>/` (aDAO migrated 2026-09-13; tla-core is
 > TLA data only). **tla-core has ZERO scheduled GitHub Actions since 2026-09-13** — every schedule is on Render; Actions are one-time.
@@ -26,6 +26,7 @@
 | **org-nft-flows-adao** | `nfts/nft-flows/` · index.js (1.5.1 — bodies at walk time, by-token + by-wallet shards; classify.js 1.1.6), env `COLLECTION=adao` | hourly `4 * * * *` | on-chain event ledger → `nft-collections/adao/{ledger,ledger/by-token,ledger/by-wallet,raw/forward,nft-flows/heartbeat.json}` (block cursor) | app NFTs tab (next), explorer per collection (queued) |
 | **org-nft-flows-pixel-lions** | `nfts/nft-flows/` · index.js, env `COLLECTION=pixel-lions` | hourly `24 * * * *` | same, `nft-collections/pixel-lions/` | same |
 | **org-nft-flows-tla-locks** | `nfts/nft-flows/` · index.js, env `COLLECTION=tla-locks` | hourly `44 * * * *` | same, `nft-collections/tla-locks/` (lock lineage) | same |
+| **org-ally-positions-liondao** (2026-09-21) | `ally-positions/` · index.js (1.0.2) · env `TENANT=liondao`, `GITHUB_REPO=thealliancedao/dao-originations`, own fine-grained PAT (dao-originations Contents write), `HELIUS_API_KEY` (for the ROAR20 duty, not built yet) | hourly `20 * * * *` | per roster wallet (tenants.json `liondao.wallets`): capture-engine TLA amp/non-amp + locks + pending + compounder receipts, every bank denom + catalog cw20 by catalog symbol (unpriced rows kept with a reason), delegations, the validator account's commission, Votion rows, pixeLions held/staked; roll-up by role + DAO; `reconciliation` = ours vs the phoenix.money fixture EVERY run (gate #0 published in the product) → `dao-originations/lion-dao/positions/{current,heartbeat}.json` + `daily/YYYY-MM-DD.json`. Duties queued in the same folder (crons per ally, one engine): burn ledger `lion-dao/burn/`, validator tracker `lion-dao/validator/`, ROAR20 `lion-dao/roar20/`, compounder-rate + Credia readers | Lion DAO home /liondao/ + its dao_treasury / dao_tla_deposits / dao_unclaimed / validator / burn / roar20 pages (HANDOVER-liondao-home-v2) |
 | org-token-catalog | `token-catalog/` · token-catalog.js (writes price-history/heartbeat.json each run; fuel-supply probes the chain-registry Neutron REST list — publicnode is dead) | every 6 h `35 */6 * * *` | token catalog (symbols, decimals, identities), CAPA + FUEL supply maps, wallets-daily | every name and decimal on the site, ampCAPA / FUEL tools |
 | org-dao-governance | `dao-governance/` · index.js | every 6 h `25 */6 * * *` | aDAO / Lion DAO / PixelLions proposals + members (into dao-originations) | DAO page, quick audit, help bot governance products |
 | org-lp-grades | `lp-grades/` · lp-grades.js | daily `15 23 * * *` | v1 + v2 five-lens grades, write-once epoch archive | LP Grades tab, Vote Advisor, Pools tab letters |
@@ -69,6 +70,7 @@ publishers now retry 8× with longer jitter. The real fix is not to pile jobs on
 | :05 | nap-org | prices next; member-data and lp-grades price from it |
 | :10 | org-system-health | reads the heartbeats the :00/:05 jobs just wrote |
 | :20 | org-votion | Votion re-optimizes every ~15 min; :20 gives a fresh worksheet before member-data |
+| :20 | org-ally-positions-liondao | shares votion's minute but publishes to a DIFFERENT repo (dao-originations), so no branch race; reads nap-org's :05 prices and the :01 dex-data snapshot |
 | :30 | org-dex-data | pool snapshots BEFORE the TLA snapshot that cross-references them (today it runs at :00, so the snapshot reads the previous hour's) |
 | :45 | org-member-data | reads dex-data (:30), votion (:20), prices (:05), bribe-state (:00) — all fresh; and no neighbour commits at :45 |
 | 2,17,32,47 | org-tla-flows | keep 15-min; offset so the three fast jobs never share a minute |
@@ -100,3 +102,6 @@ A fresh heartbeat is not a healthy job (system-health 1.0.7+). Public nodes are 
 
 ## Per-ally rule (2026-09-18)
 Crons are per ALLY, not per collection — see tla-core/docs/curated/tenants.json and nfts/nft-inventory/run-ally.js.
+Positions likewise (2026-09-21): `ally-positions/` is ONE tenant-agnostic engine; a Render service per ally (`org-ally-positions-<ally>`,
+env `TENANT=<ally>`) publishing into `dao-originations/<ally-folder>/positions/`. New per-ally duties (burn ledger, validator tracker,
+ROAR20, readers) are folded into this engine, never new services.
