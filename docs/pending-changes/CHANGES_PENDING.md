@@ -2,7 +2,16 @@
 
 ## OPEN LEDGER 2026-09-20 late (supersedes 2026-09-20; that ledger stays below as history)
 
-### CLOSE OF THE 2026-09-20 CHAT — state in one paragraph
+### CLOSE OF THE 2026-09-21 CHAT — state in one paragraph
+TLA queue items 1 + 2 COMMITTED and verified live (network-and-prices 3.1.0 keys the stables by the catalog symbol and publishes
+`catalog_symbol_drift`; member-data 1.2.1 / dex-data 1.4.4 / tla-stats T6.7 / index 4.38 / dao_treasury 3.3; the oracle carries
+USDC.n back to 2022-10 and epoch-history 1.1.0 fills the Bribes column E185–E203 except E184/E196). Queued: B.7 nap-org 409
+retry on publish (heartbeat push lost the sha race at 01:18Z; self-heals hourly); items 3–6 as listed. NEXT MILESTONE = Lion DAO
+positions + ROAR supply map + validator tracker + PL staking APR — the owner's brief, the four wallets, the phoenix.money
+portfolio (backend JSON + HAR + screenshots) are in `HANDOVER-liondao-positions-2026-09-21.md` + `fixtures/2026-09-21/`.
+Start the next chat from PROJECT_KNOWLEDGE opener 0 (swap PROJECT_KNOWLEDGE into the project; attach this file).
+
+### (history) CLOSE OF THE 2026-09-20 CHAT — state in one paragraph
 Live: index 4.37 (Live Activity on episodes; nft-flows 1.6.0 writes activity.json hourly), member-data supporters 1.2 (four
 memo targets), tla-stats T6.6 (steps 1–5 in place: vocabulary · tile history via epoch-history rollup 1.1.0 · APR at the live
 LUNA (dex-data 1.4.3) · LUNA-EURe pot · Vote Market honesty), help corpus v1.14.1 (site-reading-guide + DATA-MAP + docs
@@ -44,8 +53,18 @@ yet; delete test-3.html + gate-test-3.mjs; swap PROJECT_KNOWLEDGE into the proje
   oracle row instead of `stable_1_1` (sub-0.1 % shifts, basis relabeled `price-history:<day> (src)`).
   COMMITTED ~00:45Z and byte-verified (5 md5s); the owner ran org-member-data → epoch-history.json 1.1.0 at 00:54Z with the
   Bribes column filled E185–E203 except E184 / E196 — verified live from raw.
-- **ITEM 1 — stables keyed by the catalog symbol (DELIVERED 2026-09-21, gated; commit pending: platform-crons → aDAO-links-site
-  → tla-core docs).** Cause: network-and-prices keyed `token_prices` by its own registry spelling (USDC / USDT / EURE) while every
+- **B.7 (NEW 2026-09-21) — nap-org: 409 sha-conflict retry on publish.** The first 3.1.0 run's heartbeat push failed `HTTP 409
+  … is at c8d94f2 but expected 2c973dd` (another cron wrote tla-core between GET and PUT — bribe-state harvested at 01:06Z, the
+  hourly overlap). current.json went through; heartbeat.json stayed the 01:05 one for an hour (system-health may read nap
+  stale for that hour). token-catalog got the retry in 1.4.2 (re-fetch sha, up to 5×); nap never did. ~15 lines in
+  `pushToGithub` + one mock check. Not caused by 3.1.0.
+- **ITEM 1 — stables keyed by the catalog symbol (COMMITTED 2026-09-21 ~01:15Z, VERIFIED LIVE).** First runs: nap-org 01:18Z —
+  keys USDC.n / USDt / EURe, `catalog_symbol_drift` 11/15 aligned + WBTC→wBTC.atom · ETH→null · WSTETH→wstETH · BNB→wBNB.axl,
+  canary 6 checked / 0 flagged; member-data 01:19Z consumed it — every stable asset on every pool (Astroport AND the
+  SkeletonSwap pools spelled USDC) reads the catalog symbol with `price_source: direct`; the "4 failed" are WHALE / ampWHALE /
+  bWHALE / wSOL (abandoned project, honest nulls as before); dao-dashboard treasury `USDC.n $122.88` priced. Still to see on
+  their own clocks: org-dex-data SS daily CSV TVL on the four SS USDC pools; site footers; gate-tla-stats L7 on a fresh pull.
+  What was delivered (for the record): Cause: network-and-prices keyed `token_prices` by its own registry spelling (USDC / USDT / EURE) while every
   reader resolves a denom through the token-catalog (USDC.n / USDt / EURe) — the LUNA-EURe pot read $0, T6.5 bridged it on the
   page. Fixed at the source, readers moved in the same delivery, denom-keyed wherever the reader has the denom:
   · platform-crons `network-and-prices/index.js` 3.1.0 — registry keys `'USDC.n'` / `'USDt'` / `'EURe'`; canary `ANCHORS` are
@@ -310,8 +329,17 @@ tla-core (4 files): `docs/curated/alert-thresholds.json` (+`live_activity` block
 - Owner: "will stop here; the next batch will work on the rest, with TLA data audits." Eris tile audit done above.
 
 ### Next (in order)
-- TLA queue items 3–6 per PROJECT_KNOWLEDGE opener 0 (3 = Monday's harvest check; 4 needs an Eris HAR; 5 Breakdown / Movers
-  sublines; 6 = B.6). Lion DAO Home (Milestone 2) is the next milestone — start it in a fresh chat from opener 3.
+- **LION DAO POSITIONS milestone (owner, 2026-09-21 ~01:30Z: "get right into starting to figure out the locations we can track
+  their positions") — the next chat, opener 0.** Brief, wallets, fixtures and order in
+  `HANDOVER-liondao-positions-2026-09-21.md` (§A the four wallets: pixeLions ops (Lew) terra1tgvlyhn…, pixeLions ⍺ msig
+  terra1xgg9cf9…, LionDAO ops (Ryan) terra1ksk66lc…, LD DAODAO terra1tkersa2…; §B the phoenix.money portfolio transcribed,
+  $189,983 across the four, ROAR 378B; §C the engines that already exist — portfolio-assembler / capture-engine, the CAPA supply
+  map, tenants.json; §D the four asks sized — positions product, ROAR supply map + whale tracker + burners, validator tracker
+  + delegator leaderboard, Pixel Lions staking APR from the 5B ROAR/yr target; §E order; §F questions for the council).
+  Fixtures: `docs/fixtures/2026-09-21/phoenix-money-liondao-portfolio.json` (the backend's full JSON, the gate-#0 reference),
+  `phoenix-money-liondao.har` (trimmed to the two portfolio calls), `phoenix-money-portfolio-config.json`, three screenshots.
+- TLA queue items 3–6 (3 = Monday's harvest check; 4 needs an Eris HAR; 5 Breakdown / Movers sublines; 6 = B.6) + B.7 — small,
+  slotted between Lion DAO steps or in a short chat of their own.
 - B.6 the venue-only bid classification (above), then B.2 / B.3 / B.4 / B.5 as before.
 - Explorer: the journey sheet's buyer tile "holdings at the time of the buy" from by-wallet (`asOf(height)`).
 - Live Activity follow-ups (parked until the owner has looked at it live): synthetic market rows ("floor −12% this week",
