@@ -10,7 +10,7 @@ section). Closed by the owner: the three-question restructure (test-3 deleted). 
 yet; delete test-3.html + gate-test-3.mjs; swap PROJECT_KNOWLEDGE into the project and attach this file. Next chat: opener 0.
 
 
-### 2026-09-21 (opener 0 chat) — verified, then TLA queue item 2 DELIVERED (commit pending: tla-core-13 + platform-crons)
+### 2026-09-21 (opener 0 chat) — verified; TLA queue item 2 COMMITTED + verified live; item 1 DELIVERED (commit pending)
 - **Verified from a fresh pull (00:10Z)**: tla-stats T6.6 live; test-3.html + gate-test-3.mjs gone; the member-data strays gone;
   docs bulk (site-reading-guide, DATA-MAP, this ledger) on main; epoch-history.json rebuilt by the cron 22:31Z (20 epochs,
   E184–E203, version 1.0.0 — the 1.1.0 rollup with the bribe join runs on the NEXT daily archive or `FORCE_ROLLUPS=1`);
@@ -42,20 +42,44 @@ yet; delete test-3.html + gate-test-3.mjs; swap PROJECT_KNOWLEDGE into the proje
   only (no FUEL row in the oracle on 05-13 / 08-02 — honest blank, not this item); every epoch priced before prices to the
   same cent after. Series gate 1.9.0 still PASS. Knock-on (expected): nft-flows' next derive prices USDC.n sales at the day's
   oracle row instead of `stable_1_1` (sub-0.1 % shifts, basis relabeled `price-history:<day> (src)`).
-  **Owner**: commit platform-crons (2 files) then tla-core (48 files); trigger org-member-data with `FORCE_ROLLUPS=1` once (or
-  wait for the 23:xx daily archive) → epoch-history.json version 1.1.0 with the Bribes column filled E185–E203 except E196;
-  the tla-stats Bribes tile popup then shows the history. Byte-verify the md5 table in the chat.
-- **ITEM 1 — stables keyed by the catalog symbol (AUDITED, NOT DELIVERED — a wider change than the queue line)**. Registry keys
-  `USDC` / `USDT` / `EURE` vs catalog `USDC.n` / `USDt` / `EURe`. Readers that key on the OLD spelling and must move in the same
-  delivery: member-data/tla-snapshot.js `IBC_REGISTRY` (pool valuation goes pool-derived / prev-daily on a miss), member-data/
-  dao-dashboard.js `DENOM_MAP` (treasury USDC → $0), dex-data/epochs-skeletonswap.js `buildPriceLookup` + its alias table (SS
-  USDC pool TVL → null), the price canary's `ANCHORS` (already blind to Astroport's `USDC.n` today — only the SS `USDC` anchor
-  and Astroport `USDT` work; a bug of the same class), index.html's seeded gecko cache (`token_prices[info.name]`), dao_treasury
-  colour/label maps, network-and-prices mock fixtures; readers already on the catalog symbol (supporters.html, tla-stats px,
-  lp-grades px, the pot code) start finding the stables. Then drop the T6.5 page bridge (catPx fallback). Four more registry ↔
-  catalog mismatches found (WBTC→wBTC.atom, WSTETH→wstETH, BNB→wBNB.axl, ETH not in the catalog) — publish as a drift list in
-  current.json (the cron keeps the gate, Δ published), do not rename. Denom-keyed lookups (`prices.astroport.address`) wherever a
-  reader has the denom. Own delivery, each cron's mock re-run, the owner checking the DAO + TLA pages after commit.
+  COMMITTED ~00:45Z and byte-verified (5 md5s); the owner ran org-member-data → epoch-history.json 1.1.0 at 00:54Z with the
+  Bribes column filled E185–E203 except E184 / E196 — verified live from raw.
+- **ITEM 1 — stables keyed by the catalog symbol (DELIVERED 2026-09-21, gated; commit pending: platform-crons → aDAO-links-site
+  → tla-core docs).** Cause: network-and-prices keyed `token_prices` by its own registry spelling (USDC / USDT / EURE) while every
+  reader resolves a denom through the token-catalog (USDC.n / USDt / EURe) — the LUNA-EURe pot read $0, T6.5 bridged it on the
+  page. Fixed at the source, readers moved in the same delivery, denom-keyed wherever the reader has the denom:
+  · platform-crons `network-and-prices/index.js` 3.1.0 — registry keys `'USDC.n'` / `'USDt'` / `'EURe'`; canary `ANCHORS` are
+    those keys and assets are matched by DENOM (`keyOf(asset)`: registry phoenix-1 addresses + LST market addresses) — the
+    Astroport USDC anchor had been blind because its captures already say `USDC.n`; NEW `catalogSymbolDrift(catalog)` = the
+    reconciliation kept as a gate: every registry entry with a phoenix-1 denom vs the catalog's symbol for it, published as
+    `snapshot.catalog_symbol_drift` + `heartbeat.stats.catalog_symbol_drift` (today WBTC→wBTC.atom, WSTETH→wstETH, BNB→wBNB.axl,
+    ETH not in the catalog — visible, NOT renamed; a stable drifting logs a loud warning, never fails the run). `mock-run.js`
+    34/34; `fixtures/token-prices.json` re-keyed to the 3.1.0 output; CHANGELOG.md.
+  · `member-data/tla-snapshot.js` IBC_REGISTRY USDC.n / USDt / EURe (PriceResolver direct lookup would otherwise miss the
+    stables → pool-derived / prev-daily); `member-data/dao-dashboard.js` 1.8 DENOM_MAP USDC.n (treasury); `member-data/index.js`
+    1.2.1; CHANGELOG.md. No member-data mock exercises these maps (none exists for tla-snapshot / dao-dashboard) — verify on
+    the first run (below).
+  · `dex-data/epochs-skeletonswap.js` — `buildPriceLookup` also indexes feed entries by phoenix-1 address; `computePoolTvl` →
+    `priceForAsset` (denom first, symbol second; alias table = fallback, usdc/axlusdc → USDC.n); `dex-data/index.js` 1.4.4;
+    `mock-run.js` 89/89 (+5).
+  · aDAO-links-site `tla-stats.html` T6.7 — the T6.5 catPx bridge removed; `px(sym)` reads the feed only; a missing symbol
+    stays UNPRICED on the row. `gate-tla-stats.mjs` L5 rewritten, L6 + L7 new (L7 reads the real feed once 3.1.0 has run);
+    52/74 vs the live T6.6 file's 51/73 on the same fixtures — the 22 fails are the pre-existing drift (stale fixtures),
+    none new. `index.html` 4.38 — the price seed finds feed entries by address first (gate-index-activity 24/24).
+    `dao_treasury.html` 3.3 — `normalizeTokenName` USDC.N → USDC (What-changed does not read the rename as a DAO action);
+    colours for USDC.n / USDt. Every inline script block of the three pages `node --check` clean.
+  · tla-core docs: site-reading-guide (§7 pots, known gaps 2 + 4 closed), CRON-FLEET, tla-log T6.7, index-log 4.38, dao-log
+    3.3, cron-network-and-prices-log 3.1.0, cron-dex-data-log 1.4.4, cron-member-data-log 1.2.1, cron-token-catalog-log.
+  NOT changed (known, published as drift): WBTC / WSTETH / BNB registry keys; `network-and-prices/daily/` archives keep the old
+  keys (history is not rewritten — a reader diffing two captures by symbol sees USDC → USDC.n once at the boundary);
+  lib/adao-live-data.js's name map (it never keys token_prices by a stable); help-agent server.js unchanged (it iterates).
+  **Verify after commit (owner)**: nap-org's next run logs `catalog symbols: N/M registry keys match the catalog; drift:
+  WBTC→wBTC.atom, ETH→null, WSTETH→wstETH, BNB→wBNB.axl` and current.json has `token_prices['USDC.n'|'USDt'|'EURe']` and no
+  USDC/USDT/EURE; org-member-data's next tla-snapshot: LUNA-USDC.n `lp_health.asset_1.symbol` = USDC.n with
+  `price_source: direct`; dao-dashboard treasury row `USDC.n` with a price; org-dex-data's next SS daily-csv: LUNA-USDC /
+  USDC-SOLID / USDC-USDt / USDC-EURe carry a TVL (not blank); site: tla-stats footer T6.7 + the LUNA-EURe / USDC.n-EURe pots
+  funded; index 4.38; dao_treasury 3.3 with USDC.n in the treasury tiles and NO "USDC gone / USDC.n new" line in What changed;
+  then `TLA_CORE_DIR=<fresh pull> node gate-tla-stats.mjs` → L7 ✓.
 
 ### Verified at session start (17:05Z)
 - nft-flows 1.5.3 on main (byte-level the delivered file). The PL forward heartbeat at 16:49Z was still 1.5.2 (`by_wallet:
@@ -286,8 +310,8 @@ tla-core (4 files): `docs/curated/alert-thresholds.json` (+`live_activity` block
 - Owner: "will stop here; the next batch will work on the rest, with TLA data audits." Eris tile audit done above.
 
 ### Next (in order)
-- TLA queue item 1 (above, own gated delivery), then items 3–6 per PROJECT_KNOWLEDGE opener 0; Lion DAO Home (Milestone 2)
-  is the next milestone.
+- TLA queue items 3–6 per PROJECT_KNOWLEDGE opener 0 (3 = Monday's harvest check; 4 needs an Eris HAR; 5 Breakdown / Movers
+  sublines; 6 = B.6). Lion DAO Home (Milestone 2) is the next milestone — start it in a fresh chat from opener 3.
 - B.6 the venue-only bid classification (above), then B.2 / B.3 / B.4 / B.5 as before.
 - Explorer: the journey sheet's buyer tile "holdings at the time of the buy" from by-wallet (`asOf(height)`).
 - Live Activity follow-ups (parked until the owner has looked at it live): synthetic market rows ("floor −12% this week",
