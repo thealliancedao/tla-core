@@ -1,5 +1,82 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER 2026-09-22 (supersedes 2026-09-21 late; that ledger stays below as history)
+
+### CLOSE OF THE 2026-09-22 CHAT — state in one paragraph
+LION DAO HOME v2.1 + SIX FULL PAGES DELIVERED (commit pending, two ZIPs). Opener 0 verified (heartbeat fresh, reconciliation rows,
+validator account …as43fnu, /liondao/ on main). Registrations DONE + committed (system-health 1.0.10 FRESHNESS_MAP, cron-registry
+`ally-positions-liondao`, CRON-FLEET 19 services). The positions audit vs the owner's phoenix.money / DAODAO / CoinGecko /
+Chainscope screenshots reconciled row for row and found gate #0's −1.0 % was TWO ERRORS CANCELLING (ours short $29.7k balances +
+$10.2k Credia on Ryan; phoenix short $38.6k — five compounder receipts it types `default` at $0). ally-positions 1.1.0 (price by
+denom, receipts labeled `held_as`/`valued_in` and unpriced, Credia reader = vproxy × supply_index + portfolio debt query, per-section
+reconciliation, `known_cw20s`) + nap 3.1.1 (`USDC.inj`, root `denom` on every price row) + contracts.js CREDIA.portfolio + tenants.json
+known_cw20s are ON MAIN (byte-checked). ally-positions **1.1.1** (`daily/index.json` series, never-shrink) is in this ZIP. aDAO-links-site:
+`liondao/lib/ld.js` 1.0.0 (one shared page lib: loaders, fmt, ui, Chart.js helpers, whatChanged, CSS — the answer to aDAO's 1.17 MB
+index.html), `dao_treasury.html`, `dao_tla_deposits.html`, `dao_unclaimed.html`, `validator.html` (live LCD; Alliance module account
+DERIVED = bech32(sha256("alliance")[0:20]) = terra1srd5yxrg346qd7mne893gy3g43elh2swcmc0j3), `ecosystem.html`, **`mint.html`** (the
+5,000 primary sales, hour by hour: sellout curve, two price tiers 921×10 / 4,079×12 LUNA, 58,158 LUNA = $41,461 then, LUNA $0.76→$0.61
+during the mint, 988 minters, 561 still hold ≥1 pixeLion — a wallet-level join on summary.per_real_owner_counts), **`alliance.html`**
+(the v1 copy unchanged + each leg as the products read it today: 10k delegation + unclaimed from dao-dashboard, aDAO's LUNA-ROAR /
+ampROAR-ROAR rows from participants, 20 staked pixeLions from summary, the 1B staked ROAR live via `staked_balance`; aDAO NFTs and
+then-vs-now Unknown until the alliance ledger), `coming.html` 1.1 (redirects slots that grew a page), `home.json` 2.1 (aDAO's exact
+section order; rarity → the explorer; only supply + lore stay muted slots; DAO links menu carries the six pages), `index.html` 2.1,
+home-tiles 1.1.0 (positions product source, `soon` tiles, clickable total strip). Gates: gate-liondao-pages.mjs **59/59** (jsdom on
+real fixtures + LCD shape fixtures; a `|| true` line was found and replaced with the real module-sized-unmatched-delegator case),
+gate-liondao-home.mjs **60/60** (v2.1), ally-positions mock 34/34. No aDAO page changed. NEXT: commit both ZIPs, live-check the three
+items below, then HANDOVER §C products in order (burn ledger first) — each replaces a live read or an Unknown on these pages.
+
+### Delivered this chat (commit pending — one ZIP per repo)
+- aDAO-links-site ZIP: liondao/lib/ld.js 1.0.0 · liondao/{dao_treasury,dao_tla_deposits,dao_unclaimed,validator,ecosystem,mint,
+  alliance}.html 1.0 · liondao/coming.html 1.1 · liondao/home.json 2.1 · liondao/index.html 2.1 · lib/home-tiles.js 1.1.0 ·
+  gate-liondao-pages.mjs (NEW, 59/59) · gate-liondao-home.mjs (60/60). Run both gates from the repo root with TLA_CORE_DIR /
+  NFTC_DIR / DAOO_DIR at fresh pulls (the home gate reads vercel.json from the repo root).
+- platform-crons ZIP: ally-positions/index.js 1.1.1 + mock-run.js 34/34 (adds `daily/index.json`: one row per archived day —
+  known_usd, by_section, validator commission — merged never-shrink, non-mutating; the pages' Trend / What Changed read it).
+- tla-core docs ZIP: this file + CRON-FLEET.md (row → 1.1.1 + the series). PROJECT_KNOWLEDGE.md loose (replace the project file).
+
+### Live checks owed after commit
+1. `dao-originations/lion-dao/positions/daily/index.json` appears after the first 1.1.1 run; the treasury page's Trend draws.
+2. Credia debt shape: `credia.portfolio_raw` on Ryan — if `borrows` is not where the reader guesses, the reader is shape-tolerant
+   and the page shows collateral with debt Unknown (labeled). Fix upstream, never in the page.
+3. `USDC.inj` priced after nap 3.1.1 (Astroport pools empty → cg_only); `reconciliation.by_section.balances` Δ ≈ −$0.4k.
+4. /liondao/ → every tile lands on a page; mint.html hero = 5,000 / 988 / $41,461; alliance.html staked-ROAR leg reads 1B live.
+
+### Found this chat
+- **Gate #0 cancelled two errors.** Reconcile BY SECTION, not by total: the product now publishes `reconciliation.by_section`.
+- phoenix.money values five compounder receipts (ATOM-LUNA, ROAR-LUNA, bLUNA-LUNA, USDt-LUNA, LUNA-INJ) at $0 (`default` type) —
+  their $38.6k hole, ours to label `theirs_amount_but_zero_value`, never to copy.
+- Ryan's seven `factory/terra1zly98…` bank rows ARE the compounder receipts already valued in lp_positions (§C item 5 as written
+  would double them); `wBTC.creda.a` is the Credia receipt. Receipts are labeled `held_as` + `valued_in` and carry no USD.
+- Credia: portfolio contract terra1y6hfmr3…cjv4zz `{"portfolio":{"address"}}`; receipt = market vproxy balance × supply_index
+  (0.04142667 × 1.001835 = 0.041503 = phoenix's figure).
+- Holes still open upstream: USDC.inj `ibc/E8481AD8…` (feed added 3.1.1; catalog add owed — the drift gate watches), wstETH (feed
+  key WSTETH vs catalog wstETH), rSWTH/WHALE family (WHALE intentionally absent from the feed), wBTC.atom (WBTC key), NEWT + two
+  Astroport uLPs + the msig uLP (addresses owed to `known_cw20s`), wSOL.wh 4.459 seen by us not phoenix (decimals to verify).
+- Chainscope: validator 8,411,303 LUNA, 95.6 % is the Alliance module (8,044,881), 560 delegators, commission 7.5 % / max 10 %,
+  3,615 LUNA accrued; aDAO's 10k from …3m5vzm. CoinGecko shows ROAR max supply 100T (their field, not ours).
+- The explorer's views are `collection` and `analytics` only; rank + traits per lion live in `collection` → the rarity tile opens
+  `nft-explorer-index.html?tenant=liondao`. rarity-explained.html is aDAO's copy — not reused.
+- aDAO has no dao_unclaimed.html: the Lion DAO one is a new shape (three panels: TLA · validator · pixeLions distributor).
+
+### NEW LAWS (2026-09-22)
+- **Reconcile by section, or two errors cancel.** A total that matches is not a gate; the Δ per section is. (Gate #0's −1.0 %.)
+- **A vacuous gate line is a fake gate.** `|| true`, an empty fixture, an assertion on nothing — replace with the case it was meant
+  to cover or delete it; never ship a green line that tests nothing.
+- **A slot that grew a page redirects.** coming.html?tile=X sends old links to the page; the home never links a slot twice.
+- **A page lib is a page's answer to a monolith.** Loaders, formatting, Unknown chips, wallet chips, charts and CSS live ONCE
+  (liondao/lib/ld.js); a page is only what it shows. The 1.17 MB index.html is the counter-example.
+- **A wallet-level join is not a token-level claim.** "Still holds a pixeLion" (minters ∩ owners) is honest; "kept the ones they
+  minted" needs the by-wallet shards — Unknown until then, said on the page.
+- **A receipt row carries no USD.** Labeled `held_as` / `valued_in`, it points at the position that values it; a reader that prices
+  it doubles the position.
+- **The gate observes the redirect.** jsdom cannot navigate; the gate counts the navigation attempt and reads the target from the
+  source — never stubs the page into a different program.
+
+### Council questions still open (§E)
+- The pixeLions rewards distributor address (`staking.pl_rewards_distributor`) — the unclaimed page's third panel is Unknown until it lands.
+- Does the 10.2B burn gap (117B tweeted vs 106.79B supply delta) surprise them? (`minter` query or unburned ROAR — the burn ledger settles it.)
+- NEWT and the three Astroport uLP addresses for `known_cw20s`.
+
 ## OPEN LEDGER 2026-09-21 late (supersedes 2026-09-20 late; that ledger stays below as history)
 
 ### CLOSE OF THE 2026-09-21 LATE CHAT — state in one paragraph
