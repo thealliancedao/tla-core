@@ -1,54 +1,175 @@
 {
- "schemaVersion": 1,
- "note": "The allies (tenants) of thealliancedao.com — ONE curated list, read by the crons (which collections an ally's service runs) and by the site (the header tenant dropdown, /<slug> default, logos, theme). Add an ally = a block here + its collection folders in nft-collections + one Render service per cron family (org-nft-inventory-<slug>, org-nft-flows-<slug>). Remove an ally = delete its block, stop its services, delete its folders — nothing else changes. `default: true` marks the site's default tenant.",
- "updated_at": "2026-09-21",
- "tenants": {
-  "adao": {
-   "label": "AllianceDAO",
-   "short": "aDAO",
-   "default": true,
-   "logo": "/assets/images/Alliance%20DAO%20Logo.png",
-   "live": true,
-   "collections": ["adao"],
-   "daos": ["adao"],
-   "services": { "inventory": "org-nft-inventory", "flows": "org-nft-flows-adao" },
-   "theme": { "accent": "#22d3ee", "bg": "#121212", "font": "Inter" }
-  },
-  "liondao": {
-   "label": "Lion DAO",
-   "short": "Lion DAO",
-   "default": false,
-   "logo": "/assets/token-logos/ROAR_LOGO.png",
-   "live": true,
-   "nav": { "hide": ["adao-lore"], "new_here": false, "nav_note": "tabs that are another ally's and the aDAO/TLA onboarding pills stay off Lion DAO pages (site-header 1.11.3)" },
-   "hero": { "tagline": "", "hero_note": "one optional line under the collection mark on the explorer — Lion DAO's words when they want one; empty shows the mark, the names and the four numbers only" },
-   "live_note": "false until the explorer lights Pixel Lions (E3); the header lists live tenants only — ?tenant=liondao or /liondao still select it for testing",
-   "collections": ["pixel-lions"],
-   "collections_note": "burning-lions joins this list when its folder is onboarded — that line is the whole switch",
-   "daos": ["lion-dao", "pixel-lions"],
-   "services": { "inventory": "org-nft-inventory-liondao", "flows": "org-nft-flows-pixel-lions" },
-   "home": "/liondao/",
-   "gate0_reference": "docs/fixtures/2026-09-21/phoenix-money-liondao-portfolio.json",
-   "gate0_note": "the phoenix.money backend JSON the council loaded (four wallets, $189,983 on 2026-09-21) — ally-positions publishes ours beside it in current.json.reconciliation every run; refresh the fixture to move the reference",
-   "home_note": "the ally's own home page (a folder in aDAO-links-site: liondao/index.html + the ally's own pages); the header sends a visitor here when Lion DAO is selected on a home page, and the /liondao rewrite lands here. A tenant with no `home` defaults to /<slug>/ (the default tenant to /)",
-   "validator": { "operator": "terravaloper1pet430t7ykswxuyhh56d4gk6rt7qgu9as6a5r0", "account": "terra1pet430t7ykswxuyhh56d4gk6rt7qgu9as43fnu", "moniker": "🦁 The Lion DAO", "note": "account = the operator's terra1 form (bech32 re-encoded — the checksum changes with the prefix; a prefix swap is NOT an address); it accrues the validator's commission — a Lion DAO position and an unclaimed-rewards source" },
-   "wallets": {
-    "terra1tkersa2mqwy2h8exj799qx2xrhdu0dkymk9psp6v0k4kz4tkxucssgluec": { "label": "LD DAODAO", "role": "treasury", "counts_as": "treasury", "note": "Lion DAO core / treasury (DAODAO); the bulk of ROAR" },
-    "terra1ksk66lcvzwaanc47nvn3athj4yzcpay8z8ru04": { "label": "LionDAO ops (Ryan)", "role": "ops", "counts_as": "ops", "note": "TLA locks / staked LP / compounder receipts / Credia; the bribe-funding wallet of wallets.json" },
-    "terra1tgvlyhnqyxgwuw07h986jtnjhkcz72es3u33a9": { "label": "pixeLions ops (Lew)", "role": "ops", "counts_as": "ops", "note": "pixeLions Terra ops wallet" },
-    "terra1xgg9cf94ws2mawr6lyrdvmyxt48xkwgp8gvtsrcg2yktqvk8w2rqxflq06": { "label": "pixeLions ⍺ msig", "role": "msig", "counts_as": "msig", "note": "the stewardship multisig; the bulk of the USDC; TLA locks #163 #727" }
-   },
-   "wallets_note": "2026-09-21 (HANDOVER-liondao-positions §E.1): THE roster the positions product and the home page run on — a wallet is added or removed here and nowhere else. The pixeLions DAO treasury (terra1c690mdr…) is deliberately NOT a Lion DAO wallet: owner 2026-09-21, it is a Pixel Lions position owned by that DAO's stakers (part of the ecosystem, not Lion DAO's) — it stays under pixel-lions/collection.json governance.dao_address",
-   "known_cw20s": [
-    { "denom": "terra1pez3qw6pa24a06wee404yy5mp37j57n3s9zjkdfjeapwqf78dntql0ngsy", "symbol": "pyROAR", "decimals": 6, "note": "'Burnt ROAR' — the frozen burn ledger token; the DAO treasury holds ~6.24M (DAODAO treasury tab 2026-09-21). Not in the token-catalog (no indexed pool); unpriced by design" }
-   ],
-   "known_cw20s_note": "cw20s the token-catalog does not carry, read by ally-positions 1.1.0 like catalog cw20s (symbol_source: tenants.json known_cw20s) — the registry holds the literals. Still to add from the DAODAO treasury tabs once their contract addresses are copied: NEWT (1.17K on LD DAODAO), the two Astroport uLP tokens on LD DAODAO (250.00M = the pyROAR-ROAR pair LP, 60.50M), the msig's uLP 599.03K",
-   "gate0_reference_as_of": "2026-09-21",
-   "staking": { "roar_cw20": "terra1lxx40s29qvkrcj8fsa3yzyehy7w50umdvvnls2r830rys6lu2zns63eelv", "roar_staking": "terra1xuqh84yz35h70p3ppt76dz5kgwwtwmsv34pg0gw6ld4ntptgjcrqe2e70t", "roar_rewards_distributor": "terra1zug2ur6d5ls7vgzwkh0m2002jrallfehpsadpltjqr3vhgvp6lnq90rj3w", "pl_rewards_distributor": null, "note": "roar_staking = the contract aDAO's ROAR deploy prop staked 1B ROAR into ({stake:{}}), read as Lion DAO's DAODAO cw20 staking module (confirm against the core's voting_module); roar_rewards_distributor from known_contracts.json; pl_rewards_distributor UNKNOWN — the pixeLions DAO's NFT-staking distributor (DAODAO, funded by prop, pays hourly for a year to whoever is staked; the 5B ROAR/yr target is unverified until it is read)" },
-   "burn": { "festival_receiver": "terra17c6ts8grcfrgquhj3haclg44le8s7qkx6l2yx33acguxhpf000xqhnl3je", "festival_window": "2023-09 → 2024-09 (year-long ROAR Burn competition; final draw 2024-10-04)", "reported": { "community_burned": 10000000000, "dao_burned": 107000000000, "participants": 224, "top_wallet_burned": 1400000000, "pyroar_supply_cap": 109690000000, "as_of": "2024-10-04", "source": "https://x.com/TheLionDAO — 'FINAL prize draw for the Burning Lion Festival' (2024-10-04) and 'final month of the $ROAR Burn competition' (2024-09-15)" }, "pyroar_cw20": "terra1pez3qw6pa24a06wee404yy5mp37j57n3s9zjkdfjeapwqf78dntql0ngsy", "pyroar_note": "found 2026-09-21 on the treasury's asset whitelist: cw20 'Burnt ROAR' / pyROAR, decimals 6, total_supply 109,690,675,868.39 — the bricked PyROARmaniacs DAO's token, minted 1:1 to burners; its balances are the frozen burn ledger (all_accounts + balance = the leaderboard). The Astroport pair beside it (terra1pez3qw6…-ROAR in the HANDOVER) is pyROAR-ROAR", "initial_supply": 1000000000000, "initial_supply_source": "Lion DAO Medium 2023-09-22 ('1 Trillion tokens were minted'); live total_supply 2026-09-21 was 893,210,193,781.61 → 106.79B gone from supply vs the 117B the tweets report — the contract is the oracle, the page shows both and the gap", "note": "Burning = sending ROAR to the festival receiver (the tweet calls it the Lion DAO Treasury address); the DAO burned it after. pyROAR was minted 1:1 to burners and the PyROARmaniacs DAO is bricked, so the pyROAR cw20's balances are a frozen ledger of who burned how much — find its address (DAODAO) and read all_accounts for the leaderboard; the receiver's cw20 receive events in the window are the same list with dates. deving.zone kept the live leaderboard. Reported numbers are Lion DAO's, shown as theirs until the capture reads the chain." },
-   "roar20": { "chain": "solana", "mint": "3Egc6tdNcKZEfb4XDMPAktbrrpxSdyCtxxsoT3Rbpump", "launch": "pump.fun", "x": "https://x.com/ROAR20coin", "price_source": "dexscreener", "note": "'Official Memecoin of @TheLionDAO' (the ROAR20 X profile). Outside Terra: the home reads DexScreener's public token endpoint for price / market cap / 24h volume / liquidity, labeled as DexScreener's; supply and holders need a Solana RPC read (a cron duty, not the page)." },
-   "links": { "site": "https://liondao.money/", "coingecko": "https://www.coingecko.com/en/coins/lion-dao", "daodao_lion": "https://daodao.zone/dao/terra1tkersa2mqwy2h8exj799qx2xrhdu0dkymk9psp6v0k4kz4tkxucssgluec", "daodao_pixel_lions": "https://daodao.zone/dao/terra1c690mdrwdetnr09zfk3tf9xz9jhrgd9wpjyf3tuccj74ql09eqmq6sh7en", "phoenix_portfolio": "https://phoenix.money/", "note": "the ecosystem link list Lion DAO will maintain is not here yet (owner 2026-09-21: they will maintain it; where is open)" },
-   "theme": { "accent": "#ffe600", "accent2": "#f59e0b", "bg": "#0b0b0b", "mode": "dark", "surface": "#161616", "surface2": "#101010", "text": "#e5e7eb", "border": "#4a4000", "style": "pixel", "font": "'Press Start 2P', Inter", "theme_note": "owner 2026-09-19 (fourth look): the yellow PAGE fought every semi-transparent tile and the footer (olive tiles, yellow-on-yellow) — back to a black page that is Lion DAO's own: yellow does the work (dark-gold tile borders, yellow section rules, yellow chips/buttons, hard yellow shadows), pixel font on headings. bg/surface/border/accent are the knobs; mode light stays available." }
+  "schemaVersion": 1,
+  "note": "The allies (tenants) of thealliancedao.com — ONE curated list, read by the crons (which collections an ally's service runs) and by the site (the header tenant dropdown, /<slug> default, logos, theme). Add an ally = a block here + its collection folders in nft-collections + one Render service per cron family (org-nft-inventory-<slug>, org-nft-flows-<slug>). Remove an ally = delete its block, stop its services, delete its folders — nothing else changes. `default: true` marks the site's default tenant.",
+  "updated_at": "2026-09-21",
+  "tenants": {
+    "adao": {
+      "label": "AllianceDAO",
+      "short": "aDAO",
+      "default": true,
+      "logo": "/assets/images/Alliance%20DAO%20Logo.png",
+      "live": true,
+      "collections": [
+        "adao"
+      ],
+      "daos": [
+        "adao"
+      ],
+      "services": {
+        "inventory": "org-nft-inventory",
+        "flows": "org-nft-flows-adao"
+      },
+      "theme": {
+        "accent": "#22d3ee",
+        "bg": "#121212",
+        "font": "Inter"
+      }
+    },
+    "liondao": {
+      "label": "Lion DAO",
+      "short": "Lion DAO",
+      "default": false,
+      "logo": "/assets/token-logos/ROAR_LOGO.png",
+      "live": true,
+      "nav": {
+        "hide": [
+          "adao-lore"
+        ],
+        "new_here": false,
+        "nav_note": "tabs that are another ally's and the aDAO/TLA onboarding pills stay off Lion DAO pages (site-header 1.11.3)"
+      },
+      "hero": {
+        "tagline": "",
+        "hero_note": "one optional line under the collection mark on the explorer — Lion DAO's words when they want one; empty shows the mark, the names and the four numbers only"
+      },
+      "live_note": "false until the explorer lights Pixel Lions (E3); the header lists live tenants only — ?tenant=liondao or /liondao still select it for testing",
+      "collections": [
+        "pixel-lions"
+      ],
+      "collections_note": "burning-lions joins this list when its folder is onboarded — that line is the whole switch",
+      "daos": [
+        "lion-dao",
+        "pixel-lions"
+      ],
+      "services": {
+        "inventory": "org-nft-inventory-liondao",
+        "flows": "org-nft-flows-pixel-lions"
+      },
+      "home": "/liondao/",
+      "gate0_reference": "docs/fixtures/2026-09-21/phoenix-money-liondao-portfolio.json",
+      "gate0_note": "the phoenix.money backend JSON the council loaded (four wallets, $189,983 on 2026-09-21) — ally-positions publishes ours beside it in current.json.reconciliation every run; refresh the fixture to move the reference",
+      "home_note": "the ally's own home page (a folder in aDAO-links-site: liondao/index.html + the ally's own pages); the header sends a visitor here when Lion DAO is selected on a home page, and the /liondao rewrite lands here. A tenant with no `home` defaults to /<slug>/ (the default tenant to /)",
+      "validator": {
+        "operator": "terravaloper1pet430t7ykswxuyhh56d4gk6rt7qgu9as6a5r0",
+        "account": "terra1pet430t7ykswxuyhh56d4gk6rt7qgu9as43fnu",
+        "moniker": "🦁 The Lion DAO",
+        "note": "account = the operator's terra1 form (bech32 re-encoded — the checksum changes with the prefix; a prefix swap is NOT an address); it accrues the validator's commission — a Lion DAO position and an unclaimed-rewards source"
+      },
+      "wallets": {
+        "terra1tkersa2mqwy2h8exj799qx2xrhdu0dkymk9psp6v0k4kz4tkxucssgluec": {
+          "label": "LD DAODAO",
+          "role": "treasury",
+          "counts_as": "treasury",
+          "note": "Lion DAO core / treasury (DAODAO); the bulk of ROAR"
+        },
+        "terra1ksk66lcvzwaanc47nvn3athj4yzcpay8z8ru04": {
+          "label": "LionDAO ops (Ryan)",
+          "role": "ops",
+          "counts_as": "ops",
+          "note": "TLA locks / staked LP / compounder receipts / Credia; the bribe-funding wallet of wallets.json"
+        },
+        "terra1tgvlyhnqyxgwuw07h986jtnjhkcz72es3u33a9": {
+          "label": "pixeLions ops (Lew)",
+          "role": "ops",
+          "counts_as": "ops",
+          "note": "pixeLions Terra ops wallet"
+        },
+        "terra1xgg9cf94ws2mawr6lyrdvmyxt48xkwgp8gvtsrcg2yktqvk8w2rqxflq06": {
+          "label": "pixeLions ⍺ msig",
+          "role": "msig",
+          "counts_as": "msig",
+          "note": "the stewardship multisig; the bulk of the USDC; TLA locks #163 #727"
+        }
+      },
+      "wallets_note": "2026-09-21 (HANDOVER-liondao-positions §E.1): THE roster the positions product and the home page run on — a wallet is added or removed here and nowhere else. The pixeLions DAO treasury (terra1c690mdr…) is deliberately NOT a Lion DAO wallet: owner 2026-09-21, it is a Pixel Lions position owned by that DAO's stakers (part of the ecosystem, not Lion DAO's) — it stays under pixel-lions/collection.json governance.dao_address",
+      "known_cw20s": [
+        {
+          "denom": "terra1pez3qw6pa24a06wee404yy5mp37j57n3s9zjkdfjeapwqf78dntql0ngsy",
+          "symbol": "pyROAR",
+          "decimals": 6,
+          "note": "'Burnt ROAR' — the frozen burn ledger token; the DAO treasury holds ~6.24M (DAODAO treasury tab 2026-09-21). Not in the token-catalog (no indexed pool); unpriced by design"
+        }
+      ],
+      "known_cw20s_note": "cw20s the token-catalog does not carry, read by ally-positions 1.1.0 like catalog cw20s (symbol_source: tenants.json known_cw20s) — the registry holds the literals. Still to add from the DAODAO treasury tabs once their contract addresses are copied: NEWT (1.17K on LD DAODAO), the two Astroport uLP tokens on LD DAODAO (250.00M = the pyROAR-ROAR pair LP, 60.50M), the msig's uLP 599.03K",
+      "gate0_reference_as_of": "2026-09-21",
+      "staking": {
+        "roar_cw20": "terra1lxx40s29qvkrcj8fsa3yzyehy7w50umdvvnls2r830rys6lu2zns63eelv",
+        "roar_staking": "terra1xuqh84yz35h70p3ppt76dz5kgwwtwmsv34pg0gw6ld4ntptgjcrqe2e70t",
+        "roar_rewards_distributor": "terra1zug2ur6d5ls7vgzwkh0m2002jrallfehpsadpltjqr3vhgvp6lnq90rj3w",
+        "pl_rewards_distributor": "terra1krewrx5uye0ux786w9jd2qx4wqz5pz2y5mqxw2k58p4xjhnw5lfqm450m7",
+        "note": "roar_staking = the contract aDAO's ROAR deploy prop staked 1B ROAR into ({stake:{}}), read as Lion DAO's DAODAO cw20 staking module (confirm against the core's voting_module); roar_rewards_distributor from known_contracts.json; pl_rewards_distributor UNKNOWN — the pixeLions DAO's NFT-staking distributor (DAODAO, funded by prop, pays hourly for a year to whoever is staked; the 5B ROAR/yr target is unverified until it is read)",
+        "pl_voting_module": "terra127dehd2d6t7ynnezkxkre2w83ze0t7lmghpu6vn4y5mfmwfj5x9qqdh4sz",
+        "pl_voting_module_note": "the pixeLions DAO's DAODAO cw721-stake voting module (collection.json governance.staking_contract) — backfill.js reads total_power_at_height on it for staked pixeLions per day",
+        "pl_rewards_distributor_note": "FOUND 2026-09-22 by the chain: tx 8896AD9B0B004CC6B1C22E2D0657542E3284869388122F72B611B3FFFA7CBBF1 (block 22948474) — aDAO's builder wallet terra1hr8zsf…x77ulw ran claim{id:1} → 42,850,334.164671 ROAR and claim{id:2} → 1,132,793,125.506719 DROGO from this contract. A DAODAO rewards distributor with two distributions (1 = ROAR, 2 = DROGO) paying stakers of the pixeLions DAO. ally-positions reads distribution rates + pending per roster wallet; the APR is arithmetic on the rate and the staked count."
+      },
+      "burn": {
+        "festival_receiver": "terra17c6ts8grcfrgquhj3haclg44le8s7qkx6l2yx33acguxhpf000xqhnl3je",
+        "festival_window": "2023-09 → 2024-09 (year-long ROAR Burn competition; final draw 2024-10-04)",
+        "reported": {
+          "community_burned": 10000000000,
+          "dao_burned": 107000000000,
+          "participants": 224,
+          "top_wallet_burned": 1400000000,
+          "pyroar_supply_cap": 109690000000,
+          "as_of": "2024-10-04",
+          "source": "https://x.com/TheLionDAO — 'FINAL prize draw for the Burning Lion Festival' (2024-10-04) and 'final month of the $ROAR Burn competition' (2024-09-15)"
+        },
+        "pyroar_cw20": "terra1pez3qw6pa24a06wee404yy5mp37j57n3s9zjkdfjeapwqf78dntql0ngsy",
+        "pyroar_note": "found 2026-09-21 on the treasury's asset whitelist: cw20 'Burnt ROAR' / pyROAR, decimals 6, total_supply 109,690,675,868.39 — the bricked PyROARmaniacs DAO's token, minted 1:1 to burners; its balances are the frozen burn ledger (all_accounts + balance = the leaderboard). The Astroport pair beside it (terra1pez3qw6…-ROAR in the HANDOVER) is pyROAR-ROAR",
+        "initial_supply": 1000000000000,
+        "initial_supply_source": "Lion DAO Medium 2023-09-22 ('1 Trillion tokens were minted'); live total_supply 2026-09-21 was 893,210,193,781.61 → 106.79B gone from supply vs the 117B the tweets report — the contract is the oracle, the page shows both and the gap",
+        "note": "Burning = sending ROAR to the festival receiver (the tweet calls it the Lion DAO Treasury address); the DAO burned it after. pyROAR was minted 1:1 to burners and the PyROARmaniacs DAO is bricked, so the pyROAR cw20's balances are a frozen ledger of who burned how much — find its address (DAODAO) and read all_accounts for the leaderboard; the receiver's cw20 receive events in the window are the same list with dates. deving.zone kept the live leaderboard. Reported numbers are Lion DAO's, shown as theirs until the capture reads the chain.",
+        "pyroar_supply_measured": 109690675868.39,
+        "pyroar_supply_measured_note": "cw20 total_supply read 2026-09-21 (decimals 6). The home's pyROAR bar reads token_info live and falls back to this figure, labeled with this date, when the LCD does not answer. The burn festival is over, so it does not move; if a later read differs, the read wins and this line is stale."
+      },
+      "roar20": {
+        "chain": "solana",
+        "mint": "3Egc6tdNcKZEfb4XDMPAktbrrpxSdyCtxxsoT3Rbpump",
+        "launch": "pump.fun",
+        "x": "https://x.com/ROAR20coin",
+        "price_source": "dexscreener",
+        "note": "'Official Memecoin of @TheLionDAO' (the ROAR20 X profile). Outside Terra: the home reads DexScreener's public token endpoint for price / market cap / 24h volume / liquidity, labeled as DexScreener's; supply and holders need a Solana RPC read (a cron duty, not the page).",
+        "supply_fixed": 1000000000,
+        "supply_fixed_note": "1B, fixed at create (mint authority revoked, immutable metadata — found 2026-09-21). The home's ROAR20 bar reads getTokenSupply live and falls back to this, labeled, when no Solana RPC host answers."
+      },
+      "links": {
+        "site": "https://liondao.money/",
+        "coingecko": "https://www.coingecko.com/en/coins/lion-dao",
+        "daodao_lion": "https://daodao.zone/dao/terra1tkersa2mqwy2h8exj799qx2xrhdu0dkymk9psp6v0k4kz4tkxucssgluec",
+        "daodao_pixel_lions": "https://daodao.zone/dao/terra1c690mdrwdetnr09zfk3tf9xz9jhrgd9wpjyf3tuccj74ql09eqmq6sh7en",
+        "phoenix_portfolio": "https://phoenix.money/",
+        "note": "the ecosystem link list Lion DAO will maintain is not here yet (owner 2026-09-21: they will maintain it; where is open)"
+      },
+      "theme": {
+        "accent": "#ffe600",
+        "accent2": "#f59e0b",
+        "bg": "#0b0b0b",
+        "mode": "dark",
+        "surface": "#161616",
+        "surface2": "#101010",
+        "text": "#e5e7eb",
+        "border": "#4a4000",
+        "style": "pixel",
+        "font": "'Press Start 2P', Inter",
+        "theme_note": "owner 2026-09-19 (fourth look): the yellow PAGE fought every semi-transparent tile and the footer (olive tiles, yellow-on-yellow) — back to a black page that is Lion DAO's own: yellow does the work (dark-gold tile borders, yellow section rules, yellow chips/buttons, hard yellow shadows), pixel font on headings. bg/surface/border/accent are the knobs; mode light stays available."
+      },
+      "burning_lions": {
+        "contract": "terra1cfk54jzu6wsr7c7eqhvs3znkkuxc7pvr7awdvheg7szvnlmduvus95a0q0",
+        "supply": 12,
+        "supply_source": "owner 2026-09-22 (12 one-of-ones); the home reads cw721 num_tokens live and shows the registry figure labeled when the read fails",
+        "onboarded": false,
+        "note": "the collection folder (nft-collections/burning-lions) is not built yet — that is org-nft-inventory's onboarding; until then the tile shows supply live and everything else Coming"
+      }
+    }
   }
- }
 }
