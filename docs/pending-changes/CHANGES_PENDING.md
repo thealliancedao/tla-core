@@ -2,8 +2,29 @@
 
 ## OPEN LEDGER 2026-09-22 (supersedes 2026-09-21 late; that ledger stays below as history)
 
+### 2026-09-22 follow-up — the owner's first live look (v2.1 → v2.2, same ZIP superseded before commit)
+Two verdicts from the screenshots: (1) the Marketplaces section was NOT aDAO's layout (four floor tiles + a two-column
+activity/listings split) → home-tiles **1.2.0** re-lays it in aDAO's exact shape: three venue cards BBL · Boost · Atrium (Floor Price
+native + USD · All-Time Volume at sale time + today's + native split · Total Sales · Currently Listed · Base FP / 1 of 1 FP /
+Burning Lions FP) with View links from the collection manifest; Live Activity full width in a scrolling box with the KIND CHIPS as on
+aDAO (LiveActivity.KIND_GROUPS, counts, All/None, housekeeping OFF by default, deal filter, reload); All Current Listings as a
+3-column card grid "(12 of N)" with Marketplace + Class filters, the sort flip and "Load 12 more (N left)" — a card = "pixeLion #id"
++ Lion DAO chip · class · Rank · venue · USD · "listed in <denom>" (the bundle carries no native amount, so none is invented);
+Top 10 All-Time Sales behind a centered button (the list is hidden until pressed; sales-enriched loads lazily and is folded per
+venue for the cards). (2) "a slider for pyROAR and ROAR20" → two more Supply bars (2×2 grid): **pyROAR** of its live token_info
+supply, parts = Lion DAO roster (4 live balances) + the festival receiver (Enterprise core), black remainder = the burners' wallets
+(the burn ledger names them), note carries Lion DAO's published 224 / 10B / 107B / 1.4B as THEIRS; **ROAR20** of getTokenSupply,
+parts = the largest token account + accounts 2–20 (getTokenLargestAccounts, Solana RPC hosts from home.json `solana_rpc` — the
+registry holds the literal), note names the largest account (short) and says token accounts ≠ wallets, holders need an indexer.
+FOUND + FIXED on the way: `bar()` drew a known part at 100 % when the total was unread (the ROAR bar with the LCD dead) — a bar
+with a configured total now draws nothing until the total is read (law below). Gates: gate-liondao-home.mjs **75/75** (Solana RPC +
+pyROAR smart-query SHAPE fixtures with marked values; every venue-card row, filter, kind chip and the top-10 toggle asserted),
+gate-liondao-pages.mjs 59/59. home.json 2.2 · index.html 2.2 (cache-buster v=1.2.0 as a pair, ecosystem.html too).
+LIVE CHECK OWED: api.mainnet-beta.solana.com answers the two RPC calls from the browser (CORS) — if not, the ROAR20 bar stays Unknown
+with "Solana RPC not read" and the fix is a host in `solana_rpc`, never a page change.
+
 ### CLOSE OF THE 2026-09-22 CHAT — state in one paragraph
-LION DAO HOME v2.1 + SIX FULL PAGES DELIVERED (commit pending, two ZIPs). Opener 0 verified (heartbeat fresh, reconciliation rows,
+LION DAO HOME v2.2 + SIX FULL PAGES DELIVERED (commit pending, two ZIPs). Opener 0 verified (heartbeat fresh, reconciliation rows,
 validator account …as43fnu, /liondao/ on main). Registrations DONE + committed (system-health 1.0.10 FRESHNESS_MAP, cron-registry
 `ally-positions-liondao`, CRON-FLEET 19 services). The positions audit vs the owner's phoenix.money / DAODAO / CoinGecko /
 Chainscope screenshots reconciled row for row and found gate #0's −1.0 % was TWO ERRORS CANCELLING (ours short $29.7k balances +
@@ -20,15 +41,15 @@ during the mint, 988 minters, 561 still hold ≥1 pixeLion — a wallet-level jo
 ampROAR-ROAR rows from participants, 20 staked pixeLions from summary, the 1B staked ROAR live via `staked_balance`; aDAO NFTs and
 then-vs-now Unknown until the alliance ledger), `coming.html` 1.1 (redirects slots that grew a page), `home.json` 2.1 (aDAO's exact
 section order; rarity → the explorer; only supply + lore stay muted slots; DAO links menu carries the six pages), `index.html` 2.1,
-home-tiles 1.1.0 (positions product source, `soon` tiles, clickable total strip). Gates: gate-liondao-pages.mjs **59/59** (jsdom on
-real fixtures + LCD shape fixtures; a `|| true` line was found and replaced with the real module-sized-unmatched-delegator case),
-gate-liondao-home.mjs **60/60** (v2.1), ally-positions mock 34/34. No aDAO page changed. NEXT: commit both ZIPs, live-check the three
+home-tiles 1.2.0 (positions product source, `soon` tiles, clickable total strip, the market section in aDAO's shape, pyROAR + ROAR20
+bars). Gates: gate-liondao-pages.mjs **59/59** (jsdom on real fixtures + LCD shape fixtures; a `|| true` line was found and replaced
+with the real module-sized-unmatched-delegator case), gate-liondao-home.mjs **75/75** (v2.2), ally-positions mock 34/34. No aDAO page changed. NEXT: commit both ZIPs, live-check the three
 items below, then HANDOVER §C products in order (burn ledger first) — each replaces a live read or an Unknown on these pages.
 
 ### Delivered this chat (commit pending — one ZIP per repo)
 - aDAO-links-site ZIP: liondao/lib/ld.js 1.0.0 · liondao/{dao_treasury,dao_tla_deposits,dao_unclaimed,validator,ecosystem,mint,
-  alliance}.html 1.0 · liondao/coming.html 1.1 · liondao/home.json 2.1 · liondao/index.html 2.1 · lib/home-tiles.js 1.1.0 ·
-  gate-liondao-pages.mjs (NEW, 59/59) · gate-liondao-home.mjs (60/60). Run both gates from the repo root with TLA_CORE_DIR /
+  alliance}.html 1.0 · liondao/coming.html 1.1 · liondao/home.json 2.2 · liondao/index.html 2.2 · lib/home-tiles.js 1.2.0 ·
+  gate-liondao-pages.mjs (NEW, 59/59) · gate-liondao-home.mjs (75/75). Run both gates from the repo root with TLA_CORE_DIR /
   NFTC_DIR / DAOO_DIR at fresh pulls (the home gate reads vercel.json from the repo root).
 - platform-crons ZIP: ally-positions/index.js 1.1.1 + mock-run.js 34/34 (adds `daily/index.json`: one row per archived day —
   known_usd, by_section, validator commission — merged never-shrink, non-mutating; the pages' Trend / What Changed read it).
@@ -59,6 +80,10 @@ items below, then HANDOVER §C products in order (burn ledger first) — each re
 - aDAO has no dao_unclaimed.html: the Lion DAO one is a new shape (three panels: TLA · validator · pixeLions distributor).
 
 ### NEW LAWS (2026-09-22)
+- **A part against an unread total is a phantom.** A bar with a configured total draws nothing until the total is read; the legend
+  still lists what is known. (The ROAR bar drew the treasury at 100 % with the LCD dead.)
+- **The default's layout is the default's layout.** Same cards, same rows, same places; only the classes, the words and the data are
+  the ally's. A "themed equivalent" is the under-delivery the owner named twice.
 - **Reconcile by section, or two errors cancel.** A total that matches is not a gate; the Δ per section is. (Gate #0's −1.0 %.)
 - **A vacuous gate line is a fake gate.** `|| true`, an empty fixture, an assertion on nothing — replace with the case it was meant
   to cover or delete it; never ship a green line that tests nothing.
