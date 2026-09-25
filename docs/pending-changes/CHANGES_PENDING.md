@@ -1,5 +1,91 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER 2026-09-23 — MILESTONE CLOSE: "Lion DAO home v3 + the products behind it" (supersedes 2026-09-22; that ledger stays below)
+
+### STATE IN ONE PARAGRAPH (everything below is ON MAIN unless marked)
+Lion DAO tenant = a home (`liondao/index.html` 3.3, `home.json` 3.3, `lib/home-tiles.js` 1.5.1) in aDAO's exact section order, one page
+lib (`liondao/lib/ld.js` 1.2.0) and TWELVE full pages: dao_treasury · dao_tla_deposits · dao_unclaimed (1.3, the distributor panel +
+rates) · validator · ecosystem (1.1, "Every address") · mint · alliance · burn (1.1) · roar20 · supply (the ROAR supply map) ·
+**whales** (the ROAR whale tracker) · coming (slots). Products in dao-originations/lion-dao/: positions (hourly, engine 1.2.3 with
+`pl_rewards` — the pixeLions distributor found by the claim tx 8896AD9B…; APR = rate ÷ staked × price against the MARK = mid of
+last-sale and listing floor), burn/holders + roar20/holders (daily duty; 1,285 pyROAR holders, 139 ROAR20 owners, gates Δ 0),
+history/daily.json (archive backfill, 160 weekly days — the festival curve, ROAR supply, staked, the validator's rank series),
+**roar/holders** (whales — NOT WRITTEN YET, lands on the next holders walk ≥ 20 h after 2026-09-22 22:30, or force it by deleting
+`lion-dao/holders-heartbeat.json` and triggering the positions job). Registry (tenants.json liondao): roar_pools (LUNA-ROAR, ROAR-ampROAR
+Astroport, ampROAR-ROAR **SkeletonSwap ex-White Whale**), staking.amproar_hub + amproar_denom + pl_rewards_distributor + pl_voting_module,
+known_cw20s (pyROAR, DROGO = the distributor's id-2 token), burning_lions (contract, 12 stated, cw721 says 7 minted), otc_escrow,
+staking_labels / link_labels (the menus are BUILT from the registry; the engine holds no ally words), roar20.supply_minted (975.6M live;
+burns lower it), burn.pyroar_supply_measured, whales.min_total_roar. Phoenix Directive onboarded to dao-governance (registry folder
+pd1…pd266 — the cron catalogs it on its next run). Alert Center 1.10.0: `prop:executed_early` (a prop that ran before its vote closed is
+an ALERT) + the load popup (opens for unseen alerts; any close marks seen). Site chrome: address picker back on the Lion DAO home with a
+"Your wallet" section (live reads on pick), menus open as a centered POPUP (the CSS was missing until 1.5.1 — it painted as bare divs),
+one visual system (display font on headings only, Inter numerals, rounded neutral cards, opens→ affordance, quiet Coming chips),
+names on every address from the address catalog (entity labels + @handles), cyan → `--t-accent` in address-picker / site-footer /
+site-header (aDAO keeps cyan by fallback). **TLA Stats and DAO on the Lion DAO tenant** (23d, JUST DELIVERED — verify after commit):
+TLA Stats' DAO entity is the tenant's (positions shim = the roster summed; the VP donut slice from the shim, not the vote-state
+product; "aDAO" relabeled in the page copy), DAO page starts on Lions, and site-header PRE-PAINTS the device's ally from a cached theme
+so a tab change never shows aDAO first. Archive backfill 1.1.0 = courtesy rules (throttle ≤ 4 rps ceiling, backoff, stop on refusals,
+caps, manual-only, artifact). Private flow-map tool delivered to the owner's desktop (never a repo). Repo audit 2026-09-22: every
+delivered file byte-identical on main; the strays (six root files in platform-crons from a flattened upload, the empty
+liondao/lib/home-tiles.js) — OWNER TO DELETE if not yet.
+
+### OWNER TO-DO (in order)
+1. Commit the 23d ZIP (site-header.js pre-paint, dao.html, tla-stats.html, gate) if not yet — then hard-refresh a tab: no aDAO flash;
+   DAO opens on Lions; TLA Stats donut says "Lion DAO VP 1.25M".
+2. Force the whale walk: delete `dao-originations/lion-dao/holders-heartbeat.json`, Trigger Run on org-ally-positions-liondao (the ROAR
+   cw20 walk is long, once) → `roar/holders.json`; /liondao/whales.html fills.
+3. Delete the strays: platform-crons root `holders.js index.js mock-backfill.js mock-holders.js mock-run.js` (+ `workflows/liondao-backfill.yml`
+   if still there); aDAO-links-site `liondao/lib/home-tiles.js` (1 byte).
+4. Private tool: paste the full PD setup-contract address into config.json (the screenshot cut it at 62 chars), `node mock-walk.js`, first walk.
+5. Council: the Burning Lions cw721 shows 7 minted vs 12 stated — unminted or another contract? The 2.9B pyROAR issued for ROAR that never
+   left supply (Aug-30 round). The 25,000,001 ROAR burned 2025-05-16 outside the festival ledger.
+
+### LIVE CHECKS OWED
+- After 23d: /tla-stats.html on the Lion DAO tenant — donut, waterfall, vote/bribe tables show the roster; on aDAO nothing moved.
+- /liondao/: Staking rewards "178 ROAR/hr · N% APR" (1.5.x on main); supply map "via the ampROAR hub" from the hub's state; popup menus paint.
+- gate-index-alert-center.mjs run locally once (the popup now opens during it).
+- DexScreener values on the ROAR20 tile still Coming in the last screenshot — open the console on /liondao/ and read the dexscreener request.
+
+### FOUND THIS MILESTONE (chain facts, for the council and the pages)
+- Festival curve measured: eleven monthly rounds ~8.8–8.9B (Nov 2023–Jun 2024), 2.9B late Aug 2024, 14.1B + 17.9B closing into
+  2024-10-04 → frozen at 109.69B. ROAR supply fell 102.79B from its first readable week; 4.1B was gone before the pyROAR contract
+  existed; **≈ 2.9B pyROAR was issued for ROAR that never left supply**. Burns outside the ledger: 8.8B (2024-06-07, minted 2 weeks
+  later), 14.1B (2024-09-06, minted the next week), **25,000,001 ROAR on 2025-05-16 with no pyROAR ever**.
+- Validator rank #83 (Sep 2023) → #11 (Jan 2024) → #110 (Oct 2024) → #6 (Dec 2025) → #10 now; commission 5 % → 7.5 % (the week is in the series).
+- pyROAR: 1,285 holders; 76 burned ≥ 100M, 342 ≥ 10M; four CONTRACTS hold 38.6B (35 %, the largest 26.99B — the next walk names it);
+  the largest WALLET burned 14.29B (13 %); top ten 67 %.
+- ROAR20: supply 975.6M (24.4M burned since mint); 139 owners; **one wallet holds 73.2 %**; ~1.3M in liquidity across two program accounts.
+- The pixeLions distributor pays 520,833 ROAR/hour (4.56B/yr, funded 2.5B, epoch ends **2026-12-24**) + 5M DROGO/hour (open-ended,
+  unpriced). Roster pending = 0 (none stake).
+- Gate #0's −1.0 % was two errors cancelling; PD A265 (OTC 1,313,452 LUNA → 70,000 USDC at $0.0533) and A266 (Estima 125k USDC in
+  three tranches) executed with 5 days of voting left and were invisible to every rule (no PD folder + no early-execution rule).
+
+### NEW LAWS (2026-09-23)
+- **The lib the page asks for is the lib on main.** A cache-buster that names a version the repo does not carry is a broken page; the
+  four `lib/` files and `.github/` are the ones the uploader drops — check the commit diff for them every time.
+- **A gate that checks the DOM has not checked the paint.** The popup opened as bare divs for a day; the overlay now carries its
+  critical styles inline and the gate reads them.
+- **The context lib is loaded by the page that needs it.** A hook that reads `window.CollectionContext` synchronously on a page that
+  does not load it reads nothing; load it, then wait.
+- **A canvas legend is not DOM.** Relabel at the source (the label array), not with an observer.
+- **The device's ally is painted before the registry answers.** Cache the applied theme; pre-paint from it; let the fetch correct.
+- **The subnav wraps the bar; it is not inside it.** Select by data-tab, never by a container you assumed.
+- **A frozen ledger's holders are its history; the archive is for the curve; the tx index for the dates.**
+- **A partial walk is not a leaderboard; a failed source is a null column for everyone, never a zero.**
+- **The engine holds no ally words** — labels live in the registry beside their addresses (staking_labels, link_labels).
+- **A whale table shows contracts too, marked** — a pool ranks by what it holds; hiding it would hide 35 % of pyROAR.
+
+### QUEUE (next chats, in order)
+1. Verify 23d live; the whale walk; the strays. Then the page-quality pass on the twelve pages, one page at a time, the owner naming what
+   feels off (the treasury page is the densest).
+2. history.html on lion-dao/history/daily.json (the burn curve, the rank series, staked ROAR + pixeLions over time) + the daily backfill
+   pass in slices (step_days=1 → 20k requests, MAX_REQUESTS 20000 / MAX_MINUTES 240, two evenings).
+3. Catalog Lion DAO's stakers in the address-catalog product so pyROAR / whale rows get names (a slug on that product, not a page).
+4. pd-treasury product: the OTC ledger from the PD setup contract's state + PD's USDC.n balance at height (backfill field) → a page;
+   the IBC-out watcher on the public index (2-week window) once the flow map says the USDC leaves.
+5. Alliance ledger (curated alliances.json + valuer) → alliance.html then/now; mint-history token-level join → mint.html "kept what they minted".
+6. Terra x/gov window (newest 60) → all, if wanted. Lore / rarity slots when Lion DAO hands over the words. The Burning Lions folder (org-nft-inventory).
+
 ## OPEN LEDGER 2026-09-22 (supersedes 2026-09-21 late; that ledger stays below as history)
 
 ### 2026-09-22 follow-up — the owner's first live look (v2.1 → v2.2, same ZIP superseded before commit)
@@ -23,8 +109,51 @@ gate-liondao-pages.mjs 59/59. home.json 2.2 · index.html 2.2 (cache-buster v=1.
 LIVE CHECK OWED: api.mainnet-beta.solana.com answers the two RPC calls from the browser (CORS) — if not, the ROAR20 bar stays Unknown
 with "Solana RPC not read" and the fix is a host in `solana_rpc`, never a page change.
 
+### 2026-09-22 follow-up 2 — the owner's second look (v2.2 → v2.3, same ZIP superseded before commit)
+Four asks. (1) "I don't see pyROAR supply or ROAR20 — do we have the info?": the SUPPLIES we have — pyROAR 109,690,675,868.39
+(cw20 total_supply, read 2026-09-21) and ROAR20 1B fixed at create; both now sit in tenants.json (`burn.pyroar_supply_measured`,
+`roar20.supply_fixed`, dated notes) and the two bars fall back to them, LABELED ("registry, measured 2026-09-21" / "registry (fixed
+at create)"), when the live read does not answer — so the bars always say "of 109.69B" / "of 1B". The DISTRIBUTION is what needs the
+reads: pyROAR roster + receiver balances (LCD, live) and the burners (the burn ledger walk, §C item 1); ROAR20's largest accounts
+(Solana RPC, live) and holders (Helius, §C item 3). A bar whose parts read Coming after commit = the browser read failed (LCD host /
+Solana CORS) — check the console, fix the host list, never the page. (2) "make all the Unknown into Coming": the chip says Coming
+in home-tiles 1.2.1 and ld.js 1.0.1 (the reason still on hover); visible prose followed; home.json `source: "Unknown"` → Coming.
+(3) rarity is a SLOT again (coming.html?tile=rarity, muted) — the explorer is not the pride's rarity page. (4) the hero: the
+caution-tape bands are gone; a mane — two slow rings of golden rays (repeating-conic-gradient, masked, reduced-motion safe) —
+circles a medallion of the tenant's logo from the registry; gold left rule, soft glow instead of the hard pixel shadow; the page
+heroes (ld.js) got the same ring. Gates home **78/78** (mane + medallion, Coming chips, rarity slot, registry fallback both ways),
+pages 59/59. home.json 2.3 · index.html 2.3 · home-tiles v=1.2.1 · ld.js v=1.0.1 (cache-busters as pairs).
+
+### 2026-09-22 follow-up 3 — "who holds pyROAR and ROAR20, breakdowns on the sliders, chain facts only, a backfill tonight"
+BUILT, two new products + two pages + a one-shot. **holders.js 1.0.0** (ally-positions, second entry point, own DAILY Render service
+`org-ally-holders-liondao` 03:40, `node holders.js`, env TENANT / GITHUB_TOKEN / HELIUS_API_KEY; mock-holders.js 21/21): pyROAR =
+cw20 `all_accounts` walked whole (30/page) + `balance` per account = the COMPLETE burn leaderboard (frozen token → holder = burner),
+names from roster / receiver / trust register, wallet-vs-contract by the chain for the top 60, supply gate Δ EXACT on raw integers,
+a run with ONE failed read writes nothing → `lion-dao/burn/holders.json`; ROAR20 = Helius DAS `getTokenAccounts` by mint folded to
+owners + `getTokenSupply` + owner kind by `getMultipleAccounts` (System-Program-owned or absent = wallet; else program-owned with the
+program id — no pool named by pattern) → `lion-dao/roar20/holders.json`. Heartbeat `lion-dao/holders-heartbeat.json`. REGISTERED:
+system-health 1.0.11 (R10, 30 h, 74/74) · cron-registry `ally-holders-liondao` (DAILY) · CRON-FLEET. **home-tiles 1.2.2**: the
+two bars draw FROM THE PRODUCTS (pyROAR: roster · receiver · other contracts · top 10 wallets · every other wallet; ROAR20:
+program-owned · top 10 wallets · every other wallet — all measured, no black remainder), the live reads stay as the fallback (parts
+Coming until the first run), the pyROAR note is CHAIN FACTS ONLY (the tweet figures are gone from the bar; they remain only on the
+Burning Lions row, labeled as Lion DAO's), both bars link to full pages: **burn.html** (leaderboard: every account ranked with kind +
+name, the split by kind, search, 50 at a time, the gate in the hero) and **roar20.html** (owners ranked, program-owned marked with
+the program id, solscan links, accounts column). home.json 2.4 · index.html 2.4 · DAO links menu = eight pages. Gates: home 77/77
+(fallback path) · pages 72/72 (product path on the mock outputs as fixtures + the two pages + the no-product case).
+**backfill.js 1.0.0** (+ mock-backfill.js 9/9 + `.github/workflows/liondao-backfill.yml`, workflow_dispatch): the ARCHIVE-NODE
+answer — state at the LAST BLOCK OF EVERY UTC DAY (heights by binary search over block times; `x-cosmos-block-height`): pyROAR
+supply (Δ/day = ROAR burned that day — the festival curve), ROAR supply, ROAR staked (`total_staked_at_height`), pixeLions staked
+(`total_power_at_height` on the PL voting module, now in tenants.json `staking.pl_voting_module`), the validator's rank / tokens /
+commission / jailed from the bonded set at height → `lion-dao/history/daily.json`, never-shrink (a differing re-read keeps the
+previous under `superseded`); a height the node no longer serves is SKIPPED with the node's own message, never interpolated.
+TO RUN TONIGHT: add repo secrets `ARCHIVE_LCD` (an archive LCD URL) + `DAOO_TOKEN` (the dao-originations PAT) to platform-crons,
+Actions → liondao-history-backfill → Run with from=2023-09-01 to=2026-09-21 step_days=7 first (fast pass), then step_days=1.
+What it does NOT need an archive for: the holder lists (today's LCD has the whole frozen pyROAR ledger; Helius has the ROAR20 set).
+What it CANNOT do: per-wallet burn dates (who burned when) — that needs a tx index (`wasm._contract_address=<pyROAR>` events);
+if the archive node indexes txs, that is the next duty (same workflow, `MODE=events`), noted below as owed.
+
 ### CLOSE OF THE 2026-09-22 CHAT — state in one paragraph
-LION DAO HOME v2.2 + SIX FULL PAGES DELIVERED (commit pending, two ZIPs). Opener 0 verified (heartbeat fresh, reconciliation rows,
+LION DAO HOME v2.4 + SIX FULL PAGES DELIVERED (commit pending, two ZIPs). Opener 0 verified (heartbeat fresh, reconciliation rows,
 validator account …as43fnu, /liondao/ on main). Registrations DONE + committed (system-health 1.0.10 FRESHNESS_MAP, cron-registry
 `ally-positions-liondao`, CRON-FLEET 19 services). The positions audit vs the owner's phoenix.money / DAODAO / CoinGecko /
 Chainscope screenshots reconciled row for row and found gate #0's −1.0 % was TWO ERRORS CANCELLING (ours short $29.7k balances +
@@ -41,21 +170,26 @@ during the mint, 988 minters, 561 still hold ≥1 pixeLion — a wallet-level jo
 ampROAR-ROAR rows from participants, 20 staked pixeLions from summary, the 1B staked ROAR live via `staked_balance`; aDAO NFTs and
 then-vs-now Unknown until the alliance ledger), `coming.html` 1.1 (redirects slots that grew a page), `home.json` 2.1 (aDAO's exact
 section order; rarity → the explorer; only supply + lore stay muted slots; DAO links menu carries the six pages), `index.html` 2.1,
-home-tiles 1.2.0 (positions product source, `soon` tiles, clickable total strip, the market section in aDAO's shape, pyROAR + ROAR20
-bars). Gates: gate-liondao-pages.mjs **59/59** (jsdom on real fixtures + LCD shape fixtures; a `|| true` line was found and replaced
-with the real module-sized-unmatched-delegator case), gate-liondao-home.mjs **75/75** (v2.2), ally-positions mock 34/34. No aDAO page changed. NEXT: commit both ZIPs, live-check the three
+home-tiles 1.2.1 (positions product source, `soon` tiles, clickable total strip, the market section in aDAO's shape, pyROAR + ROAR20
+bars, Coming chips, the mane hero). Gates: gate-liondao-pages.mjs **59/59** (jsdom on real fixtures + LCD shape fixtures; a `|| true`
+line was found and replaced with the real module-sized-unmatched-delegator case), gate-liondao-home.mjs **78/78** (v2.3), mock 34/34. No aDAO page changed. NEXT: commit both ZIPs, live-check the three
 items below, then HANDOVER §C products in order (burn ledger first) — each replaces a live read or an Unknown on these pages.
 
 ### Delivered this chat (commit pending — one ZIP per repo)
 - aDAO-links-site ZIP: liondao/lib/ld.js 1.0.0 · liondao/{dao_treasury,dao_tla_deposits,dao_unclaimed,validator,ecosystem,mint,
-  alliance}.html 1.0 · liondao/coming.html 1.1 · liondao/home.json 2.2 · liondao/index.html 2.2 · lib/home-tiles.js 1.2.0 ·
-  gate-liondao-pages.mjs (NEW, 59/59) · gate-liondao-home.mjs (75/75). Run both gates from the repo root with TLA_CORE_DIR /
+  alliance}.html 1.0 · liondao/{burn,roar20}.html 1.0 · liondao/coming.html 1.1 · liondao/home.json 2.4 · liondao/index.html 2.4 · lib/home-tiles.js 1.2.2 ·
+  liondao/lib/ld.js 1.0.1 · lib/cron-registry.js (+ally-holders-liondao) · gate-liondao-pages.mjs (NEW, 72/72) · gate-liondao-home.mjs (77/77). Run both gates from the repo root with TLA_CORE_DIR /
   NFTC_DIR / DAOO_DIR at fresh pulls (the home gate reads vercel.json from the repo root).
-- platform-crons ZIP: ally-positions/index.js 1.1.1 + mock-run.js 34/34 (adds `daily/index.json`: one row per archived day —
-  known_usd, by_section, validator commission — merged never-shrink, non-mutating; the pages' Trend / What Changed read it).
-- tla-core docs ZIP: this file + CRON-FLEET.md (row → 1.1.1 + the series). PROJECT_KNOWLEDGE.md loose (replace the project file).
+- platform-crons ZIP: ally-positions/index.js 1.1.1 + mock-run.js 34/34 (adds `daily/index.json`) · ally-positions/holders.js 1.0.0 +
+  mock-holders.js 21/21 · ally-positions/backfill.js 1.0.0 + mock-backfill.js 9/9 · .github/workflows/liondao-backfill.yml ·
+  system-health/index.js 1.0.11 + mock-run.js 74/74 (R10).
+- tla-core ZIP: this file + CRON-FLEET.md (row → 1.1.1 + the series) + docs/curated/tenants.json (liondao `burn.pyroar_supply_measured`,
+  `roar20.supply_fixed`, `staking.pl_voting_module` + notes). PROJECT_KNOWLEDGE.md loose (replace the project file).
 
 ### Live checks owed after commit
+0. RENDER: create `org-ally-holders-liondao` (same repo/root as the positions service, start `node holders.js`, daily 03:40, env
+   TENANT=liondao + the PAT + HELIUS_API_KEY) and run it once by hand → burn/holders.json + roar20/holders.json appear; the home's
+   two bars fill in; burn.html / roar20.html render; the gates' Δ read 0. Then the backfill Action (secrets above).
 1. `dao-originations/lion-dao/positions/daily/index.json` appears after the first 1.1.1 run; the treasury page's Trend draws.
 2. Credia debt shape: `credia.portfolio_raw` on Ryan — if `borrows` is not where the reader guesses, the reader is shape-tolerant
    and the page shows collateral with debt Unknown (labeled). Fix upstream, never in the page.
@@ -80,6 +214,15 @@ items below, then HANDOVER §C products in order (burn ledger first) — each re
 - aDAO has no dao_unclaimed.html: the Lion DAO one is a new shape (three panels: TLA · validator · pixeLions distributor).
 
 ### NEW LAWS (2026-09-22)
+- **A frozen ledger's holders ARE its history.** When minting is closed, who holds is who acted; walk it whole on today's node — no
+  archive needed. The archive is for the CURVE (state at height), the tx index for the DATES.
+- **A partial walk is not a leaderboard.** One failed page or balance read → no product; the previous snapshot stands.
+- **The gate is exact or it says so.** Supply gates sum raw integers; a float Δ is a rounding story, not a finding.
+- **A program id is a fact; a pool's name is a guess.** Mark program-owned by the chain, keep the id, name nothing.
+- **A height the node does not serve is a skipped day.** Never interpolate the past.
+- **A fixed supply is a registry literal; a moving one is a read.** A supply that cannot change (fixed at create, a finished
+  festival) may stand in for a failed read, labeled and dated; a balance never does.
+- **The chip's word is the owner's; the reason is ours.** "Coming" is what a number without a source says; the hover still says why.
 - **A part against an unread total is a phantom.** A bar with a configured total draws nothing until the total is read; the legend
   still lists what is known. (The ROAR bar drew the treasury at 100 % with the LCD dead.)
 - **The default's layout is the default's layout.** Same cards, same rows, same places; only the classes, the words and the data are
