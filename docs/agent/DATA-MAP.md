@@ -146,7 +146,25 @@ voting module, escrow, DEX pairs, TLA incentive manager (not holders). Read
 ## Votion
 `votion/snapshots/current.json` + `votion/history/`. Rankings only with shown
 arithmetic (rule 11) — vault sizes vs aDAO's VP are different magnitudes;
-compute, never assume.
+compute, never assume. How Votion MOVES: `votion/backtest/move-rule.json` (rule, fit,
+per-vault track record, cast timing) — see "## Vote Market".
+
+## Vote Market — bribes, Votion's reaction, how to vote (v1.16.0, 2026-09-27)
+USE THE `vote_market` TOOL — it runs the site's engine (`aDAO-links-site/lib/vote-market.js`), the same numbers as TLA Stats' tile,
+`/vote-market.html` and the app. Never hand-compute a payout or a Votion move.
+- "Where should I bribe / where does $X do the most?" → `overview` {usd, bucket, lens: impact|underdogs|liquidity|volume|pd|leaving|mine}
+- "What does $X on <pool> do / what comes back to me / what does it really cost?" → `simulate` {pool, bribe_usd, wallet?}
+- "What if I move my votes to <pool>?" → `simulate` {pool, wallet, pct, from?}
+- "How should I split my votes for the best rewards?" → `best_split` {wallet | vp}
+- "What will Votion do this round?" → `votion_moves` · "Is <pool> funded / what does a vote cost there?" → `pool`
+Products behind it (for "where does that number come from"): pots = Votion's period list in `votion/optimization/current.json`
+(`opt.bribes`) or LIVE from the incentive manager `terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh` `bribes{period}`
+(`tla-voting/bribe-state/runway.json` = the funded-for-period truth); votes + emissions + staked = `member-data/tla-snapshot/current.json`;
+Votion's current votes + plan + deadline = `votion/optimization/current.json` (VP ÷ k per bucket); the move rule = `votion/backtest/
+move-rule.json`; grades + wind-down alerts = `lp-grades/snapshots/current.json` (stamped from `docs/curated/alerts.json`); wallets' votes
++ LPs = `member-data/participants/current.json`; PD bribes = `tla-voting/pd-bribes/current.json`.
+Wrong-object guards: Votion's raw VP ≠ real VP (÷ k ≈ 1.11–1.12); a round's pots ≠ `active_now` (that is the PRIOR round); "comes back"
+is $0 unless the wallet votes that pool; the 1% line is per bucket.
 
 ## When the map has no route
 Say plainly what was checked and what does not exist yet (e.g. per-pool APR
@@ -242,7 +260,7 @@ report" question — it holds the rules and the known gaps in plain words. Produ
 - `member-data/supporters/{current,adao,liondao,pixel-lions}.json` — gifts by memo (thanks_defi; thanks_adao for the three
   treasuries); registry `docs/curated/supporters.json`.
 - `votion/optimization/current.json` — Votion's own optimizer worksheet incl. `diff.isWorthChanging` per bucket (its skip
-  rule); the Vote Market's back-test chip and "Votion's rule today" lines come from it.
+  rule); the Vote Market reads its period bribes list, its plan and its voteBefore (see "## Vote Market" below).
 Wrong-object guard: "all TLA VP" is NOT a number — say total VP (every lock) or voting VP (on gauges). "Not funded" on the
 page means no tokens for that period, never "unpriced".
 
