@@ -1,6 +1,6 @@
 # SPEC — Member portfolio: vAMP locks P&L (Milestone A, step 4)
 
-Status: **design, measured 2026-09-27**. No code yet. Owner ask: "can we do the credia and the locks design."
+Status: **L1 built and gated 2026-09-27** (§3); L2 and L3 are designed, not built. Owner ask: "can we do the credia and the locks design."
 Sits beside `SPEC-portfolio-coverage.md` (what is and is not tracked) and `SPEC-rewards-planner.md` (uses the lock value).
 
 ## 1. What the member sees
@@ -78,6 +78,38 @@ Earlier measurement (tla-flows lock events alone, 2026-09-26): 1 of 205 member l
 **Gate (real ledger + raw):** 0 lock-kind rows with a null token_id where the raw has one id; ≥99% of creates carry
 an amount; every superseded pair differs only in the fields named in its reason; row counts by kind are unchanged
 apart from supersedes.
+
+**L1 built (2026-09-27): classify 1.2.0 + derive 1.3.0.** Measured on a full local derive: every archive, tla-flows/raw
+included, at the workflow's 4 GB heap, 912 parts, 1.15M txs, about 3.5 min.
+
+| | before | after |
+|---|---|---|
+| lock_create with the amount locked | 0 / 2,104 | **2,104 / 2,104** (repaired in place) |
+| token-less lock_add | 1,698 | **16** |
+| token-less lock_permanent / unpermanent / extend | 1,420 / 273 / 235 | **1 / 0 / 1** |
+| rows superseded (labelled `classify-1.2.0: token_id -→n` / `msg_index n→n`) | | 3,829 |
+| deposits recovered (two locks in one msg, the second had been lost as a duplicate key) | | 4 |
+| permanents recovered (two in one msg, same reason) | | 8 |
+| deposits re-priced (IBC-proxy msg: the first leg was a gauge rebase), `repair.was` kept | | 2 |
+
+Checks on the result (`gate-locks-l1.mjs`, 9/9):
+- every recovered id (3,626) names a lock that exists at that height: 3,614 were seen before, 12 predate the archive, 0
+  are already gone;
+- every recovered-id deposit (1,692) raises that lock's fixed_power;
+- a second derive run changes nothing.
+
+On the unfixed ledger the same gate passes only 3/9. The msg_index supersedes are forward rows the Render stream wrote
+before it had classifier 1.1.6; derive 1.3 now re-reads `raw/forward/`.
+
+Found while doing it:
+- **Gauge rebases compound into locks.** `gauge/claim_rebase{token_id}` sends the rebase into the lock as a
+  `deposit_for`: 642 lock_add rows have `from` = the gauge. That is income to the lock, not the owner's deposit, and it
+  is the main reason Δfixed_power runs ahead of recorded deposits. L3 books these adds as a separate *rebase* leg, not as
+  basis.
+- **`terra1yu2wca…` is an IBC execute-proxy** (a Migaloo account driving TLA locks over IBC). Its msgs name no lock id
+  anywhere in the tx: those are the 16 remaining token-less adds, and they stay null (not guessed). For §7 it counts as
+  an owner, not a custodian.
+- The remaining permanent/extend rows (1 + 1) are the same IBC-proxy txs.
 
 ## 4. L2: anchors — `lock_info` at height (one-time Action, then forward)
 
@@ -160,8 +192,8 @@ renders a lock row type; the page needs no other change.
   equals vToken balance ÷ supply × the vault's locks (anchored like any lock). The basis is the member's deposits into the
   vault. This needs a Votion deposit/withdraw ledger; tla-core votion data holds the vault state but not per-member legs.
   It is the next step after this one.
-- **`terra1lsasu5…` (53 transfers in) and `terra1yu2wca…` (22):** not in known_contracts. Label them before the G6 run.
-  If one is a launch or deposit contract, it is a custodian.
+- **`terra1lsasu5…` (53 transfers in) is a wallet**: it signs its own txs (acc_seq on FDD98A53…), so it is an owner. **`terra1yu2wca…` (22) is
+  an IBC execute-proxy** (a Migaloo account). It is an owner too, but its msgs never name the lock (§3 L1 result). Neither is a custodian for G6.
 - Lock marketplace sales: none exist on this collection today. If a venue lists tla-locks, a `sale` row becomes a
   priced basis leg, and the rule is already in the table above.
 
