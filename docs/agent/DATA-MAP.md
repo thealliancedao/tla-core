@@ -48,7 +48,7 @@ daodao_staked_count, enterprise_staked_count, treasury_held_count to 2025-01
 transactions).
 
 ## NFT collections — counts, floor, journeys, address histories (v1.14.0, 2026-09-20)
-Collections: `adao` (AllianceDAO NFTs), `pixel-lions` (pixeLions · Lion DAO), `tla-locks` (TLA lock NFTs).
+Collections: `adao` (AllianceDAO NFTs), `pixel-lions` (pixeLions · Lion DAO), `burning-lions` (Burning Lions · Lion DAO, 7 one-of-ones, no rarity, no sales ledger yet), `tla-locks` (TLA lock NFTs).
 Everything lives in the nft-collections repo: `nft-collections/<slug>/…` via read_product.
 - **How many / who holds** → `snapshots/summary.json` (org-nft-inventory, every 15 min): staked, listed, liquid,
   broken, custody counts, `per_owner_counts`. STAKED-VS-HELD: `enterprise_staked_count` = tokens the legacy
@@ -245,4 +245,18 @@ report" question — it holds the rules and the known gaps in plain words. Produ
   rule); the Vote Market's back-test chip and "Votion's rule today" lines come from it.
 Wrong-object guard: "all TLA VP" is NOT a number — say total VP (every lock) or voting VP (on gauges). "Not funded" on the
 page means no tokens for that period, never "unpriced".
+
+## Lion DAO questions (2026-09-26)
+Read `docs/ecosystem-knowledge/LION-DAO.md` (corpus key `lion-dao`) for the story, the mechanics and every address; the agent's rule 15
+is the same map. Products (dao-originations/lion-dao/ unless named), pass `key` for one row:
+- DAO's wallets now → `positions/current.json` (key = wallet) · the DAO's value by day → `positions/daily/index.json`.
+- ROAR whales → `roar/holders.json` (custody contracts are listed apart, never ranked) · pyROAR ledger → `burn/holders.json` (a pyROAR
+  balance is NOT the ROAR a wallet burned) · ROAR20 owners → `roar20/holders.json`.
+- ROAR20 price / market cap / liquidity → `roar20/market.json` (hourly from its Raydium pool on chain) and `roar20/market-history.json`.
+- ROAR supply (drops = burns), ROAR staked, pyROAR supply, pixeLions staked, the validator's rank / stake / commission by day →
+  `history/daily.json` (key = YYYY-MM-DD, since 2023-09-01). Prices, holder counts and Burning Lions by day → `history/markets.json`
+  (since 2026-09-26).
+- Proposals → `governance/proposals.json` (key = id). Burning Lions → `nft-collections/burning-lions/snapshots/nfts.json` (7 tokens: read
+  it whole) and `metadata/metadata.json`; their sales are NOT captured yet — say so, never zero.
+- The pyROAR–ROAR pair is ≈ $7.50 deep (2026-09-26): any pyROAR price is that thin pool's ratio — say it with the price.
 
