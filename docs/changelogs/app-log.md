@@ -2,6 +2,16 @@
 
 Newest on top, UTC times, one entry per delivery. Spec: `docs/pending-changes/SPEC-mobile-app.md`.
 
+
+## 2.1.0 → 2.1.1 — 2026-09-27 · the Vote Market tab
+- **2.1.0** (owner: "a tool built specifically for mobile … a tab to this simulator and in that tab smaller tools or tabs for the three
+  sections"): a pickable **Vote Market** tab (Me → Your five tabs) and a card on TLA that opens it. Three sub-tabs — **Where $ goes**
+  (amount chips, bucket, lens → top 10; tap a pool to plan it) · **Plan** (pool picker, bribe slider + quick amounts, move-my-votes slider +
+  from; the amount that comes back in big green, real cost, Votion into the pool, APR next epoch, your bribes now → after, what each Votion
+  vault does, where Votion's votes move) · **Best split** (now → best for the wallet or a typed VP, per bucket, Plan it →). Same engine as
+  the site (`/lib/vote-market.js`, loaded on first open), the app wallet read-only, estimate banner, Reset on each sub-tab + Reset all.
+- **2.1.1**: the bribe breakdown shows a gain elsewhere too (as VM1.7).
+
 ## 2.0.1 — 2026-09-12 · owner phone walk of 2.0 (screenshots = truth)
 - FIXED: the 2.0 stylesheet closed before the v2 rules (a `</style>` line rode along in the v1 CSS slice), so ledger rows and the window row rendered stacked, unstyled. Rows are one line again.
 - FIXED: the NFTs feed showed the owner's Pixel Lions bids/transfers under aDAO — the tla-flows aux stream watches the registry superset (marketplaces included) and its bid/sale records carry no `nft_contract`, while token ids overlap across collections. Activity now keeps only records whose `nft_contract` or `contract` is the aDAO collection; bare marketplace records are dropped, never guessed. Gate on the live 2026/09 file: PL #1234/#1576 absent, aDAO #4729 delist present.

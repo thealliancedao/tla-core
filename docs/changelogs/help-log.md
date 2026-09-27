@@ -1,5 +1,19 @@
 # Help Page Changelog
 
+
+## v1.16.0 — 2026-09-27 — the Vote Market tool
+
+- Owner: "make sure we get this tool and its functionality added to the bot". New tool **`vote_market`** runs the site's OWN engine
+  (`aDAO-links-site/lib/vote-market.js`, fetched from the site repo and cached 1 h; model 10 min; live pots when the incentive manager
+  answers, else Votion's captured period list) — logic in `help-agent/lib/vote-market-tool.js` 1.0.0. Actions: **overview** (where $X does
+  the most by lens / bucket), **simulate** (a bribe and/or moving a wallet's votes → Votion per vault with its track record, what comes back,
+  ± elsewhere, the real cost, APR before → after, the flows), **best_split** (a wallet or a typed VP), **votion_moves**, **pool** (pot tokens,
+  votes, $ per 1M VP vs Votion's rate, what it takes). Pools by name; an ambiguous name returns candidates. Every result is marked an
+  estimate and carries the simulator link (`/vote-market.html?pool=…&bribe=…`, `?view=best`). **Rule 16** = when to use it, how to say it
+  (the payout formula, the 1% line, Votion's move rule and cast time, the breakdown, wind-down pools never recommended, never "you must").
+- Gate `gate-vote-market-tool.mjs` 18/18 (offline: the engine from a site checkout, the model from tla-core — every number equals the
+  engine's); live smoke on GitHub data 1.0 s cold / 26 ms cached. Battery +T11 (where $50 does the most) +T12 (a $100 bribe for a wallet).
+
 ## v1.15.0 → v1.15.1 — 2026-09-26 — Lion DAO data map; the question log keeps up
 
 - **1.15.0** (owner: "make sure the chat bot can answer questions on anything in the Lion DAO ecosystem"): rule 15 = the Lion DAO data

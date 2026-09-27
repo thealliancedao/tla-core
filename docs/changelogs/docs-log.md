@@ -1,5 +1,15 @@
 # docs / ecosystem-knowledge — changelog
 
+
+## 2026-09-27 — the Vote Market milestone docs bulk
+
+`tla-docs-content.json` 1.2 (new guide section **Vote Market & Bribes**; Votion section rewritten on what its history shows) ·
+`ecosystem-knowledge/votion.md` §3 (the fitted move rule + cast timing; the honesty boundary now says what is fitted vs published) ·
+`ecosystem-knowledge/site-reading-guide.md` §7 rewritten for the simulator + tile (the "+$X" / back-test wording retired), known gap 7 ·
+`agent/DATA-MAP.md` Vote Market section (the vote_market tool first, products behind it) · `SPEC-site-help-agent.md` v1.16.0 ·
+`pending-changes/HANDOVER-vote-market-2026-09-27.md` · `REPO-CATALOG.md` (the engine + the tile) · CHANGES_PENDING OPEN LEDGER 2026-09-27. Changelogs: tla, app, explorer, help,
+cron-votion.
+
 ## Rev 2.0 — 2026-08-25 — docs hub rebuilt
 
 tla-docs.html rewritten: the curated TLA guide (13 sections + glossary from

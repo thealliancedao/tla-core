@@ -1,5 +1,15 @@
 # NFT Explorer Changelog
 
+
+## explorer 4.55 — 2026-09-26 — Burning Lions inside the pixeLions explorer
+
+- Owner: "the burning lions section is hard to find — bring it into the explorer with the PL collection". Burning Lions ride along in the
+  pixeLions view: `BL-n` ids, a **Burning Lions** toggle (on by default) so for-sale views show them with the others, their own trait
+  dropdowns (Name · Animated), cards, the sheet, the wallet split, and an Analytics section; marketplace links use the token's own
+  contract. The separate Burning Lions button is kept (`?collection=burning-lions`). `nft-explorer-app.js` · index rev 4.55 · `?v=8.3`.
+- Burning Lion **#6 "Afterburn"** recovered: IPFS unreachable and every marketplace down, so the owner supplied the one-second MP4
+  (@PixeLionsDAO's post) → `nft-collections/burning-lions/images/6.gif` (looping), metadata.json + mirror-report.json rows.
+
 ## explorer 4.54 · collection-context 1.2.0 — 2026-09-26 — Burning Lions
 
 - A tenant's second collection opens with `?collection=burning-lions` (and a switcher in the hero). Burning Lions are 1/1s: "1 of 1",

@@ -1,5 +1,36 @@
 # TLA Stats Changelog
 
+
+## T6.11 → T6.13.3 · vote-market VM1.0 → VM1.7 · lib/vote-market.js 1.0 → 1.3 · lib/vote-market-tile.js 1.0 → 1.1.1 — 2026-09-26 / 27 — the Vote Market becomes a simulator
+
+- Owner: "I don't like what it does when you select bribes … build a powerful simulation tool so you can plan how to participate in
+  bribes or voting in TLA" — overview of where $ does the most (lenses), a simulator (move VP A → B, add a bribe: Votion's reaction, your
+  rewards, the bucket's APRs), a Votion-style optimizer for your VP; read-only with or without an address; big numbers, little text.
+- **One engine** — `aDAO-links-site/lib/vote-market.js` (UMD, `VoteMarket`). Voter payout = pot × a ÷ (V + a), paid only at ≥ 1% of the
+  bucket's votes; Votion maximizes Σ pot·a/(V+a) per vault per bucket, solved exactly by water-fill (ampluna-max, arbluna-max); Votion's
+  VP units ÷ k (≈ 1.11–1.12) per bucket to real VP; pots = the voted round's (Votion's `opt.bribes` period list, or LIVE from the incentive
+  manager `terra1tuuw…9037wh` `bribes{period}`); emissions split among active pools by vote share, APR = weekly × 52.18 ÷ staked × 100.
+  1.3.0 adds **Votion's move rule** (below): a vault re-votes a bucket only when gain > $0.05 AND the split shifts > 5%, else it holds its
+  current votes. Every page, the app and the help bot use this file — never a second model.
+- **`/vote-market.html`** (the simulator; `/test-2.html` redirects to the app so it shipped here). VM1.0 lenses + simulator + best split ·
+  VM1.1 header + address picker; USDC.n wind-down pills, never recommended, never in the best split · VM1.2 the REAL cost (bribe − the
+  change in your bribes, dilution included); best split by default; Best impact ranks pools Votion is offered (+ untested on request) ·
+  VM1.3 the bribe tile is a breakdown with "Comes back to your votes" in big green; the estimate banner; Reset per section + Reset all ·
+  VM1.4 Votion's per-vault re-votes / holds with its track record, when it casts · VM1.5 phones: overview first, Plan a move and Best split
+  fold into bars with a one-line summary, 2×2 answers, the bucket table fits 390 px · VM1.6 deep links `?pool=<bucket|gauge>&bribe=<usd>`
+  and `?view=best` · VM1.7 a GAIN elsewhere gets its own line (Votion leaving pools you vote = less dilution) — before, Real cost could
+  sit under You pay with no line saying why.
+- **TLA Stats' tile** — T6.11 opens the planner · T6.12 shows Votion's next move only (the $X chips "changed it in a negative way") + alert
+  pills · **T6.13** runs on the engine via `lib/vote-market-tile.js`: the numbers now match the simulator (pots $1,250 not $1.1K — the old
+  tile dropped tokens its feed did not price; Votion's moves in real VP, LUNA-FUEL −3.89M not −4.34M; "casts in" from Votion's fitted
+  timing, not the deadline; the "model vs Votion's plan ±43.7 pp" chip retired with the tile's own solver). Four stat boxes (bribes this
+  round · voting closes in · Votion casts in · a vote costs), the selected wallet's best-split teaser, three views (Where $ does the most ·
+  Votion's next move · Pots & rates), an amber "Open the simulator" button and a "Simulate →" on every row. T6.13.1 a stray `</div>`
+  closed the row so Movers fell below the tile — fixed, gated (M3) · T6.13.2 tile 1.1.0: the footer bar gone; filters = one toolbar
+  ($ segments · Bucket · Rank by dropdowns) · T6.13.3 tile 1.1.1: "Voting closes in" names the real deadline (Sun 23:59 UTC).
+- Gates: `gate-vote-market.mjs` 94/94 (engine E1–E12, page P1–P5, tile T1–T9, breakdown B1–B2, phone M1–M2, app A1–A7) ·
+  `gate-tla-stats.mjs` 54 pass / 12 fail — the 12 are the pre-existing round-200 fixture checks, identical on main before this work.
+
 ## T6.10 — 2026-09-26 — the Pools tab charts plot votes, 13 epochs
 
 - Owner: "shift the charts to show votes … all the pools in that bucket … how these votes move epoch to epoch … past 13 epochs."

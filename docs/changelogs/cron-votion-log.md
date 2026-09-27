@@ -4,6 +4,16 @@ Owner: `platform-crons/votion/` (Render job `org-votion`, hourly at :20).
 Writes `tla-core/votion/`. Spec: SPEC-votion-capture.md (G2 from
 UI-DATA-READINESS — the data-loss-clock gap).
 
+# votion/backtest 1.0.0 — 2026-09-27 — Votion's move rule, fitted from its own history (not a cron; a re-runnable script)
+
+`votion/backtest/move-rule.json` + `backtest-move-rule.py`. Every captured optimizer diff in the git history of
+`votion/optimization/current.json` (1,399 captures, 2026-07-31 → 2026-09-27, periods 196–204, every vault × bucket): Votion re-votes a
+bucket when its re-solve **gains > $0.05 AND the split differs > 5%** — 27,196 of 27,196 observations match its own isWorthChanging flag.
+Track record at the 9 casts: arbluna-max moved 20 of 20 flagged buckets, ampluna-max 17 of 25; no bucket ever moved without the flag.
+Casts land ~2.6 h before the Sunday 23:59 UTC deadline (21:20 UTC; p201 at 23:20; p204 cast early, 2026-09-23). An early analysis read
+"moved = False" everywhere because Votion casts before the last capture — the script detects change across the whole series. Re-run on a
+tla-core clone to refresh; `lib/vote-market.js` 1.3.0 reads it softly (a missing file = the same rule built in).
+
 # Rev 2 — 2026-08-02 — 1.2.0: LST hub-rate pricing (three-link chain) — mock-gated 48/48
 
 **The fix (AUDIT-eris-apr-pricing fix #1, ported here after the personal
@@ -157,3 +167,4 @@ Gate 39/39 (new: sweep find valued + found_via tagged, sweep coverage
 declared, sweep persistence to registry, sweep failure → partial with vault
 rows intact, dual-source failure semantics). Deploy = commit only (same
 Render job); ~200 extra LCD queries per daily run at concurrency 5.
+
