@@ -1,5 +1,69 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER 2026-09-27 — MILESTONE CLOSE: "The Vote Market — a bribe & vote simulator on one engine: page, TLA Stats tile, app tab, help bot" (supersedes 2026-09-26; that ledger stays below)
+
+The descriptive handover is `docs/pending-changes/HANDOVER-vote-market-2026-09-27.md` (the model, where each piece lives, findings,
+how it was verified). This ledger is the short list.
+
+### STATE IN ONE PARAGRAPH
+**One engine** — `aDAO-links-site/lib/vote-market.js` 1.3.0 — computes every Vote Market number: payout = pot × a ÷ (V + a) over the 1%
+line, emissions by vote share, Votion's two vaults solved by water-fill in real VP (÷ k), and Votion's fitted **move rule** (re-votes a
+bucket only when gain > $0.05 AND split shifts > 5% — 27,196/27,196 captured decisions; casts ~2.6 h before the Sunday 23:59 UTC deadline;
+`tla-core/votion/backtest/move-rule.json`). Four surfaces run it: the simulator **`/vote-market.html` VM1.7** (lenses, simulator with the
+bribe breakdown — You pay / comes back / ± elsewhere / real cost —, best split, Reset everywhere, the estimate banner, a phone layout,
+deep links `?pool=&bribe=` and `?view=best`), **TLA Stats' tile** (`lib/vote-market-tile.js` 1.1.1, T6.13.3: four stat boxes, the wallet's
+best-split teaser, Where $ does the most · Votion's next move · Pots & rates, one filter toolbar, "Open the simulator" + "Simulate →" on
+every row), the **app's Vote Market tab** (Ally 2.1.1: Where $ goes · Plan · Best split), and the **help bot** (v1.16.0 `vote_market`
+tool, rule 16). Winding-down pools (Noble USDC → USDC.inj by 2026-10-31) are flagged and never recommended. Also this milestone: explorer
+4.55 (Burning Lions inside the pixeLions view) and Burning Lion #6 "Afterburn" recovered as a looping GIF.
+
+### AUDIT 2026-09-27
+- On main already: lib/vote-market.js 1.3.0, move-rule.json + backtest script, app 2.1.0, VM1.5, tile 1.1.0 / T6.13.2, explorer 4.55,
+  burning-lions #6. Delivered at this close (commit owed): the three ZIPs below.
+- `gate-vote-market.mjs` 94/94 · `gate-vote-market-tool.mjs` 18/18 · `gate-docs.mjs` 5/5 · `gate-tla-stats.mjs` 54 pass / 12 fail — the
+  12 are round-200 fixture checks that fail identically on main (stale fixtures, not regressions; queued).
+- The 2026-09-26 owner to-dos are all DONE (help-agent 1.15.1 on main, root mint.html deleted, Burning Lion #6 supplied).
+
+### OWNER TO-DO (in order)
+1. Commit the **tla-core** ZIP (the docs bulk: changelogs, site-reading-guide §7, DATA-MAP, votion.md + facts, tla-docs-content.json 1.2,
+   the spec, this ledger, the handover).
+2. Commit the **aDAO-links-site** ZIP in ONE commit (vote-market.html VM1.7, app.html 2.1.1, lib/vote-market-tile.js 1.1.1, tla-stats.html
+   T6.13.3, gate-vote-market.mjs) — one commit so the page and the tile go live together (T6.13 showed the gap between two uploads).
+3. Commit the **platform-crons** ZIP (help-agent server.js 1.16.0, lib/vote-market-tool.js, gate-vote-market-tool.mjs, test-battery.js,
+   README.md), then **Manual Deploy** on tla-help-agent if it does not redeploy by itself.
+4. Delete `aDAO-links-site/tla_docs_content.json` (a stale copy nothing reads; it still links votion.io — an unrelated smart-home site).
+
+### LIVE CHECKS OWED
+- Ask the bot "If I put $50 of bribes into TLA this round, where would it do the most?" and "What happens if I bribe LUNA-ROAR with $100?"
+  (battery T11/T12) — expect a ranked list / a breakdown, the estimate caveat and a vote-market.html link.
+- TLA Stats: the tile's "Voting closes in" reads Sun 23:59 UTC; Movers sits beside the tile.
+- Next Monday: the tile and simulator roll to round 205 (pots from Votion's new period list; live read when the manager answers).
+
+### FOUND THIS MILESTONE (facts)
+- Votion's move rule and timing (above) — its "worth changing" flag is `gain > $0.05 AND deviation > 5%`; the arbLUNA vault moved 20/20
+  flagged buckets at the 9 casts, ampLUNA 17/25; nothing moved unflagged. p201 cast at 23:20; p204 cast early (2026-09-23).
+- Our exact solve beats Votion's own plan on its own objective — its solver lands short; predict the RULE, not the split.
+- The snapshot's `active_now` pots are the PRIOR round; the voted round's pots are Votion's period list / the manager's `bribes{period}`.
+- votion.io ≠ Votion (it is votion.money).
+- lp-grades leaves some gauges ungraded — they only get alert pills via the catalog-underlying fallback.
+
+### NEW LAWS (2026-09-27)
+- **One number, one code path.** A figure shown on two surfaces (page, tile, app, bot) comes from one engine; a second model drifts.
+- **Say what a time IS.** A deadline is not a cast; label each with its source (voteBefore vs the fitted cast).
+- **A breakdown adds up on the page.** Every term of the arithmetic has a line — gains as well as losses.
+- **Predict behavior from the actor's own record.** Votion's rule was fitted on every captured decision, then scored against its casts.
+- **A link is verified by opening it.** A plausible domain is not a source.
+
+### QUEUE (next chats, in order)
+1. **Noble USDC sweep** (owner: "once we are finished with the vote market overhaul") — every page that shows USDC.n / USDC.nbl pools or
+   balances gets the wind-down flag + the USDC.inj migration link (index, TLA Stats tables, pools, portfolio, app, Lion DAO positions,
+   the Advisor), driven by `docs/curated/alerts.json`.
+2. lp-grades: grade (or at least stamp alerts on) every gauge — close the ungraded-gauge gap upstream.
+3. Refresh `gate-tla-stats.mjs` fixtures from round 200 to current (the 12 stale checks) and add the tile's T-checks to it.
+4. Carried from 2026-09-26: Lion DAO gates to home 3.9 + a gate for T6.10's vote chart; Burning Lions sales ledger; pyROAR / ROAR20 24h
+   volume; per-wallet own burns; per-voter past votes; ampCAPA in the governance export; address-catalog Lion DAO stakers; pd-treasury;
+   the alliance ledger.
+
 ## OPEN LEDGER 2026-09-26 — MILESTONE CLOSE: "Lion DAO complete — markets, trends, Burning Lions, the chatbot; TLA past votes" (supersedes 2026-09-23; that ledger stays below)
 
 The descriptive handover for this milestone is `docs/pending-changes/HANDOVER-liondao-milestone-2026-09-26.md` (what each piece reads,

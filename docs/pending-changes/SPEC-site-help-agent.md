@@ -84,3 +84,11 @@ disclaimer applies and is in its prompt).
 2. v0 report/request form on the hub (an afternoon).
 3. Product index generator (registry + heads → `docs/product-index.json`).
 4. v1 service: proxy + grounding + triage; site chat widget last.
+
+## 4. Tools as built (2026-09-27, v1.16.0 — versions live in docs/changelogs/help-log.md)
+- `read_product` (tla-core / nft-collections / dao-originations files, `key` extraction) · `get_transaction` · `search_address_txs` ·
+  `audit_proposal` (registry-backed message audit) · `nft_wallet` / `nft_token` (nft-flows shards, v1.14) ·
+  **`vote_market`** (v1.16): the site's own Vote Market engine (`aDAO-links-site/lib/vote-market.js`, fetched + cached) — overview,
+  simulate, best_split, votion_moves, pool. Logic `help-agent/lib/vote-market-tool.js`; gate `gate-vote-market-tool.mjs`; rule 16.
+- Design rule kept since v1: a tool that answers a question the site also answers must run the SAME code or read the SAME product the
+  page does — never a second model the bot keeps in step by hand.
