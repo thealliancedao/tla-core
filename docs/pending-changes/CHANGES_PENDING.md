@@ -1,5 +1,100 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER 2026-09-26 — MILESTONE CLOSE: "Lion DAO complete — markets, trends, Burning Lions, the chatbot; TLA past votes" (supersedes 2026-09-23; that ledger stays below)
+
+The descriptive handover for this milestone is `docs/pending-changes/HANDOVER-liondao-milestone-2026-09-26.md` (what each piece reads,
+how it was verified, what each number means). This ledger is the short list.
+
+### STATE IN ONE PARAGRAPH (everything below is ON MAIN unless marked)
+**Lion DAO** is complete for this pass. Home `liondao/index.html` 3.9 · `home.json` 3.9 · `lib/home-tiles.js` 1.9.0: a MARKETS strip
+(ROAR · pyROAR · ROAR20 · pixeLions · Burning Lions), every market card with the same three fact rows (tokens: market cap · TVL · kill a
+zero; NFTs: market cap · mark · last sale vs floor), a TREND button on every tile whose number has a kept series (7d / 30d / 90d / All,
+hover, change over range, source; a series still filling says how many days it has), Burning Lions in All Current Listings and the
+venue cards, holders by REAL owner. Pages: supply 2.0 (the ROAR supply map + the whale tracker + who holds the vote, one page;
+whales.html 2.0 forwards to supply.html#holders) · ecosystem 2.0 (the map: Lion DAO in the middle, the four projects around it) ·
+rarity 1.0 (pixeLions trait classes + the 1/1s) · mint 1.2 (Burning Lions beside pixeLions; mirrored media). **Burning Lions** onboarded:
+`nft-collections/burning-lions/` (collection.json supply 7 / stated 12, traits Name + Animated, no rarity), media mirrored (mirror.js 1.2.1,
+token_uri mode — six of seven; #6 is unrecoverable from IPFS, the owner holds it and will supply the file), inventory under
+org-nft-inventory-liondao (Rev D.3: no staking module, no rarity → market history only), NFT explorer 4.54 (`?collection=burning-lions`,
+the hero switcher, "1 of 1", no borrowed aDAO rarity; Analytics shows what the inventory knows until a sales ledger exists). **Products**
+(dao-originations/lion-dao/, all inside the hourly org-ally-positions-liondao job, index.js 1.4.0): `roar20/market.json` + hourly
+`market-history.json` (roar20-market.js 1.2.0 — the Raydium AMM v4 pool read ON CHAIN; every API failed), `history/daily.json` kept going
+daily (history-forward.js 1.0.2; 167 days 2023-09-01 → 2026-09-25) and `history/markets.json` (one row per UTC day since 2026-09-26: ROAR /
+pyROAR / ROAR20 prices, holder counts, Burning Lions minted + real-owner holders), holders.js 1.4.0 (custody rules: a contract that holds
+ROAR for others is never a whale; ROAR20 `known_owners` from the registry — the Raydium vault authority is a pool). **Chatbot** help-agent
+1.15.0 on main (rule 15 = the Lion DAO data map; LION-DAO.md in the corpus; read_product `key` reaches holder / proposal / day rows;
+object-aware compaction). **TLA Stats** T6.10: any past epoch's whole vote (Past epochs… picker, change vs the epoch before; who-voted
+splits are live-only and the page says so), bars never leave the card, drill-down points answer on hover, and the Pools tab's bucket
+charts plot VOTES — every pool in the bucket, VP or share of the bucket, over the last 13 epochs (dashed 1% line; click → that epoch's
+whole vote; Liquidity & volume one pick away). Home (aDAO) 4.40 + Alert Center 2.1.0: the home window is Props across every DAO, every
+prop card decodes its own messages, live cards carry quorum / threshold / full text.
+
+### AUDIT 2026-09-26 (every file delivered this milestone, byte-compared against main)
+- All delivered files are byte-identical on main **except `platform-crons/help-agent/server.js` 1.15.1** (delivered, not committed —
+  main has 1.15.0). `liondao/whales.html` differs from the 1.1 delivery because 2.0 (the forwarder) superseded it — correct.
+- Rev footers that had not moved with shipped changes — fixed in this delivery: index.html 4.38 → **4.40** (09-25 Props window, 09-26 live
+  prop details), dao.html 1.10 → **1.11** (09-25 opens on Lions), nft-explorer-index.html footer 4.53 → **4.54**.
+- Every Lion DAO page's footer "Changelog" link fell back to aDAO's index-log — **lib/site-footer.js 3.8** maps `liondao-*` pages to the new
+  `docs/changelogs/liondao-log.md`.
+- Stray: `aDAO-links-site/mint.html` at the repo ROOT (a copy of liondao/mint.html 1.0 uploaded to the wrong folder on 2026-09-25; nothing
+  links to it) — OWNER TO DELETE. The 2026-09-23 strays are gone (platform-crons root files, liondao/lib/home-tiles.js).
+- Gates: gate-liondao-home / gate-liondao-pages were last run at home 3.3 (2026-09-23). Home 3.4–3.9, supply 2.0, ecosystem 2.0, rarity 1.0
+  and T6.8–T6.10 were verified in a real browser (Playwright on the live products) — the jsdom gates are OWED an update (fact rows, trend
+  buttons, Burning Lions rows, the vote chart).
+
+### OWNER TO-DO (in order)
+1. Commit the two ZIPs from this close: **tla-core** (the docs) and **aDAO-links-site** (lib/site-footer.js 3.8 + the three rev bumps).
+2. Commit `platform-crons/help-agent/server.js` **1.15.1** (question log flushes every 2 min / 10 questions and on shutdown), then
+   Manual Deploy on **tla-help-agent** if it does not redeploy by itself. Questions asked before 1.15.1 that were still in the batch are lost.
+3. Delete `aDAO-links-site/mint.html` (repo root only — keep liondao/mint.html).
+4. Burning Lion **#6**: send the image file and its name → `nft-collections/burning-lions/images/6.<ext>` + a metadata.json row.
+5. Council (carried): the 5 Burning Lions stated but not on the contract (7 minted of 12); the ≈ 2.9B pyROAR issued for ROAR that never
+   left supply; the 25,000,001 ROAR burned 2025-05-16 outside the festival ledger.
+
+### LIVE CHECKS OWED
+- `lion-dao/history/markets.json` gains a row every UTC day (day_count 1 on 2026-09-26) — the home's trend charts lengthen with it.
+- `lion-dao/history/daily.json` last_day moves each day (2026-09-25 at close).
+- After 1.15.1: ask the bot a question, wait 2 min, the question log shows it.
+- Burning Lions floor-history rows accrue daily (RUN_MODE=warm on the inventory run); the BL card's 24h slot fills after the 2nd row.
+
+### FOUND THIS MILESTONE (facts)
+- **pyROAR–ROAR pair** (Astroport `terra1tfygnnp00grk33e0qtz7q5p3nvjkt2eeftefavum2jdq09kpunwqe0z7p3`) exists and is read hourly for pyROAR's
+  price, but its depth is **≈ $7.50** (2026-09-26) — any pyROAR price is that pool's ratio and one small trade moves it. No 24h volume capture.
+- **ROAR20** trades only in a Raydium AMM v4 pool (`BnrDeofGKUH8kkMAV5dkXWbSe3pRmK5dtMsCygF12j25`); DexScreener "no pairs", GeckoTerminal
+  $0, Jupiter no price, pump.fun 530. On chain: ≈ $4.25e-6, market cap ≈ $4.1K, liquidity ≈ $6.1K (2026-09-26). The vault authority
+  `5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1` holds ≈ 73 % of supply — the pool's liquidity, not a wallet.
+- **ROAR whales**: 1,803 wallets ranked (2026-09-26); custody contracts listed apart (staking module, ampROAR hub, pairs, LP incentives,
+  ve3-asset-staking 92B ROAR of LP held for TLA stakers — counting it would double every TLA staker's LP).
+- **Burning Lions**: 7 minted, 7 distinct real owners (owner_of named BBL's contract for three listed lions — the seller is the holder);
+  #2 Hellfire's image is a marketplace cache (IPFS original unreachable); #7 Blaze is the only animated one (APNG detected by chunk walk).
+- **Public LCD history is pruned** — closed days are read at height where the node still serves them, newest first; older gaps are
+  the archive Action's job (the backfill Action, step_days=1).
+
+### NEW LAWS (2026-09-26)
+- **A token with no market API has a market: its pool.** Read the reserves on chain; the APIs are overrides, never the source.
+- **A listed token belongs to its seller.** Holder counts read the inventory's real owner, never the marketplace contract owner_of names.
+- **A vault authority is custody, named by the registry** (`known_owners` beside the mint), never the top wallet.
+- **History is kept by the job that already runs.** The hourly job writes today's row; the archive fills the past once. Probe newest first
+  — the public node forgets.
+- **A total adds like with like.** A market cap is not a volume; a card that sums them is summing two questions.
+- **A chart's scale covers everything it draws** (the locked-in outline, not only the bar), and a label that does not fit goes inside.
+- **A past view says what it lacks.** Who-voted splits exist only live; a past epoch shows totals and says so — never an estimate.
+- **The footer rev moves with every shipped change,** and an ally's pages log to the ally's changelog.
+
+### QUEUE (next chats, in order)
+1. Gates: bring gate-liondao-home / gate-liondao-pages up to home 3.9 (fact rows, trend sources, BL rows) and add a gate for T6.10's vote
+   chart (series from pool-status-history, 13 epochs, tier filter by share).
+2. Burning Lions sales ledger: nft-flows for `burning-lions` (backfill + forward in the EXISTING nft-flows service — fold, don't grow) →
+   last sale, volume, the full Analytics tab, the original raffle winners (each token's first transfer).
+3. pyROAR pair + ROAR20 24h change / volume: the pair's swaps (Astroport, fold into dex-data or history-forward); ROAR20 swaps from the Raydium
+   pool (Helius parsed tx) — until then both read "not captured".
+4. Per-wallet OWN burns (the festival receiver's incoming ROAR per sender) — so a burner's contribution is not read off a pyROAR balance.
+5. TLA: per-voter past votes (who voted which pool in a past epoch needs a per-voter capture history — not kept today); ampCAPA in the
+   nightly governance export.
+6. Carried from 2026-09-23: catalog Lion DAO's stakers in the address catalog (names on whale / pyROAR rows); pd-treasury product; the
+   alliance ledger (alliances.json + valuer) → alliance.html then/now.
+
+
 ## OPEN LEDGER 2026-09-23 — MILESTONE CLOSE: "Lion DAO home v3 + the products behind it" (supersedes 2026-09-22; that ledger stays below)
 
 ### STATE IN ONE PARAGRAPH (everything below is ON MAIN unless marked)
