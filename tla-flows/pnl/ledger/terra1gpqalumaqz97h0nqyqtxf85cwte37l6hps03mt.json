@@ -6,12 +6,4271 @@
   "buckets": "every captured flow event bucketed by TLA epoch (docs/epoch_1-300_date.json start_times)",
   "units": "LP-unit deltas per pool per unit (amplp/shares segregated — no historical exchange rates exist to convert honestly)",
   "usd_legs": "identical Tier-M figures as rollup.json (same valuation calls), epoch-bucketed: zap-in, swap fees, claimed LUNA yield at claim-day price",
-  "value_curve": "NOT present — no pool state exists before dex-data (2026-06-26); the archive state sampler upgrades this tier in place"
+  "value_curve": "v3 (1.2.0): v3.value_curve — open units at every complete state-history epoch boundary (E97+) → LP (measured rate) → that epoch's pair basket → USD at that day's price, and LUNA; pools not sampled or unpriced are listed in `missing` (the total is then a lower bound)"
  },
  "epoch_span": [
   97,
   202
  ],
+ "v3": {
+  "trip_cols": [
+   "day",
+   "opened",
+   "units",
+   "matched_units",
+   "in_usd",
+   "out_usd",
+   "in_luna",
+   "out_luna",
+   "market_usd",
+   "lp_usd",
+   "tier_in",
+   "tier_out",
+   "tx",
+   "flag"
+  ],
+  "curve_pools": [
+   "cw20:terra1q475uvk9te5nxq2lzu0h96t0devmx4v8ctxqtm253ut05wrpugsq0m4e3k",
+   "native:factory/terra17vas9rhxhc6j6f5wrup9cqapxn74jvpft069py7l7l9kr7wx3tnsxrazux/uLP",
+   "cw20:terra1a5apghncafx0nem740fsrmd6demaywvp332a4uat63u2jtwn8mgsz7khkw",
+   "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75pdeg0txfvhyuswm6653",
+   "native:factory/terra13ywdferm4jtcperal9png3cvhtmar5se9nu4r49k7vujrakwy9zqa3rhwe/uLP",
+   "native:factory/terra1aysexulsnuxna62m5rlnuzfcvct3df93gd4q0kkjtjcqsvv93s5sd0fyd2/uLP",
+   "cw20:terra12mvtdvn4fgtsqs4fwxr56vcwjw0xe23lhdfyjq5ghk7vmfeuxn0srau9q2",
+   "cw20:terra1huw82c9grj9xz9umkc8hqcjqgndadlkrp8rn9u6eh5jh5j2s2t7qs33vry",
+   "native:factory/terra186rpfczl7l2kugdsqqedegl4es4hp624phfc7ddy8my02a4e8lgq5rlx7y/ampCAPA",
+   "native:ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6",
+   "native:factory/terra1d8ap3zyd6tfnruuuwvs0t927lr4zwptruhulfwnxjpqzudvyn8usfgl8ze/uLP",
+   "native:factory/terra178ca7z2w6346wlkmxwpw80s2a5fmas9q28xlzegkt4c4rdam67aql5fgxj/uLP",
+   "native:factory/terra1q2gd6kc7nt8xct94chrlsqtpxfs9rve0j76lquce624y5zp85cdseshh85/uLP",
+   "cw20:terra10e2rz5etaped4nh0vk502hf7uwtz5lqvxqatxl4qyr0chcynxf2swhfwww",
+   "cw20:terra1xkt5etsaptddec6achnjlqnx884fwxwuk795fs885v6eyygu6eus7uauhc",
+   "cw20:terra1wdzdltygkgqyuvggnqnxsny9vhfyex92kzaz6zkued2wvp7nvxpsv739js",
+   "cw20:terra1s275y73lfupag0g03nglxaedfnsw5z4m5zc9wk66guy503zuw5ss889tlx",
+   "cw20:terra18336lhc2vt9s9tw4pqetvdwywg9555rduzv527r9q47smw89epcsxgxuny",
+   "cw20:terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc",
+   "cw20:terra1sxmrwp48wt3h4whatla7xwl9g6t5y95u589az2cdu0myuzjpkkrs4ztprc"
+  ],
+  "totals": {
+   "as_of_epoch": 204,
+   "as_of_day": "2026-09-21",
+   "realized": {
+    "in_usd": 81192.36,
+    "out_usd": 79886.21,
+    "delta_usd": -1306.11,
+    "in_luna": 406179.84589,
+    "out_luna": 468087.819973,
+    "delta_luna": 61907.974083,
+    "market_usd": -1917.15,
+    "lp_usd": 610.99,
+    "trips_valued": 52,
+    "trips_blank": 25
+   },
+   "open": {
+    "cost_usd": 6.49,
+    "cost_luna": 100.601325,
+    "value_usd": 6.95,
+    "value_luna": 129.90436,
+    "unrealized_usd": 0.46,
+    "unrealized_luna": 29.303035,
+    "positions_unvalued": 1
+   },
+   "rewards": {
+    "claims_luna": 9025.033938,
+    "claims_usd": 2623.45,
+    "unattributed_luna": 123.966565,
+    "bribes_usd": 2.84,
+    "bribes_luna": 23.01579,
+    "bribes_unpriced_coins": 3
+   },
+   "positions_with_unmatched_units": 7,
+   "net_usd": 1320.65,
+   "net_luna": 70985.326847
+  },
+  "positions": {
+   "cw20:terra10e2rz5etaped4nh0vk502hf7uwtz5lqvxqatxl4qyr0chcynxf2swhfwww|amplified": {
+    "pool": "cw20:terra10e2rz5etaped4nh0vk502hf7uwtz5lqvxqatxl4qyr0chcynxf2swhfwww",
+    "mechanism": "amplified",
+    "deposits": 13,
+    "withdraws": 4,
+    "units_open": 1,
+    "lots_open": 1,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0.027114,
+    "open_value_usd": 0,
+    "open_value_luna": 0.034607,
+    "rate_tier": "nearest",
+    "realized": {
+     "trips": 4,
+     "valued": 3,
+     "in_usd": 3808.68,
+     "out_usd": 3647.37,
+     "delta_usd": -161.31,
+     "in_luna": 56132.101903,
+     "out_luna": 55731.852044,
+     "delta_luna": -400.249859,
+     "market_usd": -197.85,
+     "lp_usd": 36.53
+    },
+    "claims": {
+     "luna": 0,
+     "usd": 0,
+     "n": 0
+    },
+    "unmatched_units": 1888729,
+    "tiers": {
+     "trip:blank": 1,
+     "lot:M": 13,
+     "trip:valued": 3
+    },
+    "trips": [
+     [
+      "2025-05-08",
+      null,
+      1888729,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "62F89C2F487B0EA7CC636152B9822A9D160B685A7C0891E94E8ED27E5B9F65C1",
+      "unmatched 1888729"
+     ],
+     [
+      "2025-11-23",
+      "2025-10-30",
+      240794,
+      240794,
+      587.22,
+      459.12,
+      6693.319225,
+      6400.613294,
+      -132.01,
+      3.91,
+      "M",
+      "M",
+      "ED8EDC4627A5588ED8A2FC087C3EC8B22337DC8517F875844DA44A6F48E23F3D",
+      null
+     ],
+     [
+      "2025-11-23",
+      "2025-11-07",
+      240794,
+      240794,
+      531.96,
+      459.16,
+      6495.036001,
+      6401.205997,
+      -75.41,
+      2.61,
+      "M",
+      "M",
+      "4215F8437C9B2C95AE3EC2D436AAECAE9A28C0B390A8566B3155B3AE12DCF246",
+      null
+     ],
+     [
+      "2026-03-13",
+      "2026-02-09",
+      1583823,
+      1583823,
+      2689.5,
+      2729.09,
+      42943.746677,
+      42930.032753,
+      9.57,
+      30.01,
+      "M",
+      "M",
+      "AA09C4A1292173D988DD9F095D8E5D99CA8EE0F399B192027CFA1DFF9411A952",
+      null
+     ]
+    ]
+   },
+   "cw20:terra10e2rz5etaped4nh0vk502hf7uwtz5lqvxqatxl4qyr0chcynxf2swhfwww|non_amplified": {
+    "pool": "cw20:terra10e2rz5etaped4nh0vk502hf7uwtz5lqvxqatxl4qyr0chcynxf2swhfwww",
+    "mechanism": "non_amplified",
+    "deposits": 1,
+    "withdraws": 2,
+    "units_open": 1,
+    "lots_open": 1,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0.010423,
+    "open_value_usd": 0,
+    "open_value_luna": 0.025273,
+    "rate_tier": "nearest",
+    "realized": {
+     "trips": 2,
+     "valued": 2,
+     "in_usd": 4654.95,
+     "out_usd": 5317.5,
+     "delta_usd": 662.54,
+     "in_luna": 29662.155899,
+     "out_luna": 31394.157896,
+     "delta_luna": 1732.001997,
+     "market_usd": 694.12,
+     "lp_usd": -31.58
+    },
+    "claims": {
+     "luna": 209.790711,
+     "usd": 36.8,
+     "n": 11,
+     "split_by_value": 11
+    },
+    "tiers": {
+     "lot:M": 1,
+     "trip:valued": 2
+    },
+    "trips": [
+     [
+      "2025-05-05",
+      "2025-04-14",
+      2054759,
+      2054759,
+      3360.99,
+      3842.87,
+      21416.803461,
+      22527.029442,
+      503.39,
+      -21.51,
+      "M",
+      "D",
+      "42FC9534DAC788F2B841884637149C5AC06AEDA5029D0983B5D65D1D69D6EFD9",
+      null
+     ],
+     [
+      "2025-05-08",
+      "2025-04-14",
+      791071,
+      791071,
+      1293.96,
+      1474.63,
+      8245.352438,
+      8867.128454,
+      190.73,
+      -10.07,
+      "M",
+      "M",
+      "C2D65556F8A247B096462A7DB3A2592825736F5111D0D26E972F9DCC6F7A833E",
+      null
+     ]
+    ]
+   },
+   "cw20:terra12mvtdvn4fgtsqs4fwxr56vcwjw0xe23lhdfyjq5ghk7vmfeuxn0srau9q2|amplified": {
+    "pool": "cw20:terra12mvtdvn4fgtsqs4fwxr56vcwjw0xe23lhdfyjq5ghk7vmfeuxn0srau9q2",
+    "mechanism": "amplified",
+    "deposits": 0,
+    "withdraws": 1,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 1,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 0,
+     "usd": 0,
+     "n": 0
+    },
+    "unmatched_units": 43684144,
+    "tiers": {
+     "trip:blank": 1
+    },
+    "trips": [
+     [
+      "2025-05-10",
+      null,
+      43684144,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "AFE6B662BE0449ECAC8742AE4D97B136AAEDB2B8D783683EB864394272A295CB",
+      "unmatched 43684144"
+     ]
+    ]
+   },
+   "cw20:terra12mvtdvn4fgtsqs4fwxr56vcwjw0xe23lhdfyjq5ghk7vmfeuxn0srau9q2|non_amplified": {
+    "pool": "cw20:terra12mvtdvn4fgtsqs4fwxr56vcwjw0xe23lhdfyjq5ghk7vmfeuxn0srau9q2",
+    "mechanism": "non_amplified",
+    "deposits": 9,
+    "withdraws": 3,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 3,
+     "valued": 3,
+     "in_usd": 827.21,
+     "out_usd": 799.48,
+     "delta_usd": -27.74,
+     "in_luna": 4189.058879,
+     "out_luna": 4481.733795,
+     "delta_luna": 292.674917,
+     "market_usd": -19.8,
+     "lp_usd": -7.94
+    },
+    "claims": {
+     "luna": 189.613295,
+     "usd": 66.78,
+     "n": 24,
+     "split_by_value": 24
+    },
+    "tiers": {
+     "lot:D": 1,
+     "lot:M": 8,
+     "trip:valued": 3
+    },
+    "trips": [
+     [
+      "2025-05-05",
+      "2024-11-28",
+      52466977,
+      52466977,
+      480,
+      430.82,
+      2302.679444,
+      2525.485063,
+      -44.94,
+      -4.24,
+      "D+M",
+      "D",
+      "106A1D88476B7562A0FD13D7C334F99A384D0EB0D64B48FE32DE97EA1A3E447D",
+      null
+     ],
+     [
+      "2025-05-09",
+      "2025-03-30",
+      4201140,
+      4201140,
+      35.87,
+      37.97,
+      192.421897,
+      201.492786,
+      2.52,
+      -0.42,
+      "M",
+      "D",
+      "E2055BFDB2CC3DD54D9E383DBF5346E5946C927FEBCCEF054A2C9621414F1665",
+      null
+     ],
+     [
+      "2025-05-09",
+      "2025-03-30",
+      36588518,
+      36588518,
+      311.34,
+      330.69,
+      1693.957538,
+      1754.755946,
+      22.62,
+      -3.28,
+      "M",
+      "M",
+      "FB50A28D9D9E2B6742B6BB1F1BB1CEC4DF99C60C6BC18C4B9578F6F682E20ED9",
+      null
+     ]
+    ]
+   },
+   "cw20:terra18336lhc2vt9s9tw4pqetvdwywg9555rduzv527r9q47smw89epcsxgxuny|amplified": {
+    "pool": "cw20:terra18336lhc2vt9s9tw4pqetvdwywg9555rduzv527r9q47smw89epcsxgxuny",
+    "mechanism": "amplified",
+    "deposits": 20,
+    "withdraws": 3,
+    "units_open": 48,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "rate_tier": "nearest",
+    "realized": {
+     "trips": 3,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 0,
+     "usd": 0,
+     "n": 0
+    },
+    "tiers": {
+     "lot:blank": 20,
+     "trip:blank": 3
+    },
+    "trips": [
+     [
+      "2025-10-26",
+      "2025-10-12",
+      36950935111291560,
+      36950935111291560,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "9517F9CEB8D83B86897E30CADFC77CFCCE8B05871F4D31D3316223F8E9AC689A",
+      null
+     ],
+     [
+      "2025-11-24",
+      "2025-10-30",
+      86935539460000000,
+      86935539460000000,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "10D9A43E24A5CF2A49636B6B241B54E6D2C3911C1E9C188C1585E3B9A49601C3",
+      null
+     ],
+     [
+      "2026-03-16",
+      "2025-11-19",
+      126662879996869800,
+      126662879996869800,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "0B8845988FC9318188743BAA9B05F4666DEE906B2F8DA492F41B23D93DF86E70",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1a5apghncafx0nem740fsrmd6demaywvp332a4uat63u2jtwn8mgsz7khkw|non_amplified": {
+    "pool": "cw20:terra1a5apghncafx0nem740fsrmd6demaywvp332a4uat63u2jtwn8mgsz7khkw",
+    "mechanism": "non_amplified",
+    "deposits": 1,
+    "withdraws": 1,
+    "units_open": 1,
+    "lots_open": 1,
+    "open_cost_usd": null,
+    "open_cost_luna": null,
+    "open_value_usd": 0,
+    "open_value_luna": 0.001949,
+    "rate_tier": "nearest",
+    "realized": {
+     "trips": 1,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 392.017149,
+     "usd": 156.44,
+     "n": 45,
+     "split_by_value": 44
+    },
+    "tiers": {
+     "lot:blank": 1,
+     "trip:blank": 1
+    },
+    "trips": [
+     [
+      "2024-10-13",
+      "2024-09-05",
+      95480,
+      95480,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "332FD00D64A24FCA48120FC7F2BB75110D232BBDA7051464DB8FCF60C4F40565",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1huw82c9grj9xz9umkc8hqcjqgndadlkrp8rn9u6eh5jh5j2s2t7qs33vry|amplified": {
+    "pool": "cw20:terra1huw82c9grj9xz9umkc8hqcjqgndadlkrp8rn9u6eh5jh5j2s2t7qs33vry",
+    "mechanism": "amplified",
+    "deposits": 4,
+    "withdraws": 6,
+    "units_open": 1665696,
+    "lots_open": 1,
+    "open_cost_usd": 3.59,
+    "open_cost_luna": 39.623162,
+    "open_value_usd": 3.87,
+    "open_value_luna": 72.357378,
+    "rate_tier": "curve",
+    "realized": {
+     "trips": 6,
+     "valued": 2,
+     "in_usd": 2999.53,
+     "out_usd": 3014.03,
+     "delta_usd": 14.5,
+     "in_luna": 19237.171946,
+     "out_luna": 30548.743608,
+     "delta_luna": 11311.571663,
+     "market_usd": -0.81,
+     "lp_usd": 15.31
+    },
+    "claims": {
+     "luna": 0,
+     "usd": 0,
+     "n": 0
+    },
+    "unmatched_units": 2485771354,
+    "tiers": {
+     "lot:M": 4,
+     "trip:valued": 2,
+     "trip:blank": 4
+    },
+    "trips": [
+     [
+      "2025-04-03",
+      "2025-03-30",
+      455057209,
+      455057209,
+      999.97,
+      1002.43,
+      5364.252509,
+      5726.275977,
+      -0.06,
+      2.52,
+      "M",
+      "M",
+      "3608D703C5B75E1718DBE3A1292DFBF034DC0EA0C15E3043A06359AFCE04B56C",
+      null
+     ],
+     [
+      "2025-05-08",
+      null,
+      500000000,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "32ADEED26D695E2F370041D63356AEA256734A9E4462830843120C64BE2EC9D3",
+      "unmatched 500000000"
+     ],
+     [
+      "2025-05-08",
+      null,
+      500000000,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "77C4C4ECC6FAFFC80E46CB19AF8B1062D9D34D9CFAD41A9C20BC00C91A706AD4",
+      "unmatched 500000000"
+     ],
+     [
+      "2025-05-08",
+      null,
+      500000000,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "3B041F08FD9E1C51CF4B6C4C316C55F7B13F08836B6766E9672E0BB0130EF53F",
+      "unmatched 500000000"
+     ],
+     [
+      "2025-05-08",
+      null,
+      985771354,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "C752DE31AA1078547B0AFD92D61D5D4AB9D70EA10C780E7346D8D46D429A3B53",
+      "unmatched 985771354"
+     ],
+     [
+      "2026-01-20",
+      "2025-12-15",
+      931976199,
+      931976199,
+      1999.56,
+      2011.6,
+      13872.919437,
+      24822.467631,
+      -0.75,
+      12.79,
+      "M",
+      "M",
+      "427E91DDFFF8883D89422C60F177BE1345A25A4AC54BCDA1844E927E7BC19174",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1huw82c9grj9xz9umkc8hqcjqgndadlkrp8rn9u6eh5jh5j2s2t7qs33vry|non_amplified": {
+    "pool": "cw20:terra1huw82c9grj9xz9umkc8hqcjqgndadlkrp8rn9u6eh5jh5j2s2t7qs33vry",
+    "mechanism": "non_amplified",
+    "deposits": 24,
+    "withdraws": 7,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 7,
+     "valued": 7,
+     "in_usd": 31408.83,
+     "out_usd": 31506.31,
+     "delta_usd": 97.49,
+     "in_luna": 136251.503513,
+     "out_luna": 152431.756591,
+     "delta_luna": 16180.253079,
+     "market_usd": -161.99,
+     "lp_usd": 259.48
+    },
+    "claims": {
+     "luna": 2422.261941,
+     "usd": 560.94,
+     "n": 19,
+     "split_by_value": 19
+    },
+    "tiers": {
+     "lot:M": 23,
+     "trip:valued": 7,
+     "lot:D": 1
+    },
+    "trips": [
+     [
+      "2025-01-18",
+      "2024-11-26",
+      5244502291,
+      5244502291,
+      10478.51,
+      10199.12,
+      21372.011195,
+      23078.901497,
+      -168.44,
+      -110.95,
+      "M",
+      "M",
+      "A9476CD49795308F0E69ECEB965AFE1661BE1099C613AD618E4366F932B4A63B",
+      null
+     ],
+     [
+      "2025-04-14",
+      "2025-03-06",
+      5274028286,
+      5274028286,
+      10128.37,
+      10243.92,
+      47170.515367,
+      65276.042344,
+      -57.13,
+      172.69,
+      "M",
+      "D",
+      "AB6346010270C64A390114210A616945E0A68BEF150F6F3465D972305C031B7B",
+      null
+     ],
+     [
+      "2025-04-26",
+      "2025-04-14",
+      1003540565,
+      1003540565,
+      1950.19,
+      1991.72,
+      12426.92294,
+      10599.610113,
+      -2.13,
+      43.66,
+      "D",
+      "M",
+      "5ADD4167D3C1DF010F28D16A4A4B72FD31F1FDD8E29344FB1C601C36CCF7F4F2",
+      null
+     ],
+     [
+      "2025-05-01",
+      "2025-04-14",
+      251205309,
+      251205309,
+      488.17,
+      498.73,
+      3110.695398,
+      2736.744946,
+      0.23,
+      10.33,
+      "D",
+      "M",
+      "9C4AAD4BC001C11B2D1CDB52BAF7025654045B2F14CB5BBACD850878AA9FDE64",
+      null
+     ],
+     [
+      "2025-05-02",
+      "2025-04-14",
+      251278910,
+      251278910,
+      488.31,
+      499.54,
+      3111.606805,
+      2714.794332,
+      1.01,
+      10.22,
+      "D",
+      "M",
+      "15819021294A8552A559CA63341C7D4E43337C6441129940783077A86402A471",
+      null
+     ],
+     [
+      "2025-05-05",
+      "2025-04-14",
+      2514965387,
+      2514965387,
+      4887.35,
+      5027.89,
+      31143.017185,
+      29473.682764,
+      41.31,
+      99.23,
+      "D",
+      "D",
+      "04485838E0927812AADB3A017AB0AAC73BFC09E9591F3C0EB8339E3800965614",
+      null
+     ],
+     [
+      "2025-05-07",
+      "2025-04-14",
+      1528722858,
+      1528722858,
+      2987.93,
+      3045.39,
+      17916.734623,
+      18551.980595,
+      23.16,
+      34.3,
+      "D+M",
+      "M",
+      "95BF05A7B0E91A34DA11CE7AD32C588E882795AF7EAFEC3FC9F4156611CFB66F",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc|amplified": {
+    "pool": "cw20:terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc",
+    "mechanism": "amplified",
+    "deposits": 6,
+    "withdraws": 2,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 2,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 0,
+     "usd": 0,
+     "n": 0
+    },
+    "tiers": {
+     "lot:blank": 6,
+     "trip:blank": 2
+    },
+    "trips": [
+     [
+      "2026-05-06",
+      "2026-04-20",
+      2003189,
+      2003189,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "E9CCF94642ACA57B4272888194711908AD2CD35A878361D13859826683D99EB6",
+      null
+     ],
+     [
+      "2026-08-19",
+      "2026-04-20",
+      3711632,
+      3711632,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "0A15075AE0D9E08BC459A51ABFB1E6206FC3E9099D2007AC3160151FF5A44A4A",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc|non_amplified": {
+    "pool": "cw20:terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc",
+    "mechanism": "non_amplified",
+    "deposits": 1,
+    "withdraws": 1,
+    "units_open": 1,
+    "lots_open": 1,
+    "open_cost_usd": null,
+    "open_cost_luna": null,
+    "open_value_usd": null,
+    "open_value_luna": null,
+    "realized": {
+     "trips": 1,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 0,
+     "usd": 0,
+     "n": 0
+    },
+    "tiers": {
+     "lot:blank": 1,
+     "trip:blank": 1
+    },
+    "trips": [
+     [
+      "2026-08-19",
+      "2026-08-19",
+      3979874,
+      3979874,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "14D5FDE36A0D62E61F9857FB10BFBDF538DB300D8627EA7691F0A561805547B5",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75pdeg0txfvhyuswm6653|amplified": {
+    "pool": "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75pdeg0txfvhyuswm6653",
+    "mechanism": "amplified",
+    "deposits": 0,
+    "withdraws": 1,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 1,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 0,
+     "usd": 0,
+     "n": 0
+    },
+    "unmatched_units": 124506526,
+    "tiers": {
+     "trip:blank": 1
+    },
+    "trips": [
+     [
+      "2025-03-03",
+      null,
+      124506526,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "60EA2C35DFA8FE93F8C10CD70F5DD2B01E6BBFB723C68FBD65A1585F454B110B",
+      "unmatched 124506526"
+     ]
+    ]
+   },
+   "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75pdeg0txfvhyuswm6653|non_amplified": {
+    "pool": "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75pdeg0txfvhyuswm6653",
+    "mechanism": "non_amplified",
+    "deposits": 18,
+    "withdraws": 2,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 2,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 639.70036,
+     "usd": 268.18,
+     "n": 20,
+     "split_by_value": 18
+    },
+    "tiers": {
+     "lot:blank": 18,
+     "trip:blank": 2
+    },
+    "trips": [
+     [
+      "2025-02-12",
+      "2024-10-23",
+      386925013085,
+      386925013085,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "AE47D56E109384E39EF86CA36E130AF3DCC94B289B28ACE6D52E23362CE4B6E7",
+      null
+     ],
+     [
+      "2025-02-19",
+      "2025-02-12",
+      173308598,
+      173308598,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "D",
+      "CB09760CD0B20B63C426098B64530769609935EF23CD1DC6E71077FB7CAB9A59",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1q475uvk9te5nxq2lzu0h96t0devmx4v8ctxqtm253ut05wrpugsq0m4e3k|amplified": {
+    "pool": "cw20:terra1q475uvk9te5nxq2lzu0h96t0devmx4v8ctxqtm253ut05wrpugsq0m4e3k",
+    "mechanism": "amplified",
+    "deposits": 11,
+    "withdraws": 2,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 2,
+     "valued": 2,
+     "in_usd": 1517.25,
+     "out_usd": 1696.74,
+     "delta_usd": 179.49,
+     "in_luna": 5736.27808,
+     "out_luna": 6449.599423,
+     "delta_luna": 713.321344,
+     "market_usd": 49.64,
+     "lp_usd": 129.85
+    },
+    "claims": {
+     "luna": 122.469569,
+     "usd": 25.94,
+     "n": 6,
+     "split_by_value": 6
+    },
+    "unmatched_units": 837915350.8887064,
+    "tiers": {
+     "lot:M": 11,
+     "trip:valued": 2
+    },
+    "trips": [
+     [
+      "2024-11-28",
+      "2024-10-21",
+      1434379161.8887064,
+      596463811,
+      566.64,
+      775.63,
+      1529.64149,
+      1561.784462,
+      196.07,
+      12.92,
+      "M",
+      "M",
+      "06D55866725BA6F6D37AAAFE633A3EB35CCCD112A615F490435B502145F5E32C",
+      "unmatched 837915350.8887064"
+     ],
+     [
+      "2025-05-09",
+      "2025-02-21",
+      1341827598,
+      1341827598,
+      950.61,
+      921.11,
+      4206.63659,
+      4887.814961,
+      -146.43,
+      116.93,
+      "M",
+      "M",
+      "D537063CB5DF47D24DCC6835B849A515EF89F0ACE83BDBC74F0B4E877578EE5B",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1q475uvk9te5nxq2lzu0h96t0devmx4v8ctxqtm253ut05wrpugsq0m4e3k|non_amplified": {
+    "pool": "cw20:terra1q475uvk9te5nxq2lzu0h96t0devmx4v8ctxqtm253ut05wrpugsq0m4e3k",
+    "mechanism": "non_amplified",
+    "deposits": 21,
+    "withdraws": 3,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 3,
+     "valued": 3,
+     "in_usd": 3020.5,
+     "out_usd": 1754.54,
+     "delta_usd": -1265.96,
+     "in_luna": 6603.663101,
+     "out_luna": 6580.879468,
+     "delta_luna": -22.783634,
+     "market_usd": -1235.08,
+     "lp_usd": -30.9
+    },
+    "claims": {
+     "luna": 610.973348,
+     "usd": 198.07,
+     "n": 27,
+     "split_by_value": 6
+    },
+    "tiers": {
+     "lot:M": 21,
+     "trip:valued": 3
+    },
+    "trips": [
+     [
+      "2024-10-21",
+      "2024-09-05",
+      850610449,
+      850610449,
+      851.66,
+      811.39,
+      2117.952387,
+      2115.221857,
+      -35.72,
+      -4.55,
+      "M",
+      "D",
+      "24C730971D8949D1AA45E8C6A7E96B46CC8FB8C593F3AA8A61669F657E1FEB27",
+      null
+     ],
+     [
+      "2024-12-27",
+      "2024-11-28",
+      152986797,
+      152986797,
+      188.55,
+      159.21,
+      379.659189,
+      379.267236,
+      -28.05,
+      -1.3,
+      "M",
+      "M",
+      "F400C5B5CE8252C1A5A83B56665F83C6F8E80326AC72990D9F2B17D9189097DA",
+      null
+     ],
+     [
+      "2025-03-29",
+      "2024-11-28",
+      1655064158,
+      1655064158,
+      1980.29,
+      783.94,
+      4106.051525,
+      4086.390375,
+      -1171.31,
+      -25.05,
+      "M",
+      "M",
+      "D8238A470037B0F329D584F06FAEE02FF3F1D01557A99BC3360D83A29872DBDB",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1s275y73lfupag0g03nglxaedfnsw5z4m5zc9wk66guy503zuw5ss889tlx|amplified": {
+    "pool": "cw20:terra1s275y73lfupag0g03nglxaedfnsw5z4m5zc9wk66guy503zuw5ss889tlx",
+    "mechanism": "amplified",
+    "deposits": 3,
+    "withdraws": 1,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 1,
+     "valued": 1,
+     "in_usd": 1195.2,
+     "out_usd": 1082.13,
+     "delta_usd": -113.07,
+     "in_luna": 8869.200072,
+     "out_luna": 10770.736267,
+     "delta_luna": 1901.536195,
+     "market_usd": -149.9,
+     "lp_usd": 36.83
+    },
+    "claims": {
+     "luna": 130.355204,
+     "usd": 13.6,
+     "n": 3,
+     "split_by_value": 3
+    },
+    "tiers": {
+     "lot:M": 3,
+     "trip:valued": 1
+    },
+    "trips": [
+     [
+      "2025-10-26",
+      "2025-10-03",
+      726944754,
+      726944754,
+      1195.2,
+      1082.13,
+      8869.200072,
+      10770.736267,
+      -149.9,
+      36.83,
+      "M",
+      "M",
+      "F43BE44909462D3619D6BDBFB767959B4F9FF48CB35C7D9511B589E060FBDC7B",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1s275y73lfupag0g03nglxaedfnsw5z4m5zc9wk66guy503zuw5ss889tlx|non_amplified": {
+    "pool": "cw20:terra1s275y73lfupag0g03nglxaedfnsw5z4m5zc9wk66guy503zuw5ss889tlx",
+    "mechanism": "non_amplified",
+    "deposits": 1,
+    "withdraws": 1,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 1,
+     "valued": 1,
+     "in_usd": 890.75,
+     "out_usd": 738.55,
+     "delta_usd": -152.2,
+     "in_luna": 6146.411219,
+     "out_luna": 7350.942108,
+     "delta_luna": 1204.53089,
+     "market_usd": -135.82,
+     "lp_usd": -16.38
+    },
+    "claims": {
+     "luna": 106.218284,
+     "usd": 11.15,
+     "n": 3,
+     "split_by_value": 3
+    },
+    "tiers": {
+     "lot:M": 1,
+     "trip:valued": 1
+    },
+    "trips": [
+     [
+      "2025-10-26",
+      "2025-10-03",
+      1250407894,
+      1250407894,
+      890.75,
+      738.55,
+      6146.411219,
+      7350.942108,
+      -135.82,
+      -16.38,
+      "M",
+      "M",
+      "CC962A70ACB4CA65A20E5A41BC441E908D3EB23CC0CB0F0E44C1A13FAC6CB1FF",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1sxmrwp48wt3h4whatla7xwl9g6t5y95u589az2cdu0myuzjpkkrs4ztprc|amplified": {
+    "pool": "cw20:terra1sxmrwp48wt3h4whatla7xwl9g6t5y95u589az2cdu0myuzjpkkrs4ztprc",
+    "mechanism": "amplified",
+    "deposits": 1,
+    "withdraws": 0,
+    "units_open": 55551,
+    "lots_open": 1,
+    "open_cost_usd": 2.88,
+    "open_cost_luna": 60.840857,
+    "open_value_usd": 3.07,
+    "open_value_luna": 57.344074,
+    "rate_tier": "curve",
+    "realized": {
+     "trips": 0,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 0,
+     "usd": 0,
+     "n": 0
+    },
+    "tiers": {
+     "lot:M": 1
+    },
+    "trips": []
+   },
+   "cw20:terra1wdzdltygkgqyuvggnqnxsny9vhfyex92kzaz6zkued2wvp7nvxpsv739js|amplified": {
+    "pool": "cw20:terra1wdzdltygkgqyuvggnqnxsny9vhfyex92kzaz6zkued2wvp7nvxpsv739js",
+    "mechanism": "amplified",
+    "deposits": 11,
+    "withdraws": 2,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 2,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 54.661786,
+     "usd": 6.2,
+     "n": 5,
+     "split_by_value": 5
+    },
+    "tiers": {
+     "lot:M": 11,
+     "trip:blank": 2
+    },
+    "trips": [
+     [
+      "2025-08-24",
+      "2025-08-15",
+      839161,
+      839161,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "M",
+      "29D27DBC93C12486879BFEC9788673E571C03D74AE6AE2C6DE0039467FE6AA6E",
+      null
+     ],
+     [
+      "2025-10-26",
+      "2025-09-14",
+      4218134,
+      4218134,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "M",
+      "37E92D307AF7FD8849199BFF11B92105DF407D7106EAD3C0690C6039D84C6293",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1wdzdltygkgqyuvggnqnxsny9vhfyex92kzaz6zkued2wvp7nvxpsv739js|non_amplified": {
+    "pool": "cw20:terra1wdzdltygkgqyuvggnqnxsny9vhfyex92kzaz6zkued2wvp7nvxpsv739js",
+    "mechanism": "non_amplified",
+    "deposits": 2,
+    "withdraws": 1,
+    "units_open": 1,
+    "lots_open": 1,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0.001817,
+    "open_value_usd": 0,
+    "open_value_luna": 0.002287,
+    "rate_tier": "curve",
+    "realized": {
+     "trips": 1,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 25.257087,
+     "usd": 2.78,
+     "n": 6,
+     "split_by_value": 6
+    },
+    "tiers": {
+     "lot:M": 2,
+     "trip:blank": 1
+    },
+    "trips": [
+     [
+      "2025-10-26",
+      "2025-09-21",
+      1000162,
+      1000162,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "M",
+      "6C85514D793F4C7F860BC5ED6176C733B1788C8F76E1FCC3DEE1A0042D375196",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1xkt5etsaptddec6achnjlqnx884fwxwuk795fs885v6eyygu6eus7uauhc|amplified": {
+    "pool": "cw20:terra1xkt5etsaptddec6achnjlqnx884fwxwuk795fs885v6eyygu6eus7uauhc",
+    "mechanism": "amplified",
+    "deposits": 18,
+    "withdraws": 4,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 4,
+     "valued": 4,
+     "in_usd": 1033.51,
+     "out_usd": 1098.19,
+     "delta_usd": 64.69,
+     "in_luna": 6563.717615,
+     "out_luna": 7554.680523,
+     "delta_luna": 990.962908,
+     "market_usd": -79.11,
+     "lp_usd": 143.79
+    },
+    "claims": {
+     "luna": 122.352958,
+     "usd": 18.38,
+     "n": 4,
+     "split_by_value": 4
+    },
+    "tiers": {
+     "lot:M": 18,
+     "trip:valued": 4
+    },
+    "trips": [
+     [
+      "2025-08-24",
+      "2025-07-24",
+      19000000,
+      19000000,
+      32.47,
+      34.28,
+      192.899034,
+      210.124155,
+      -1,
+      2.81,
+      "M",
+      "D",
+      "9DF7A9873466116200BB67B791D8B6573B097D529DDAEF342A54332BB33A5323",
+      null
+     ],
+     [
+      "2025-09-14",
+      "2025-07-30",
+      32000000,
+      32000000,
+      53.69,
+      59.19,
+      334.529293,
+      371.693943,
+      -0.42,
+      5.92,
+      "M",
+      "M",
+      "310DCD2602FB540E6B99E8E4535AED9110725580973D5E1276847B1C01393132",
+      null
+     ],
+     [
+      "2025-10-03",
+      "2025-08-01",
+      550663979,
+      550663979,
+      944.83,
+      1001.91,
+      5983.740537,
+      6913.460176,
+      -77.66,
+      134.74,
+      "M",
+      "M",
+      "4619C2F5BF823D232CDF68D1C5164BF9AD2B4D9F9A13E334D57540C0E883F70C",
+      null
+     ],
+     [
+      "2026-09-12",
+      "2026-07-15",
+      1420674,
+      1420674,
+      2.52,
+      2.81,
+      52.548751,
+      59.402249,
+      -0.03,
+      0.32,
+      "M",
+      "M",
+      "8E3986D275649066AE687BAEE2F4C6FA4DEEECC6DDD4E9890044A73C0FAC960F",
+      null
+     ]
+    ]
+   },
+   "cw20:terra1xkt5etsaptddec6achnjlqnx884fwxwuk795fs885v6eyygu6eus7uauhc|non_amplified": {
+    "pool": "cw20:terra1xkt5etsaptddec6achnjlqnx884fwxwuk795fs885v6eyygu6eus7uauhc",
+    "mechanism": "non_amplified",
+    "deposits": 5,
+    "withdraws": 3,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 3,
+     "valued": 3,
+     "in_usd": 1080.68,
+     "out_usd": 1062.44,
+     "delta_usd": -18.24,
+     "in_luna": 7232.93311,
+     "out_luna": 7268.493132,
+     "delta_luna": 35.560022,
+     "market_usd": -20.49,
+     "lp_usd": 2.24
+    },
+    "claims": {
+     "luna": 124.243034,
+     "usd": 18.71,
+     "n": 4,
+     "split_by_value": 4
+    },
+    "tiers": {
+     "lot:M": 4,
+     "lot:D": 1,
+     "trip:valued": 3
+    },
+    "trips": [
+     [
+      "2025-09-14",
+      "2025-08-24",
+      63912707,
+      63912707,
+      54.23,
+      52.65,
+      332.462779,
+      330.602293,
+      -1.29,
+      -0.3,
+      "M",
+      "M",
+      "4D6D0E2D81C3BF434AE281BC2362C6F396ED8B10213BFF2113031D8126482E6D",
+      null
+     ],
+     [
+      "2025-09-14",
+      "2025-08-24",
+      58586652,
+      58586652,
+      49.71,
+      48.26,
+      304.757568,
+      303.052105,
+      -1.18,
+      -0.27,
+      "M",
+      "M",
+      "9B1601F49CC6C8876357BC101DDAC8BDEEB5D39764413F257D19E1ADE94BC267",
+      null
+     ],
+     [
+      "2025-10-03",
+      "2025-08-24",
+      1233909996,
+      1233909996,
+      976.74,
+      961.53,
+      6595.712763,
+      6634.838734,
+      -18.02,
+      2.81,
+      "D+M",
+      "M",
+      "6E88FAF308C6D2AA38407FDED8EA1B55CA2D270296BC4CD2880DADCEF1A2D26C",
+      null
+     ]
+    ]
+   },
+   "native:factory/terra13ywdferm4jtcperal9png3cvhtmar5se9nu4r49k7vujrakwy9zqa3rhwe/uLP|amplified": {
+    "pool": "native:factory/terra13ywdferm4jtcperal9png3cvhtmar5se9nu4r49k7vujrakwy9zqa3rhwe/uLP",
+    "mechanism": "amplified",
+    "deposits": 13,
+    "withdraws": 5,
+    "units_open": 2.7057966652791947,
+    "lots_open": 1,
+    "open_cost_usd": 0.01,
+    "open_cost_luna": 0.0876,
+    "open_value_usd": 0.01,
+    "open_value_luna": 0.112213,
+    "rate_tier": "nearest",
+    "realized": {
+     "trips": 5,
+     "valued": 3,
+     "in_usd": 4010.17,
+     "out_usd": 3795.37,
+     "delta_usd": -214.79,
+     "in_luna": 47251.632988,
+     "out_luna": 54968.004573,
+     "delta_luna": 7716.371584,
+     "market_usd": -255.25,
+     "lp_usd": 40.45
+    },
+    "claims": {
+     "luna": 162.445562,
+     "usd": 49.29,
+     "n": 29,
+     "split_by_value": 29
+    },
+    "tiers": {
+     "lot:blank": 1,
+     "trip:blank": 2,
+     "lot:M": 12,
+     "trip:valued": 3
+    },
+    "trips": [
+     [
+      "2024-12-13",
+      "2024-12-13",
+      34424.09965054959,
+      34424.09965054959,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "0C7EB231F1201B69F831F7CE438080437B7B04456F6A3F39919DC20C7819CC5D",
+      null
+     ],
+     [
+      "2025-01-05",
+      "2024-12-13",
+      3847.1945527851826,
+      3847.1945527851826,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "M",
+      "FE8AE0BB9A9726E62F8E8FA412A1E1D296AEEE1A767E8B9DED8FEEB3AED4C3C1",
+      "no basis, out 9.26"
+     ],
+     [
+      "2025-02-08",
+      "2025-01-05",
+      9995,
+      9995,
+      24.09,
+      23.97,
+      99.76195,
+      99.265782,
+      0,
+      -0.12,
+      "M",
+      "D",
+      "D6BBDB6603726CA6825432FBAE3F56455B1853772B520391DC76082994F2CC2C",
+      null
+     ],
+     [
+      "2026-01-11",
+      "2025-02-08",
+      412136,
+      412136,
+      1049.84,
+      1081.96,
+      6180.24081,
+      11925.99667,
+      -0.07,
+      32.19,
+      "M",
+      "M",
+      "34F193A992F41F7C08DE90E360C5254753509B387D31CCD6A6BDEB80F5A00678",
+      null
+     ],
+     [
+      "2026-02-09",
+      "2025-12-15",
+      1291655,
+      1291655,
+      2936.24,
+      2689.44,
+      40971.630228,
+      42942.742121,
+      -255.18,
+      8.38,
+      "M",
+      "M",
+      "C75101FC2A3B8BA350C7BFAACAAD9C1571EE99A205F00F5BE21A23FE3F6A3EE8",
+      null
+     ]
+    ]
+   },
+   "native:factory/terra13ywdferm4jtcperal9png3cvhtmar5se9nu4r49k7vujrakwy9zqa3rhwe/uLP|non_amplified": {
+    "pool": "native:factory/terra13ywdferm4jtcperal9png3cvhtmar5se9nu4r49k7vujrakwy9zqa3rhwe/uLP",
+    "mechanism": "non_amplified",
+    "deposits": 26,
+    "withdraws": 1,
+    "units_open": 1,
+    "lots_open": 1,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0.010347,
+    "open_value_usd": 0,
+    "open_value_luna": 0.026537,
+    "rate_tier": "nearest",
+    "realized": {
+     "trips": 1,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 1523.68637,
+     "usd": 493.95,
+     "n": 38,
+     "split_by_value": 38
+    },
+    "tiers": {
+     "lot:blank": 8,
+     "lot:M": 17,
+     "lot:D": 1,
+     "trip:blank": 1
+    },
+    "trips": [
+     [
+      "2025-04-14",
+      "2024-11-10",
+      2687464,
+      2687464,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "D",
+      "4DD479E5B3C33D78DBBA8B7F433BB305665B473BCD27853D5E8309F33CE10672",
+      "no basis, out 4657.85"
+     ]
+    ]
+   },
+   "native:factory/terra178ca7z2w6346wlkmxwpw80s2a5fmas9q28xlzegkt4c4rdam67aql5fgxj/uLP|amplified": {
+    "pool": "native:factory/terra178ca7z2w6346wlkmxwpw80s2a5fmas9q28xlzegkt4c4rdam67aql5fgxj/uLP",
+    "mechanism": "amplified",
+    "deposits": 5,
+    "withdraws": 3,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 3,
+     "valued": 3,
+     "in_usd": 953.95,
+     "out_usd": 956.18,
+     "delta_usd": 2.24,
+     "in_luna": 9616.220221,
+     "out_luna": 8602.574353,
+     "delta_luna": -1013.645869,
+     "market_usd": -0.73,
+     "lp_usd": 2.97
+    },
+    "claims": {
+     "luna": 0,
+     "usd": 0,
+     "n": 0
+    },
+    "tiers": {
+     "lot:M": 5,
+     "trip:valued": 3
+    },
+    "trips": [
+     [
+      "2025-01-22",
+      "2025-01-19",
+      51839887,
+      51839887,
+      52.43,
+      52.4,
+      129.79062,
+      146.365765,
+      -0.08,
+      0.05,
+      "M",
+      "D",
+      "F9216FEBD1DEDB7BCD05CF8BB2B8EA8FA0BF885FE8C6AA03A1D3DD2C9986EB04",
+      null
+     ],
+     [
+      "2025-12-12",
+      "2025-12-08",
+      398774229,
+      398774229,
+      399.88,
+      401.87,
+      3965.606101,
+      2262.758569,
+      -0.14,
+      2.13,
+      "M",
+      "M",
+      "19DE28B75A06E4F73C66731F72753286E9E46D9E5B24E7B60F1F59A1D102F271",
+      null
+     ],
+     [
+      "2026-01-20",
+      "2026-01-09",
+      493508556,
+      493508556,
+      501.64,
+      501.91,
+      5520.8235,
+      6193.450019,
+      -0.51,
+      0.79,
+      "M",
+      "M",
+      "4633C35E8023BF7AD0C1E07EF0D81A277A6001D5A2AE5600684527795DC34AA0",
+      null
+     ]
+    ]
+   },
+   "native:factory/terra178ca7z2w6346wlkmxwpw80s2a5fmas9q28xlzegkt4c4rdam67aql5fgxj/uLP|non_amplified": {
+    "pool": "native:factory/terra178ca7z2w6346wlkmxwpw80s2a5fmas9q28xlzegkt4c4rdam67aql5fgxj/uLP",
+    "mechanism": "non_amplified",
+    "deposits": 11,
+    "withdraws": 8,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 8,
+     "valued": 8,
+     "in_usd": 11290.75,
+     "out_usd": 11172.52,
+     "delta_usd": -118.2,
+     "in_luna": 27143.002215,
+     "out_luna": 50882.738003,
+     "delta_luna": 23739.735787,
+     "market_usd": 6.73,
+     "lp_usd": -124.94
+    },
+    "claims": {
+     "luna": 851.457028,
+     "usd": 240.13,
+     "n": 7,
+     "split_by_value": 7
+    },
+    "tiers": {
+     "lot:M": 10,
+     "lot:D": 1,
+     "trip:valued": 8
+    },
+    "trips": [
+     [
+      "2025-01-28",
+      "2025-01-18",
+      100857723,
+      100857723,
+      100.33,
+      100.02,
+      227.023537,
+      309.607099,
+      -0.04,
+      -0.26,
+      "M",
+      "M",
+      "9C5C224316C4549BB244426F396FD4A4A5F1296568BE32563FC24C64CBB92D14",
+      null
+     ],
+     [
+      "2025-01-28",
+      "2025-01-18",
+      100860186,
+      100860186,
+      100.33,
+      100.02,
+      227.029081,
+      309.607088,
+      -0.04,
+      -0.27,
+      "M",
+      "M",
+      "A93F46C44D553FB244EF7367B039D5FB30921245918E0D35201721D671B64105",
+      null
+     ],
+     [
+      "2025-02-02",
+      "2025-01-18",
+      100977132,
+      100977132,
+      100.45,
+      100.04,
+      227.292318,
+      338.987706,
+      -0.02,
+      -0.38,
+      "M",
+      "M",
+      "0C3FAE8C451CEEF209A3E0E0D1A5793710D6A46FDE9C30DD9FEA9533B29C9773",
+      null
+     ],
+     [
+      "2025-02-02",
+      "2025-01-18",
+      100997683,
+      100997683,
+      100.47,
+      100.04,
+      227.338577,
+      338.991273,
+      -0.02,
+      -0.4,
+      "M",
+      "M",
+      "D4CDA50114E661F08C6D46250CC1B57136E3FD814EB3BBFF8C9D4C1E0585E3BD",
+      null
+     ],
+     [
+      "2025-02-03",
+      "2025-01-18",
+      252508160,
+      252508160,
+      251.18,
+      257.6,
+      568.377848,
+      993.398377,
+      7.11,
+      -0.69,
+      "M",
+      "M",
+      "677A71176DF56FBFB70F18181BBD40902E06E716CA0987403881B9D9FA12587C",
+      null
+     ],
+     [
+      "2025-02-12",
+      "2025-01-18",
+      506256010,
+      506256010,
+      503.59,
+      500.21,
+      1139.546151,
+      1899.181605,
+      -0.15,
+      -3.23,
+      "M",
+      "M",
+      "668A491D3FB1A2A23D58994CA31176292ACC3E869377C8D9601986AE944FBC32",
+      null
+     ],
+     [
+      "2025-03-06",
+      "2025-01-18",
+      10168935476,
+      10168935476,
+      10109.4,
+      9989.59,
+      24278.489985,
+      46445.060303,
+      -0.11,
+      -119.71,
+      "D+M",
+      "M",
+      "BFF9B2AFEF868FBAC39B59471E2FF493D93F1B675F70A5BC7CF449CE2624532F",
+      null
+     ],
+     [
+      "2025-12-08",
+      "2025-12-08",
+      24933137,
+      24933137,
+      25,
+      25,
+      247.904718,
+      247.904552,
+      0,
+      0,
+      "M",
+      "M",
+      "8DF867DD1B2ED45602CC276AFF1B11B834FA30A308A12223EDD80171E9EC0802",
+      null
+     ]
+    ]
+   },
+   "native:factory/terra17vas9rhxhc6j6f5wrup9cqapxn74jvpft069py7l7l9kr7wx3tnsxrazux/uLP|amplified": {
+    "pool": "native:factory/terra17vas9rhxhc6j6f5wrup9cqapxn74jvpft069py7l7l9kr7wx3tnsxrazux/uLP",
+    "mechanism": "amplified",
+    "deposits": 1,
+    "withdraws": 2,
+    "units_open": 1.1583718149922788,
+    "lots_open": 1,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0.000005,
+    "open_value_usd": 0,
+    "open_value_luna": 0.000044,
+    "rate_tier": "nearest",
+    "realized": {
+     "trips": 2,
+     "valued": 1,
+     "in_usd": 4.98,
+     "out_usd": 4.98,
+     "delta_usd": 0,
+     "in_luna": 9.825548,
+     "out_luna": 9.824193,
+     "delta_luna": -0.001355,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 6.955625,
+     "usd": 0.7,
+     "n": 30,
+     "split_by_value": 30
+    },
+    "unmatched_units": 2475679357.532817,
+    "tiers": {
+     "trip:blank": 1,
+     "lot:M": 1,
+     "trip:valued": 1
+    },
+    "trips": [
+     [
+      "2024-11-08",
+      null,
+      2475679357.532817,
+      0,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "D",
+      "095F7F0CAF8F1DD84BA85710EDDF04D91537624B01FB7E3A708842A801196EEA",
+      "unmatched 2475679357.532817"
+     ],
+     [
+      "2024-11-25",
+      "2024-11-25",
+      2406941.841628185,
+      2406941.841628185,
+      4.98,
+      4.98,
+      9.825548,
+      9.824193,
+      0,
+      0,
+      "M",
+      "D",
+      "176185F01F35D4779FF62F332309D6052849FE6AC659916B4CB3F80992CAB2AD",
+      null
+     ]
+    ]
+   },
+   "native:factory/terra17vas9rhxhc6j6f5wrup9cqapxn74jvpft069py7l7l9kr7wx3tnsxrazux/uLP|non_amplified": {
+    "pool": "native:factory/terra17vas9rhxhc6j6f5wrup9cqapxn74jvpft069py7l7l9kr7wx3tnsxrazux/uLP",
+    "mechanism": "non_amplified",
+    "deposits": 8,
+    "withdraws": 2,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 2,
+     "valued": 2,
+     "in_usd": 10042.95,
+     "out_usd": 10125.22,
+     "delta_usd": 82.26,
+     "in_luna": 27508.231529,
+     "out_luna": 23409.230589,
+     "delta_luna": -4099.00094,
+     "market_usd": 149.75,
+     "lp_usd": -67.49
+    },
+    "claims": {
+     "luna": 161.947923,
+     "usd": 65.34,
+     "n": 14,
+     "split_by_value": 14
+    },
+    "tiers": {
+     "lot:M": 6,
+     "trip:valued": 2,
+     "lot:D": 2
+    },
+    "trips": [
+     [
+      "2024-10-21",
+      "2024-09-05",
+      2511008472,
+      2511008472,
+      5016.99,
+      4970.08,
+      12919.221576,
+      12956.510806,
+      -3.75,
+      -43.17,
+      "M",
+      "D",
+      "6CEB530B8E131C18901805A3145B0B8503F9D90A83D79AF65746D7606D7B24B0",
+      null
+     ],
+     [
+      "2024-11-26",
+      "2024-11-08",
+      2549441092,
+      2549441092,
+      5025.96,
+      5155.14,
+      14589.009953,
+      10452.719783,
+      153.5,
+      -24.32,
+      "D+M",
+      "M",
+      "3AB053C519808B11790B5CD315A26F3171F17996CD712596FF48C128C96ED59B",
+      null
+     ]
+    ]
+   },
+   "native:factory/terra186rpfczl7l2kugdsqqedegl4es4hp624phfc7ddy8my02a4e8lgq5rlx7y/ampCAPA|non_amplified": {
+    "pool": "native:factory/terra186rpfczl7l2kugdsqqedegl4es4hp624phfc7ddy8my02a4e8lgq5rlx7y/ampCAPA",
+    "mechanism": "non_amplified",
+    "deposits": 1,
+    "withdraws": 1,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 1,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 290.561928,
+     "usd": 130.63,
+     "n": 14,
+     "split_by_value": 14
+    },
+    "tiers": {
+     "lot:blank": 1,
+     "trip:blank": 1
+    },
+    "trips": [
+     [
+      "2025-02-21",
+      "2024-11-25",
+      83320716007,
+      83320716007,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "D",
+      "E362C16987B774CB8AFB95E3E67796F970228387A3B19AE7EB8B522935719F52",
+      null
+     ]
+    ]
+   },
+   "native:factory/terra1aysexulsnuxna62m5rlnuzfcvct3df93gd4q0kkjtjcqsvv93s5sd0fyd2/uLP|amplified": {
+    "pool": "native:factory/terra1aysexulsnuxna62m5rlnuzfcvct3df93gd4q0kkjtjcqsvv93s5sd0fyd2/uLP",
+    "mechanism": "amplified",
+    "deposits": 16,
+    "withdraws": 1,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 1,
+     "valued": 1,
+     "in_usd": 746.87,
+     "out_usd": 686.03,
+     "delta_usd": -60.84,
+     "in_luna": 1808.964576,
+     "out_luna": 2660.284221,
+     "delta_luna": 851.319645,
+     "market_usd": -135.74,
+     "lp_usd": 74.91
+    },
+    "claims": {
+     "luna": 0,
+     "usd": 0,
+     "n": 0
+    },
+    "tiers": {
+     "lot:M": 16,
+     "trip:valued": 1
+    },
+    "trips": [
+     [
+      "2025-02-21",
+      "2024-11-23",
+      15453525,
+      15453525,
+      746.87,
+      686.03,
+      1808.964576,
+      2660.284221,
+      -135.74,
+      74.91,
+      "M",
+      "M",
+      "7C914267DE81413121A70E7F85C0CBD96431E9EEB3A260BE689AEF7F5B5CE1FF",
+      null
+     ]
+    ]
+   },
+   "native:factory/terra1d8ap3zyd6tfnruuuwvs0t927lr4zwptruhulfwnxjpqzudvyn8usfgl8ze/uLP|non_amplified": {
+    "pool": "native:factory/terra1d8ap3zyd6tfnruuuwvs0t927lr4zwptruhulfwnxjpqzudvyn8usfgl8ze/uLP",
+    "mechanism": "non_amplified",
+    "deposits": 3,
+    "withdraws": 1,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 1,
+     "valued": 1,
+     "in_usd": 81.5,
+     "out_usd": 24.21,
+     "delta_usd": -57.29,
+     "in_luna": 110.094559,
+     "out_luna": 93.888785,
+     "delta_luna": -16.205774,
+     "market_usd": -56.79,
+     "lp_usd": -0.5
+    },
+    "claims": {
+     "luna": 100.957928,
+     "usd": 46.16,
+     "n": 10,
+     "split_by_value": 10
+    },
+    "tiers": {
+     "lot:M": 3,
+     "trip:valued": 1
+    },
+    "trips": [
+     [
+      "2025-02-21",
+      "2024-12-06",
+      14479344557852,
+      14479344557852,
+      81.5,
+      24.21,
+      110.094559,
+      93.888785,
+      -56.79,
+      -0.5,
+      "M",
+      "M",
+      "F4714D303EA8639B8856A837D1C0FDE8E4B441668CF0D99A0AF6EBB9F54EBF3B",
+      null
+     ]
+    ]
+   },
+   "native:factory/terra1q2gd6kc7nt8xct94chrlsqtpxfs9rve0j76lquce624y5zp85cdseshh85/uLP|amplified": {
+    "pool": "native:factory/terra1q2gd6kc7nt8xct94chrlsqtpxfs9rve0j76lquce624y5zp85cdseshh85/uLP",
+    "mechanism": "amplified",
+    "deposits": 13,
+    "withdraws": 2,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 2,
+     "valued": 2,
+     "in_usd": 1624.1,
+     "out_usd": 1404.42,
+     "delta_usd": -219.68,
+     "in_luna": 6107.678917,
+     "out_luna": 6897.700401,
+     "delta_luna": 790.021483,
+     "market_usd": -368.03,
+     "lp_usd": 148.36
+    },
+    "claims": {
+     "luna": 0,
+     "usd": 0,
+     "n": 0
+    },
+    "unmatched_units": 1,
+    "tiers": {
+     "lot:M": 13,
+     "trip:valued": 2
+    },
+    "trips": [
+     [
+      "2025-02-21",
+      "2025-01-25",
+      139418849846347,
+      139418849846347,
+      765.06,
+      724.59,
+      2647.779612,
+      2809.793279,
+      -78.15,
+      37.68,
+      "M",
+      "M",
+      "E333AF0486C0FE3D3AD8FCB0F5E7FE646A812F60C7818A533CC2DDFB559B7B41",
+      null
+     ],
+     [
+      "2025-05-08",
+      "2025-02-21",
+      172221706002729,
+      172221706002728,
+      859.04,
+      679.83,
+      3459.899305,
+      4087.907122,
+      -289.88,
+      110.68,
+      "M",
+      "M",
+      "6C7FD4B81E2705C71B75358A372FA7A1E5C816ADE08807D37F0F882ADC214D14",
+      "unmatched 1"
+     ]
+    ]
+   },
+   "native:ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6|non_amplified": {
+    "pool": "native:ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6",
+    "mechanism": "non_amplified",
+    "deposits": 1,
+    "withdraws": 1,
+    "units_open": 0,
+    "lots_open": 0,
+    "open_cost_usd": 0,
+    "open_cost_luna": 0,
+    "open_value_usd": 0,
+    "open_value_luna": 0,
+    "realized": {
+     "trips": 1,
+     "valued": 0,
+     "in_usd": 0,
+     "out_usd": 0,
+     "delta_usd": 0,
+     "in_luna": 0,
+     "out_luna": 0,
+     "delta_luna": 0,
+     "market_usd": 0,
+     "lp_usd": 0
+    },
+    "claims": {
+     "luna": 653.140285,
+     "usd": 198.87,
+     "n": 27,
+     "split_by_value": 27
+    },
+    "tiers": {
+     "lot:blank": 1,
+     "trip:blank": 1
+    },
+    "trips": [
+     [
+      "2025-07-26",
+      "2024-11-25",
+      505307158,
+      505307158,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      "D",
+      "7F8A5FC80FB6C859BC2D109B90217DC366E18D0878C56336E56390B4ECA24C31",
+      null
+     ]
+    ]
+   }
+  },
+  "bribes": {
+   "ASTRO": {
+    "amount": 31.662075,
+    "usd": 0.01,
+    "luna": 0.203943,
+    "n": 1
+   },
+   "CAPA": {
+    "amount": 1130.999205,
+    "usd": 2.49,
+    "luna": 15.855501,
+    "n": 1
+   },
+   "FUEL": {
+    "amount": 4.657212,
+    "usd": 0.01,
+    "luna": 0.259899,
+    "n": 1
+   },
+   "LUNA": {
+    "amount": 6.005314,
+    "usd": 0.3,
+    "luna": 6.005314,
+    "n": 1
+   },
+   "USDC.n": {
+    "amount": 0.003298,
+    "usd": 0,
+    "luna": 0.0663,
+    "n": 1
+   },
+   "ampLUNA": {
+    "amount": 0.014059,
+    "usd": 0,
+    "luna": 0.030902,
+    "n": 1
+   },
+   "ampWHALE": {
+    "amount": 498.983452,
+    "usd": 0,
+    "luna": 0,
+    "n": 1,
+    "unpriced": 1
+   },
+   "bWHALE": {
+    "amount": 135.334326,
+    "usd": 0,
+    "luna": 0,
+    "n": 2,
+    "unpriced": 2
+   },
+   "wBTC.atom": {
+    "amount": 0,
+    "usd": 0.03,
+    "luna": 0.593932,
+    "n": 1
+   }
+  },
+  "value_curve": [
+   {
+    "e": 98,
+    "usd": 308.17,
+    "luna": 923.78439,
+    "p": {
+     "0": 8.54,
+     "1": 299.63
+    },
+    "m": [
+     2
+    ]
+   },
+   {
+    "e": 99,
+    "usd": 1061.72,
+    "luna": 2680.560209,
+    "p": {
+     "0": 33.9,
+     "1": 1027.82
+    },
+    "m": [
+     2
+    ]
+   },
+   {
+    "e": 100,
+    "usd": 4673.2,
+    "luna": 12149.794548,
+    "p": {
+     "0": 57.91,
+     "1": 4615.29
+    },
+    "m": [
+     2
+    ]
+   },
+   {
+    "e": 101,
+    "usd": 5789.33,
+    "luna": 12899.358528,
+    "p": {
+     "0": 749.43,
+     "1": 5039.9
+    },
+    "m": [
+     2
+    ]
+   },
+   {
+    "e": 102,
+    "usd": 5658.99,
+    "luna": 14890.457867,
+    "p": {
+     "0": 649.6,
+     "1": 5009.39
+    },
+    "m": [
+     2
+    ]
+   },
+   {
+    "e": 103,
+    "usd": 5714.96,
+    "luna": 15982.166641,
+    "p": {
+     "0": 756.79,
+     "1": 4958.17
+    },
+    "m": [
+     2
+    ]
+   },
+   {
+    "e": 104,
+    "usd": 5783.02,
+    "luna": 15075.776206,
+    "p": {
+     "0": 811.61,
+     "1": 4971.41
+    },
+    "m": [
+     2
+    ]
+   },
+   {
+    "e": 105,
+    "usd": 34.45,
+    "luna": 101.244025,
+    "p": {
+     "0": 34.45
+    },
+    "m": [
+     2,
+     3
+    ]
+   },
+   {
+    "e": 106,
+    "usd": 125.63,
+    "luna": 408.563057,
+    "p": {
+     "0": 125.63
+    },
+    "m": [
+     2,
+     3
+    ]
+   },
+   {
+    "e": 107,
+    "usd": 5337.22,
+    "luna": 13841.10076,
+    "p": {
+     "0": 318.35,
+     "1": 5018.87
+    },
+    "m": [
+     2,
+     3,
+     4
+    ]
+   },
+   {
+    "e": 108,
+    "usd": 5587.06,
+    "luna": 13024.695837,
+    "p": {
+     "0": 617.56,
+     "1": 4969.49
+    },
+    "m": [
+     2,
+     3,
+     4
+    ]
+   },
+   {
+    "e": 109,
+    "usd": 5967.73,
+    "luna": 11770.927197,
+    "p": {
+     "0": 788.64,
+     "1": 5053.2,
+     "5": 125.89
+    },
+    "m": [
+     2,
+     3,
+     4
+    ]
+   },
+   {
+    "e": 110,
+    "usd": 11685.9,
+    "luna": 20299.532864,
+    "p": {
+     "0": 2162.37,
+     "1": 0,
+     "2": 0,
+     "4": 4146.12,
+     "5": 273.85,
+     "6": 69.6,
+     "7": 5033.97
+    },
+    "m": [
+     3,
+     8,
+     9
+    ]
+   },
+   {
+    "e": 111,
+    "usd": 14379.98,
+    "luna": 19993.107331,
+    "p": {
+     "0": 2731.95,
+     "1": 0,
+     "2": 0,
+     "4": 4872.95,
+     "5": 351.22,
+     "6": 79.58,
+     "7": 6271.86,
+     "10": 72.41
+    },
+    "m": [
+     3,
+     8,
+     9
+    ]
+   },
+   {
+    "e": 112,
+    "usd": 8829.2,
+    "luna": 15965.30439,
+    "p": {
+     "0": 2099.69,
+     "1": 0,
+     "5": 331.01,
+     "6": 71.58,
+     "7": 6266.41,
+     "10": 60.51
+    },
+    "m": [
+     2,
+     3,
+     4,
+     8,
+     9
+    ]
+   },
+   {
+    "e": 113,
+    "usd": 15709.83,
+    "luna": 38945.531386,
+    "p": {
+     "0": 1543.31,
+     "1": 0,
+     "2": 0,
+     "4": 3997.6,
+     "5": 310.21,
+     "6": 50.44,
+     "7": 9764.99,
+     "10": 43.29
+    },
+    "m": [
+     3,
+     8,
+     9
+    ]
+   },
+   {
+    "e": 114,
+    "usd": 12258.53,
+    "luna": 28790.787614,
+    "p": {
+     "0": 1510.31,
+     "1": 0,
+     "5": 454.3,
+     "6": 49.59,
+     "7": 10199.1,
+     "10": 45.22
+    },
+    "m": [
+     2,
+     3,
+     4,
+     8,
+     9
+    ]
+   },
+   {
+    "e": 115,
+    "usd": 17226.16,
+    "luna": 33494.815511,
+    "p": {
+     "0": 1827.11,
+     "1": 0,
+     "2": 0,
+     "4": 4418.75,
+     "5": 534.85,
+     "6": 57.62,
+     "7": 10335.48,
+     "10": 52.35
+    },
+    "m": [
+     3,
+     8,
+     9
+    ]
+   },
+   {
+    "e": 116,
+    "usd": 12421.88,
+    "luna": 30469.715764,
+    "p": {
+     "0": 1550.87,
+     "1": 0,
+     "5": 563.24,
+     "6": 50.63,
+     "7": 10212.22,
+     "10": 44.91
+    },
+    "m": [
+     2,
+     3,
+     4,
+     8,
+     9
+    ]
+   },
+   {
+    "e": 117,
+    "usd": 16765.63,
+    "luna": 47880.37785,
+    "p": {
+     "0": 1402.44,
+     "1": 0,
+     "2": 0,
+     "4": 4477.23,
+     "5": 580.04,
+     "6": 46.19,
+     "10": 38.5,
+     "11": 10221.22
+    },
+    "m": [
+     3,
+     8,
+     9
+    ]
+   },
+   {
+    "e": 118,
+    "usd": 17364,
+    "luna": 52189.840776,
+    "p": {
+     "0": 1331.99,
+     "1": 0,
+     "2": 0,
+     "4": 4560.46,
+     "5": 682.74,
+     "6": 48,
+     "10": 36.99,
+     "11": 10637.58,
+     "12": 66.24
+    },
+    "m": [
+     3,
+     8,
+     9
+    ]
+   },
+   {
+    "e": 119,
+    "usd": 17177.11,
+    "luna": 66240.932799,
+    "p": {
+     "0": 1054.06,
+     "1": 0,
+     "2": 0,
+     "4": 4625.8,
+     "5": 672.7,
+     "6": 38.08,
+     "10": 26.9,
+     "11": 10375.14,
+     "12": 384.42
+    },
+    "m": [
+     3,
+     8,
+     9
+    ]
+   },
+   {
+    "e": 120,
+    "usd": 16565.55,
+    "luna": 65573.095181,
+    "p": {
+     "0": 1026.05,
+     "1": 0,
+     "2": 0,
+     "4": 4174.17,
+     "5": 652.59,
+     "6": 35.77,
+     "10": 24.28,
+     "11": 10002.06,
+     "12": 650.62
+    },
+    "m": [
+     3,
+     8,
+     9
+    ]
+   },
+   {
+    "e": 121,
+    "usd": 16728.26,
+    "luna": 63164.411351,
+    "p": {
+     "0": 1083.27,
+     "1": 0,
+     "2": 0,
+     "4": 4218.17,
+     "5": 681.38,
+     "6": 37.26,
+     "10": 24.81,
+     "11": 9977.02,
+     "12": 706.35
+    },
+    "m": [
+     3,
+     8,
+     9
+    ]
+   },
+   {
+    "e": 122,
+    "usd": 17124.74,
+    "luna": 67989.826168,
+    "p": {
+     "0": 1581,
+     "1": 0,
+     "2": 0,
+     "4": 4714.5,
+     "6": 61.11,
+     "11": 10011.8,
+     "12": 756.34
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 123,
+    "usd": 17086.96,
+    "luna": 69062.288949,
+    "p": {
+     "0": 1562.67,
+     "1": 0,
+     "2": 0,
+     "4": 4592.85,
+     "6": 85.78,
+     "11": 10100.3,
+     "12": 745.36
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 124,
+    "usd": 15582.33,
+    "luna": 86562.587961,
+    "p": {
+     "0": 1144,
+     "1": 0,
+     "2": 0,
+     "4": 3845.22,
+     "6": 66.54,
+     "7": 9998.52,
+     "12": 528.06
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 125,
+    "usd": 16248.06,
+    "luna": 78062.761364,
+    "p": {
+     "0": 1331.34,
+     "1": 0,
+     "2": 0,
+     "4": 4149.57,
+     "6": 150.81,
+     "7": 10015,
+     "12": 601.33
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 126,
+    "usd": 16574.77,
+    "luna": 79319.565546,
+    "p": {
+     "0": 1346.31,
+     "1": 0,
+     "2": 0,
+     "4": 4394.57,
+     "6": 178.23,
+     "7": 10012.91,
+     "12": 642.75
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 127,
+    "usd": 17907.99,
+    "luna": 95541.965327,
+    "p": {
+     "0": 830.86,
+     "1": 0,
+     "2": 0,
+     "4": 4624.27,
+     "6": 764.1,
+     "7": 11062.38,
+     "12": 626.39
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 128,
+    "usd": 16439.95,
+    "luna": 108743.416564,
+    "p": {
+     "0": 680.14,
+     "1": 0,
+     "2": 0,
+     "4": 4414.4,
+     "6": 786.78,
+     "7": 10043.06,
+     "12": 515.57
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 129,
+    "usd": 16645.6,
+    "luna": 106068.594419,
+    "p": {
+     "0": 720.34,
+     "1": 0,
+     "2": 0,
+     "4": 4658.28,
+     "6": 732.44,
+     "7": 9966.79,
+     "12": 567.74
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 130,
+    "usd": 16963.82,
+    "luna": 100518.012066,
+    "p": {
+     "0": 789.55,
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "6": 736.87,
+     "7": 10002.05,
+     "12": 616.04,
+     "13": 4819.3
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 131,
+    "usd": 16644.35,
+    "luna": 91152.66872,
+    "p": {
+     "0": 870.09,
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "6": 819.08,
+     "7": 9047.64,
+     "12": 696.27,
+     "13": 5211.25
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 132,
+    "usd": 15672.98,
+    "luna": 91875.559852,
+    "p": {
+     "0": 826.26,
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "6": 765.92,
+     "7": 8085.85,
+     "12": 671.47,
+     "13": 5323.47
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 133,
+    "usd": 0.01,
+    "luna": 0.054235,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 134,
+    "usd": 0.01,
+    "luna": 0.062169,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 135,
+    "usd": 0.01,
+    "luna": 0.065199,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 136,
+    "usd": 0.01,
+    "luna": 0.069791,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 137,
+    "usd": 0.01,
+    "luna": 0.072017,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 138,
+    "usd": 0.01,
+    "luna": 0.073416,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 139,
+    "usd": 0.01,
+    "luna": 0.085863,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 140,
+    "usd": 0.01,
+    "luna": 0.081695,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 141,
+    "usd": 0.01,
+    "luna": 0.082057,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 142,
+    "usd": 0.01,
+    "luna": 0.079652,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 143,
+    "usd": 0.01,
+    "luna": 0.072641,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     9
+    ]
+   },
+   {
+    "e": 144,
+    "usd": 24.45,
+    "luna": 138.63452,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "14": 24.44
+    }
+   },
+   {
+    "e": 145,
+    "usd": 503.37,
+    "luna": 3281.671722,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "14": 503.36
+    }
+   },
+   {
+    "e": 146,
+    "usd": 772.24,
+    "luna": 4690.101043,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "14": 772.23
+    }
+   },
+   {
+    "e": 147,
+    "usd": 1023.69,
+    "luna": 6456.514654,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "14": 1023.68
+    },
+    "m": [
+     15
+    ]
+   },
+   {
+    "e": 148,
+    "usd": 1152.05,
+    "luna": 7291.311201,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "14": 1152.04
+    }
+   },
+   {
+    "e": 149,
+    "usd": 1203.99,
+    "luna": 8178.711557,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "14": 1203.97
+    }
+   },
+   {
+    "e": 150,
+    "usd": 2064.87,
+    "luna": 13914.752587,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "14": 2064.86
+    }
+   },
+   {
+    "e": 151,
+    "usd": 2483.33,
+    "luna": 16262.597303,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "14": 1984.78,
+     "15": 498.54
+    }
+   },
+   {
+    "e": 152,
+    "usd": 2012.89,
+    "luna": 12987.913865,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "14": 2012.87
+    },
+    "m": [
+     15
+    ]
+   },
+   {
+    "e": 153,
+    "usd": 3071.21,
+    "luna": 21732.653974,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "14": 1926.16,
+     "15": 1145.03
+    }
+   },
+   {
+    "e": 154,
+    "usd": 3127.34,
+    "luna": 22565.852397,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "15": 1267.24,
+     "16": 1860.08
+    }
+   },
+   {
+    "e": 155,
+    "usd": 2660.14,
+    "luna": 26381.900213,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "15": 1059.88,
+     "16": 1600.25
+    },
+    "m": [
+     17
+    ]
+   },
+   {
+    "e": 156,
+    "usd": 3060.27,
+    "luna": 30938.672702,
+    "p": {
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "15": 1266.71,
+     "16": 1793.54
+    },
+    "m": [
+     17,
+     1
+    ]
+   },
+   {
+    "e": 157,
+    "usd": 0.01,
+    "luna": 0.130393,
+    "p": {
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     17,
+     15,
+     1
+    ]
+   },
+   {
+    "e": 158,
+    "usd": 269.44,
+    "luna": 2884.64276,
+    "p": {
+     "2": 0,
+     "4": 0.01,
+     "13": 269.43
+    },
+    "m": [
+     17,
+     15,
+     1
+    ]
+   },
+   {
+    "e": 159,
+    "usd": 659.64,
+    "luna": 7311.790342,
+    "p": {
+     "2": 0,
+     "4": 0.01,
+     "13": 659.63
+    },
+    "m": [
+     17,
+     15,
+     1
+    ]
+   },
+   {
+    "e": 160,
+    "usd": 863.72,
+    "luna": 11050.479558,
+    "p": {
+     "2": 0,
+     "4": 0.01,
+     "13": 863.71
+    },
+    "m": [
+     17,
+     15,
+     1
+    ]
+   },
+   {
+    "e": 161,
+    "usd": 0.01,
+    "luna": 0.136219,
+    "p": {
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     17,
+     15,
+     1
+    ]
+   },
+   {
+    "e": 162,
+    "usd": 0.01,
+    "luna": 0.145897,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0
+    },
+    "m": [
+     17,
+     15
+    ]
+   },
+   {
+    "e": 163,
+    "usd": 0.01,
+    "luna": 0.104431,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "13": 0,
+     "15": 0
+    },
+    "m": [
+     17
+    ]
+   },
+   {
+    "e": 164,
+    "usd": 772.47,
+    "luna": 4867.853669,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 772.46,
+     "13": 0,
+     "15": 0
+    },
+    "m": [
+     17
+    ]
+   },
+   {
+    "e": 165,
+    "usd": 2802.51,
+    "luna": 23999.441921,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 1067.85,
+     "7": 1734.67,
+     "13": 0,
+     "15": 0
+    },
+    "m": [
+     17
+    ]
+   },
+   {
+    "e": 166,
+    "usd": 2805.72,
+    "luna": 28298.778569,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 1068.13,
+     "7": 1737.59,
+     "13": 0
+    },
+    "m": [
+     17,
+     15
+    ]
+   },
+   {
+    "e": 167,
+    "usd": 2841.39,
+    "luna": 29452.859332,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 1101.77,
+     "7": 1739.62,
+     "13": 0
+    },
+    "m": [
+     17,
+     15
+    ]
+   },
+   {
+    "e": 168,
+    "usd": 3595.21,
+    "luna": 40920.393876,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 1079.15,
+     "7": 2014.41,
+     "11": 501.64,
+     "13": 0
+    },
+    "m": [
+     17,
+     15
+    ]
+   },
+   {
+    "e": 169,
+    "usd": 3707.37,
+    "luna": 43777.584833,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 1189.54,
+     "7": 2015.71,
+     "11": 502.12,
+     "13": 0,
+     "15": 0
+    },
+    "m": [
+     17
+    ]
+   },
+   {
+    "e": 170,
+    "usd": 1024.46,
+    "luna": 13619.16471,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 1020.86,
+     "7": 3.6,
+     "13": 0,
+     "15": 0
+    },
+    "m": [
+     17
+    ]
+   },
+   {
+    "e": 171,
+    "usd": 1190.66,
+    "luna": 17964.387082,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 1187.05,
+     "7": 3.61,
+     "13": 0,
+     "15": 0
+    },
+    "m": [
+     17
+    ]
+   },
+   {
+    "e": 172,
+    "usd": 2692.99,
+    "luna": 42999.432327,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 2689.37,
+     "7": 3.62,
+     "13": 0
+    },
+    "m": [
+     17,
+     15
+    ]
+   },
+   {
+    "e": 173,
+    "usd": 2653.9,
+    "luna": 38922.926406,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.63,
+     "13": 2650.27
+    },
+    "m": [
+     17,
+     15
+    ]
+   },
+   {
+    "e": 174,
+    "usd": 2573.53,
+    "luna": 41830.408562,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.63,
+     "13": 2569.89
+    },
+    "m": [
+     17,
+     15
+    ]
+   },
+   {
+    "e": 175,
+    "usd": 2525.99,
+    "luna": 40449.1546,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.64,
+     "13": 2522.35,
+     "15": 0
+    },
+    "m": [
+     17
+    ]
+   },
+   {
+    "e": 176,
+    "usd": 2594.57,
+    "luna": 41146.703397,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.64,
+     "13": 2590.91,
+     "15": 0
+    },
+    "m": [
+     17
+    ]
+   },
+   {
+    "e": 177,
+    "usd": 3.66,
+    "luna": 58.63273,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.65,
+     "13": 0
+    },
+    "m": [
+     17,
+     15
+    ]
+   },
+   {
+    "e": 178,
+    "usd": 3.66,
+    "luna": 62.107345,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.65,
+     "13": 0,
+     "15": 0
+    },
+    "m": [
+     17
+    ]
+   },
+   {
+    "e": 179,
+    "usd": 3.67,
+    "luna": 66.984176,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.66,
+     "13": 0
+    },
+    "m": [
+     17,
+     15
+    ]
+   },
+   {
+    "e": 180,
+    "usd": 3.68,
+    "luna": 66.371502,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.67,
+     "13": 0,
+     "15": 0
+    },
+    "m": [
+     17
+    ]
+   },
+   {
+    "e": 181,
+    "usd": 3.69,
+    "luna": 68.371565,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.68,
+     "13": 0
+    },
+    "m": [
+     17,
+     15
+    ]
+   },
+   {
+    "e": 182,
+    "usd": 3.69,
+    "luna": 66.278788,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.68,
+     "13": 0,
+     "15": 0
+    },
+    "m": [
+     17
+    ]
+   },
+   {
+    "e": 183,
+    "usd": 3.69,
+    "luna": 55.747822,
+    "p": {
+     "1": 0,
+     "7": 3.69,
+     "15": 0
+    },
+    "m": [
+     13,
+     17,
+     2,
+     18,
+     4
+    ]
+   },
+   {
+    "e": 184,
+    "usd": 3.7,
+    "luna": 53.03842,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.69,
+     "13": 0,
+     "15": 0
+    },
+    "m": [
+     17,
+     18
+    ]
+   },
+   {
+    "e": 185,
+    "usd": 3.7,
+    "luna": 51.722027,
+    "p": {
+     "1": 0,
+     "7": 3.69,
+     "15": 0
+    },
+    "m": [
+     13,
+     17,
+     2,
+     18,
+     4
+    ]
+   },
+   {
+    "e": 186,
+    "usd": 3.7,
+    "luna": 59.142829,
+    "p": {
+     "1": 0,
+     "7": 3.7,
+     "15": 0
+    },
+    "m": [
+     13,
+     17,
+     2,
+     18,
+     4
+    ]
+   },
+   {
+    "e": 187,
+    "usd": 3.7,
+    "luna": 60.726814,
+    "p": {
+     "1": 0,
+     "7": 3.7,
+     "15": 0
+    },
+    "m": [
+     13,
+     17,
+     2,
+     18,
+     4
+    ]
+   },
+   {
+    "e": 188,
+    "usd": 3.7,
+    "luna": 59.606367,
+    "p": {
+     "1": 0,
+     "7": 3.7,
+     "15": 0
+    },
+    "m": [
+     13,
+     17,
+     2,
+     18,
+     4
+    ]
+   },
+   {
+    "e": 189,
+    "usd": 3.7,
+    "luna": 72.028661,
+    "p": {
+     "1": 0,
+     "7": 3.7,
+     "15": 0
+    },
+    "m": [
+     13,
+     17,
+     2,
+     18,
+     4
+    ]
+   },
+   {
+    "e": 190,
+    "usd": 3.7,
+    "luna": 70.125474,
+    "p": {
+     "1": 0,
+     "7": 3.7,
+     "15": 0
+    },
+    "m": [
+     13,
+     17,
+     2,
+     18,
+     4
+    ]
+   },
+   {
+    "e": 191,
+    "usd": 3.71,
+    "luna": 71.837837,
+    "p": {
+     "1": 0,
+     "7": 3.71,
+     "15": 0
+    },
+    "m": [
+     13,
+     17,
+     2,
+     18,
+     4
+    ]
+   },
+   {
+    "e": 192,
+    "usd": 3.72,
+    "luna": 77.106312,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.71,
+     "13": 0,
+     "15": 0,
+     "17": 0
+    },
+    "m": [
+     18
+    ]
+   },
+   {
+    "e": 193,
+    "usd": 3.71,
+    "luna": 74.905492,
+    "p": {
+     "1": 0,
+     "7": 3.71,
+     "15": 0
+    },
+    "m": [
+     13,
+     17,
+     2,
+     18,
+     4
+    ]
+   },
+   {
+    "e": 194,
+    "usd": 3.71,
+    "luna": 79.900945,
+    "p": {
+     "1": 0,
+     "7": 3.71,
+     "15": 0
+    },
+    "m": [
+     13,
+     17,
+     2,
+     18,
+     4
+    ]
+   },
+   {
+    "e": 195,
+    "usd": 6.21,
+    "luna": 135.235003,
+    "p": {
+     "1": 0,
+     "7": 3.72,
+     "14": 2.49,
+     "15": 0
+    },
+    "m": [
+     13,
+     17,
+     2,
+     18,
+     4
+    ]
+   },
+   {
+    "e": 196,
+    "usd": 6.24,
+    "luna": 137.913535,
+    "p": {
+     "1": 0,
+     "7": 3.74,
+     "14": 2.5,
+     "15": 0
+    },
+    "m": [
+     13,
+     17,
+     2,
+     18,
+     4
+    ]
+   },
+   {
+    "e": 197,
+    "usd": 6.18,
+    "luna": 150.241364,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.75,
+     "13": 0,
+     "14": 2.43,
+     "15": 0,
+     "17": 0
+    },
+    "m": [
+     18
+    ]
+   },
+   {
+    "e": 198,
+    "usd": 6.24,
+    "luna": 149.561724,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.76,
+     "13": 0,
+     "14": 2.46,
+     "15": 0,
+     "17": 0
+    },
+    "m": [
+     18
+    ]
+   },
+   {
+    "e": 199,
+    "usd": 6.31,
+    "luna": 149.136421,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.78,
+     "13": 0,
+     "14": 2.52,
+     "15": 0,
+     "17": 0
+    },
+    "m": [
+     18
+    ]
+   },
+   {
+    "e": 200,
+    "usd": 6.56,
+    "luna": 135.575468,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.8,
+     "13": 0,
+     "14": 2.75,
+     "15": 0,
+     "17": 0
+    },
+    "m": [
+     18
+    ]
+   },
+   {
+    "e": 201,
+    "usd": 6.6,
+    "luna": 138.818478,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.82,
+     "13": 0,
+     "14": 2.77,
+     "15": 0,
+     "17": 0
+    },
+    "m": [
+     18
+    ]
+   },
+   {
+    "e": 202,
+    "usd": 6.67,
+    "luna": 138.554688,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.84,
+     "13": 0,
+     "14": 2.82,
+     "15": 0,
+     "17": 0
+    },
+    "m": [
+     18
+    ]
+   },
+   {
+    "e": 203,
+    "usd": 6.66,
+    "luna": 145.026581,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.86,
+     "13": 0,
+     "15": 0,
+     "17": 0,
+     "19": 2.8
+    },
+    "m": [
+     18
+    ]
+   },
+   {
+    "e": 204,
+    "usd": 6.95,
+    "luna": 129.90436,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.87,
+     "13": 0,
+     "15": 0,
+     "17": 0,
+     "19": 3.07
+    },
+    "m": [
+     18
+    ]
+   },
+   {
+    "e": "now",
+    "usd": 6.95,
+    "luna": 129.90436,
+    "p": {
+     "1": 0,
+     "2": 0,
+     "4": 0.01,
+     "7": 3.87,
+     "13": 0,
+     "15": 0,
+     "17": 0,
+     "19": 3.07
+    },
+    "m": [
+     18
+    ]
+   }
+  ]
+ },
  "negative_unit_flags": [
   "cw20:terra10e2rz5etaped4nh0vk502hf7uwtz5lqvxqatxl4qyr0chcynxf2swhfwww|lp",
   "cw20:terra12mvtdvn4fgtsqs4fwxr56vcwjw0xe23lhdfyjq5ghk7vmfeuxn0srau9q2|lp",
@@ -112,7 +4371,7 @@
     "wdr": 0,
     "clm": 1
    },
-   "zap_usd": 0.0008468018495817683,
+   "zap_usd": 0.0008465549750817684,
    "clm_luna": 10.934291,
    "clm_usd": 4.6961205307096,
    "pools": {
@@ -136,7 +4395,7 @@
     "wdr": 0,
     "clm": 1
    },
-   "zap_usd": 0.0000020937734799999997,
+   "zap_usd": 0.00000200215372,
    "clm_luna": 11.341157,
    "clm_usd": 4.4512523778193405,
    "pools": {
@@ -160,8 +4419,8 @@
     "wdr": 0,
     "clm": 2
    },
-   "zap_usd": 490.6589797199214,
-   "fees_usd": 0.32252413419357,
+   "zap_usd": 453.62793923125,
+   "fees_usd": 0.32107823727167,
    "clm_luna": 56.747332,
    "clm_usd": 23.11969881505617,
    "pools": {
@@ -186,7 +4445,7 @@
     "clm": 2
    },
    "zap_usd": 17.01160965698865,
-   "fees_usd": 0.0017727982124136885,
+   "fees_usd": 0.0017674842768636886,
    "clm_luna": 52.878215999999995,
    "clm_usd": 20.02142343576486,
    "pools": {
@@ -211,7 +4470,7 @@
     "clm": 2
    },
    "zap_usd": 54.53695767379881,
-   "fees_usd": 0.00623688993997,
+   "fees_usd": 0.00595115034827,
    "clm_luna": 63.789925,
    "clm_usd": 23.261538160473677,
    "pools": {
@@ -236,7 +4495,7 @@
     "clm": 1
    },
    "zap_usd": 19.20831559407888,
-   "fees_usd": 0.0007323093453000001,
+   "fees_usd": 0.0006984870408,
    "clm_luna": 86.27019,
    "clm_usd": 33.0929748583053,
    "pools": {
@@ -269,7 +4528,7 @@
     "clm": 2
    },
    "zap_usd": 21.85851824335204,
-   "fees_usd": 0.0010425516336400001,
+   "fees_usd": 0.00099339179458,
    "clm_luna": 114.35647,
    "clm_usd": 39.10754551539256,
    "pools": {
@@ -293,6 +4552,7 @@
     "wdr": 1,
     "clm": 1
    },
+   "zap_usd": 2249.2965809865304,
    "clm_luna": 126.552011,
    "clm_usd": 46.2167311411945,
    "pools": {
@@ -324,7 +4584,7 @@
     "wdr": 0,
     "clm": 1
    },
-   "zap_usd": 0.000007465158200000001,
+   "zap_usd": 5.514702637468572,
    "clm_luna": 181.240408,
    "clm_usd": 67.64941589762728,
    "pools": {
@@ -355,7 +4615,7 @@
     "clm": 2
    },
    "zap_usd": 49.34012885914906,
-   "fees_usd": 0.03731249528128,
+   "fees_usd": 0.09044108003522482,
    "clm_luna": 294.95892299999997,
    "clm_usd": 139.1396680744097,
    "pools": {
@@ -385,8 +4645,8 @@
     "wdr": 3,
     "clm": 3
    },
-   "zap_usd": 97.0030193321888,
-   "fees_usd": 0.026400767178171077,
+   "zap_usd": 97.00301846403293,
+   "fees_usd": 1.2661423575528303,
    "clm_luna": 223.87906800000002,
    "clm_usd": 111.24866051662013,
    "pools": {
@@ -457,8 +4717,8 @@
     "wdr": 0,
     "clm": 1
    },
-   "zap_usd": 143.85313303631094,
-   "fees_usd": 0.006912725640483872,
+   "zap_usd": 146.169111016745,
+   "fees_usd": 2.3185802337907613,
    "clm_luna": 234.57359300000002,
    "clm_usd": 176.22271271194285,
    "pools": {
@@ -501,7 +4761,7 @@
     "clm": 1
    },
    "zap_usd": 170.46579,
-   "fees_usd": 0.47379296407,
+   "fees_usd": 0.7898333664493542,
    "clm_luna": 222.802197,
    "clm_usd": 126.6005084178021,
    "pools": {
@@ -540,8 +4800,8 @@
     "wdr": 0,
     "clm": 1
    },
-   "zap_usd": 69.46529503456442,
-   "fees_usd": 0.22698804264658737,
+   "zap_usd": 71.72120101830362,
+   "fees_usd": 0.40330425609195525,
    "clm_luna": 239.376057,
    "clm_usd": 99.57030931726776,
    "pools": {
@@ -590,7 +4850,7 @@
     "clm": 1
    },
    "zap_usd": 166.06788223886096,
-   "fees_usd": 0.23153737550131,
+   "fees_usd": 0.3687735145053014,
    "clm_luna": 281.709468,
    "clm_usd": 118.25381159447366,
    "pools": {
@@ -628,6 +4888,7 @@
     "clm": 1
    },
    "zap_usd": 9.334638400000001,
+   "fees_usd": 0.11860144864936878,
    "clm_luna": 299.950804,
    "clm_usd": 135.59911090672068,
    "pools": {
@@ -661,7 +4922,7 @@
     "clm": 1
    },
    "zap_usd": 135.1052951915172,
-   "fees_usd": 0.26495445862229,
+   "fees_usd": 0.3010309139817976,
    "clm_luna": 393.27214100000003,
    "clm_usd": 163.3949000908314,
    "pools": {
@@ -698,7 +4959,7 @@
     "clm": 1
    },
    "zap_usd": 40.324387551207096,
-   "fees_usd": 0.0029328313057200004,
+   "fees_usd": 0.0027889519906800003,
    "clm_luna": 253.548302,
    "clm_usd": 102.41596339453557,
    "pools": {
@@ -741,8 +5002,8 @@
     "wdr": 1,
     "clm": 1
    },
-   "zap_usd": 355.50018693948095,
-   "fees_usd": 1.2326467344439902,
+   "zap_usd": 355.50037286832355,
+   "fees_usd": 1.2725502223357326,
    "clm_luna": 206.22334800000002,
    "clm_usd": 69.61142733475236,
    "pools": {
@@ -780,8 +5041,8 @@
     "wdr": 4,
     "clm": 1
    },
-   "zap_usd": 542.1437068196809,
-   "fees_usd": 3.9541129460241597,
+   "zap_usd": 541.6337833157215,
+   "fees_usd": 5.025104315957823,
    "clm_luna": 320.37372500000004,
    "clm_usd": 103.92370994324375,
    "pools": {
@@ -824,7 +5085,7 @@
     "clm": 1
    },
    "zap_usd": 398.26798464429595,
-   "fees_usd": 2.2615827667394504,
+   "fees_usd": 4.478917711581402,
    "clm_luna": 305.620345,
    "clm_usd": 73.7947951081688,
    "pools": {
@@ -864,8 +5125,8 @@
     "wdr": 2,
     "clm": 1
    },
-   "zap_usd": 259.51833507122956,
-   "fees_usd": 0.29449077916787414,
+   "zap_usd": 288.48787911455827,
+   "fees_usd": 0.35819429072397846,
    "clm_luna": 285.111197,
    "clm_usd": 75.44544068326721,
    "pools": {
@@ -903,8 +5164,8 @@
     "wdr": 5,
     "clm": 1
    },
-   "zap_usd": 452.6382423851923,
-   "fees_usd": 4.263928348163149,
+   "zap_usd": 618.9892206611854,
+   "fees_usd": 4.824791410535653,
    "clm_luna": 281.98399700000004,
    "clm_usd": 72.71771450444339,
    "pools": {
@@ -973,7 +5234,7 @@
     "clm": 1
    },
    "zap_usd": 68.16325791449839,
-   "fees_usd": 0.031322736144060004,
+   "fees_usd": 0.1991997661879587,
    "clm_luna": 314.958974,
    "clm_usd": 72.24096191981724,
    "pools": {
@@ -1038,8 +5299,8 @@
     "wdr": 0,
     "clm": 1
    },
-   "zap_usd": 167.53659662454317,
-   "fees_usd": 0.20343508018495998,
+   "zap_usd": 242.3233013767137,
+   "fees_usd": 1.014583820504067,
    "clm_luna": 387.153722,
    "clm_usd": 73.73869938859364,
    "pools": {
@@ -1075,8 +5336,8 @@
     "wdr": 0,
     "clm": 1
    },
-   "zap_usd": 71.5519868382071,
-   "fees_usd": 0.10638366260535,
+   "zap_usd": 96.51249085574587,
+   "fees_usd": 0.35994441621096673,
    "clm_luna": 425.095513,
    "clm_usd": 86.89226472325885,
    "pools": {
@@ -1112,7 +5373,8 @@
     "wdr": 1,
     "clm": 1
    },
-   "zap_usd": 119.90805548651751,
+   "zap_usd": 277.86377977043435,
+   "fees_usd": 1.0826493774743762,
    "clm_luna": 444.25699499999996,
    "clm_usd": 85.22681724204375,
    "pools": {
@@ -1158,7 +5420,7 @@
     "clm": 1
    },
    "zap_usd": 42.3860925,
-   "fees_usd": 0.40082892791231994,
+   "fees_usd": 0.5324035062714809,
    "clm_luna": 403.347738,
    "clm_usd": 68.38533813013505,
    "pools": {
@@ -1223,7 +5485,7 @@
     "clm": 2
    },
    "zap_usd": 123.08967093325941,
-   "fees_usd": 0.6166693194737101,
+   "fees_usd": 0.83054463896245,
    "clm_luna": 314.69723999999997,
    "clm_usd": 55.63289396850534,
    "pools": {
@@ -1311,7 +5573,7 @@
     "wdr": 1,
     "clm": 1
    },
-   "zap_usd": 11.40709972687997,
+   "zap_usd": 11.27903250489311,
    "fees_usd": 0.04628399917575,
    "clm_luna": 1.270003,
    "clm_usd": 0.21717526281122,
@@ -1479,7 +5741,7 @@
     "wdr": 0,
     "clm": 1
    },
-   "zap_usd": 696.8888347250306,
+   "zap_usd": 695.9450863230575,
    "fees_usd": 0.9917913986951699,
    "clm_luna": 53.815051,
    "clm_usd": 8.758578754369829,
@@ -1622,7 +5884,7 @@
     "clm": 0
    },
    "zap_usd": 499.90364999999997,
-   "fees_usd": 4.5502625193568,
+   "fees_usd": 8.82356515752831,
    "pools": {
     "cw20:terra10e2rz5etaped4nh0vk502hf7uwtz5lqvxqatxl4qyr0chcynxf2swhfwww": {
      "dep": 1,
@@ -1645,7 +5907,7 @@
     "clm": 0
    },
    "zap_usd": 699.852925,
-   "fees_usd": 4.05158095373472,
+   "fees_usd": 10.187020823567096,
    "pools": {
     "cw20:terra10e2rz5etaped4nh0vk502hf7uwtz5lqvxqatxl4qyr0chcynxf2swhfwww": {
      "dep": 4,
@@ -1668,7 +5930,7 @@
     "clm": 0
    },
    "zap_usd": 649.865808,
-   "fees_usd": 4.722711156558037,
+   "fees_usd": 6.678613219850472,
    "pools": {
     "cw20:terra10e2rz5etaped4nh0vk502hf7uwtz5lqvxqatxl4qyr0chcynxf2swhfwww": {
      "dep": 4,
@@ -1691,7 +5953,7 @@
     "clm": 0
    },
    "zap_usd": 299.940611,
-   "fees_usd": 1.4410275353164756,
+   "fees_usd": 3.047968895326673,
    "pools": {
     "cw20:terra10e2rz5etaped4nh0vk502hf7uwtz5lqvxqatxl4qyr0chcynxf2swhfwww": {
      "dep": 3,
@@ -1731,7 +5993,7 @@
     "clm": 0
    },
    "zap_usd": 992.2439534766327,
-   "fees_usd": 2.739023341440727,
+   "fees_usd": 35.54465698538301,
    "pools": {
     "native:factory/terra13ywdferm4jtcperal9png3cvhtmar5se9nu4r49k7vujrakwy9zqa3rhwe/uLP": {
      "dep": 2,
@@ -1757,7 +6019,7 @@
     "clm": 0
    },
    "zap_usd": 270.0096633,
-   "fees_usd": 0.98723602854712,
+   "fees_usd": 8.84637010284095,
    "pools": {
     "cw20:terra1huw82c9grj9xz9umkc8hqcjqgndadlkrp8rn9u6eh5jh5j2s2t7qs33vry": {
      "dep": 1,
@@ -1855,8 +6117,8 @@
     "wdr": 0,
     "clm": 0
    },
-   "zap_usd": 693.3620843356007,
-   "fees_usd": 10.48772939018244,
+   "zap_usd": 710.0779563480403,
+   "fees_usd": 14.603391444218804,
    "pools": {
     "cw20:terra18336lhc2vt9s9tw4pqetvdwywg9555rduzv527r9q47smw89epcsxgxuny": {
      "dep": 2,
@@ -1878,8 +6140,8 @@
     "wdr": 0,
     "clm": 0
    },
-   "zap_usd": 871.5620423881538,
-   "fees_usd": 3.6047050805223932,
+   "zap_usd": 1274.3108368633418,
+   "fees_usd": 18.219367394801793,
    "pools": {
     "cw20:terra18336lhc2vt9s9tw4pqetvdwywg9555rduzv527r9q47smw89epcsxgxuny": {
      "dep": 1,
