@@ -1,6 +1,6 @@
 # SPEC — Member portfolio: vAMP locks P&L (Milestone A, step 4)
 
-Status: **L1 built and gated 2026-09-27** (§3); L2 and L3 are designed, not built. Owner ask: "can we do the credia and the locks design."
+Status: **L1 built, run and gated 2026-09-27** (§3, derive committed e4a4058). **L2 built** (§4, mock-gated; waiting for its first run). L3 is designed, not built. Owner ask: "can we do the credia and the locks design."
 Sits beside `SPEC-portfolio-coverage.md` (what is and is not tracked) and `SPEC-rewards-planner.md` (uses the lock value).
 
 ## 1. What the member sees
@@ -134,6 +134,30 @@ it for "now" in capture-engine (tla-participants, hourly).
   pass. This is cheap: tens of reads a day.
 - A lock burned by merge, withdraw or migrate cannot be read after its burn height. Reads go at h−1 for "before", and
   the "after" comes from the survivor.
+
+**L2 built (2026-09-27): `nft-collections/.github/scripts/locks-anchor/anchor.js` 1.0.0 + workflow `locks-anchor`.**
+- **Reading method:** the archive RPC (secret ARCHIVE_RPC, already used by nft-flows-walk), `abci_query`
+  SmartContractState at height. No LCD secret is needed.
+- **Plan on the rebuilt ledger: 4,262 points.**
+  - create 2,104
+  - transfer 268
+  - split parent 738, split child 369
+  - migrate from 153, migrate to 153
+  - now 593
+
+  Of these, 84 are skipped because the lock is gone within its own block (the Votion same-block merge). That leaves
+  ≈4,180 reads, about 35 min at 2 rps.
+- **Output:** `tla-locks/ledger/anchors/<shard>.json` + `index.json`, write-once per (token, height, side). A node error at
+  a height is stored as an answer. A transport failure is not stored and is retried on the next run.
+- **Mock gate** (`mock-anchor.mjs`, 8/8): protobuf, run-mode guard, ≤ 4 rps sequential, backoff, budget stop, resume
+  (third run asks 0), a dead node stops after 5 calls, and the post-run gate runs.
+- **Post-run gate** (`gate-locks-l2.mjs`):
+  - A2: the create block's asset = the recorded payment (amount and denom);
+  - A3: splits conserve (parent before = after + Σ children, per parent per block);
+  - A4: a migrate's old asset = the ledger's `amount_before`;
+  - coverage and honesty checks.
+
+  The workflow commits the answers *before* the gate, so a disagreement is examined without paying for the reads again.
 
 ## 5. L3: the model (tla-flows pnl duty → `mechanism: 'lock'`)
 
