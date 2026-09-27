@@ -91,18 +91,28 @@ gauges; it is no longer mixed in.
   identical to Eris. The difference is the trading-fee leg: Eris's pool service is not public, so ours is a substitute.
   Labeled on the page; closing it needs Eris's fee source. Eleven pools sit within 0–5%.
 
-## 7. TLA Stats — pots and the Vote Market (T6.5, T6.6)
+## 7. TLA Stats — pots and the Vote Market (T6.5, T6.13, the simulator)
 
 - **"Not funded" vs unpriced.** A pot that holds tokens is funded even if a price is missing. The LUNA-EURe pot ($10 of
   USDC.n for each of periods 202–206) showed "not funded" for hours because two of our products named the same token
   differently (USDC.n vs USDC). Fixed at the source 2026-09-21: the price feed keys the stables by the catalog's symbol
   (USDC.n / USDt / EURe) and the cron publishes any registry-vs-catalog symbol drift (`catalog_symbol_drift`); a symbol the
   feed does not carry shows on the row as unpriced (never $0, never "not funded").
-- **What "+$X → Votion votes" means.** Our exact solve of Votion's objective (bribe × votes ÷ (gauge votes + votes)) with
-  your $X added — a projection of HOW MUCH VP your dollars move, NOT of which pools Votion pulls from: the objective is
-  flat, many splits are near-optimal, and Votion's own solver lands 0–8% below the optimum. The header chip "model vs
-  Votion's plan ±N pp" is that back-test. Each row shows **Votion's rule today**: it re-votes a bucket only when its own
-  re-solve gains more than $0 (its published isWorthChanging flag) — a small add has to flip a "holds" before any VP moves.
+- **The Vote Market (T6.13 / VM1.7, 2026-09-27).** Three surfaces, ONE engine (`lib/vote-market.js`): TLA Stats' Vote Market tile (the
+  overview), `/vote-market.html` (the simulator) and the app's Vote Market tab — the help bot's `vote_market` tool runs the same file.
+  Every number is an **estimate on this round's pots and today's votes, if everything else stays the same**.
+  - **Where $ does the most**: "$50 buys +$918/wk" = the extra emissions a week the pool's LPs get next epoch if $50 is added and Votion
+    re-solves; APR next epoch now → with it; "Votion if +$50" = Votion's votes moving in. Pools holding a winding-down asset (USDC.nbl /
+    Noble USDC → USDC.inj) are never recommended; pools Votion has not been offered this round are left out of Best impact unless asked.
+  - **A bribe's breakdown**: You pay − **Comes back to your votes** (your share of that pool's pot — only if your votes are on it) ±
+    **elsewhere** (Votion's new votes diluting you, the pool you moved votes off; or a GAIN when Votion leaves pools you vote) = **Real cost
+    this round**. Its LPs get the emissions bought per week.
+  - **Votion's rule** (fitted on its own history, `votion/backtest/move-rule.json`): a vault re-votes a bucket only when it gains more than
+    $0.05 AND its split shifts more than 5% — otherwise it holds. It casts ~2.6 h before the Sunday 23:59 UTC deadline (≈ 21:20 UTC), so
+    a pot funded after that is too late for Votion this round. The simulator shows each vault's re-votes / holds and how often it did so.
+  - **Best split**: the most bribes for a wallet's VP (or a typed VP) across every bucket with Votion reacting — a starting point; a pool
+    whose pot is small moves a lot when anyone else votes it.
+  - Numbers agree everywhere: pots are priced once ($1,250 in 17 pots for round 204), Votion's moves are in real VP (its own units ÷ k).
 - **Movers / Breakdown.** Users = live on-chain VP minus the locked-in baseline (Votion's vaults do not move on chain until
   they cast); Votion = its published plan minus its current votes; projected = both. Between Votion casting (end of the
   round) and the epoch flip, both can show the same move for a few hours.
@@ -112,7 +122,8 @@ gauges; it is no longer mixed in.
 1. Four pools' trading-fee leg under Eris (§6). 2. (closed 2026-09-21: the oracle carries USDC.n back to 2022-10, labeled alias; Bribes history
 now fills E185–E203 except E184/E196, where FUEL has no oracle row) (§5). 3. Bribe Runway one round behind until each Monday harvest (§4). 4. (closed 2026-09-21: the feed keys the stables by the catalog symbol) 5. Marketplace offers/bids are not captured yet — the
 feed says so rather than showing an empty toggle. 6. A venue-only bid event on BBL can be filed under the wrong collection
-(one known case: pixeLion #826's buy-now appeared as an aDAO bid) — being fixed in the classifier.
+(one known case: pixeLion #826's buy-now appeared as an aDAO bid) — being fixed in the classifier. 7. Noble USDC (USDC.n / USDC.nbl) is being
+wound down (migrate to USDC.inj by 2026-10-31): the Vote Market and the pool alert pills flag it; a sweep of every other page that shows it is queued.
 
 ## 9. How to report a problem — and what to include
 
