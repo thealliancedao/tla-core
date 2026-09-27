@@ -1,6 +1,6 @@
 {
-  "version": "1.1",
-  "updated": "2026-09-20",
+  "version": "1.2",
+  "updated": "2026-09-27",
   "sections": [
     {
       "id": "overview",
@@ -589,36 +589,127 @@
       "id": "votion",
       "title": "Votion",
       "icon": "fa-vote-yea",
-      "intro": "Vote optimization tool for TLA and Hydro.",
+      "intro": "The vote aggregator whose two vaults move the most votes in TLA.",
       "content": [
         {
           "type": "text",
-          "value": "Votion calculates optimal vote allocations to maximize your expected rewards. It gathers reward data from pools, estimates USD returns for different vote distributions, and shows recommendations."
+          "value": "Votion pools LST locks into vaults (ampLUNA and arbLUNA) and votes them where the bribes pay most. It models a voter's reward as bribe × your votes ÷ (the pool's votes + your votes) and splits each vault's votes across a bucket's pools to maximize that total."
         },
         {
           "type": "heading",
-          "value": "What It Shows"
+          "value": "How it actually moves (from its own history)"
         },
         {
           "type": "list",
           "items": [
-            "Available pools and their TVL",
-            "Current APY estimates",
-            "Vote recommendations for maximizing rewards",
-            "Expected additional earnings from optimization"
+            "A vault re-votes a bucket only when the new split gains more than $0.05 AND differs by more than 5% — otherwise it keeps its votes (matched 27,196 of 27,196 captured decisions, rounds 196–204).",
+            "It casts once a round, about 2.6 hours before the Sunday 23:59 UTC deadline (≈ 21:20 UTC). A bribe funded after that is too late for Votion this round.",
+            "The arbLUNA vault moved every time its rule said so (20 of 20); the smaller ampLUNA vault 17 of 25."
+          ]
+        },
+        {
+          "type": "callout",
+          "style": "info",
+          "value": "The rule and timing are fitted from Votion's published worksheets — Votion does not document its algorithm. The site's Vote Market applies them to every simulation."
+        }
+      ],
+      "links": [
+        {
+          "text": "Votion",
+          "url": "https://votion.money/pools/liquidity-alliance/",
+          "icon": "fa-external-link-alt"
+        },
+        {
+          "text": "Vote Market simulator",
+          "url": "/vote-market.html",
+          "icon": "fa-flask"
+        }
+      ]
+    },
+    {
+      "id": "vote-market",
+      "title": "Vote Market & Bribes",
+      "icon": "fa-store",
+      "intro": "Where a bribe does the most, what it really costs, and how to vote your VP — the site's simulator.",
+      "content": [
+        {
+          "type": "heading",
+          "value": "How a bribe pays"
+        },
+        {
+          "type": "list",
+          "items": [
+            "A pot on a pool is shared by that pool's voters in proportion to their votes: your share = pot × your votes ÷ the pool's votes.",
+            "A pool only pays — and only earns emissions — when it holds at least 1% of its bucket's votes.",
+            "Each bucket's weekly emissions are split among its active pools by vote share, so more votes = more emissions for that pool's LPs next epoch."
+          ]
+        },
+        {
+          "type": "heading",
+          "value": "Reading a simulation"
+        },
+        {
+          "type": "table",
+          "headers": [
+            "Line",
+            "What it means"
+          ],
+          "rows": [
+            [
+              "You pay",
+              "the bribe you add"
+            ],
+            [
+              "Comes back to your votes",
+              "your share of that same pot — only if your votes are on that pool"
+            ],
+            [
+              "Elsewhere",
+              "Votion's new votes diluting your other pools (a cost), or Votion leaving them (a gain)"
+            ],
+            [
+              "Real cost this round",
+              "what the bribe costs you after all of the above"
+            ],
+            [
+              "LPs get +$/wk",
+              "the extra emissions the pool's LPs earn next epoch"
+            ]
+          ]
+        },
+        {
+          "type": "heading",
+          "value": "Three tools, one engine"
+        },
+        {
+          "type": "list",
+          "items": [
+            "TLA Stats → Vote Market: where $X does the most (by lens: best impact, underdogs, liquidity, volume, needs PD support, losing Votion, my pools), Votion's next move, pots and the price of a vote.",
+            "The simulator (/vote-market.html): pick a pool, add a bribe, move your votes — see Votion's reaction per vault, what comes back to you, the APRs, and the best split for your VP. Works with or without a wallet.",
+            "The Ally app's Vote Market tab: the same three tools built for a phone. The help assistant can run them too."
           ]
         },
         {
           "type": "callout",
           "style": "tip",
-          "value": "Votion handles the math so you don't have to manually calculate which vote distribution gives you the best return."
+          "value": "Every number is an estimate on this round's pots and today's votes, if everything else stays the same. Other voters and bribers can change it before the round closes — re-check near the deadline."
+        },
+        {
+          "type": "callout",
+          "style": "warning",
+          "value": "Pools holding Noble USDC (USDC.n / USDC.nbl) are being wound down — migrate to USDC.inj by Oct 31, 2026. The Vote Market never recommends them."
         }
       ],
       "links": [
         {
-          "text": "Votion App",
-          "url": "https://votion.io",
-          "icon": "fa-external-link-alt"
+          "text": "Open the simulator",
+          "url": "/vote-market.html",
+          "icon": "fa-flask"
+        },
+        {
+          "text": "TLA Stats",
+          "url": "/tla-stats.html",
+          "icon": "fa-chart-line"
         }
       ]
     },

@@ -134,6 +134,8 @@ citation) · CHANGES_PENDING (the queue).
 | `lib/cron-registry.js` | **Single source of truth for platform health.** All 17 org products: schedule, heartbeat path, owning Render job, what it powers. index, tla-stats and transparency-hub ALL derive from it. Adding a cron = one entry here. |
 | `lib/site-footer.js` | One footer for every page (socials, links, rev + changelog, live health dot linking to the transparency hub). |
 | `lib/adao-live-data.js` | Live chain reads shared across pages (`window.aDAOLive`). |
+| `lib/vote-market.js` | **The Vote Market engine** (`VoteMarket`, UMD): pots, payouts, Votion's water-fill + fitted move rule, scenarios, best split, lenses. The ONE model behind /vote-market.html, TLA Stats' tile, the app's Vote Market tab and the help bot's `vote_market` tool. |
+| `lib/vote-market-tile.js` | TLA Stats' Vote Market overview tile (`VoteMarketTile.mount`) on the engine — Where $ does the most · Votion's next move · Pots & rates; every row opens the simulator. |
 
 **Law:** never hardcode a cron list in a page again. Both duplicate registries
 (index + tla-stats) drifted until healthy jobs rendered red; they are now
