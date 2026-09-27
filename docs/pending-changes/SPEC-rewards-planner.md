@@ -112,7 +112,7 @@ on TLA today, with the honest read:
 | Loans (Credia borrows, Solid CDP) | — | ❌ P1 readers (SPEC-portfolio-coverage) |
 | NFT floor / ROAR price for "what it buys" | nft-collections floor-history, network-and-prices | ✅ |
 | Vault LP deposits (the lots), units, value per unit | tla-flows/events (deposit `provides` + LP units), dex-data + state-history pool state | ✅ captured; valued per epoch by build-pnl v3 |
-| USDC.inj pools | — | ❌ none on TLA yet (token not in the catalog either); USDC.n pools are excluded by lib/winddown.js |
+| USDC.inj pools | — | ❌ none on TLA yet (the token IS in the catalog: `ibc/E8481AD8…` USDC.inj); USDC.n pools are excluded by lib/winddown.js |
 
 ## 4. Order
 
