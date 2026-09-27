@@ -1,0 +1,51 @@
+name: Solid Probe
+
+# One-off, READ-ONLY on chain (2026-09-27, SPEC-portfolio-coverage: Solid CDP). Starts from the owner's six Solid test txs,
+# discovers every Solid contract they touch (Overseer / Collector are labels on explorers), lists each contract's query variants,
+# asks every variant for the probe wallets, and counts the history per contract and action (tx_search; ARCHIVE_RPC when set).
+# Commits ONE file: docs/fixtures/<date>/solid-probe.json — the real shapes the Solid reader is built on. Nothing else is written.
+on:
+  workflow_dispatch:
+    inputs:
+      wallets:
+        description: 'Comma-separated wallets to query positions for (default: the owner test wallet)'
+        required: false
+        type: string
+      overseer:
+        description: 'CAPA_OVERSEER address (optional — the probe also finds it in the test txs)'
+        required: false
+        type: string
+      lcd:
+        description: 'LCD base URL'
+        required: false
+        type: string
+        default: 'https://terra-lcd.publicnode.com'
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/solid-probe
+            docs/fixtures
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: probe
+        env:
+          WALLETS: ${{ github.event.inputs.wallets }}
+          LCD: ${{ github.event.inputs.lcd }}
+          OVERSEER: ${{ github.event.inputs.overseer }}
+          ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
+        run: node .github/scripts/solid-probe/probe.mjs
+      - name: commit the fixture
+        run: |
+          git config user.name "solid-probe" && git config user.email "bot@thealliancedao.com"
+          git add docs/fixtures
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -m "solid-probe fixture $(date -u +%Y-%m-%dT%H:%M)Z"
+          for i in 1 2 3 4 5 6; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep $((i * 15)); done; exit 1
