@@ -24,14 +24,18 @@ tool, rule 16). Winding-down pools (Noble USDC → USDC.inj by 2026-10-31) are f
   12 are round-200 fixture checks that fail identically on main (stale fixtures, not regressions; queued).
 - The 2026-09-26 owner to-dos are all DONE (help-agent 1.15.1 on main, root mint.html deleted, Burning Lion #6 supplied).
 
-### OWNER TO-DO (in order)
-1. Commit the **tla-core** ZIP (the docs bulk: changelogs, site-reading-guide §7, DATA-MAP, votion.md + facts, tla-docs-content.json 1.2,
+### OWNER TO-DO (in order) — 1–3 DONE 2026-09-27 ~09:00Z (all three ZIPs on main, byte-verified); 4–5 open
+1. ~~Commit the **tla-core** ZIP~~ (the docs bulk: changelogs, site-reading-guide §7, DATA-MAP, votion.md + facts, tla-docs-content.json 1.2,
    the spec, this ledger, the handover).
-2. Commit the **aDAO-links-site** ZIP in ONE commit (vote-market.html VM1.7, app.html 2.1.1, lib/vote-market-tile.js 1.1.1, tla-stats.html
+2. ~~Commit the **aDAO-links-site** ZIP in ONE commit~~ (vote-market.html VM1.7, app.html 2.1.1, lib/vote-market-tile.js 1.1.1, tla-stats.html
    T6.13.3, gate-vote-market.mjs) — one commit so the page and the tile go live together (T6.13 showed the gap between two uploads).
-3. Commit the **platform-crons** ZIP (help-agent server.js 1.16.0, lib/vote-market-tool.js, gate-vote-market-tool.mjs, test-battery.js,
+3. ~~Commit the **platform-crons** ZIP~~ — confirm the tla-help-agent redeploy (help-agent server.js 1.16.0, lib/vote-market-tool.js, gate-vote-market-tool.mjs, test-battery.js,
    README.md), then **Manual Deploy** on tla-help-agent if it does not redeploy by itself.
 4. Delete `aDAO-links-site/tla_docs_content.json` (a stale copy nothing reads; it still links votion.io — an unrelated smart-home site).
+5. **Lion DAO history gap**: `dao-originations/lion-dao/history/daily.json` is stuck at last_day **2026-09-25** (checked 2026-09-27 08:55Z —
+   seven hourly runs since 02:20Z did not add 09-26). Run Actions → **liondao-history-backfill** with tenant `liondao`, from `2026-09-26`,
+   to `2026-09-26`, step_days `1` (defaults for the rest). dao-originations' git history now starts at 2026-09-27 02:20Z (root commit
+   adab5b9), so earlier runs cannot be traced — the Render log line `history daily: skipped …` says why the forward read failed.
 
 ### LIVE CHECKS OWED
 - Ask the bot "If I put $50 of bribes into TLA this round, where would it do the most?" and "What happens if I bribe LUNA-ROAR with $100?"
@@ -54,13 +58,29 @@ tool, rule 16). Winding-down pools (Noble USDC → USDC.inj by 2026-10-31) are f
 - **Predict behavior from the actor's own record.** Votion's rule was fitted on every captured decision, then scored against its casts.
 - **A link is verified by opening it.** A plausible domain is not a source.
 
-### QUEUE (next chats, in order)
+### LOOSE ENDS CHECKED AT CLOSE (2026-09-27, before moving to the member portfolio)
+- Vote Market: nothing open beyond the OWNER TO-DO commits + the bot deploy; lp-grades' ungraded gauges and the gate-tla-stats fixture
+  refresh are hygiene (QUEUE 4–5), not blockers.
+- Lion DAO: the daily history gap (OWNER TO-DO 5) and its cause — **the forward writer is fragile**: when the public node will not serve
+  yesterday at height, only the 23:xx UTC run writes a latest-state row, so ONE missed run = a missing day. Fix (QUEUE 3): every hourly run
+  overwrites TODAY's row from the latest state (method latest_state_at_capture); a later at-height read or the archive replaces it.
+  `history/markets.json` accrues (2 days); Burning Lions floor-history accrues (2 rows). Gates for home 3.9 + T6.10 still owed (QUEUE 6).
+- Council items (5 unminted Burning Lions, the 2.9B pyROAR gap, the 25M burn) are the council's, carried.
+
+### QUEUE (next chats, in order — owner 2026-09-27: "quick sweep, then portfolio")
 1. **Noble USDC sweep** (owner: "once we are finished with the vote market overhaul") — every page that shows USDC.n / USDC.nbl pools or
    balances gets the wind-down flag + the USDC.inj migration link (index, TLA Stats tables, pools, portfolio, app, Lion DAO positions,
    the Advisor), driven by `docs/curated/alerts.json`.
-2. lp-grades: grade (or at least stamp alerts on) every gauge — close the ungraded-gauge gap upstream.
-3. Refresh `gate-tla-stats.mjs` fixtures from round 200 to current (the 12 stale checks) and add the tile's T-checks to it.
-4. Carried from 2026-09-26: Lion DAO gates to home 3.9 + a gate for T6.10's vote chart; Burning Lions sales ledger; pyROAR / ROAR20 24h
+2. **MEMBER PORTFOLIO — Milestone A step 3** (the announcement blocker, put off long enough): (i) ratio re-anchor Action from the
+   dex-state-history hub ratios (price-history/ratios interpolated rows run 10–15 % high — fold/retire the frozen path in the same change),
+   (ii) build-pnl v3 inside tla-flows/pnl.js — measured amp-rate curve, value curve per wallet × epoch, FIFO round trips + attribution
+   (SPEC-portfolio-roundtrip-pnl §4, SPEC-portfolio-pnl, SPEC-portfolio-epoch-ledger), (iii) member-portfolio.html rebuild (Test 1 on Tools
+   is the old build) + the picker "View portfolio →" tile, with the NFT leg from nft-flows by-wallet. Read the four SPEC-portfolio* files
+   and the 2026-08-26 "STATE AT CLOSE" section first — steps 1–2 are done on main.
+3. Lion DAO history-forward: write TODAY's row from the latest state on every run (see LOOSE ENDS) — small, in ally-positions.
+4. lp-grades: grade (or at least stamp alerts on) every gauge — close the ungraded-gauge gap upstream.
+5. Refresh `gate-tla-stats.mjs` fixtures from round 200 to current (the 12 stale checks) and add the tile's T-checks to it.
+6. Carried from 2026-09-26: Lion DAO gates to home 3.9 + a gate for T6.10's vote chart; Burning Lions sales ledger; pyROAR / ROAR20 24h
    volume; per-wallet own burns; per-voter past votes; ampCAPA in the governance export; address-catalog Lion DAO stakers; pd-treasury;
    the alliance ledger.
 
