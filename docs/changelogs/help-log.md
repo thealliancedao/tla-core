@@ -1,5 +1,16 @@
 # Help Page Changelog
 
+## v1.15.0 → v1.15.1 — 2026-09-26 — Lion DAO data map; the question log keeps up
+
+- **1.15.0** (owner: "make sure the chat bot can answer questions on anything in the Lion DAO ecosystem"): rule 15 = the Lion DAO data
+  map (positions, the DAO's daily value, ROAR whales, the frozen pyROAR ledger — a pyROAR balance is not the ROAR a wallet burned —,
+  ROAR20 holders / market / hourly history, history/daily and history/markets, governance, pixeLions and Burning Lions files, the registry
+  for every address); the corpus loads `docs/ecosystem-knowledge/LION-DAO.md` (key `lion-dao`); `read_product` takes `key` (address /
+  owner / wallet / id / day / date; map keys by digits) over holders / proposals / days / rows / points / records; a large OBJECT file is
+  compacted field by field so header counts survive; `source_url` names the repo the file came from; NFT tools list burning-lions.
+- **1.15.1** (delivered 2026-09-26; commit + deploy owed at the close): the question log (`tla-core/help-agent/questions/<yyyy-mm>.json`)
+  flushes every 2 minutes or 10 questions (was 10 min / 25) and on SIGTERM / SIGINT, so a redeploy no longer drops the waiting batch.
+
 ## v1.14.0 → v1.14.1 — 2026-09-20 — the corpus knows what the site shows and how to report
 
 `docs/ecosystem-knowledge/site-reading-guide.md` (Live Activity episodes/tiers/deal filter, listings classes, tile volume

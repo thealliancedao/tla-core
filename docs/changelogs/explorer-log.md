@@ -1,5 +1,25 @@
 # NFT Explorer Changelog
 
+## explorer 4.54 · collection-context 1.2.0 — 2026-09-26 — Burning Lions
+
+- A tenant's second collection opens with `?collection=burning-lions` (and a switcher in the hero). Burning Lions are 1/1s: "1 of 1",
+  no rank sorts, no borrowed aDAO rarity; traits Name + Animated derived from the metadata (`from: name | animated | attribute:<t>`);
+  media from the mirrored index (token_uri mode: image, animation, kind); a token with no file shows the placeholder, never aDAO's
+  image; the hero re-renders its floor from live listings after a full boot; the Analytics tab shows what the inventory knows until a
+  sales ledger exists. Token #6's metadata is unreachable on IPFS — it shows the placeholder until the owner supplies the file.
+- Footer caught up to 4.54 at the 2026-09-26 audit (it still said 4.53).
+
+## explorer 4.48 → 4.53 — 2026-09-19 — (catch-up entry, logged at the 2026-09-26 audit)
+
+- 4.48: the tenant's own logo on DAO-held tokens; the wallet's whole marketplace history by month; "DAO held" is a badge, not a filter.
+- 4.49: the hero's floor reads live listings (USD · token amount · venue of the cheapest ask); footer literals are aDAO's only on aDAO.
+- 4.50: tenant analytics tiles; shared ranks → a Rank 1 set with its own toggle and floor row; tenant collections open price low → high.
+- 4.51: the four tiles became the stat strip; the hero reads the mark, a 12-week sales-floor sparkline and the story sentence; price
+  ladder per tier; nothing drawn over the art; the tenant stays in the URL.
+- 4.52: grades, trait counts and rank labels built on the FULL records; a complicated supply is a plain breakdown; the URL names the
+  tenant from the first paint.
+- 4.53: three bars per tier (cheapest ask, mark, sales floor), one plain breakdown for every collection.
+
 ## explorer 4.47 / style 7.6 · lib/site-header.js 1.11.5 — 2026-09-19 — Lion DAO live; toggles legible
 
 - `tenants.json` liondao `live: true` (the ally dropdown shows on every page; the hero tagline is empty until Lion DAO gives one).

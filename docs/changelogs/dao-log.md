@@ -1,5 +1,10 @@
 # DAO Changelog
 
+## dao 1.11 — 2026-09-25 — Lions loads on Lion DAO
+
+- Owner: "Lions doesn't load." On the Lion DAO tenant the page opens on Lions before the data lands; the stats cards now draw the view
+  already chosen once it does (they always drew aDAO). Footer rev bumped at the 2026-09-26 audit (it still said 1.10).
+
 ## dao_treasury 3.3 — 2026-09-21 — USDC.n is USDC across the rename
 
 - dao-dashboard 1.8 names and prices the treasury's Noble USDC by the catalog symbol `USDC.n` (network-and-prices 3.1.0 keys

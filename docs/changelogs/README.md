@@ -14,6 +14,7 @@ The old-repo copies are ABANDONED as of this date — append only here.
 | lore-log.md | adao-lore.html |
 | catalog-log.md | token catalog page |
 | app-log.md | app.html (Ally, the phone app) |
+| liondao-log.md | every /liondao/ page + lib/home-tiles.js (the ally's home engine) — added 2026-09-26 |
 
 Runbooks live in docs/runbooks/ (RUNBOOK-add-a-collection.md).
 

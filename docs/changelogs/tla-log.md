@@ -1,5 +1,28 @@
 # TLA Stats Changelog
 
+## T6.10 — 2026-09-26 — the Pools tab charts plot votes, 13 epochs
+
+- Owner: "shift the charts to show votes … all the pools in that bucket … how these votes move epoch to epoch … past 13 epochs."
+  Each bucket chart has a view select: **Votes (VP)** (default) · **Vote share %** · Liquidity & volume (the old chart). A vote view
+  draws one line per pool that had votes in any of the last 13 epochs, from `pool-status-history.json` (vp_human / bucket_pct at the
+  last reading of each epoch; migration corpses skipped; a gap = not on that ballot). The size select filters by latest share (≥ 5 % ·
+  1–5 % · < 1 %); the share view draws the 1 % line; the tooltip lists every pool largest first and flags inactive ones; clicking a point
+  opens that epoch's whole vote (T6.9). The open epoch is labeled "(so far)". Fixed: legend hover faded lines to an invalid colour.
+
+## T6.9 — 2026-09-26 — any past epoch's vote; bars stay in the card
+
+- A visitor asked "can you view TLA voting for previous epochs?" — Vote Breakdown gains a **Past epochs…** picker: every pool's VP at
+  the last reading of that epoch with the change against the epoch before (ghost). Who-voted splits (Votion / aDAO / others) are captured
+  live only, and the past view says so — never estimated. The pool drill-down links "See how every … pool was voted in a past epoch →"
+  and its chart points give each epoch's number on hover.
+- Bars no longer run off the card: the scale covers the locked-in outline (same rule as its ghost), widths clamp at 100 %, a long bar
+  carries its label inside.
+
+## T6.8 — 2026-09-25 — every pool named once, before anything keys on names
+
+- Owner: "is the Vote Market working?" A new pool the snapshot knew only by its raw address takes Votion's plan title or the catalog's
+  underlyings (the raw name kept as `name_raw`); a dewhitelisted twin gauge (LUNA-WBTC) is shown as "(old)" instead of hiding the live one.
+
 ## T6.7 — 2026-09-21 — pots price off the feed by the catalog symbol; the T6.5 page bridge is gone (TLA queue item 1)
 
 - network-and-prices 3.1.0 keys `token_prices` by the token-catalog symbol for the stables (USDC.n / USDt / EURe), so

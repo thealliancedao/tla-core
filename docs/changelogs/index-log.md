@@ -1,5 +1,20 @@
 # Index Page Changelog
 
+## index 4.38 → 4.40 · lib/alert-center.js 2.0.0 → 2.1.0 · lib/site-header.js 1.13.0 · lib/site-footer.js 3.8 — 2026-09-25 / 26 — Props window
+
+- **4.39 / alert-center 2.0.0** (2026-09-25, owner): the home window is PROPS across every DAO (the Ecosystem tile is off — too much to
+  maintain; `opts.ecosystem` brings it back): Live · Executed early · Veto lock flash while anything is open; Recently executed with 7- and
+  30-day counts; a vote whose end has passed is never LIVE (anchor-gov polls stay "Open" until someone calls end_poll — CAPA #13 read live a
+  year after its vote closed; 6 h slack on an estimated end); every prop card carries its state (vote bar, turnout vs quorum, the pass
+  line, time left). A device that chose another ally goes to that ally's home.
+- **4.40 / alert-center 2.1.0** (2026-09-26, owner: "why does the top prop have more details?"): every prop card decodes its own messages
+  when the capture has not (base64 wasm msgs → action + args, contract names from the catalog), and live cards read quorum + threshold from
+  the contract and carry the corpus card's full text — CAPA #16 and ampCAPA read like the rest.
+- site-header 1.13.0 (2026-09-24/25): the ally theme sets `--t-accent/--t-accent2` for every lib; the Home tabs and the logo go straight to
+  the selected ally's home (no aDAO flash); a quiet dark-gold rule instead of the yellow frame round the title bar.
+- site-footer 3.8 (2026-09-26 audit): Lion DAO pages link `liondao-log.md`.
+- Rev: both deliveries shipped without moving the footer; bumped to 4.40 at the 2026-09-26 audit.
+
 ## index 4.37 → 4.38 — 2026-09-21 — price seed looks feed entries up by denom
 
 - The CoinGecko-shaped price seed (volume displays, unclaimed rewards before CoinGecko answers) looked `token_prices` up by
