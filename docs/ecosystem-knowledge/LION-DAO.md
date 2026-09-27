@@ -1,6 +1,6 @@
 # Lion DAO — ecosystem knowledge
 
-Last reviewed 2026-09-26. For the help agent and anyone new. Every address here comes from
+Last reviewed 2026-09-26 (milestone close). For the help agent and anyone new. Every address here comes from
 `docs/curated/tenants.json` (tenant `liondao`); every figure names the product it comes from. A number that
 moves (price, supply, holders) must be read from its product, not from this page.
 
@@ -55,13 +55,15 @@ The ecosystem has five parts:
   - The frozen ledger: `lion-dao/burn/holders.json`. Its largest holders include contracts, which are labelled.
   - The pyROAR/ROAR pair: `terra1tfygnnp00grk33e0qtz7q5p3nvjkt2eeftefavum2jdq09kpunwqe0z7p3`.
   - pyROAR's USD price is that pair's ratio × ROAR's price. It is kept daily in `lion-dao/history/markets.json`.
+  - The pair is very thin: about **$7.50** of liquidity on 2026-09-26 (`pyroar_pair_depth_usd` in markets.json). Any pyROAR price is
+    that pool's ratio, and one small trade moves it — say so whenever you quote it. Its 24h volume is not captured.
 
 ## ROAR20 (Solana)
 
 - **Mint:** `3Egc6tdNcKZEfb4XDMPAktbrrpxSdyCtxxsoT3Rbpump`.
 - **Supply:** 1B minted with the mint authority revoked. Burns have lowered the live supply to about 975.6M; read `roar20/holders.json` → `token.supply`.
 - **Where it trades:** it graduated from pump.fun into a **Raydium AMM v4 pool**, `BnrDeofGKUH8kkMAV5dkXWbSe3pRmK5dtMsCygF12j25`.
-  - Liquidity is thin, so DexScreener, GeckoTerminal and Jupiter show no usable price.
+  - Liquidity is thin (about $6K on 2026-09-26), so DexScreener, GeckoTerminal and Jupiter show no usable price.
   - The platform reads the pool's reserves on chain every hour: `roar20/market.json` (price, market cap, liquidity, source) and `roar20/market-history.json` (hourly).
 - **Largest "holder":** the Raydium vault authority `5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1`. Its ROAR20 (roughly 73%) is the pool's liquidity, not a wallet's.
 - **Holders:** `roar20/holders.json` (from Helius, walked daily).
@@ -92,7 +94,7 @@ The ecosystem has five parts:
   | 3 | Ice and Fire | |
   | 4 | Chapter 11 | |
   | 5 | Year of the Dragon | |
-  | 6 | unknown | its metadata is unreachable on IPFS |
+  | 6 | unknown | its metadata is unreachable on IPFS; the holder will supply the file and name |
   | 7 | Blaze | the only animated one |
 
 - **Traits on the site:** Name and Animated (Yes/No). They are 1/1s, so there is no rarity rank.
@@ -116,11 +118,14 @@ The ecosystem has five parts:
 
 | Series | Product | Since |
 |---|---|---|
-| ROAR supply, ROAR staked, pyROAR supply, pixeLions staked, validator rank / LUNA / commission | `history/daily.json` | 2023-09 (weekly samples early on, daily from 2026-09-19) |
+| ROAR supply, ROAR staked, pyROAR supply, pixeLions staked, validator rank / LUNA / commission | `history/daily.json` | 2023-09 (weekly samples early on, daily from 2026-09-19; the hourly job adds each closed day) |
 | Prices (ROAR, pyROAR, ROAR20), holder counts, Burning Lions minted / holders | `history/markets.json` | 2026-09-26 |
 | ROAR20 price, hourly | `roar20/market-history.json` | 2026-09-26 |
 | The DAO's value by section | `positions/daily/index.json` | 2026-09-22 |
-| NFT floors | `nft-collections/<slug>/snapshots/floor-history.json` | per collection |
+| NFT floors | `nft-collections/<slug>/snapshots/floor-history.json` | per collection (Burning Lions from 2026-09-26) |
+
+On the Lion DAO home, every tile with one of these series has a chart button (7d / 30d / 90d / All). A series that is still filling
+says how many days it has.
 
 ## Words the site uses
 
