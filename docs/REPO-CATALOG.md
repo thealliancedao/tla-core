@@ -33,6 +33,14 @@ tenant-split decision, not assumed.
 governance}`. Currently README-only. aDAO = reference tenant; Lion-DAO
 placeholder. No writers yet.
 
+## Tenant folders added since the 2026-08-09 read (2026-09-26 addendum — the table above is the August state)
+- **nft-collections/burning-lions/** (2026-09-26): collection.json · images/ (mirrored, token_uri mode) · metadata/{metadata.json, tokens/} ·
+  snapshots/{nfts, summary, floor-history}.json · claims/history.json (org-nft-inventory-liondao). Also pixel-lions/, adao/ (migrated 09-13), tla-locks/.
+- **dao-originations/lion-dao/** (2026-09-21 →): positions/ (current, heartbeat, daily/) · burn/holders.json · roar20/{holders, market,
+  market-history}.json · roar/holders.json · history/{daily, markets}.json · holders-heartbeat.json · governance/ — all written by
+  org-ally-positions-liondao (governance by the dao-governance cron). Also phoenix-directive/governance/ (2026-09-23).
+- **tla-core/docs/ecosystem-knowledge/LION-DAO.md** (2026-09-26) — the ally's knowledge doc (help-agent corpus).
+
 ## ORG RENDER CRON CATALOG (module headers + observed heartbeat cadence)
 | Job (Render) | Purpose (its own header) | Writes (tla-core) | Observed cadence* |
 |---|---|---|---|
