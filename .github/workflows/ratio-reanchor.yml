@@ -1,0 +1,54 @@
+name: ratio-reanchor — LST ratios onto the chain reads (one-time)
+
+# ONE-OFF (workflow_dispatch, 2026-09-27 — Milestone A step 3 (i)). price-history/ratios' `interpolated` rows run
+# ampLUNA ~+10 % / bLUNA ~+5 % high in 2024–25; every LST USD row priced as BASE × ratio(interpolated) inherits it.
+# This rewrites them from dex-data/state-history's chain reads (one per epoch since E97), labeled in place
+# (tier chain_anchored + repair.was), fills the ratio days frozen since 2026-07-16, and never touches chain_exact rows or
+# measured USD rows. The rule lives in platform-crons dex-data/lib/ratio-anchor.js (checked out — no copy); dex-data's
+# weekly state-history duty uses the same file to keep the series going. Run DRY first and read the log; a re-run adds 0.
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Report only, write nothing'
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  reanchor:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout tla-core
+        uses: actions/checkout@v4
+      - name: Checkout platform-crons (the live ratio-anchor rule)
+        uses: actions/checkout@v4
+        with:
+          repository: thealliancedao/platform-crons
+          path: platform-crons
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Re-anchor
+        env:
+          DRY_RUN: ${{ inputs.dry_run && '1' || '0' }}
+          PLATFORM_CRONS_DIR: platform-crons
+          REPORT: reanchor-report.json
+        run: node .github/scripts/price-history/reanchor-ratios.mjs
+      - name: Upload report
+        uses: actions/upload-artifact@v4
+        with:
+          name: reanchor-report
+          path: reanchor-report.json
+      - name: Commit
+        if: ${{ !inputs.dry_run }}
+        run: |
+          git config user.name "ratio-reanchor"
+          git config user.email "actions@users.noreply.github.com"
+          git add price-history
+          git diff --cached --quiet && echo "nothing to commit" || git commit -m "price-history: LST ratios re-anchored on state-history chain reads (labeled repair; chain_exact + measured USD untouched)"
+          git push
