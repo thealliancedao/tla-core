@@ -1,4 +1,4 @@
-// ── Solid (CDP) discovery probe 1.2 (2026-09-28) · 1.2: cw20s get token_info/minter/balance only (no sweep); the fixture is saved after every phase and on cancel; MAX_MINUTES budget (40); tx_search one try per node, 20 s, scoped to the Overseer / liquidation contract · 1.1: seeded with the Overseer config the owner read; census of every borrower ─────────────────────────────────────────────────────────────────────────────────────
+// ── Solid (CDP) discovery probe 1.3 (2026-09-28) · 1.3: saves after every contract; the time budget and a contract cap are checked per contract; only the CDP core's answers are crawled · 1.2: cw20s get token_info/minter/balance only (no sweep); the fixture is saved after every phase and on cancel; MAX_MINUTES budget (40); tx_search one try per node, 20 s, scoped to the Overseer / liquidation contract · 1.1: seeded with the Overseer config the owner read; census of every borrower ─────────────────────────────────────────────────────────────────────────────────────
 // One-off, READ-ONLY on chain. Input: the owner's six test txs (2026-09-27 14:30–14:34Z: ampLUNA collateral deposit+lock, SOLID borrow,
 // repay, unlock+withdraw, bLUNA deposit+lock). From them it DISCOVERS every Solid contract the flow touches (Overseer and Collector
 // are only labels on explorers), then asks each contract what it answers:
@@ -48,10 +48,12 @@ async function getJson(url, tries = 4, timeoutMs = 30000) {
 }
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64');
 async function smart(addr, q) { await sleep(150); const r = await getJson(`${LCD}/cosmwasm/wasm/v1/contract/${addr}/smart/${b64(q)}`); return r.ok ? { ok: true, data: r.json && r.json.data } : { ok: false, error: `HTTP ${r.status}: ${r.body}` }; }
+const MAX_CONTRACTS = Number(process.env.MAX_CONTRACTS || 24);
+const CORE_RE = /OVERSEER|MARKET|CUSTODY|Custody|LIQUIDATION|ORACLE|oracle|COLLECTOR/;   // 1.3: only the CDP's own contracts name further contracts to follow (1.2 crawled into Capapult governance / staking / community and never finished a round)
 const T0 = Date.now(); const MAX_MIN = Number(process.env.MAX_MINUTES || 40); const overBudget = () => (Date.now() - T0) / 60000 > MAX_MIN;
 const save = () => { try { fs.mkdirSync(OUT.replace(/\/[^/]+$/, ''), { recursive: true }); out.elapsed_min = +((Date.now() - T0) / 60000).toFixed(1); fs.writeFileSync(OUT, JSON.stringify(out, null, 1) + '\n'); } catch (e) { console.error('save failed', e.message); } };
 for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => { out.notes.push('run cancelled (' + sig + ') — saved what it had'); save(); process.exit(0); });
-const out = { probe: 'solid-probe 1.2', ran_at: new Date().toISOString(), lcd: LCD, rpcs: RPCS.map(u => u.replace(/\/\/[^@/]*@/, '//')).map((u, i) => (i === 0 && process.env.ARCHIVE_RPC ? 'ARCHIVE_RPC (secret)' : u)), wallets: WALLETS, txs: {}, contracts: {}, history: {}, liquidation_samples: [], notes: [] };
+const out = { probe: 'solid-probe 1.3', ran_at: new Date().toISOString(), lcd: LCD, rpcs: RPCS.map(u => u.replace(/\/\/[^@/]*@/, '//')).map((u, i) => (i === 0 && process.env.ARCHIVE_RPC ? 'ARCHIVE_RPC (secret)' : u)), wallets: WALLETS, txs: {}, contracts: {}, history: {}, liquidation_samples: [], notes: [] };
 
 // 1. txs → contracts + actions + attribute keys
 const contracts = new Map();   // addr → { actions:Set, keys:{action:Set} , seen_in:[] }
@@ -93,9 +95,12 @@ for (let round = 0; round < 3; round++) {
   let added = 0;
   for (const [addr, x] of contracts) {
     if (out.contracts[addr] || skip.has(addr)) continue;
+    if (overBudget()) { out.notes.push('discovery stopped at the time budget'); break; }
+    if (Object.keys(out.contracts).length >= MAX_CONTRACTS) { out.notes.push(`discovery capped at ${MAX_CONTRACTS} contracts`); break; }
     const p = await probeOne(addr); p.events = { actions: [...x.actions], attribute_keys: x.keys, seen_in: [...x.seen_in] }; out.contracts[addr] = p; added++;
     console.log(`  ${addr.slice(0, 16)}… ${p.label || '?'} (code ${p.code_id}) · ${p.query_variants.length} query variants · ${Object.keys(p.answers).length} answers`);
-    if (p.kind !== 'cw20') for (const v of Object.values(p.answers)) { const s = JSON.stringify(v || {}); for (const m of s.matchAll(/"(terra1[0-9a-z]{58})"/g)) if (!contracts.has(m[1]) && !skip.has(m[1]) && !WALLETS.includes(m[1])) contracts.set(m[1], { actions: new Set(), keys: {}, seen_in: new Set(['named by ' + addr.slice(0, 16)]) }); }
+    save();   // 1.3: after EVERY contract — a cancelled run keeps what it read
+    if (p.kind !== 'cw20' && CORE_RE.test(p.label || '')) for (const v of Object.values(p.answers)) { const s = JSON.stringify(v || {}); for (const m of s.matchAll(/"(terra1[0-9a-z]{58})"/g)) if (!contracts.has(m[1]) && !skip.has(m[1]) && !WALLETS.includes(m[1])) contracts.set(m[1], { actions: new Set(), keys: {}, seen_in: new Set(['named by ' + addr.slice(0, 16)]) }); }
   }
   save();
   if (!added || overBudget()) break;
@@ -103,12 +108,13 @@ for (let round = 0; round < 3; round++) {
 // 4b. CENSUS — every borrower, from the contracts themselves (Overseer all_collaterals; any *_infos / borrowers list), paged by
 //     start_after until a short page; every collateral token named gets token_info (three are not in our token catalog yet)
 out.census = {};
-const pageAll = async (addr, variant, keyOf) => { const rows = []; let after = null; for (let p = 0; p < 300; p++) { const arg = { limit: 30 }; if (after) arg.start_after = after; const r = await smart(addr, { [variant]: arg }); if (!r.ok) return { rows, error: r.error.slice(0, 300), pages: p }; const list = Object.values(r.data || {}).find(Array.isArray) || []; rows.push(...list); if (list.length < 30) return { rows, pages: p + 1 }; after = keyOf(list[list.length - 1]); if (!after) return { rows, pages: p + 1, note: 'no start_after key in the last row' }; } return { rows, pages: 300, note: 'page cap' }; };
+const pageAll = async (addr, variant, keyOf) => { const rows = []; let after = null; for (let p = 0; p < 300; p++) { if (overBudget()) return { rows, pages: p, note: 'stopped at the time budget' }; const arg = { limit: 30 }; if (after) arg.start_after = after; const r = await smart(addr, { [variant]: arg }); if (!r.ok) return { rows, error: r.error.slice(0, 300), pages: p }; const list = Object.values(r.data || {}).find(Array.isArray) || []; rows.push(...list); if (list.length < 30) return { rows, pages: p + 1 }; after = keyOf(list[list.length - 1]); if (!after) return { rows, pages: p + 1, note: 'no start_after key in the last row' }; } return { rows, pages: 300, note: 'page cap' }; };
 for (const [addr, c] of Object.entries(out.contracts)) for (const v of c.query_variants) {
   if (!/^(all_collaterals|borrower_infos|borrowers|all_borrowers|all_bids|bids_by_user)$/.test(v)) continue;
   const res = await pageAll(addr, v, (row) => row.borrower || row.address || row.user || row.idx || row.bid_idx || null);
   out.census[`${addr} ${v}`] = { contract_label: c.label, rows: res.rows.length, pages: res.pages, error: res.error, note: res.note, data: res.rows };
   console.log(`  census ${c.label || addr.slice(0, 12)} ${v}: ${res.rows.length} rows${res.error ? ' (error: ' + res.error.slice(0, 80) + ')' : ''}`);
+  save();
 }
 const collTokens = new Set(); for (const c of Object.values(out.census)) for (const row of c.data || []) for (const pair of (row.collaterals || [])) if (Array.isArray(pair)) collTokens.add(pair[0]);
 out.collateral_tokens = {}; for (const t of collTokens) { const ti = await smart(t, { token_info: {} }); const mi = await getJson(`${LCD}/cosmwasm/wasm/v1/contract/${t}`); out.collateral_tokens[t] = { token_info: ti.ok ? ti.data : { error: ti.error }, label: mi.ok ? mi.json.contract_info.label : null }; }
