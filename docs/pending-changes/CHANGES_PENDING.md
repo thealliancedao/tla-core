@@ -1,5 +1,51 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER 2026-09-28 — IN PROGRESS: "The Member Portfolio" (Milestone A step 3) — handover for a chat move (the 2026-09-27 ledger stays below)
+
+The descriptive handover is `docs/pending-changes/HANDOVER-portfolio-2026-09-28.md`. Two new specs: `SPEC-portfolio-solid.md` (the Solid
+card) and `SPEC-deep-history.md` (who qualifies for deep history, the one-time backfill across every domain, forward-only after). The
+milestone is NOT closed — the owner walks the page, we add what is missing, THEN the deep backfill, THEN the docs bulk.
+
+### OWNER TO-DO (in order)
+0. **Audit 2026-09-28 ~11:00Z:** the platform-crons and aDAO-links-site batches (custody, receipt tracing, Votion 1.5.1, portfolio 3.8) and
+   the Solid registry are ON MAIN. Still to commit — the final batch: **platform-crons** capture-engine 1.2.1 (single-asset cw20 gauges —
+   the GMC finding) + member-data 1.4.1 + ally-positions 1.5.4 (rebuild) + mock-run-singles.js; **tla-core** known_contracts (+ GMC DAOs,
+   GMC BTC Backing Treasury, Galactic Punks) + the two specs + the handover + this ledger.
+1. (done except the final batch above) Commit the three 2026-09-28 ZIPs if not yet: **platform-crons** (13 files — capture-engine 1.2 custody, config CUSTODIANS + SOLID,
+   member-data 1.4.0, ally-positions 1.5.3, tla-flows pnl 1.2.4, org-votion 1.5.1, gates), **aDAO-links-site** (member-portfolio 3.8 +
+   lib/portfolio-pnl.js 1.5.0 + gate — ONE commit), **tla-core** (known_contracts +24, queries.md §19, SPEC-portfolio-coverage) — and this
+   docs ZIP (the two specs, the handover, this ledger).
+2. Render: confirm member-data, ally-positions, org-tla-flows and org-votion rebuilt (each has a change inside its folder). Optional: set
+   `PNL=force` once on org-tla-flows so the "sent to" names appear now (then remove it).
+3. Check live: votion/holder-pnl/current.json exists after the next org-votion run; the portfolio's Votion cards tell the story; the
+   LP card shows "STAKED IN A DAO"; the IBC-address suggestions find your real osmo1 / cosmos1 addresses.
+4. Tell us whose `terra1jd2tam4svukk7pg8fv0dkj7zgwes9yw5c2h3wm0gkjcwdth2mpfsxxw6zd` is (holds 8 TLA locks; your wBTC.osmo-wBTC.axl receipt).
+5. ~~Answer SPEC-deep-history §6~~ — answered 2026-09-28 (folded in). Deep history moves UP the queue: the archive node may be lost, so the
+   eligibility product + the RAW capture (§8) come before finishing the page.
+6. Still unconfirmed from earlier: liondao-history-backfill for 09-26/27; tla-locks nft-flows-derive → BY_*_ALL → locks-anchor top-up.
+
+### PRE-EXISTING REDS (not this work — queue)
+ally-positions mock-run 4 fixture checks · tla-alerts calibration (pool_apr_move 12.8/month > 12) · mock-run-trusted "Skip router NOT in
+addresses" (live-data drift) · gate-tla-stats round-200 fixtures (from 09-27).
+
+### NEW LAWS (2026-09-28)
+- **A receipt that left by transfer is neither a deposit nor a withdrawal.** The chain read decides "in this wallet now"; a custodian keeps
+  it held; anything else is moved — shown with where it went and left out of Open now.
+- **A custodian's stake is the member's.** Counted once, in every total, and on every past day.
+- **A price the pool cannot pay is not a value.** Illiquid holdings show what they would fetch and stay out of totals.
+- **Idle is a warning.** LP in the wallet, collateral deposited but not locked — say what it is not earning.
+- **An APR over part of the capital is left blank, never inflated.**
+- **A gate on an hourly job must not sit on the hour** (the 20 h gate missed by 0.6 s).
+- **The rules decide what we compute, not who may look** — anything in tla-core is public.
+
+### SESSION OPENER (next chat)
+"Read PROJECT_KNOWLEDGE + CHANGES_PENDING (top: OPEN LEDGER 2026-09-28) + HANDOVER-portfolio-2026-09-28 + SPEC-portfolio-solid +
+SPEC-deep-history (fresh pull, not attached). Verify live: org-votion wrote votion/holder-pnl; the portfolio shows the Votion story, the
+STAKED IN A DAO panel, 'sent to …' on the moved row. Then (1) the deep-history eligibility product + cohort size (SPEC-deep-history
+§1, §10) and the RAW capture design (§8) — the archive node is the scarce thing; (2) the Solid card per SPEC-portfolio-solid (find one
+liquidation tx first); (3) name terra1jd2tam…6zd from its contract_info; (4) walk the page with the owner for anything missing. Each: gate green on real data, one ZIP per
+repo of only the files that differ from main, a page and its lib in one commit."
+
 ## OPEN LEDGER 2026-09-27 — MILESTONE CLOSE: "The Vote Market — a bribe & vote simulator on one engine: page, TLA Stats tile, app tab, help bot" (supersedes 2026-09-26; that ledger stays below)
 
 The descriptive handover is `docs/pending-changes/HANDOVER-vote-market-2026-09-27.md` (the model, where each piece lives, findings,
