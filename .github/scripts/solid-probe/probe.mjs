@@ -1,4 +1,4 @@
-// ── Solid (CDP) discovery probe 1.1 (2026-09-27) · 1.1: seeded with the Overseer config the owner read; census of every borrower ─────────────────────────────────────────────────────────────────────────────────────
+// ── Solid (CDP) discovery probe 1.2 (2026-09-28) · 1.2: cw20s get token_info/minter/balance only (no sweep); the fixture is saved after every phase and on cancel; MAX_MINUTES budget (40); tx_search one try per node, 20 s, scoped to the Overseer / liquidation contract · 1.1: seeded with the Overseer config the owner read; census of every borrower ─────────────────────────────────────────────────────────────────────────────────────
 // One-off, READ-ONLY on chain. Input: the owner's six test txs (2026-09-27 14:30–14:34Z: ampLUNA collateral deposit+lock, SOLID borrow,
 // repay, unlock+withdraw, bLUNA deposit+lock). From them it DISCOVERS every Solid contract the flow touches (Overseer and Collector
 // are only labels on explorers), then asks each contract what it answers:
@@ -37,10 +37,10 @@ const SEED = {
 const KNOWN = { SOLID: 'terra10aa3zdkrc7jwuf8ekl3zq7e7m42vmzqehcmu74e4egc7xkm5kr2s0muyst', AMPLUNA: 'terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct', BLUNA: 'terra17aj4ty4sz4yhgm08na8drc0v03v2jwr3waxcqrwhajj729zhl7zqnpc0ml' };
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const UA = 'thealliancedao.com solid-probe/1.0 (one-off; contact via the site)';
-async function getJson(url, tries = 4) {
+async function getJson(url, tries = 4, timeoutMs = 30000) {
   let last = null;
   for (let i = 0; i < tries; i++) {
-    try { const r = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': UA }, signal: AbortSignal.timeout(30000) }); const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch { } if (r.ok) return { ok: true, json: j }; last = { ok: false, status: r.status, body: (j && (j.message || j.error)) || t.slice(0, 400) }; if (r.status < 500 && r.status !== 429) return last; }
+    try { const r = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': UA }, signal: AbortSignal.timeout(timeoutMs) }); const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch { } if (r.ok) return { ok: true, json: j }; last = { ok: false, status: r.status, body: (j && (j.message || j.error)) || t.slice(0, 400) }; if (r.status < 500 && r.status !== 429) return last; }
     catch (e) { last = { ok: false, status: 0, body: e.message }; }
     await sleep(1000 * (i + 1) * 2);
   }
@@ -48,7 +48,10 @@ async function getJson(url, tries = 4) {
 }
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64');
 async function smart(addr, q) { await sleep(150); const r = await getJson(`${LCD}/cosmwasm/wasm/v1/contract/${addr}/smart/${b64(q)}`); return r.ok ? { ok: true, data: r.json && r.json.data } : { ok: false, error: `HTTP ${r.status}: ${r.body}` }; }
-const out = { probe: 'solid-probe 1.1', ran_at: new Date().toISOString(), lcd: LCD, rpcs: RPCS.map(u => u.replace(/\/\/[^@/]*@/, '//')).map((u, i) => (i === 0 && process.env.ARCHIVE_RPC ? 'ARCHIVE_RPC (secret)' : u)), wallets: WALLETS, txs: {}, contracts: {}, history: {}, liquidation_samples: [], notes: [] };
+const T0 = Date.now(); const MAX_MIN = Number(process.env.MAX_MINUTES || 40); const overBudget = () => (Date.now() - T0) / 60000 > MAX_MIN;
+const save = () => { try { fs.mkdirSync(OUT.replace(/\/[^/]+$/, ''), { recursive: true }); out.elapsed_min = +((Date.now() - T0) / 60000).toFixed(1); fs.writeFileSync(OUT, JSON.stringify(out, null, 1) + '\n'); } catch (e) { console.error('save failed', e.message); } };
+for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => { out.notes.push('run cancelled (' + sig + ') — saved what it had'); save(); process.exit(0); });
+const out = { probe: 'solid-probe 1.2', ran_at: new Date().toISOString(), lcd: LCD, rpcs: RPCS.map(u => u.replace(/\/\/[^@/]*@/, '//')).map((u, i) => (i === 0 && process.env.ARCHIVE_RPC ? 'ARCHIVE_RPC (secret)' : u)), wallets: WALLETS, txs: {}, contracts: {}, history: {}, liquidation_samples: [], notes: [] };
 
 // 1. txs → contracts + actions + attribute keys
 const contracts = new Map();   // addr → { actions:Set, keys:{action:Set} , seen_in:[] }
@@ -69,6 +72,10 @@ const probeOne = async (addr) => {
   const variants = await smart(addr, { __probe__: {} });
   const vs = (() => { const m = String(variants.error || '').match(/expected (?:one of )?(.+?)(?::|$| at line)/); return m ? [...m[1].matchAll(/`([a-z0-9_]+)`/g)].map(x => x[1]) : []; })();
   const answers = {};
+  if (vs.includes('token_info')) {   // 1.2: a cw20 (LunaX, wrapped tokens, SOLID) — name, decimals, minter, the probe wallets' balances; no sweep
+    for (const q of [{ token_info: {} }, { minter: {} }, ...WALLETS.map(w => ({ balance: { address: w } }))]) { const r = await smart(addr, q); answers[JSON.stringify(q)] = r.ok ? r.data : { error: r.error.slice(0, 200) }; }
+    return { label: ci && ci.label, code_id: ci && ci.code_id, admin: ci && ci.admin, creator: ci && ci.creator, kind: 'cw20', query_variants: vs, answers };
+  }
   for (const v of vs.slice(0, 40)) {
     const tries = [{}]; for (const w of WALLETS) tries.push({ borrower: w }, { address: w }, { user: w });
     tries.push({ limit: 30 });
@@ -88,9 +95,10 @@ for (let round = 0; round < 3; round++) {
     if (out.contracts[addr] || skip.has(addr)) continue;
     const p = await probeOne(addr); p.events = { actions: [...x.actions], attribute_keys: x.keys, seen_in: [...x.seen_in] }; out.contracts[addr] = p; added++;
     console.log(`  ${addr.slice(0, 16)}… ${p.label || '?'} (code ${p.code_id}) · ${p.query_variants.length} query variants · ${Object.keys(p.answers).length} answers`);
-    for (const v of Object.values(p.answers)) { const s = JSON.stringify(v || {}); for (const m of s.matchAll(/"(terra1[0-9a-z]{58})"/g)) if (!contracts.has(m[1]) && !skip.has(m[1]) && !WALLETS.includes(m[1])) contracts.set(m[1], { actions: new Set(), keys: {}, seen_in: new Set(['named by ' + addr.slice(0, 16)]) }); }
+    if (p.kind !== 'cw20') for (const v of Object.values(p.answers)) { const s = JSON.stringify(v || {}); for (const m of s.matchAll(/"(terra1[0-9a-z]{58})"/g)) if (!contracts.has(m[1]) && !skip.has(m[1]) && !WALLETS.includes(m[1])) contracts.set(m[1], { actions: new Set(), keys: {}, seen_in: new Set(['named by ' + addr.slice(0, 16)]) }); }
   }
-  if (!added) break;
+  save();
+  if (!added || overBudget()) break;
 }
 // 4b. CENSUS — every borrower, from the contracts themselves (Overseer all_collaterals; any *_infos / borrowers list), paged by
 //     start_after until a short page; every collateral token named gets token_info (three are not in our token catalog yet)
@@ -106,22 +114,29 @@ const collTokens = new Set(); for (const c of Object.values(out.census)) for (co
 out.collateral_tokens = {}; for (const t of collTokens) { const ti = await smart(t, { token_info: {} }); const mi = await getJson(`${LCD}/cosmwasm/wasm/v1/contract/${t}`); out.collateral_tokens[t] = { token_info: ti.ok ? ti.data : { error: ti.error }, label: mi.ok ? mi.json.contract_info.label : null }; }
 // 5. history size + liquidation samples (tx_search)
 async function txsearch(q, perPage = 1, order = 'desc', page = 1) {
-  for (const rpc of RPCS) { const r = await getJson(`${rpc}/tx_search?query=${encodeURIComponent('"' + q + '"')}&per_page=${perPage}&page=${page}&order_by=%22${order}%22`); if (r.ok && r.json && r.json.result) return { rpc: rpc === RPCS[0] && process.env.ARCHIVE_RPC ? 'archive' : 'public', total: Number(r.json.result.total_count), txs: r.json.result.txs }; }
+  for (const rpc of RPCS) { if (overBudget()) return null; const r = await getJson(`${rpc}/tx_search?query=${encodeURIComponent('"' + q + '"')}&per_page=${perPage}&page=${page}&order_by=%22${order}%22`, 1, 20000); if (r.ok && r.json && r.json.result) return { rpc: rpc === RPCS[0] && process.env.ARCHIVE_RPC ? 'archive' : 'public', total: Number(r.json.result.total_count), txs: r.json.result.txs }; }
   return null;
 }
 const liqActions = new Set();
-for (const addr of Object.keys(out.contracts)) {
+save();
+const core = Object.keys(out.contracts).filter(a => out.contracts[a].kind !== 'cw20');
+for (const addr of core) {
+  if (overBudget()) { out.notes.push('history counts stopped at the time budget'); break; }
   const all = await txsearch(`wasm._contract_address='${addr}'`); out.history[addr] = { all_txs: all ? all.total : null, via: all && all.rpc, by_action: {} };
-  if (all && all.total) { const first = await txsearch(`wasm._contract_address='${addr}'`, 1, 'asc'); if (first && first.txs[0]) out.history[addr].first_tx = { hash: first.txs[0].hash, height: Number(first.txs[0].height) }; }
   for (const a of out.contracts[addr].events.actions) { for (const one of a.split('+')) { const r = await txsearch(`wasm._contract_address='${addr}' AND wasm.action='${one}'`); out.history[addr].by_action[one] = r ? r.total : null; } }
   for (const v of out.contracts[addr].query_variants) if (/liquidat/.test(v)) liqActions.add(v);
 }
+save();
+const LIQ = Object.keys(out.contracts).find(a => /LIQUIDATION/i.test(out.contracts[a].label || '')) || SEED.liquidation_queue;
+{ const r = await txsearch(`wasm._contract_address='${LIQ}'`, 5, 'desc'); if (r) { out.history['liquidation_contract_recent'] = { total: r.total, via: r.rpc }; for (const t of r.txs || []) out.liquidation_samples.push({ action: 'liquidation contract tx', hash: t.hash, height: Number(t.height), events: (t.tx_result.events || []).filter(e => /^wasm/.test(e.type)).map(e => ({ type: e.type, attributes: e.attributes.map(a => ({ key: a.key, value: a.value })) })) }); } }
+const OV = Object.keys(out.contracts).find(a => /OVERSEER/i.test(out.contracts[a].label || '')) || SEED.overseer;
 for (const act of ['liquidate_collateral', 'liquidate', 'execute_bid', 'execute_liquidation', ...liqActions]) {
-  const r = await txsearch(`wasm.action='${act}'`, 3, 'desc'); if (!r) continue;
+  if (overBudget()) break;
+  const r = await txsearch(`wasm._contract_address='${OV}' AND wasm.action='${act}'`, 3, 'desc') || await txsearch(`wasm._contract_address='${LIQ}' AND wasm.action='${act}'`, 3, 'desc'); if (!r) continue;
   out.history['action:' + act] = { total: r.total, via: r.rpc };
   for (const t of (r.txs || []).slice(0, 3)) out.liquidation_samples.push({ action: act, hash: t.hash, height: Number(t.height), events: (t.tx_result.events || []).filter(e => /^wasm/.test(e.type)).map(e => ({ type: e.type, attributes: e.attributes.map(a => ({ key: a.key, value: a.value })) })) });
 }
 if (!out.liquidation_samples.length) out.notes.push('no liquidation found by action name on the RPCs searched — the event vocabulary for liquidations is still unknown');
-fs.mkdirSync(OUT.replace(/\/[^/]+$/, ''), { recursive: true }); fs.writeFileSync(OUT, JSON.stringify(out, null, 1) + '\n');
+save();
 console.log(`\nsolid-probe: ${Object.keys(out.txs).length} txs · ${Object.keys(out.contracts).length} contracts · ${out.liquidation_samples.length} liquidation samples → ${OUT}`);
 for (const [a, c] of Object.entries(out.contracts)) console.log(`  ${a} ${c.label || '?'} · events ${c.events.actions.join(', ') || '—'} · history ${out.history[a] && out.history[a].all_txs}`);
