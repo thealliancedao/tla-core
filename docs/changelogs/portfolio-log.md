@@ -2,6 +2,34 @@
 
 ---
 
+## Rev 3.0 → 3.8 — 2026-09-27 / 28 — the Member Portfolio rebuilt: P&L two ways, every card honest (Milestone A step 3, in progress)
+
+The page was rebuilt on build-pnl v3 (tla-flows) and a set of shared libs (`lib/portfolio-pnl.js` 1.0.0 → 1.5.0, `lib/denoms.js`,
+`lib/vote-market.js`, `lib/winddown.js`). Owner-driven, card by card; each rev gated on real data (gate-portfolio-pnl.mjs, 77 checks at 3.8).
+
+- **3.8** — receipts staked in a DAO (the ampCAPA DAO) are a POSITION: their own cyan "STAKED IN A DAO" panel under LP positions (from the
+  feed at once, live chain read replaces it), counted once in the LP tile, the banner, "what you hold" and on every trend day (days
+  captured before capture-engine 1.2 get the stake from the CAPA supply history × CAPA's price that day). A moved-out LP row says where
+  the receipt went — the registry's name, the address, the day, the tx (tla-flows pnl 1.2.4). Other Cosmos addresses are found in the
+  wallet's own IBC transfers and offered as one-tap links (never auto-linked). Trend chips compare like with like.
+- **3.7** — trust pass: the P&L's open lots are checked against the hourly chain read — a receipt held by a custodian counts at its live
+  value (P&L only on the part with a known cost; the rest valued, kept out of the P&L), one sent elsewhere reads "⚠ not in this wallet"
+  and leaves Open now. APR left blank when a trip had no price (never inflated); the all-LPs APR says how many positions it covers.
+  LP tokens sitting in the wallet warned + valued (no TLA rewards). Illiquid holdings (pyROAR) shown with what selling into their pool
+  would fetch and kept out of the new Liquid total.
+- **3.6** — wallet balances read every cw20 live (catalog + registry known_cw20s; pyROAR priced from its pair × ROAR, labelled);
+  unpriced tokens listed, not just counted; other Cosmos chains (derived + linked, Injective link-only), per-wallet links.
+- **3.5 / 3.5.1** — LP positions by bucket: in / out / open / P&L incl. rewards / APR earned (capital × days) / LP since entry
+  (take-rate drag + the top-up that restores it; amplifier compounding); closed folded; a large all-LPs total; dust (< $1) with the closed.
+- **3.4** — vote card: what the votes WILL earn at the close vs what the best split COULD (the Vote Market engine), per bucket + total.
+- **3.3** — vote allocations with expected bribes and simulate links; the Votion story per position (USD in → now split into LUNA
+  price / LST staking / Votion compounding; LUNA in → now; real vs advertised APR — votion/holder-pnl); balances named and scaled
+  by the catalog (PAXG no longer $3.19B), dust under $2 folded.
+- **3.2** — live on TLA Stats' tab bar; opens asking for a wallet (no pre-picked demo wallets).
+- **3.1** — the NFT leg: each aDAO / Pixel Lions NFT against what was paid, marked at the conservative floor, round trips sold.
+- **3.0** — the P&L from build-pnl v3: net in USD and LUNA with the prices / pool / rewards / open split, a value curve per epoch, every
+  position with its round trips, USDC.n flagged; the Phase A story stays as the fallback.
+
 ## Rev 2.6 — 2026-08-21 — unified chrome
 
 Header picker is the page's address input (Paste/View/Save card hidden; the old

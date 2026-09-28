@@ -4,6 +4,17 @@ Owner: `platform-crons/votion/` (Render job `org-votion`, hourly at :20).
 Writes `tla-core/votion/`. Spec: SPEC-votion-capture.md (G2 from
 UI-DATA-READINESS — the data-loss-clock gap).
 
+# org-votion 1.5.0 → 1.5.1 — 2026-09-28 — the holder P&L (every position's story)
+
+- **1.5.1** — the daily positions gate at 19.5 h (20 h was missed by 0.6 s by the hourly job — 19 h 59 m 59.4 s — and waited an extra
+  hour); the heartbeat records `holder_pnl_at`, and a never-built holder P&L is built at once from the committed positions snapshot.
+  First build 2026-09-28T10:20Z. Gate mock-run.js 53/53 (R10).
+- **1.5.0** — Branch E after every daily B: `votion/holder-pnl/current.json` — each holder's deposit lots (FIFO), cost at entry in USD /
+  LUNA / LST, the Δ split into LUNA price / LST staking / Votion compounding (legs sum exact), realized Votion APR vs the advertised
+  30-day APR, untracked vTokens and unexplained outflows reported (never a phantom basis). holder-pnl.js 1.0.0; gate
+  mock-run-holder-pnl.js 7/7 (302 priced lots, 30/30 positions fully explained).
+
+
 # votion/backtest 1.0.0 — 2026-09-27 — Votion's move rule, fitted from its own history (not a cron; a re-runnable script)
 
 `votion/backtest/move-rule.json` + `backtest-move-rule.py`. Every captured optimizer diff in the git history of

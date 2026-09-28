@@ -1,5 +1,11 @@
 # Index Page Changelog
 
+## ampcapa-tool Rev 2.3 → 2.4 — 2026-09-28 — CAPA in dollars
+
+- A "CAPA price" card (org token catalog — the TLA price, CoinGecko fallback) with the ampCAPA and ampLP prices it implies; a USD column
+  beside CAPA in the DAO members table and its CSV; the total CAPA with its USD; the converter prints the USD of a pasted ampLP balance
+  (the owner's 3,357,642,280,765 amplp → 7.68M CAPA ≈ $9,685.67). No price → "—", never guessed. Gate gate-ampcapa-whales 54/54 (M9).
+
 ## index 4.38 → 4.40 · lib/alert-center.js 2.0.0 → 2.1.0 · lib/site-header.js 1.13.0 · lib/site-footer.js 3.8 — 2026-09-25 / 26 — Props window
 
 - **4.39 / alert-center 2.0.0** (2026-09-25, owner): the home window is PROPS across every DAO (the Ecosystem tile is off — too much to

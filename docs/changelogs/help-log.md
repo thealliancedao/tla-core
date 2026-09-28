@@ -1,6 +1,24 @@
 # Help Page Changelog
 
 
+## v1.17.0 — 2026-09-28 — the Member Portfolio: answers, diagnosis, and what to report
+
+- Owner: "the bot should answer questions about their portfolio or others', who to follow or copy for a strategy, what we show and where
+  the data comes from, and errors or data that may be wrong — diagnose it, say why it is right or wrong, and if wrong what to send me".
+- New tool **`portfolio`** (`help-agent/lib/portfolio-tool.js` 1.0.0): one wallet, read from the SAME products the page renders — the hourly
+  record (totals incl. receipts staked in a DAO, locks, LP, wallet, Credia, VP), live LP rows (active / inactive / distance to the 1% line),
+  the P&L ledger (net USD + LUNA; open / flagged / top closed positions with not held, held in a custodian, where a receipt went, disputed,
+  unpriced trips), the Votion stories, and each product's freshness. It returns coded findings — CUSTODY_DAO, MOVED_RECEIPT,
+  HELD_IN_CUSTODIAN, DISPUTED, APR_BLANK_UNPRICED, UNITS_BEFORE_CAPTURE, INACTIVE_LP, AT_RISK_LP, CREDIA_HEALTH_LOW,
+  LEDGER_OPEN_NOT_ON_CHAIN, CUSTODY_MISSING, UNKNOWN_LP_ROW, STALE_PRODUCT, NOT_TRACKED, VOTION_* — each "known" (documented behavior),
+  "check" (worth attention) or "fault", and a report block (where to send it, what to include) whenever something is a fault.
+- **Rule 17**: portfolio questions go through the tool; answer what the page shows → why → right or wrong; a fault gets the exact report
+  (the Help page form or @DeFi_Patriot: wallet, card + number, expectation, finding code, product path + capturedAt); other wallets
+  described as facts, never "copy this" and never a self-made ranking; leaderboards, deep history and the Solid card are PLANNED.
+- Corpus: `docs/ecosystem-knowledge/member-portfolio.md` (every card, source, cadence, honesty rules, the diagnosis table) +
+  SPEC-deep-history + SPEC-portfolio-solid. Battery T13–T16. Gate `gate-portfolio-tool.mjs` 10/10 on real data (owner custody + the
+  moved wBTC receipt named; the GMC Backing Wallet's active wBTC.creda.a backing; untracked wallet; stale → fault with the report block).
+
 ## v1.16.0 — 2026-09-27 — the Vote Market tool
 
 - Owner: "make sure we get this tool and its functionality added to the bot". New tool **`vote_market`** runs the site's OWN engine

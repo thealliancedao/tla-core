@@ -1,6 +1,19 @@
 # docs / ecosystem-knowledge — changelog
 
 
+## 2026-09-28 — Member Portfolio docs: Solid registered, custodians, deep-history + Solid specs, the bot's portfolio chapter
+
+- `docs/curated/known_contracts.json` +30: Solid (Capapult CDP — overseer, market, liquidation queue, collector, oracles v1/v2, 8
+  custodies, SOLID + collateral cw20s, fee recipients; from solid-probe 1.3), the ampCAPA DAO voting module (custodian), Galactic Mining
+  Club (DAO current + old, Council, the BTC Backing Treasury = "GMC Backing Wallet"), Galactic Punks DAO. `docs/curated/wallets.json`:
+  the GMC Backing Wallet (address picker).
+- `docs/queries.md` §19 Solid — query shapes, events, gotchas (deposited ≠ locked; oracle unit unconfirmed; liquidation events unseen).
+- `docs/fixtures/2026-09-28/solid-probe.json` (the probe's own commit).
+- `docs/pending-changes/SPEC-portfolio-solid.md`, `SPEC-deep-history.md` (owner answers folded in), `HANDOVER-portfolio-2026-09-28.md`,
+  CHANGES_PENDING OPEN LEDGER 2026-09-28.
+- `docs/ecosystem-knowledge/member-portfolio.md` — the portfolio page for the help bot: every card, its source and cadence, the
+  honesty rules, and the diagnosis table (symptom → cause → how to verify → when to report).
+
 ## 2026-09-27 — the Vote Market milestone docs bulk
 
 `tla-docs-content.json` 1.2 (new guide section **Vote Market & Bribes**; Votion section rewritten on what its history shows) ·

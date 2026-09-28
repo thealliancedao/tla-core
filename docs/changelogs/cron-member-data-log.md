@@ -1,5 +1,19 @@
 # cron-member-data — changelog
 
+## 1.3.0 → 1.4.1 — 2026-09-27 / 28 — Credia for every participant · custody in every total · single-asset gauges valued
+
+- **1.4.1** (capture-engine 1.2.1) — single-asset cw20 gauges (wBTC.creda.a) were looked up only by LP-token address → every holder
+  read "unknown, $0" (7 rows; found on the GMC Backing Wallet, 0.3971 wBTC.creda.a ≈ $33.1K). Now found by gauge id `cw20:<addr>`
+  and, with no symbol price, priced decimals-free from the pool row (user_lp × staked_in_tla_usd ÷ amp_lp.underlying_lp_amount) —
+  the old path assumed 6 decimals (100× on an 8-decimal token). `amplifiedPosition()` pure + exported; gate mock-run-singles.js 5/5.
+- **1.4.0** (capture-engine 1.2) — receipts held by a CUSTODIAN (config CUSTODIANS: the ampCAPA DAO voting module, measured by
+  token-catalog/supply/capa/wallets.json) count in every member's `portfolio.custody[]`, `summary.custody_usd` and
+  `total_portfolio_value_usd` (`summary.total_includes_custody` so no reader adds it twice). Owner $7,156 → $16,854; 25 wallets.
+  Gate mock-run-custody.js 6/6. config gains `CUSTODIANS` and `SOLID` (the Capapult CDP set).
+- **1.3.0** — tla-participants: every participant's Credia position (supplied / borrowed / health, Credia-oracle USD) via
+  lib/credia-reader.js; gate mock-run-credia.js 7/7.
+- Shared-lib note: ally-positions carries version bumps (1.5.2 → 1.5.4) purely so Render rebuilds it with the engine.
+
 ## 1.2.1 — 2026-09-21 — stables named by the catalog symbol (TLA queue item 1)
 
 - tla-snapshot `IBC_REGISTRY`: USDC → USDC.n, USDT → USDt, EURE → EURe (the PriceResolver's direct lookup against
