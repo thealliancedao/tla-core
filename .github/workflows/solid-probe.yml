@@ -4,9 +4,22 @@ name: Solid Probe
 # discovers every Solid contract they touch (Overseer / Collector are labels on explorers), lists each contract's query variants,
 # asks every variant for the probe wallets, and counts the history per contract and action (tx_search; ARCHIVE_RPC when set).
 # Commits ONE file: docs/fixtures/<date>/solid-probe.json — the real shapes the Solid reader is built on. Nothing else is written.
+# 1.4 (2026-09-28): mode "liquidations" — the full census (paged to the end) + every liquidation-queue tx's action set + verbatim liquidation
+# txs (the event vocabulary the Solid history is built on) → docs/fixtures/<date>/solid-liquidations.json. Pick it in the Run menu.
 on:
   workflow_dispatch:
     inputs:
+      mode:
+        description: 'probe = the 1.3 discovery · liquidations = census + liquidation txs (1.4)'
+        required: false
+        type: choice
+        options: ['liquidations', 'probe']
+        default: 'liquidations'
+      max_pages:
+        description: 'liquidations mode: pages of 100 queue txs to read (newest first)'
+        required: false
+        type: string
+        default: '60'
       wallets:
         description: 'Comma-separated wallets to query positions for (default: the owner test wallet)'
         required: false
@@ -40,14 +53,15 @@ jobs:
           WALLETS: ${{ github.event.inputs.wallets }}
           LCD: ${{ github.event.inputs.lcd }}
           OVERSEER: ${{ github.event.inputs.overseer }}
-          MAX_MINUTES: '40'
+          MAX_MINUTES: ${{ github.event.inputs.mode == 'probe' && '40' || '60' }}
+          MAX_PAGES: ${{ github.event.inputs.max_pages }}
           ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
-        run: node .github/scripts/solid-probe/probe.mjs
+        run: node .github/scripts/solid-probe/${{ github.event.inputs.mode == 'probe' && 'probe' || 'liquidations' }}.mjs
       - name: commit the fixture (even if the probe stopped early — it saves after every phase)
         if: always()
         run: |
           git config user.name "solid-probe" && git config user.email "bot@thealliancedao.com"
           git add docs/fixtures
           if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
-          git commit -m "solid-probe fixture $(date -u +%Y-%m-%dT%H:%M)Z"
+          git commit -m "solid-probe ${{ github.event.inputs.mode || 'liquidations' }} fixture $(date -u +%Y-%m-%dT%H:%M)Z"
           for i in 1 2 3 4 5 6; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep $((i * 15)); done; exit 1
