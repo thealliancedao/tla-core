@@ -1,6 +1,6 @@
 # SPEC — Member portfolio: vAMP locks P&L (Milestone A, step 4)
 
-Status: **L1 built, run and gated 2026-09-27** (§3, derive committed e4a4058). **L2 built** (§4, mock-gated; waiting for its first run). L3 is designed, not built. Owner ask: "can we do the credia and the locks design."
+Status: **L1 built, run and gated 2026-09-27** (§3, derive committed e4a4058). **L2 built and run** (§4: 4,178 reads, creates 2,104/2,104, conservation 464/464; classify 1.2.1 migrate fix → a ~610-point top-up run). L3 is designed, not built. Owner ask: "can we do the credia and the locks design."
 Sits beside `SPEC-portfolio-coverage.md` (what is and is not tracked) and `SPEC-rewards-planner.md` (uses the lock value).
 
 ## 1. What the member sees
@@ -158,6 +158,18 @@ it for "now" in capture-engine (tla-participants, hourly).
   - coverage and honesty checks.
 
   The workflow commits the answers *before* the gate, so a disagreement is examined without paying for the reads again.
+
+**L2 first run (2026-09-27, 35 min, 2 rps):** 4,178 reads, 0 errors, 0 retries.
+- **A2:** 2,104/2,104 creates. The escrow's asset at the create block equals the recorded payment, to the last unit.
+- **Found:** classify 1.2.0 named the *burned* lock as a migrate's new lock. All 153 migrates pointed back at their own
+  old id; the burn repeats `token_id`, and the migration tool emits a split's create_lock first.
+- **Fixed:** classify 1.2.1 names the next create_lock after the migrate. Derive 1.3.1 supersedes the 155 re-keyed rows
+  (`token_id a→b`). Lock births are now complete: 0 "created before the archive" (was 12).
+- **Live locks:** now 451, which matches the escrow's CW721 count of 443 plus new locks since. The first run's 593 counted
+  migrated-away ids.
+- **A3 (per lock per block):** 464/464 blocks conserve: before = after + Σ split children + migrated out. That covers 311
+  splits, 58 split+migrate blocks and 95 migrates.
+- **A4:** reads each migrate's new lock on the next run, about 610 points (155 new locks + 451 "now" at the new head).
 
 ## 5. L3: the model (tla-flows pnl duty → `mechanism: 'lock'`)
 
