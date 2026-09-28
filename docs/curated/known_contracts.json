@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "Known contracts. Auto-seeded from defipatriot/adao_json_storage/alliancedao_registry.json (44 entries) plus additions. Edit to add new contracts.",
-    "lastUpdated": "2026-08-25",
+    "lastUpdated": "2026-09-28",
     "absorbed_from": "defipatriot/adao_json_storage/alliancedao_registry.json @ 2026-01-07",
     "schema": {
       "address": "the terra1... address",
@@ -65,7 +65,14 @@
     ],
     "updated_at": null,
     "fold_2026_08_24": "+5 from legacy tla-chain-registry contracts_catalog (tools fold)",
-    "fold_2026_08_24b": "+2 Lion DAO LP identities (ROAR-ampROAR pair + LP) from owner chainscope capture — audit could not name them in prop #26 deep check"
+    "fold_2026_08_24b": "+2 Lion DAO LP identities (ROAR-ampROAR pair + LP) from owner chainscope capture — audit could not name them in prop #26 deep check",
+    "additions": [
+      {
+        "on": "2026-09-28",
+        "what": "Solid (Capapult) CDP — overseer, market, liquidation queue, collector, oracles, 8 custodies, SOLID + collateral cw20s, fee recipients (solid-probe 1.3 fixture); the ampCAPA DAO voting module (custodian)",
+        "count": 24
+      }
+    ]
   },
   "contracts": {
     "terra1csp8gsjk2yyxzqewza6lkjvwkspn7zs2jvamk9uf05crtcakf6gszk2g8y": {
@@ -690,6 +697,309 @@
         "withdraw"
       ],
       "description": "Credia wBTC deposit receipt (cw20) — a TLA SINGLE gauge: PD bribes it (prop 253: 960 LUNA/epoch), Votion weighs it ($47), the TLA snapshot omits it (Credia market not captured). Identity from the token catalog (symbol wBTC.creda.a)."
+    },
+    "terra10qnsw3wn4uaxs7en2kynhet2dsyy76lmprh2ptcz85d8hu59gkuqcpndnv": {
+      "name": "Solid Overseer",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid CDP overseer (code 1431): collateral whitelist (8 collaterals, max LTV 0.5–0.95), lock/unlock of each borrower's collateral, borrow limits. Queries: config, whitelist, collaterals{borrower}, all_collaterals{start_after,limit}, borrow_limit{borrower}. Events: lock_collateral / unlock_collateral (borrower, collaterals). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "lock_collateral",
+        "unlock_collateral",
+        "update_config",
+        "update_whitelist",
+        "liquidate_collateral"
+      ],
+      "canReceiveFunds": false,
+      "risk_level": "medium"
+    },
+    "terra1h4cknjl5k0aysdhv0h4eqcaka620g8h69k8h0pjjccxvf9esfhws3cyqnc": {
+      "name": "Solid Market",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid CDP market (code 2413): mints SOLID against locked collateral (borrow_stable) and burns it on repay. Queries: config, state (total_liabilities), borrower_info{borrower} (loan_amount), borrower_infos{start_after,limit}. Events: borrow_stable (borrower, borrow_amount, mint_fee) / repay_stable (borrower, repay_amount). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "borrow_stable",
+        "repay_stable",
+        "update_config"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra188d4q69nen6vmwt7vcvz8lf54mc80cfvqtrznpmsrawftm86jkmsh4grzp": {
+      "name": "Solid Liquidation Queue",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid CDP liquidation queue (code 1228): bid pools per collateral in SOLID; safe_ratio 0.8, bid_fee 0.01, liquidator_fee 0.01, waiting_period 600 s. Queries: config, liquidation_amount, collateral_info, bid, bids_by_user, bid_pool, bid_pools_by_collateral. The liquidation event vocabulary is not yet captured (no liquidation found in the probe window). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "submit_bid",
+        "retract_bid",
+        "activate_bids",
+        "claim_liquidations",
+        "execute_bid",
+        "update_config"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra1uz33y5dfazxspyfdvw30dwmpa5hhm4908tetpq5t0sm0z0c63rlspfkaau": {
+      "name": "Solid Collector",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid fee collector (code 1542): gov_contract = CAPA governance, solid_token = SOLID, fee_share 0.2 to the fee address, rest to CAPA staking. Query: config. Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "distribute",
+        "update_config"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra199pgv9dymcg9q8xtwsxk7yakazmvlf5ptkqh4zadcv7k0yqsal2q6tq7mv": {
+      "name": "Solid Oracle v2",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid price oracle v2 (code 2410) — the one the overseer and the liquidation queue read. base_asset uusd. Queries: config, source_info, price{asset}, prices{}. OPEN: its price unit is unconfirmed (wBTC read 828.44 while the catalog prices WBTC.axl ≈ $60.5K) — confirm before any USD is derived from it. Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "feed_price",
+        "update_config"
+      ],
+      "canReceiveFunds": false,
+      "risk_level": "low"
+    },
+    "terra19z3qj8lwrhla6x58jt5338e3hktfrn6x63ua4226wk2c7psh62psfghzu7": {
+      "name": "Solid Oracle v1 (legacy)",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Older Solid oracle (code 1227, owner terra17w8u…): base_asset uusd; NOT the overseer's oracle today (the overseer and liquidation queue point at Solid Oracle v2). Queries: config, feeder, price, prices. Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "feed_price",
+        "update_config"
+      ],
+      "canReceiveFunds": false,
+      "risk_level": "low"
+    },
+    "terra18uxq2k6wpsqythpakz5n6ljnuzyehrt775zkdclrtdtv6da63gmskqn7dq": {
+      "name": "Solid Custody ampLUNA",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid CDP collateral custody for ampLUNA (terra1ecga…, max LTV 0.5) (code 1231): receives the collateral cw20 via send{deposit_collateral}; the overseer locks/unlocks it. Queries: config, borrower{address}, borrowers{start_after,limit}. Events: deposit_collateral / lock_collateral / unlock_collateral / withdraw_collateral (borrower, amount). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "deposit_collateral",
+        "withdraw_collateral",
+        "update_config"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra1fyfrqdf58nf4fev2amrdrytq5d63njulfa7sm75c0zu4pnr693dsqlr7p9": {
+      "name": "Solid Custody bLUNA",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid CDP collateral custody for bLUNA / boneLuna (terra17aj4…, max LTV 0.5) (code 1231): receives the collateral cw20 via send{deposit_collateral}; the overseer locks/unlocks it. Queries: config, borrower{address}, borrowers{start_after,limit}. Events: deposit_collateral / lock_collateral / unlock_collateral / withdraw_collateral (borrower, amount). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "deposit_collateral",
+        "withdraw_collateral",
+        "update_config"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra18l7vt34kfy2ycv3aej4fgq286s060n55f7uz0qyw9jpzn5gszkxsy3r7nw": {
+      "name": "Solid Custody LunaX",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid CDP collateral custody for Stader LunaX (terra14xsm…, max LTV 0.5) (code 2412): receives the collateral cw20 via send{deposit_collateral}; the overseer locks/unlocks it. Queries: config, borrower{address}, borrowers{start_after,limit}. Events: deposit_collateral / lock_collateral / unlock_collateral / withdraw_collateral (borrower, amount). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "deposit_collateral",
+        "withdraw_collateral",
+        "update_config"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra1xyxxg9z8eep6xkfts4sp7gper677glz0md4wd9krj4d8dllmut8q8tjjrl": {
+      "name": "Solid Custody wETH",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid CDP collateral custody for wETH — Solid's cw20 wrapper of WETH.axl (terra164ye…, max LTV 0.75) (code 2308): receives the collateral cw20 via send{deposit_collateral}; the overseer locks/unlocks it. Queries: config, borrower{address}, borrowers{start_after,limit}. Events: deposit_collateral / lock_collateral / unlock_collateral / withdraw_collateral (borrower, amount). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "deposit_collateral",
+        "withdraw_collateral",
+        "update_config"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra1jksfmpavp09wwla8xffera3q7z49ef6r2jx9lu29mwvl64g34ljs7u2hln": {
+      "name": "Solid Custody wBTC",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid CDP collateral custody for wBTC — Solid's cw20 wrapper of WBTC.axl (terra1r6ju…, max LTV 0.75) (code 2308): receives the collateral cw20 via send{deposit_collateral}; the overseer locks/unlocks it. Queries: config, borrower{address}, borrowers{start_after,limit}. Events: deposit_collateral / lock_collateral / unlock_collateral / withdraw_collateral (borrower, amount). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "deposit_collateral",
+        "withdraw_collateral",
+        "update_config"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra1shc5n0sqg30fzvg0e2j826j0g73ypmjw9vkf592ghdph5dhau25qha2rks": {
+      "name": "Solid Custody USDC",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid CDP collateral custody for USDC — Solid's cw20 wrapper of USDC.n (terra1qv3g…, max LTV 0.95) (code 3582): receives the collateral cw20 via send{deposit_collateral}; the overseer locks/unlocks it. Queries: config, borrower{address}, borrowers{start_after,limit}. Events: deposit_collateral / lock_collateral / unlock_collateral / withdraw_collateral (borrower, amount). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "deposit_collateral",
+        "withdraw_collateral",
+        "update_config"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra1e32q545j90agakl32mtkacq05990cnr54czj8wp0wv3nttkrhwlqr9spf5": {
+      "name": "Solid Custody wSOL",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid CDP collateral custody for wSOL.wh (Wormhole, terra1ctel…, max LTV 0.65) (code 2412): receives the collateral cw20 via send{deposit_collateral}; the overseer locks/unlocks it. Queries: config, borrower{address}, borrowers{start_after,limit}. Events: deposit_collateral / lock_collateral / unlock_collateral / withdraw_collateral (borrower, amount). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "deposit_collateral",
+        "withdraw_collateral",
+        "update_config"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra1fluajm00hwu9wyy8yuyf4zag7x5pw95vdlgkhh8w03pfzqj6hapsx4673t": {
+      "name": "Solid Custody wBNB",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid CDP collateral custody for wBNB.wh (Wormhole, terra1xc7y…, max LTV 0.65) (code 2412): receives the collateral cw20 via send{deposit_collateral}; the overseer locks/unlocks it. Queries: config, borrower{address}, borrowers{start_after,limit}. Events: deposit_collateral / lock_collateral / unlock_collateral / withdraw_collateral (borrower, amount). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "deposit_collateral",
+        "withdraw_collateral",
+        "update_config"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra10aa3zdkrc7jwuf8ekl3zq7e7m42vmzqehcmu74e4egc7xkm5kr2s0muyst": {
+      "name": "SOLID (Solid stablecoin)",
+      "type": "token",
+      "protocol": "Solid (Capapult)",
+      "description": "SOLID — the CDP stablecoin (code 1220 cw20), minted by Solid Market on borrow_stable and burned on repay_stable. Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "transfer",
+        "send"
+      ],
+      "canReceiveFunds": false,
+      "risk_level": "low"
+    },
+    "terra164ye3v3pksjzl8nan9z3jd8xyhwpee7ws82l5y2gfcwqnekz9ujqts7v58": {
+      "name": "wETH (Solid cw20 of WETH.axl)",
+      "type": "token",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid's cw20 wrapper (code 69) of ibc/BC8A77AF… (WETH.axl) — the wETH collateral token. Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "transfer",
+        "send"
+      ],
+      "canReceiveFunds": false,
+      "risk_level": "low"
+    },
+    "terra1r6ju9f643v353n88dxaqdvkthdnclycgds2qc6kyddqpmcr9dj5sdkvu37": {
+      "name": "wBTC (Solid cw20 of WBTC.axl)",
+      "type": "token",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid's cw20 wrapper (code 69) of ibc/05D29988… (WBTC.axl) — the wBTC collateral token. Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "transfer",
+        "send"
+      ],
+      "canReceiveFunds": false,
+      "risk_level": "low"
+    },
+    "terra1qv3gtys4u8hacv9mdzk3gmc88z6gv5w2c9ksmcf868pl8q3er42snwgdn2": {
+      "name": "USDC (Solid cw20 of USDC.n)",
+      "type": "token",
+      "protocol": "Solid (Capapult)",
+      "description": "Solid's cw20 wrapper (code 69) of ibc/2C962DAB… (USDC.n) — the USDC collateral token. Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "transfer",
+        "send"
+      ],
+      "canReceiveFunds": false,
+      "risk_level": "low"
+    },
+    "terra14xsm2wzvu7xaf567r693vgfkhmvfs08l68h4tjj5wjgyn5ky8e2qvzyanh": {
+      "name": "LunaX (Stader)",
+      "type": "token",
+      "protocol": "Solid (Capapult)",
+      "description": "Stader LunaX cw20 (code 25) — a Solid collateral token. Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "transfer",
+        "send"
+      ],
+      "canReceiveFunds": false,
+      "risk_level": "low"
+    },
+    "terra1ctelwayk6t2zu30a8v9kdg3u2gr0slpjdfny5pjp7m3tuquk32ysugyjdg": {
+      "name": "wSOL.wh (Wormhole)",
+      "type": "token",
+      "protocol": "Solid (Capapult)",
+      "description": "Wormhole-wrapped SOL cw20 (code 148) — a Solid collateral token. Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "transfer",
+        "send"
+      ],
+      "canReceiveFunds": false,
+      "risk_level": "low"
+    },
+    "terra1xc7ynquupyfcn43sye5pfmnlzjcw2ck9keh0l2w2a4rhjnkp64uq4pr388": {
+      "name": "wBNB.wh (Wormhole)",
+      "type": "token",
+      "protocol": "Solid (Capapult)",
+      "description": "Wormhole-wrapped BNB cw20 (code 148) — a Solid collateral token. Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "transfer",
+        "send"
+      ],
+      "canReceiveFunds": false,
+      "risk_level": "low"
+    },
+    "terra1rga2lt3tymfcnq4zq0ju8j9rjku8nqf6qyz4tgudv4kmdt749l3qjs2vqa": {
+      "name": "CAPA staking (Solid fee recipient)",
+      "type": "staking",
+      "protocol": "Solid (Capapult)",
+      "description": "The staking contract Solid Collector pays its fee remainder to (collector config staking_contract). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [
+        "stake",
+        "unstake",
+        "claim"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra18mnmjp6jwg3q06r7nmhq2spcn5kdfpp3g7lhvgynucsmv4xqhllsdytcat": {
+      "name": "Solid fee address",
+      "type": "protocol_core",
+      "protocol": "Solid (Capapult)",
+      "description": "Receives fee_share 0.2 of Solid's collected fees (collector config fee_address). Source: solid-probe 1.3 (docs/fixtures/2026-09-28/solid-probe.json, owner test txs 2026-09-27).",
+      "validActions": [],
+      "canReceiveFunds": true,
+      "risk_level": "medium"
+    },
+    "terra1juj3ymejnug9p92upphcq0prq4e0hpw6rcu20njf8tk7n9sl2wxqldr0mt": {
+      "name": "ampCAPA DAO voting module",
+      "type": "governance",
+      "protocol": "DAODAO",
+      "description": "The ampCAPA DAO's token-staking voting module: holds members' TLA amplified ampCAPA receipts (factory/terra1zly98…/44/single/amplp) staked for voting power — a CUSTODIAN (platform-crons config CUSTODIANS): a receipt here is still the member's position.",
+      "validActions": [
+        "stake",
+        "unstake",
+        "claim"
+      ],
+      "canReceiveFunds": true,
+      "risk_level": "low"
     }
   }
 }
