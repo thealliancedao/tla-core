@@ -1245,8 +1245,68 @@ Q-ConnectorAlliance-Validators
 
 ---
 
+## 19. Solid (Capapult CDP)
+
+**Found:** 2026-09-28 by `solid-probe 1.3` (fixture `docs/fixtures/2026-09-28/solid-probe.json`) from the owner's five test txs
+(ampLUNA deposit + lock → borrow_stable → repay_stable → unlock + withdraw; bLUNA deposit + lock). Every custody's `config` names the
+same overseer / market / liquidation / collector. Addresses are registered in `platform-crons/config/contracts.js` (`SOLID`, query
+targets) and `docs/curated/known_contracts.json` (labels — the trusted catalog, the governance audit tool and the help agent read them).
+
+| Role | Address | Code |
+|---|---|---|
+| Overseer | `terra10qnsw3wn4uaxs7en2kynhet2dsyy76lmprh2ptcz85d8hu59gkuqcpndnv` | 1431 |
+| Market (mints / burns SOLID) | `terra1h4cknjl5k0aysdhv0h4eqcaka620g8h69k8h0pjjccxvf9esfhws3cyqnc` | 2413 |
+| Liquidation queue | `terra188d4q69nen6vmwt7vcvz8lf54mc80cfvqtrznpmsrawftm86jkmsh4grzp` | 1228 |
+| Collector (fees) | `terra1uz33y5dfazxspyfdvw30dwmpa5hhm4908tetpq5t0sm0z0c63rlspfkaau` | 1542 |
+| Oracle v2 (the overseer's) | `terra199pgv9dymcg9q8xtwsxk7yakazmvlf5ptkqh4zadcv7k0yqsal2q6tq7mv` | 2410 |
+| Oracle v1 (legacy, not referenced) | `terra19z3qj8lwrhla6x58jt5338e3hktfrn6x63ua4226wk2c7psh62psfghzu7` | 1227 |
+| SOLID (cw20 stablecoin) | `terra10aa3zdkrc7jwuf8ekl3zq7e7m42vmzqehcmu74e4egc7xkm5kr2s0muyst` | 1220 |
+
+Collateral whitelist (overseer `whitelist {}`, 2026-09-28) — collateral cw20 → custody, max LTV:
+ampLUNA `terra1ecga…` → `terra18uxq2k6w…` 0.5 · bLUNA `terra17aj4…` → `terra1fyfrqdf5…` 0.5 · LunaX `terra14xsm…` → `terra18l7vt34k…` 0.5 ·
+wETH (Solid cw20 of WETH.axl) `terra164ye…` → `terra1xyxxg9z8…` 0.75 · wBTC (Solid cw20 of WBTC.axl) `terra1r6ju…` → `terra1jksfmpav…` 0.75 ·
+USDC (Solid cw20 of USDC.n) `terra1qv3g…` → `terra1shc5n0sq…` 0.95 · wSOL.wh `terra1ctel…` → `terra1e32q545j…` 0.65 · wBNB.wh `terra1xc7y…` → `terra1fluajm00…` 0.65.
+
+```
+Q-SolidOverseer-Collaterals
+  Input shape:   { "collaterals": { "borrower": "terra1…" } }
+  Output shape:  { borrower, collaterals: [[collateral_cw20, amount_raw], …] }      // LOCKED collateral per token
+  Powers:        a member's Solid collateral (the portfolio's Solid row)
+Q-SolidOverseer-AllCollaterals   { "all_collaterals": { "start_after"?, "limit"? } } → { all_collaterals: [{ borrower, collaterals }] }   // the census
+Q-SolidOverseer-BorrowLimit      { "borrow_limit": { "borrower": "terra1…" } }       → { borrower, borrow_limit }   // SOLID raw
+Q-SolidOverseer-Whitelist        { "whitelist": {} }                                  → { elems: [{ name, symbol, max_ltv, custody_contract, collateral_token }] }
+
+Q-SolidMarket-BorrowerInfo
+  Input shape:   { "borrower_info": { "borrower": "terra1…" } }
+  Output shape:  { borrower, loan_amount }                                            // SOLID owed, raw (6 dec)
+Q-SolidMarket-BorrowerInfos      { "borrower_infos": { "start_after"?, "limit"? } }  → { borrower_infos: [{ borrower, loan_amount }] }
+Q-SolidMarket-State              { "state": {} }                                      → { total_liabilities }       // 46,593.83 SOLID on 2026-09-28
+
+Q-SolidCustody-Borrower          { "borrower": { "address": "terra1…" } }             → { borrower, balance, spendable }   // deposited in this custody
+Q-SolidCustody-Borrowers         { "borrowers": { "start_after"?, "limit"? } }        → { borrowers: [{ borrower, balance, spendable }] }
+
+Q-SolidOracle-Prices             { "prices": {} }                                      → { prices: [{ asset, price, last_updated_time }] }   // base_asset uusd
+Q-SolidLiquidation-*             config · liquidation_amount · collateral_info · bid · bids_by_user · bid_pool · bid_pools_by_collateral
+```
+
+**Events (wasm action → attributes):** custody `deposit_collateral` / `lock_collateral` / `unlock_collateral` / `withdraw_collateral`
+(borrower, amount) · overseer `lock_collateral` / `unlock_collateral` (borrower, collaterals) · market `borrow_stable` (borrower,
+borrow_amount, mint_fee) / `repay_stable` (borrower, repay_amount). Deposit = cw20 `send` to the custody with msg `{"deposit_collateral":{}}`.
+
+### Gotchas
+- **Deposited ≠ locked.** A custody holds what was deposited (`borrower.balance`); only what the overseer LOCKED backs a loan
+  (`collaterals`). The owner's bLUNA test showed `balance` 92 raw locked, `spendable` 0.
+- **The oracle's unit is unconfirmed.** Oracle v2 read wBTC at `828.44` (base_asset `uusd`) while the token catalog prices WBTC.axl ≈ $60.5K.
+  Do not derive USD from it until the unit is proven (decimals-adjusted per asset, or a stale feed).
+- **Liquidations:** no liquidation was found in the probe window, so their event vocabulary is still unknown — capture one before building the history.
+- **Census:** the probe's discovery used its 40-minute budget, so the paged censuses (all_collaterals, borrowers, borrower_infos) did not run;
+  the single-page answers above prove the shapes. The Solid reader pages them itself.
+
+---
+
 | Date | Change |
 |---|---|
+| 2026-09-28 | Section 19: Solid (Capapult CDP) — overseer / market / liquidation / collector / oracles / 8 custodies, query shapes and events from the solid-probe 1.3 fixture; open items (oracle unit, liquidation events). |
 | 2026-07-14 | Moved to `tla-core/docs/` (SPEC-docs-consolidation). Update pass from the 2026-07-13/14 probe sessions: VP definition law added to header; `distributions` block rewritten (time param, full per-period history to floor 96, epoch mechanics, 1-indexed period lock-in); `last_distribution_period` explanation corrected; `gauge_infos` (per-pool voting_power + fixed_amount + slope) added; gauge `user_info` verified block added; `lock_info` expanded to the full verified shape (coefficient/slope/fixed_amount/underlying_amount/time); `total_vamp` added (canonical Total TLA VP + `time:{period}` projection, `at_period` rejected); escrow `user_info` flagged unverified; §18 connector-alliance rescued from CRON-FIXES-BRIEF. |
 | 2026-06-02 | Initial document created at the close of catalog audit. All current `tla-registry` cron queries inventoried, plus the wishlist queries for Vote Intelligence, Portfolio Tracker, Pool Detail View, and the future query tool. SS API gotcha documented after empirical deposit test + on-chain pair{} verification on 17 pairs. |
 | 2026-06-06 | Added sections 11-16 for NFT explorer Rev B work: aDAO NFT collection (incl. rewards query gotcha + audit findings + daily yield flow), Enterprise NFT staking, BBL marketplace + bbl backend API, Atrium marketplace, Boost marketplace, ampLUNA CW20. Documents all queries newly added to `nft-inventory` cron in Rev B. |
