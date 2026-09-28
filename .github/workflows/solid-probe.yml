@@ -25,7 +25,7 @@ permissions:
 jobs:
   probe:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 75
     steps:
       - uses: actions/checkout@v4
         with:
@@ -40,9 +40,11 @@ jobs:
           WALLETS: ${{ github.event.inputs.wallets }}
           LCD: ${{ github.event.inputs.lcd }}
           OVERSEER: ${{ github.event.inputs.overseer }}
+          MAX_MINUTES: '40'
           ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
         run: node .github/scripts/solid-probe/probe.mjs
-      - name: commit the fixture
+      - name: commit the fixture (even if the probe stopped early — it saves after every phase)
+        if: always()
         run: |
           git config user.name "solid-probe" && git config user.email "bot@thealliancedao.com"
           git add docs/fixtures
