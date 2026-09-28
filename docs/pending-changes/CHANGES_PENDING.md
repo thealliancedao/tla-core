@@ -7,6 +7,15 @@ card) and `SPEC-deep-history.md` (who qualifies for deep history, the one-time b
 milestone is NOT closed — the owner walks the page, we add what is missing, THEN the deep backfill, THEN the docs bulk.
 
 ### OWNER TO-DO (in order)
+00. **Close-out batch 2026-09-28 ~12:00Z** (commit; one commit per repo): **platform-crons** — help-agent 1.17.0 (the `portfolio` tool +
+   rule 17 + battery T13–T16 + gate-portfolio-tool.mjs) and tla-flows pnl 1.2.5 (moved beats disputed; gate V14); **tla-core** — the
+   changelogs (portfolio 3.0–3.8, member-data 1.3.0–1.4.1, tla-flows pnl 1.2.2–1.2.5, votion 1.5.0–1.5.1, help 1.17.0, docs, ampcapa-tool
+   2.4), `docs/ecosystem-knowledge/member-portfolio.md` (the bot's portfolio chapter), the GMC Backing Wallet in `docs/curated/wallets.json`
+   (address picker, after the next address-catalog run) + known_contracts renamed to match, this ledger; **aDAO-links-site** — the page
+   gate's custody-aware model (gate file only). Render: **tla-help-agent** redeploys (help-agent folder) — Manual Deploy if not; org-tla-flows
+   rebuilds itself. Then run the two Actions: **liondao-history-backfill** (tenant liondao, FROM 2026-09-26, TO 2026-09-26, step_days 1 — the
+   09-26 day is the only one missing) and **locks-anchor** (the top-up after the classify 1.2.1 re-derive; anchors last ran 09-27 15:57Z).
+   Live check: ask the bot T13–T16 (battery).
 0. **Audit 2026-09-28 ~11:00Z:** the platform-crons and aDAO-links-site batches (custody, receipt tracing, Votion 1.5.1, portfolio 3.8) and
    the Solid registry are ON MAIN. Still to commit — the final batch: **platform-crons** capture-engine 1.2.1 (single-asset cw20 gauges —
    the GMC finding) + member-data 1.4.1 + ally-positions 1.5.4 (rebuild) + mock-run-singles.js; **tla-core** known_contracts (+ GMC DAOs,
