@@ -1,5 +1,16 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER 2026-09-28 (c) — Solid on the portfolio + the 4.0 walk-back fixes (read this first; (b) and (a) below still hold)
+
+**Shipped in this batch (ZIPs, not yet confirmed on main):**
+- platform-crons — `lib/solid-reader.js` 1.0.0 (NEW: the Solid census — overseer all_collaterals, market borrower_infos, every custody's borrowers, oracle v2, whitelist; paging stops on an EMPTY page; the protocol's borrow_limit for wallets with a loan), `member-data/tla-participants.js` (`attachSolid`: `portfolio.solid` + `summary.solid_*`; `SOLID=0` turns it off; `discovery.solid` + `solid_protocol` on the doc), `member-data/mock-run-solid.js` (S1–S7 9/9; S8 waits for the liquidations fixture), `member-data/history-series.js` 1.1.0 (the CAPA supply-history carry, cuS=2) + `mock-run-history.js` (20/20), `member-data/index.js` → **member-data-1.6.0**, CHANGELOG.
+- aDAO-links-site — member-portfolio **4.1**: Solid card in "Lending: Credia & Solid" (health, % of limit used, liquidation line — a basket fall for a two-collateral loan, never an invented single price — per-token locked/idle rows, warning on collateral deposited but not locked); Solid in net worth (`so`), in the chart's Lending view and net stack; Solid alerts (health band ≠ safe; idle > $1). Owner walk fixes: chart engine now loads jsdelivr → unpkg → cdnjs 5.4.3 (**cdnjs never had echarts 5.5.1 — why the chart said "did not load"**); IPFS pfp gateways drop dweb.link / nftstorage.link (security software flags dweb.link); the `/null` allies fetch removed; alerts: an LP sent to another address alerts only within 14 days; positions sent to another address fold into their own per-bucket group ("sent away · not counted") in `lib/portfolio-pnl.js` 2.0.1; side-by-side cards stretch to one row height; a "why isn't this tracked" popup (lock holder · aDAO member · bribe provider); `lib/address-picker.js` hint under "Use this address"; `lib/site-footer.js` v3.9 tax/accounting + no-liability clauses on every page, and a short note under "How you've done". `lib/portfolio-chart.js` 1.1.0 waits for the loader ("Loading the chart…"). Gate `gate-portfolio-pnl.mjs` **119/119** (P33 Solid needs `PCRONS_DIR`).
+- tla-core — `.github/scripts/solid-probe/liquidations.mjs` (probe 1.4) + `solid-probe.yml` (inputs `mode`, `max_pages`).
+
+**Owner to-do:** (1) deploy member-data 1.6.0 (Render picks it up; `SOLID=0` is the off switch); (2) run the **Solid Probe** Action with mode `liquidations` — its `docs/fixtures/<day>/solid-liquidations.json` gives S8 the full census and the liquidation event vocabulary the Solid history needs; (3) the footer's legal wording is plain-language protection, not a lawyer's review.
+
+**Next:** Solid history & P&L (mint fees 0.5 %, liquidations) once the probe lands → then the backfill; settle the WBTC.axl catalog price (Solid's oracle proves ≈ $82.8K); deep history.
+
 ## OPEN LEDGER 2026-09-28 (b) — Member Portfolio 4.0: the page walk, built (read this first; the (a) ledger below still holds)
 
 Owner walk (2026-09-28): two charts that each showed part of the picture; liquid tokens missing from value and trends; "how you've done"
