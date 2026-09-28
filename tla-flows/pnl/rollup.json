@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "spec": "docs/pending-changes/SPEC-portfolio-pnl.md (Phase A)",
- "builtAt": "2026-09-28T09:06:18.326Z",
+ "builtAt": "2026-09-28T10:11:55.466Z",
  "phase": "B",
  "method": {
   "valuation": "usd at event UTC date from price-history daily avg; fallback nearest PRIOR day <= 3d (counted); never forward, never build-time prices",
@@ -10,19 +10,19 @@
   "implied_prices": "gap tokens (e.g. CAPA/SOLID CoinGecko hole, ampROAR) valued from OUR OWN captured swap executions — daily median of implied prices where the counter-asset has a quote; a labeled derived tier, never applied to WHALE-class (unpriced by doctrine)",
   "claims": "v2 claim arrays valued as LUNA at claim-day price — reward denom evidenced by the vault claim callback census (guarded at build: any non-LUNA vault denom disables valuation rather than mispricing); v1-era claims stay unmeasured until the E2 re-derive",
   "lp_amounts": "recorded raw per unit, unvalued in Phase A",
-  "v3": "lib/pnl-positions.js pnl-positions-1.2.0 — positions per pool × mechanism in contract units (shares / amplp); LOTS at deposit valued from the provided legs (M) or units × measured rate × pair basket (D); TRIPS at withdraw FIFO, proportional, valued from refund legs (M) or derived (D); market_usd = entry basket at exit prices − in, lp_usd = out − entry basket at exit prices (IL + fees + take rate + compounding); non-amp ⇄ amp migrations carry basis (segment, not an exit); open value at the latest state-history epoch; claims split by open value when a claim lists several pools; bribes from tla-voting claim_bribes; net = realized Δ + unrealized + claims + bribes, in USD and LUNA"
+  "v3": "lib/pnl-positions.js pnl-positions-1.3.0 — positions per pool × mechanism in contract units (shares / amplp); LOTS at deposit valued from the provided legs (M) or units × measured rate × pair basket (D); TRIPS at withdraw FIFO, proportional, valued from refund legs (M) or derived (D); market_usd = entry basket at exit prices − in, lp_usd = out − entry basket at exit prices (IL + fees + take rate + compounding); non-amp ⇄ amp migrations carry basis (segment, not an exit); open value at the latest state-history epoch; claims split by open value when a claim lists several pools; bribes from tla-voting claim_bribes; net = realized Δ + unrealized + claims + bribes, in USD and LUNA"
  },
  "sources": {
   "events_index_counts": {
-   "deposit": 57185,
-   "claim": 49269,
-   "withdraw": 17133
+   "deposit": 57187,
+   "claim": 49270,
+   "withdraw": 17135
   },
-  "events_read": 123581,
+  "events_read": 123586,
   "events_by_type": {
-   "deposit": 57182,
-   "withdraw": 17132,
-   "claim": 49267
+   "deposit": 57184,
+   "withdraw": 17134,
+   "claim": 49268
   },
   "null_user_events": {
    "deposit": 0,
@@ -131,25 +131,32 @@
   "fcd_walker_boundary_height": 13737811,
   "v3": {
    "rate_samples": {
-    "events": 60461,
+    "events": 60464,
     "state_history": 5631,
-    "participants_now": 151,
+    "participants_now": 152,
     "dropped": 0,
     "state_history_superseded_by_redemptions": 5631
    },
    "migrations": 0,
-   "participants_as_of": "2026-09-28T08:45:44.756Z",
+   "participants_as_of": "2026-09-28T09:45:41.633Z",
    "rate_keys": 140,
    "state_history_epochs": 109,
    "as_of_epoch": 205,
    "pricing": {
     "price_fallback_legs": 484,
-    "implied_price_legs": 200301
+    "implied_price_legs": 200252
    },
    "referees": {
     "gauge_ceilings": 59,
-    "participant_positions": 428,
+    "participant_positions": 429,
     "wallets_read": 205
+   },
+   "receipt_moves": {
+    "transfers_read": 666,
+    "mapped_to_pools": 666,
+    "receipt_denoms_mapped": 65,
+    "labels": 160,
+    "map_source": "docs/archive/legacy-registry/tla-chain-registry-2026-08-11.json amplp_mappings"
    },
    "bribe_claims": 4011,
    "bribe_months": [
@@ -214,26 +221,26 @@
  },
  "totals": {
   "wallets": 770,
-  "fees_usd_at_event": 44664.760557605005,
-  "zap_input_usd_at_event": 2269599.4969155914,
-  "claims_recorded": 42828,
-  "claimed_yield_usd_at_event": 2514413.3861812395,
-  "claimed_yield_luna": 16891994.094959006,
+  "fees_usd_at_event": 44665.43085058362,
+  "zap_input_usd_at_event": 2269755.6896527177,
+  "claims_recorded": 42829,
+  "claimed_yield_usd_at_event": 2514416.874157707,
+  "claimed_yield_luna": 16892062.410302006,
   "v3": {
-   "positions_disputed": 20,
-   "open_value_usd": 1688587.24,
-   "open_cost_usd": 2051663.67,
-   "realized_delta_usd": -2740900.15,
-   "market_usd": -2766038.63,
-   "lp_usd": 25137.28,
-   "claims_usd": 2495245.59,
+   "positions_disputed": 21,
+   "open_value_usd": 1691716.64,
+   "open_cost_usd": 2055304.5,
+   "realized_delta_usd": -2741008.5,
+   "market_usd": -2766038.7,
+   "lp_usd": 25029,
+   "claims_usd": 2495249.08,
    "bribes_usd": 89325.1,
-   "net_usd": -519405.93,
-   "trips_valued": 13315,
+   "net_usd": -520022.25,
+   "trips_valued": 13317,
    "trips_blank": 3698,
    "trips_suspect": 9,
-   "positions_not_held": 36,
-   "not_held_usd": 28770.91,
+   "positions_not_held": 28,
+   "not_held_usd": 24318.87,
    "wallets": 789,
    "bribe_only_wallets": 19
   }
@@ -410,12 +417,12 @@
      "trips_blank": 10
     },
     "open": {
-     "cost_usd": 5435.15,
-     "cost_luna": 55499.401362,
-     "value_usd": 6257.22,
-     "value_luna": 122553.567327,
-     "unrealized_usd": 822.07,
-     "unrealized_luna": 67054.165965,
+     "cost_usd": 5435.09,
+     "cost_luna": 55498.768153,
+     "value_usd": 6257.15,
+     "value_luna": 122552.169079,
+     "unrealized_usd": 822.06,
+     "unrealized_luna": 67053.400926,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -426,8 +433,8 @@
      "bribes_luna": 218.412703
     },
     "positions_with_unmatched_units": 5,
-    "net_usd": 6656.1,
-    "net_luna": 136267.488814
+    "net_usd": 6656.09,
+    "net_luna": 136266.723774
    }
   },
   {
@@ -1091,9 +1098,9 @@
      "cost_usd": 0,
      "cost_luna": 0.000013,
      "value_usd": 53.65,
-     "value_luna": 1050.753947,
+     "value_luna": 1050.742003,
      "unrealized_usd": 53.65,
-     "unrealized_luna": 1050.753934,
+     "unrealized_luna": 1050.74199,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -1104,7 +1111,7 @@
      "bribes_luna": 0
     },
     "net_usd": 220.21,
-    "net_luna": 21279.583484
+    "net_luna": 21279.57154
    }
   },
   {
@@ -2620,12 +2627,12 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 956483.96,
+     "in_usd": 956483.95,
      "out_usd": 858384.69,
      "delta_usd": -98099.21,
-     "in_luna": 9460453.688581,
-     "out_luna": 9980154.458455,
-     "delta_luna": 519700.769878,
+     "in_luna": 9460453.660882,
+     "out_luna": 9980154.424495,
+     "delta_luna": 519700.763616,
      "market_usd": -83588.27,
      "lp_usd": -14510.94,
      "trips_valued": 229,
@@ -2635,9 +2642,9 @@
      "cost_usd": 54469.28,
      "cost_luna": 906454.780175,
      "value_usd": 45947.41,
-     "value_luna": 899923.805027,
+     "value_luna": 899923.806325,
      "unrealized_usd": -8521.87,
-     "unrealized_luna": -6530.975147,
+     "unrealized_luna": -6530.97385,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -2649,7 +2656,7 @@
     },
     "positions_with_unmatched_units": 4,
     "net_usd": -32910.39,
-    "net_luna": 1111532.184081
+    "net_luna": 1111532.179116
    }
   },
   {
@@ -2841,13 +2848,13 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 6028.24,
-     "out_usd": 6733.02,
-     "delta_usd": 704.76,
-     "in_luna": 69782.516416,
-     "out_luna": 73061.956659,
-     "delta_luna": 3279.440242,
-     "market_usd": 703.16,
+     "in_usd": 6028.21,
+     "out_usd": 6732.99,
+     "delta_usd": 704.75,
+     "in_luna": 69781.863107,
+     "out_luna": 73061.276721,
+     "delta_luna": 3279.413613,
+     "market_usd": 703.15,
      "lp_usd": 1.6,
      "trips_valued": 11,
      "trips_blank": 8
@@ -2855,10 +2862,10 @@
     "open": {
      "cost_usd": 677.61,
      "cost_luna": 13308.516843,
-     "value_usd": 668.4,
-     "value_luna": 13091.201704,
-     "unrealized_usd": -9.22,
-     "unrealized_luna": -217.315139,
+     "value_usd": 672.2,
+     "value_luna": 13165.632985,
+     "unrealized_usd": -5.42,
+     "unrealized_luna": -142.883858,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -2869,10 +2876,8 @@
      "bribes_luna": 0.867091
     },
     "positions_with_unmatched_units": 2,
-    "positions_not_held": 1,
-    "not_held_usd": 3.8,
-    "net_usd": 1508.54,
-    "net_luna": 7064.868805
+    "net_usd": 1512.33,
+    "net_luna": 7139.273457
    }
   },
   {
@@ -3160,9 +3165,9 @@
      "cost_usd": 4215.11,
      "cost_luna": 51506.163829,
      "value_usd": 3754.52,
-     "value_luna": 73535.835811,
+     "value_luna": 73535.820278,
      "unrealized_usd": -460.59,
-     "unrealized_luna": 22029.671982,
+     "unrealized_luna": 22029.656449,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -3173,7 +3178,7 @@
      "bribes_luna": 0
     },
     "net_usd": 1264.8,
-    "net_luna": 47950.58004
+    "net_luna": 47950.564507
    }
   },
   {
@@ -5317,10 +5322,10 @@
     "open": {
      "cost_usd": 8857.25,
      "cost_luna": 164142.48221,
-     "value_usd": 26804.17,
-     "value_luna": 524985.158592,
-     "unrealized_usd": 17946.92,
-     "unrealized_luna": 360842.676382,
+     "value_usd": 26803.98,
+     "value_luna": 524981.40123,
+     "unrealized_usd": 17946.72,
+     "unrealized_luna": 360838.91902,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -5330,8 +5335,8 @@
      "bribes_usd": 0,
      "bribes_luna": 0
     },
-    "net_usd": 34507.45,
-    "net_luna": 494259.437219
+    "net_usd": 34507.26,
+    "net_luna": 494255.679857
    }
   },
   {
@@ -5836,9 +5841,9 @@
      "cost_usd": 0,
      "cost_luna": 0,
      "value_usd": 2.79,
-     "value_luna": 54.586627,
+     "value_luna": 54.586007,
      "unrealized_usd": 2.79,
-     "unrealized_luna": 54.586627,
+     "unrealized_luna": 54.586007,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -5849,7 +5854,7 @@
      "bribes_luna": 0
     },
     "net_usd": 2.79,
-    "net_luna": 54.586627
+    "net_luna": 54.586007
    }
   },
   {
@@ -6184,9 +6189,9 @@
      "cost_usd": 2457.72,
      "cost_luna": 49003.941837,
      "value_usd": 2480.46,
-     "value_luna": 48582.158948,
+     "value_luna": 48582.159113,
      "unrealized_usd": 22.74,
-     "unrealized_luna": -421.782889,
+     "unrealized_luna": -421.782723,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -6199,7 +6204,7 @@
     },
     "positions_with_unmatched_units": 3,
     "net_usd": -1331.26,
-    "net_luna": 23124.859761
+    "net_luna": 23124.859927
    }
   },
   {
@@ -6615,13 +6620,13 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 17933.77,
-     "out_usd": 17680,
-     "delta_usd": -253.77,
-     "in_luna": 241740.279388,
-     "out_luna": 276168.406828,
-     "delta_luna": 34428.127439,
-     "market_usd": -257.05,
+     "in_usd": 17933.76,
+     "out_usd": 17679.99,
+     "delta_usd": -253.76,
+     "in_luna": 241740.060924,
+     "out_luna": 276168.196814,
+     "delta_luna": 34428.13589,
+     "market_usd": -257.04,
      "lp_usd": 3.27,
      "trips_valued": 28,
      "trips_blank": 10
@@ -6645,8 +6650,8 @@
     },
     "positions_not_held": 1,
     "not_held_usd": 530.14,
-    "net_usd": 1150.45,
-    "net_luna": 54838.887331
+    "net_usd": 1150.46,
+    "net_luna": 54838.895782
    }
   },
   {
@@ -9556,13 +9561,13 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 8075.5,
-     "out_usd": 8595.64,
-     "delta_usd": 520.12,
-     "in_luna": 71732.409416,
-     "out_luna": 147319.579488,
-     "delta_luna": 75587.170074,
-     "market_usd": 236,
+     "in_usd": 8075.45,
+     "out_usd": 8595.59,
+     "delta_usd": 520.1,
+     "in_luna": 71731.932692,
+     "out_luna": 147318.362149,
+     "delta_luna": 75586.429459,
+     "market_usd": 235.98,
      "lp_usd": 284.12,
      "trips_valued": 15,
      "trips_blank": 8
@@ -9584,8 +9589,8 @@
      "bribes_luna": 164.284434
     },
     "positions_with_unmatched_units": 3,
-    "net_usd": 4013.17,
-    "net_luna": 106368.065466
+    "net_usd": 4013.15,
+    "net_luna": 106367.324851
    }
   },
   {
@@ -10039,10 +10044,10 @@
     "open": {
      "cost_usd": 616.27,
      "cost_luna": 12070.154258,
-     "value_usd": 620.75,
-     "value_luna": 12158.02775,
-     "unrealized_usd": 4.49,
-     "unrealized_luna": 87.873493,
+     "value_usd": 624.13,
+     "value_luna": 12224.16864,
+     "unrealized_usd": 7.86,
+     "unrealized_luna": 154.014382,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -10053,10 +10058,10 @@
      "bribes_luna": 5774.530382
     },
     "positions_with_unmatched_units": 1,
-    "positions_not_held": 2,
-    "not_held_usd": 536.82,
-    "net_usd": 807.52,
-    "net_luna": 21642.699585
+    "positions_not_held": 1,
+    "not_held_usd": 533.44,
+    "net_usd": 810.9,
+    "net_luna": 21708.840474
    }
   },
   {
@@ -10340,12 +10345,12 @@
      "trips_suspect": 1
     },
     "open": {
-     "cost_usd": 0,
-     "cost_luna": 0,
-     "value_usd": 0,
-     "value_luna": 0,
-     "unrealized_usd": 0,
-     "unrealized_luna": 0,
+     "cost_usd": 2944.47,
+     "cost_luna": 57670.254317,
+     "value_usd": 2944.77,
+     "value_luna": 57676.035187,
+     "unrealized_usd": 0.3,
+     "unrealized_luna": 5.78087,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -10356,10 +10361,8 @@
      "bribes_luna": 105.549144,
      "bribes_unpriced_coins": 1
     },
-    "positions_not_held": 1,
-    "not_held_usd": 2944.77,
-    "net_usd": -2180.01,
-    "net_luna": 41332.406115
+    "net_usd": -2179.72,
+    "net_luna": 41338.186986
    }
   },
   {
@@ -10827,7 +10830,7 @@
      "positions_unvalued": 0
     },
     "rewards": {
-     "claims_luna": 6164.731425,
+     "claims_luna": 6164.731801,
      "claims_usd": 868.44,
      "unattributed_luna": 0.802811,
      "bribes_usd": 0,
@@ -10836,7 +10839,7 @@
     "positions_with_unmatched_units": 2,
     "positions_disputed": 1,
     "net_usd": 120.03,
-    "net_luna": 9983.892156
+    "net_luna": 9983.892533
    }
   },
   {
@@ -11143,9 +11146,9 @@
      "cost_usd": 11.52,
      "cost_luna": 71.926252,
      "value_usd": 5.39,
-     "value_luna": 105.513293,
+     "value_luna": 105.513302,
      "unrealized_usd": -6.13,
-     "unrealized_luna": 33.587041,
+     "unrealized_luna": 33.58705,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -11156,7 +11159,7 @@
      "bribes_luna": 0
     },
     "net_usd": 72.31,
-    "net_luna": 1201.509011
+    "net_luna": 1201.50902
    }
   },
   {
@@ -12081,9 +12084,9 @@
      "cost_usd": 170.05,
      "cost_luna": 1533.636912,
      "value_usd": 95.83,
-     "value_luna": 1876.840588,
+     "value_luna": 1876.840036,
      "unrealized_usd": -74.23,
-     "unrealized_luna": 343.203677,
+     "unrealized_luna": 343.203125,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -12096,7 +12099,7 @@
     },
     "positions_with_unmatched_units": 3,
     "net_usd": 600.81,
-    "net_luna": 2684.387708
+    "net_luna": 2684.387156
    }
   },
   {
@@ -13210,13 +13213,13 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 34587.32,
-     "out_usd": 36212.85,
-     "delta_usd": 1625.54,
-     "in_luna": 112722.308082,
-     "out_luna": 146315.877396,
-     "delta_luna": 33593.569314,
-     "market_usd": 629.96,
+     "in_usd": 34587.3,
+     "out_usd": 36212.83,
+     "delta_usd": 1625.53,
+     "in_luna": 112722.139045,
+     "out_luna": 146315.543557,
+     "delta_luna": 33593.404511,
+     "market_usd": 629.95,
      "lp_usd": 995.59,
      "trips_valued": 22,
      "trips_blank": 9
@@ -13239,8 +13242,8 @@
      "bribes_unpriced_coins": 1
     },
     "positions_with_unmatched_units": 5,
-    "net_usd": 3472.44,
-    "net_luna": 44193.252138
+    "net_usd": 3472.43,
+    "net_luna": 44193.087335
    }
   },
   {
@@ -13570,14 +13573,14 @@
     "open": {
      "cost_usd": 713.08,
      "cost_luna": 13327.598871,
-     "value_usd": 664.97,
-     "value_luna": 13024.029248,
-     "unrealized_usd": -48.11,
-     "unrealized_luna": -303.569622,
+     "value_usd": 699.45,
+     "value_luna": 13699.365576,
+     "unrealized_usd": -13.63,
+     "unrealized_luna": 371.766705,
      "positions_unvalued": 0
     },
     "rewards": {
-     "claims_luna": 27302.461267,
+     "claims_luna": 27302.461383,
      "claims_usd": 2933.39,
      "unattributed_luna": 2.249421,
      "bribes_usd": 2699.19,
@@ -13586,10 +13589,8 @@
     },
     "positions_with_unmatched_units": 6,
     "positions_disputed": 1,
-    "positions_not_held": 1,
-    "not_held_usd": 34.48,
-    "net_usd": 2861.27,
-    "net_luna": 59101.443122
+    "net_usd": 2895.75,
+    "net_luna": 59776.779566
    }
   },
   {
@@ -14220,12 +14221,12 @@
      "trips_blank": 2
     },
     "open": {
-     "cost_usd": 3528.55,
-     "cost_luna": 36424.375461,
-     "value_usd": 4137.11,
-     "value_luna": 81029.194015,
+     "cost_usd": 3528.52,
+     "cost_luna": 36423.968203,
+     "value_usd": 4137.06,
+     "value_luna": 81028.292629,
      "unrealized_usd": 608.55,
-     "unrealized_luna": 44604.818554,
+     "unrealized_luna": 44604.324426,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -14236,8 +14237,8 @@
      "bribes_luna": 65.807624
     },
     "positions_with_unmatched_units": 1,
-    "net_usd": 2816.73,
-    "net_luna": 74399.57022
+    "net_usd": 2816.72,
+    "net_luna": 74399.076092
    }
   },
   {
@@ -15886,11 +15887,11 @@
     },
     "open": {
      "cost_usd": 10.29,
-     "cost_luna": 227.80117,
-     "value_usd": 11,
-     "value_luna": 215.49498,
-     "unrealized_usd": 0.71,
-     "unrealized_luna": -12.30619,
+     "cost_luna": 227.801168,
+     "value_usd": 10.97,
+     "value_luna": 214.887726,
+     "unrealized_usd": 0.68,
+     "unrealized_luna": -12.913442,
      "positions_unvalued": 1
     },
     "rewards": {
@@ -15900,8 +15901,8 @@
      "bribes_usd": 0,
      "bribes_luna": 0
     },
-    "net_usd": 0.72,
-    "net_luna": -12.245603
+    "net_usd": 0.69,
+    "net_luna": -12.852855
    }
   },
   {
@@ -18303,10 +18304,10 @@
     "open": {
      "cost_usd": 450.22,
      "cost_luna": 8817.915541,
-     "value_usd": 463.5,
-     "value_luna": 9077.991464,
+     "value_usd": 463.49,
+     "value_luna": 9077.988568,
      "unrealized_usd": 13.28,
-     "unrealized_luna": 260.075923,
+     "unrealized_luna": 260.073027,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -18319,9 +18320,9 @@
     },
     "positions_with_unmatched_units": 2,
     "positions_not_held": 2,
-    "not_held_usd": 3189.78,
+    "not_held_usd": 3189.75,
     "net_usd": 2723.44,
-    "net_luna": 35549.880007
+    "net_luna": 35549.877111
    }
   },
   {
@@ -19074,9 +19075,9 @@
      "cost_usd": 1724.34,
      "cost_luna": 29048.672721,
      "value_usd": 1442.42,
-     "value_luna": 28251.24374,
+     "value_luna": 28251.243843,
      "unrealized_usd": -281.92,
-     "unrealized_luna": -797.428981,
+     "unrealized_luna": -797.428878,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -19088,7 +19089,7 @@
     },
     "positions_with_unmatched_units": 1,
     "net_usd": -388.13,
-    "net_luna": 11708.610852
+    "net_luna": 11708.610955
    }
   },
   {
@@ -19550,9 +19551,9 @@
      "cost_usd": 1.39,
      "cost_luna": 3.465583,
      "value_usd": 1.47,
-     "value_luna": 28.871873,
+     "value_luna": 28.871861,
      "unrealized_usd": 0.09,
-     "unrealized_luna": 25.406291,
+     "unrealized_luna": 25.406278,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -19565,7 +19566,7 @@
     },
     "positions_with_unmatched_units": 3,
     "net_usd": 98.48,
-    "net_luna": 1201.829637
+    "net_luna": 1201.829624
    }
   },
   {
@@ -19781,17 +19782,17 @@
    "counts": {
     "deposit": 31,
     "withdraw": 30,
-    "claim": 265
+    "claim": 266
    },
    "first_event": "2024-10-31T15:56:25Z",
-   "last_event": "2026-09-27T07:51:09Z",
+   "last_event": "2026-09-28T09:09:22Z",
    "first_by_type": {
     "claim": "2024-11-03T07:20:59Z",
     "deposit": "2024-10-31T15:56:25Z",
     "withdraw": "2024-12-06T14:03:42Z"
    },
    "last_by_type": {
-    "claim": "2026-09-27T07:51:09Z",
+    "claim": "2026-09-28T09:09:22Z",
     "deposit": "2026-09-23T16:26:23Z",
     "withdraw": "2026-09-24T12:37:52Z"
    },
@@ -19813,15 +19814,15 @@
     "withdraw_shares_raw": "78668429662364362"
    },
    "claims": {
-    "count": 265,
-    "measured_records": 265,
+    "count": 266,
+    "measured_records": 266,
     "v1_unmeasured_records": 0,
-    "pool_claim_entries": 486
+    "pool_claim_entries": 488
    },
    "claimed_yield": {
-    "luna_display": 73638.78846800004,
-    "usd_at_event": 4323.419616204563,
-    "valued_events": 486,
+    "luna_display": 73707.10381100004,
+    "usd_at_event": 4326.907592672114,
+    "valued_events": 488,
     "unvalued_price_events": 0
    },
    "by_pool": {
@@ -19840,8 +19841,8 @@
     "cw20:terra19xrvvkq5607xudcxvw444yycjz6e3vk3l8p633z68k0vv5q09wnsa9q2qt,cw20:terra1euf8klqukk4wlly90nve0n6drqvq9pst73wc34pruuvx09nptxyse68hgl": {
      "deposits": 0,
      "withdraws": 0,
-     "claims": 88,
-     "claim_usd_at_event": 1534.5503681801626
+     "claims": 89,
+     "claim_usd_at_event": 1536.7406246920395
     },
     "cw20:terra1euf8klqukk4wlly90nve0n6drqvq9pst73wc34pruuvx09nptxyse68hgl": {
      "deposits": 14,
@@ -19858,8 +19859,8 @@
     "cw20:terra1h840qkh5pqmrvnt6d3m97slcl3q8k6czv67rrmnydp96xwda2afsghwnjr,cw20:terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc,native:ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6": {
      "deposits": 0,
      "withdraws": 0,
-     "claims": 172,
-     "claim_usd_at_event": 844.9482337307087
+     "claims": 173,
+     "claim_usd_at_event": 846.2459536863827
     },
     "cw20:terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc": {
      "deposits": 1,
@@ -19891,23 +19892,23 @@
     },
     "open": {
      "cost_usd": 4052.12,
-     "cost_luna": 78770.773354,
-     "value_usd": 4003.32,
-     "value_luna": 78408.843245,
+     "cost_luna": 78770.640262,
+     "value_usd": 4003.31,
+     "value_luna": 78408.703239,
      "unrealized_usd": -48.8,
-     "unrealized_luna": -361.930109,
+     "unrealized_luna": -361.937023,
      "positions_unvalued": 1
     },
     "rewards": {
-     "claims_luna": 73638.788468,
-     "claims_usd": 4323.42,
+     "claims_luna": 73707.103811,
+     "claims_usd": 4326.91,
      "unattributed_luna": 6.422907,
      "bribes_usd": 0,
      "bribes_luna": 0
     },
     "positions_with_unmatched_units": 1,
-    "net_usd": 4118.52,
-    "net_luna": 164055.245373
+    "net_usd": 4122,
+    "net_luna": 164123.553802
    }
   },
   {
@@ -20525,9 +20526,9 @@
      "cost_usd": 993.93,
      "cost_luna": 7370.343844,
      "value_usd": 622.26,
-     "value_luna": 12187.550129,
+     "value_luna": 12187.548403,
      "unrealized_usd": -371.67,
-     "unrealized_luna": 4817.206285,
+     "unrealized_luna": 4817.204559,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -20539,7 +20540,7 @@
     },
     "positions_with_unmatched_units": 14,
     "net_usd": -651.19,
-    "net_luna": 7215.814203
+    "net_luna": 7215.812477
    }
   },
   {
@@ -20900,10 +20901,10 @@
     "open": {
      "cost_usd": 289.49,
      "cost_luna": 2939.985577,
-     "value_usd": 1564.21,
-     "value_luna": 30636.448896,
-     "unrealized_usd": 1274.71,
-     "unrealized_luna": 27696.463319,
+     "value_usd": 1564.19,
+     "value_luna": 30636.187563,
+     "unrealized_usd": 1274.7,
+     "unrealized_luna": 27696.201986,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -20916,8 +20917,8 @@
     "positions_with_unmatched_units": 1,
     "positions_not_held": 1,
     "not_held_usd": 3.51,
-    "net_usd": 2367.35,
-    "net_luna": 55415.968991
+    "net_usd": 2367.34,
+    "net_luna": 55415.707658
    }
   },
   {
@@ -24016,7 +24017,7 @@
      "value_usd": 3.9,
      "value_luna": 76.314128,
      "unrealized_usd": -23.1,
-     "unrealized_luna": -2.828593,
+     "unrealized_luna": -2.828592,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -24027,7 +24028,7 @@
      "bribes_luna": 0
     },
     "net_usd": -23.1,
-    "net_luna": -2.828593
+    "net_luna": -2.828592
    }
   },
   {
@@ -25074,10 +25075,10 @@
     "open": {
      "cost_usd": 1905.39,
      "cost_luna": 37137.206018,
-     "value_usd": 1910.16,
-     "value_luna": 37412.266176,
+     "value_usd": 1910.15,
+     "value_luna": 37412.178654,
      "unrealized_usd": 4.77,
-     "unrealized_luna": 275.060159,
+     "unrealized_luna": 274.972636,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -25089,7 +25090,7 @@
     },
     "positions_with_unmatched_units": 6,
     "net_usd": -4830.92,
-    "net_luna": -2182.05294
+    "net_luna": -2182.140463
    }
   },
   {
@@ -25845,10 +25846,10 @@
     "open": {
      "cost_usd": 547.57,
      "cost_luna": 10152.003063,
-     "value_usd": 508.28,
-     "value_luna": 9955.234685,
-     "unrealized_usd": -39.29,
-     "unrealized_luna": -196.768379,
+     "value_usd": 734.82,
+     "value_luna": 14392.094038,
+     "unrealized_usd": 187.25,
+     "unrealized_luna": 4240.090974,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -25860,10 +25861,10 @@
      "bribes_unpriced_coins": 2
     },
     "positions_with_unmatched_units": 2,
-    "positions_not_held": 2,
-    "not_held_usd": 4187.7,
-    "net_usd": 835.44,
-    "net_luna": 14801.365958
+    "positions_not_held": 1,
+    "not_held_usd": 3961.12,
+    "net_usd": 1061.97,
+    "net_luna": 19238.225311
    }
   },
   {
@@ -26822,9 +26823,9 @@
      "cost_usd": 0,
      "cost_luna": 0,
      "value_usd": 316.62,
-     "value_luna": 6201.370682,
+     "value_luna": 6201.30019,
      "unrealized_usd": 316.62,
-     "unrealized_luna": 6201.370682,
+     "unrealized_luna": 6201.30019,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -26834,8 +26835,8 @@
      "bribes_usd": 0,
      "bribes_luna": 0
     },
-    "net_usd": 635.09,
-    "net_luna": 9764.018
+    "net_usd": 635.08,
+    "net_luna": 9763.947508
    }
   },
   {
@@ -27317,10 +27318,10 @@
     "open": {
      "cost_usd": 321.87,
      "cost_luna": 1400.188343,
-     "value_usd": 175.9,
-     "value_luna": 3445.146681,
-     "unrealized_usd": -145.98,
-     "unrealized_luna": 2044.958338,
+     "value_usd": 173.41,
+     "value_luna": 3396.464181,
+     "unrealized_usd": -148.46,
+     "unrealized_luna": 1996.275838,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -27330,8 +27331,8 @@
      "bribes_usd": 0,
      "bribes_luna": 0
     },
-    "net_usd": -186.98,
-    "net_luna": 2353.237522
+    "net_usd": -189.47,
+    "net_luna": 2304.555022
    }
   },
   {
@@ -27659,9 +27660,9 @@
      "cost_usd": 315.25,
      "cost_luna": 6560.497074,
      "value_usd": 367.79,
-     "value_luna": 7203.448868,
+     "value_luna": 7203.448864,
      "unrealized_usd": 52.53,
-     "unrealized_luna": 642.951794,
+     "unrealized_luna": 642.95179,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -27672,7 +27673,7 @@
      "bribes_luna": 0
     },
     "net_usd": 157.42,
-    "net_luna": 14966.774328
+    "net_luna": 14966.774324
    }
   },
   {
@@ -28895,9 +28896,9 @@
      "cost_usd": 18.3,
      "cost_luna": 35.228084,
      "value_usd": 7.9,
-     "value_luna": 154.659706,
+     "value_luna": 154.659705,
      "unrealized_usd": -10.4,
-     "unrealized_luna": 119.431622,
+     "unrealized_luna": 119.431621,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -28908,7 +28909,7 @@
      "bribes_luna": 0
     },
     "net_usd": 285.86,
-    "net_luna": 634.192064
+    "net_luna": 634.192063
    }
   },
   {
@@ -30801,8 +30802,8 @@
      "out_usd": 31661.85,
      "delta_usd": -4784.35,
      "in_luna": 186258.5183,
-     "out_luna": 199858.761001,
-     "delta_luna": 13600.242697,
+     "out_luna": 199858.760981,
+     "delta_luna": 13600.242677,
      "market_usd": -4608.14,
      "lp_usd": -176.16,
      "trips_valued": 136,
@@ -30811,14 +30812,14 @@
     "open": {
      "cost_usd": 2062.06,
      "cost_luna": 43882.658731,
-     "value_usd": 3711.55,
-     "value_luna": 72694.233566,
-     "unrealized_usd": 1649.49,
-     "unrealized_luna": 28811.574835,
+     "value_usd": 3711.53,
+     "value_luna": 72693.933417,
+     "unrealized_usd": 1649.48,
+     "unrealized_luna": 28811.274685,
      "positions_unvalued": 0
     },
     "rewards": {
-     "claims_luna": 29956.700341,
+     "claims_luna": 29956.685696,
      "claims_usd": 4688.56,
      "unattributed_luna": 0,
      "bribes_usd": 2310.2,
@@ -30827,8 +30828,8 @@
     },
     "positions_with_unmatched_units": 2,
     "positions_disputed": 2,
-    "net_usd": 3863.9,
-    "net_luna": 83038.017077
+    "net_usd": 3863.88,
+    "net_luna": 83037.702262
    }
   },
   {
@@ -35435,9 +35436,9 @@
      "cost_usd": 0,
      "cost_luna": 0.000003,
      "value_usd": 0,
-     "value_luna": 0.000162,
+     "value_luna": 0.000159,
      "unrealized_usd": 0,
-     "unrealized_luna": 0.000159,
+     "unrealized_luna": 0.000156,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -35449,7 +35450,7 @@
     },
     "positions_with_unmatched_units": 5,
     "net_usd": 83.28,
-    "net_luna": 2405.728449
+    "net_luna": 2405.728446
    }
   },
   {
@@ -38406,13 +38407,13 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 1427557.18,
-     "out_usd": 1406759.02,
-     "delta_usd": -20798.21,
-     "in_luna": 8603030.529462,
-     "out_luna": 10222606.008519,
-     "delta_luna": 1619575.479051,
-     "market_usd": -25379.29,
+     "in_usd": 1427557.13,
+     "out_usd": 1406758.93,
+     "delta_usd": -20798.24,
+     "in_luna": 8603030.008529,
+     "out_luna": 10222604.424349,
+     "delta_luna": 1619574.415814,
+     "market_usd": -25379.32,
      "lp_usd": 4581.05,
      "trips_valued": 116,
      "trips_blank": 39
@@ -38436,8 +38437,8 @@
     "positions_with_unmatched_units": 11,
     "positions_not_held": 1,
     "not_held_usd": 36.53,
-    "net_usd": 31189.08,
-    "net_luna": 2018271.757531
+    "net_usd": 31189.05,
+    "net_luna": 2018270.694294
    }
   },
   {
@@ -39043,10 +39044,10 @@
     "open": {
      "cost_usd": 3913.18,
      "cost_luna": 35291.811389,
-     "value_usd": 3562.85,
-     "value_luna": 69781.791883,
-     "unrealized_usd": -350.33,
-     "unrealized_luna": 34489.980494,
+     "value_usd": 3562.83,
+     "value_luna": 69781.486431,
+     "unrealized_usd": -350.35,
+     "unrealized_luna": 34489.675041,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -39057,8 +39058,8 @@
      "bribes_luna": 0
     },
     "positions_with_unmatched_units": 1,
-    "net_usd": 812.95,
-    "net_luna": 195762.08779
+    "net_usd": 812.93,
+    "net_luna": 195761.782337
    }
   },
   {
@@ -39330,10 +39331,10 @@
     "open": {
      "cost_usd": 11.22,
      "cost_luna": 31.914999,
-     "value_usd": 8.72,
-     "value_luna": 170.814339,
-     "unrealized_usd": -2.5,
-     "unrealized_luna": 138.89934,
+     "value_usd": 8.42,
+     "value_luna": 164.870675,
+     "unrealized_usd": -2.8,
+     "unrealized_luna": 132.955676,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -39344,8 +39345,8 @@
      "bribes_luna": 0
     },
     "positions_with_unmatched_units": 3,
-    "net_usd": 1930.4,
-    "net_luna": 24048.303566
+    "net_usd": 1930.1,
+    "net_luna": 24042.359902
    }
   },
   {
@@ -39602,12 +39603,12 @@
      "trips_blank": 1
     },
     "open": {
-     "cost_usd": 3797.4,
-     "cost_luna": 71946.816186,
-     "value_usd": 4075.67,
-     "value_luna": 79825.89207,
+     "cost_usd": 3797.39,
+     "cost_luna": 71946.665172,
+     "value_usd": 4075.66,
+     "value_luna": 79825.732468,
      "unrealized_usd": 278.27,
-     "unrealized_luna": 7879.075885,
+     "unrealized_luna": 7879.067295,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -39618,7 +39619,7 @@
      "bribes_luna": 0
     },
     "net_usd": 2533.07,
-    "net_luna": 154795.909922
+    "net_luna": 154795.901332
    }
   },
   {
@@ -40361,9 +40362,9 @@
      "cost_usd": 0,
      "cost_luna": 0,
      "value_usd": 126.41,
-     "value_luna": 2475.942664,
+     "value_luna": 2475.914415,
      "unrealized_usd": 126.41,
-     "unrealized_luna": 2475.942664,
+     "unrealized_luna": 2475.914415,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -40374,7 +40375,7 @@
      "bribes_luna": 0
     },
     "net_usd": 134.24,
-    "net_luna": 2520.424316
+    "net_luna": 2520.396067
    }
   },
   {
@@ -41011,13 +41012,13 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 50543.7,
-     "out_usd": 53084.74,
-     "delta_usd": 2541.05,
-     "in_luna": 459409.788431,
-     "out_luna": 462072.000575,
-     "delta_luna": 2662.212142,
-     "market_usd": 2600.68,
+     "in_usd": 50543.58,
+     "out_usd": 53084.61,
+     "delta_usd": 2541.03,
+     "in_luna": 459407.703889,
+     "out_luna": 462069.89273,
+     "delta_luna": 2662.18884,
+     "market_usd": 2600.66,
      "lp_usd": -59.6,
      "trips_valued": 35,
      "trips_blank": 7
@@ -41039,8 +41040,8 @@
      "bribes_luna": 0
     },
     "positions_with_unmatched_units": 8,
-    "net_usd": 2868.96,
-    "net_luna": 5690.6332
+    "net_usd": 2868.94,
+    "net_luna": 5690.609898
    }
   },
   {
@@ -41817,10 +41818,10 @@
     "open": {
      "cost_usd": 0.06,
      "cost_luna": 0.152711,
-     "value_usd": 0.07,
-     "value_luna": 1.337165,
-     "unrealized_usd": 0.01,
-     "unrealized_luna": 1.184454,
+     "value_usd": 0.06,
+     "value_luna": 1.224857,
+     "unrealized_usd": 0,
+     "unrealized_luna": 1.072145,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -41831,8 +41832,8 @@
      "bribes_luna": 0
     },
     "positions_with_unmatched_units": 2,
-    "net_usd": 89.29,
-    "net_luna": 67.591944
+    "net_usd": 89.28,
+    "net_luna": 67.479635
    }
   },
   {
@@ -42721,9 +42722,9 @@
      "cost_usd": 45677.34,
      "cost_luna": 312115.045897,
      "value_usd": 22399.77,
-     "value_luna": 438720.86624,
-     "unrealized_usd": -23277.56,
-     "unrealized_luna": 126605.820342,
+     "value_luna": 438720.797502,
+     "unrealized_usd": -23277.57,
+     "unrealized_luna": 126605.751605,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -42734,8 +42735,8 @@
      "bribes_luna": 0
     },
     "positions_with_unmatched_units": 4,
-    "net_usd": -14506.81,
-    "net_luna": 253574.053176
+    "net_usd": -14506.82,
+    "net_luna": 253573.984439
    }
   },
   {
@@ -43092,9 +43093,9 @@
      "cost_usd": 1230.73,
      "cost_luna": 4135.065063,
      "value_usd": 874.96,
-     "value_luna": 17136.927422,
+     "value_luna": 17136.927424,
      "unrealized_usd": -355.77,
-     "unrealized_luna": 13001.862359,
+     "unrealized_luna": 13001.86236,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -43106,7 +43107,7 @@
     },
     "positions_with_unmatched_units": 2,
     "net_usd": -332.94,
-    "net_luna": 13083.944185
+    "net_luna": 13083.944186
    }
   },
   {
@@ -43491,9 +43492,9 @@
      "cost_usd": 0,
      "cost_luna": 0,
      "value_usd": 67.89,
-     "value_luna": 1329.759278,
+     "value_luna": 1329.744163,
      "unrealized_usd": 67.89,
-     "unrealized_luna": 1329.759278,
+     "unrealized_luna": 1329.744163,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -43504,7 +43505,7 @@
      "bribes_luna": 0
     },
     "net_usd": 163.74,
-    "net_luna": 2220.369593
+    "net_luna": 2220.354478
    }
   },
   {
@@ -43796,10 +43797,10 @@
     "open": {
      "cost_usd": 93.33,
      "cost_luna": 147.796773,
-     "value_usd": 74.14,
-     "value_luna": 1452.184355,
-     "unrealized_usd": -19.19,
-     "unrealized_luna": 1304.387582,
+     "value_usd": 68.82,
+     "value_luna": 1347.851433,
+     "unrealized_usd": -24.52,
+     "unrealized_luna": 1200.05466,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -43809,8 +43810,8 @@
      "bribes_usd": 0,
      "bribes_luna": 0
     },
-    "net_usd": -19.19,
-    "net_luna": 1304.387582
+    "net_usd": -24.52,
+    "net_luna": 1200.05466
    }
   },
   {
@@ -45911,9 +45912,9 @@
      "cost_usd": 32038.18,
      "cost_luna": 181632.659072,
      "value_usd": 9651.89,
-     "value_luna": 189041.517499,
+     "value_luna": 189041.518363,
      "unrealized_usd": -22386.28,
-     "unrealized_luna": 7408.858427,
+     "unrealized_luna": 7408.859291,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -45927,7 +45928,7 @@
     "positions_with_unmatched_units": 11,
     "positions_disputed": 2,
     "net_usd": -152396.11,
-    "net_luna": 778122.881326
+    "net_luna": 778122.882189
    }
   },
   {
@@ -46369,12 +46370,12 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 1822.27,
-     "out_usd": 1909.96,
+     "in_usd": 1822.25,
+     "out_usd": 1909.94,
      "delta_usd": 87.68,
-     "in_luna": 32385.668325,
-     "out_luna": 30703.119843,
-     "delta_luna": -1682.548485,
+     "in_luna": 32385.32789,
+     "out_luna": 30702.798004,
+     "delta_luna": -1682.529889,
      "market_usd": 90.45,
      "lp_usd": -2.78,
      "trips_valued": 3,
@@ -46397,7 +46398,7 @@
      "bribes_luna": 0
     },
     "net_usd": 106.89,
-    "net_luna": -1339.491452
+    "net_luna": -1339.472856
    }
   },
   {
@@ -50041,9 +50042,9 @@
      "cost_usd": 1187.64,
      "cost_luna": 3227.886276,
      "value_usd": 752.77,
-     "value_luna": 14743.769941,
+     "value_luna": 14743.769605,
      "unrealized_usd": -434.87,
-     "unrealized_luna": 11515.883665,
+     "unrealized_luna": 11515.88333,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -50054,7 +50055,7 @@
      "bribes_luna": 0
     },
     "net_usd": -1005.65,
-    "net_luna": 12625.066871
+    "net_luna": 12625.066536
    }
   },
   {
@@ -50552,12 +50553,12 @@
      "trips_blank": 2
     },
     "open": {
-     "cost_usd": 29773.68,
-     "cost_luna": 565098.110878,
-     "value_usd": 31025.19,
-     "value_luna": 607657.863699,
-     "unrealized_usd": 1251.51,
-     "unrealized_luna": 42559.752821,
+     "cost_usd": 29773.66,
+     "cost_luna": 565097.756076,
+     "value_usd": 31025.15,
+     "value_luna": 607657.069327,
+     "unrealized_usd": 1251.49,
+     "unrealized_luna": 42559.313252,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -50567,8 +50568,8 @@
      "bribes_usd": 0,
      "bribes_luna": 0
     },
-    "net_usd": -13723.76,
-    "net_luna": 357833.089622
+    "net_usd": -13723.79,
+    "net_luna": 357832.650053
    }
   },
   {
@@ -50868,10 +50869,10 @@
     "open": {
      "cost_usd": 0.72,
      "cost_luna": 1.672724,
-     "value_usd": 0.48,
-     "value_luna": 9.397404,
-     "unrealized_usd": -0.24,
-     "unrealized_luna": 7.72468,
+     "value_usd": 0.46,
+     "value_luna": 8.959931,
+     "unrealized_usd": -0.26,
+     "unrealized_luna": 7.287207,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -50881,8 +50882,8 @@
      "bribes_usd": 0,
      "bribes_luna": 0
     },
-    "net_usd": 620.02,
-    "net_luna": -37.382364
+    "net_usd": 620,
+    "net_luna": -37.819837
    }
   },
   {
@@ -51107,9 +51108,9 @@
      "cost_usd": 0,
      "cost_luna": 0,
      "value_usd": 0.3,
-     "value_luna": 5.917285,
+     "value_luna": 5.917217,
      "unrealized_usd": 0.3,
-     "unrealized_luna": 5.917285,
+     "unrealized_luna": 5.917217,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -51120,7 +51121,7 @@
      "bribes_luna": 0
     },
     "net_usd": 1.22,
-    "net_luna": 18.389716
+    "net_luna": 18.389648
    }
   },
   {
@@ -51924,24 +51925,24 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 170534.97,
-     "out_usd": 165263.92,
+     "in_usd": 170534.92,
+     "out_usd": 165263.86,
      "delta_usd": -5271.29,
-     "in_luna": 1527298.721991,
-     "out_luna": 1596083.896678,
-     "delta_luna": 68785.174691,
+     "in_luna": 1527297.942841,
+     "out_luna": 1596083.086329,
+     "delta_luna": 68785.143491,
      "market_usd": -3917.51,
      "lp_usd": -1353.79,
      "trips_valued": 234,
      "trips_blank": 124
     },
     "open": {
-     "cost_usd": 10266.59,
-     "cost_luna": 192583.898829,
-     "value_usd": 9415.09,
-     "value_luna": 184403.444612,
+     "cost_usd": 10266.54,
+     "cost_luna": 192582.947565,
+     "value_usd": 9415.04,
+     "value_luna": 184402.61035,
      "unrealized_usd": -851.5,
-     "unrealized_luna": -8180.454217,
+     "unrealized_luna": -8180.337215,
      "positions_unvalued": 1
     },
     "rewards": {
@@ -51956,8 +51957,8 @@
     "positions_disputed": 1,
     "positions_not_held": 1,
     "not_held_usd": 1.83,
-    "net_usd": 6430.79,
-    "net_luna": 185864.397323
+    "net_usd": 6430.8,
+    "net_luna": 185864.483125
    }
   },
   {
@@ -52664,13 +52665,13 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 5735.82,
-     "out_usd": 5504.26,
-     "delta_usd": -231.56,
-     "in_luna": 130260.343443,
-     "out_luna": 109064.472771,
-     "delta_luna": -21195.870671,
-     "market_usd": -231.56,
+     "in_usd": 5735.76,
+     "out_usd": 5504.2,
+     "delta_usd": -231.55,
+     "in_luna": 130258.862761,
+     "out_luna": 109063.233025,
+     "delta_luna": -21195.629736,
+     "market_usd": -231.55,
      "lp_usd": 0,
      "trips_valued": 3,
      "trips_blank": 0
@@ -52691,8 +52692,8 @@
      "bribes_usd": 0,
      "bribes_luna": 0
     },
-    "net_usd": -133.37,
-    "net_luna": -19128.826003
+    "net_usd": -133.36,
+    "net_luna": -19128.585068
    }
   },
   {
@@ -54356,12 +54357,12 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 1093660.7,
-     "out_usd": 1069266.09,
+     "in_usd": 1093660.69,
+     "out_usd": 1069266.07,
      "delta_usd": -24394.57,
-     "in_luna": 9523844.531331,
-     "out_luna": 9831906.013851,
-     "delta_luna": 308061.482512,
+     "in_luna": 9523844.437832,
+     "out_luna": 9831905.930564,
+     "delta_luna": 308061.492723,
      "market_usd": -20310.11,
      "lp_usd": -4084.65,
      "trips_valued": 1031,
@@ -54371,9 +54372,9 @@
      "cost_usd": 56185.71,
      "cost_luna": 1078489.856306,
      "value_usd": 55428.6,
-     "value_luna": 1085622.01603,
+     "value_luna": 1085622.015885,
      "unrealized_usd": -757.1,
-     "unrealized_luna": 7132.159724,
+     "unrealized_luna": 7132.159579,
      "positions_unvalued": 1
     },
     "rewards": {
@@ -54388,7 +54389,7 @@
     "positions_not_held": 1,
     "not_held_usd": 2700.83,
     "net_usd": 7584.78,
-    "net_luna": 699523.790856
+    "net_luna": 699523.800921
    }
   },
   {
@@ -55367,10 +55368,10 @@
     "open": {
      "cost_usd": 8.85,
      "cost_luna": 25.121504,
-     "value_usd": 7.17,
-     "value_luna": 140.466921,
-     "unrealized_usd": -1.68,
-     "unrealized_luna": 115.345417,
+     "value_usd": 7.14,
+     "value_luna": 139.87812,
+     "unrealized_usd": -1.71,
+     "unrealized_luna": 114.756616,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -55381,8 +55382,8 @@
      "bribes_luna": 0
     },
     "positions_with_unmatched_units": 9,
-    "net_usd": -551.64,
-    "net_luna": 8923.602547
+    "net_usd": -551.67,
+    "net_luna": 8923.013746
    }
   },
   {
@@ -56284,9 +56285,9 @@
     },
     "open": {
      "cost_usd": 302.4,
-     "cost_luna": 5634.582487,
+     "cost_luna": 5634.582199,
      "value_usd": 367.04,
-     "value_luna": 7188.821801,
+     "value_luna": 7188.821513,
      "unrealized_usd": 64.64,
      "unrealized_luna": 1554.239314,
      "positions_unvalued": 1
@@ -58473,9 +58474,9 @@
      "cost_usd": 415.99,
      "cost_luna": 8560.956482,
      "value_usd": 435.3,
-     "value_luna": 8525.71161,
+     "value_luna": 8525.711144,
      "unrealized_usd": 19.31,
-     "unrealized_luna": -35.244873,
+     "unrealized_luna": -35.245339,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -58489,7 +58490,7 @@
     "positions_not_held": 1,
     "not_held_usd": 78.53,
     "net_usd": 227.13,
-    "net_luna": 2713.261491
+    "net_luna": 2713.261025
    }
   },
   {
@@ -60090,7 +60091,7 @@
      "positions_unvalued": 0
     },
     "rewards": {
-     "claims_luna": 41331.551814,
+     "claims_luna": 41331.551809,
      "claims_usd": 6113.51,
      "unattributed_luna": 0.608541,
      "bribes_usd": 82.86,
@@ -60100,9 +60101,9 @@
     "positions_with_unmatched_units": 9,
     "positions_disputed": 1,
     "positions_not_held": 2,
-    "not_held_usd": 1874.8,
+    "not_held_usd": 1874.78,
     "net_usd": 1539.25,
-    "net_luna": 61127.58846
+    "net_luna": 61127.588455
    }
   },
   {
@@ -60177,11 +60178,11 @@
     },
     "open": {
      "cost_usd": 0.31,
-     "cost_luna": 4.431462,
+     "cost_luna": 4.431411,
      "value_usd": 0.22,
-     "value_luna": 4.406273,
+     "value_luna": 4.406223,
      "unrealized_usd": -0.08,
-     "unrealized_luna": -0.025189,
+     "unrealized_luna": -0.025188,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -60192,7 +60193,7 @@
      "bribes_luna": 0
     },
     "net_usd": -0.07,
-    "net_luna": 0.259751
+    "net_luna": 0.259752
    }
   },
   {
@@ -64089,12 +64090,12 @@
      "trips_blank": 39
     },
     "open": {
-     "cost_usd": 0.7,
-     "cost_luna": 1.516628,
-     "value_usd": 0.43,
-     "value_luna": 8.45977,
-     "unrealized_usd": -0.27,
-     "unrealized_luna": 6.943142,
+     "cost_usd": 805.75,
+     "cost_luna": 15740.747707,
+     "value_usd": 725.6,
+     "value_luna": 14211.495172,
+     "unrealized_usd": -80.16,
+     "unrealized_luna": -1529.252535,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -64106,10 +64107,10 @@
      "bribes_unpriced_coins": 35
     },
     "positions_with_unmatched_units": 13,
-    "positions_not_held": 2,
-    "not_held_usd": 985.15,
-    "net_usd": 4844.45,
-    "net_luna": 81497.635521
+    "positions_not_held": 1,
+    "not_held_usd": 259.99,
+    "net_usd": 4764.57,
+    "net_luna": 79961.439844
    }
   },
   {
@@ -65880,9 +65881,9 @@
      "cost_usd": 798.39,
      "cost_luna": 9546.499878,
      "value_usd": 1099.49,
-     "value_luna": 21534.53527,
+     "value_luna": 21534.502625,
      "unrealized_usd": 301.1,
-     "unrealized_luna": 11988.035392,
+     "unrealized_luna": 11988.002747,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -65897,7 +65898,7 @@
     "positions_not_held": 1,
     "not_held_usd": 1.85,
     "net_usd": 3540.48,
-    "net_luna": 35524.844424
+    "net_luna": 35524.811779
    }
   },
   {
@@ -68102,7 +68103,7 @@
      "positions_unvalued": 0
     },
     "rewards": {
-     "claims_luna": 40288.332741,
+     "claims_luna": 40288.332738,
      "claims_usd": 5815.74,
      "unattributed_luna": 74.473305,
      "bribes_usd": 1686.65,
@@ -68112,7 +68113,7 @@
     "positions_with_unmatched_units": 9,
     "positions_disputed": 1,
     "net_usd": 1201.21,
-    "net_luna": 74177.419351
+    "net_luna": 74177.419348
    }
   },
   {
@@ -68878,8 +68879,8 @@
      "out_usd": 3534118.48,
      "delta_usd": -515480.74,
      "in_luna": 34489388.775692,
-     "out_luna": 38234388.717098,
-     "delta_luna": 3744999.941403,
+     "out_luna": 38234388.716734,
+     "delta_luna": 3744999.941039,
      "market_usd": -406473.15,
      "lp_usd": -109007.72,
      "trips_valued": 178,
@@ -68903,7 +68904,7 @@
     },
     "positions_with_unmatched_units": 1,
     "net_usd": 102623.09,
-    "net_luna": 9370125.236031
+    "net_luna": 9370125.235667
    }
   },
   {
@@ -70925,9 +70926,9 @@
      "cost_usd": 0.04,
      "cost_luna": 0.24189,
      "value_usd": 0.06,
-     "value_luna": 1.141269,
+     "value_luna": 1.137929,
      "unrealized_usd": 0.02,
-     "unrealized_luna": 0.899379,
+     "unrealized_luna": 0.896039,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -70940,7 +70941,7 @@
     },
     "positions_with_unmatched_units": 7,
     "net_usd": 197.26,
-    "net_luna": 265.741817
+    "net_luna": 265.738477
    }
   },
   {
@@ -75904,10 +75905,10 @@
     "open": {
      "cost_usd": 117090.32,
      "cost_luna": 852989.614862,
-     "value_usd": 51023.63,
-     "value_luna": 999346.395582,
-     "unrealized_usd": -66066.69,
-     "unrealized_luna": 146356.78072,
+     "value_usd": 49822.09,
+     "value_luna": 975813.070178,
+     "unrealized_usd": -67268.23,
+     "unrealized_luna": 122823.455316,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -75922,8 +75923,8 @@
     "positions_disputed": 1,
     "positions_not_held": 2,
     "not_held_usd": 259.82,
-    "net_usd": -33618.16,
-    "net_luna": 1069951.30822
+    "net_usd": -34819.7,
+    "net_luna": 1046417.982817
    }
   },
   {
@@ -76261,12 +76262,12 @@
      "trips_blank": 7
     },
     "open": {
-     "cost_usd": 318,
-     "cost_luna": 735.535431,
-     "value_usd": 130.44,
-     "value_luna": 2554.788942,
-     "unrealized_usd": -187.56,
-     "unrealized_luna": 1819.253511,
+     "cost_usd": 32.98,
+     "cost_luna": 87.251692,
+     "value_usd": 22.77,
+     "value_luna": 445.989263,
+     "unrealized_usd": -10.21,
+     "unrealized_luna": 358.737572,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -76278,9 +76279,9 @@
      "bribes_unpriced_coins": 46
     },
     "positions_with_unmatched_units": 2,
-    "positions_disputed": 2,
-    "net_usd": -30.61,
-    "net_luna": 2191.27921
+    "positions_disputed": 3,
+    "net_usd": 146.74,
+    "net_luna": 730.763271
    }
   },
   {
@@ -80204,9 +80205,9 @@
      "cost_usd": 0,
      "cost_luna": 0,
      "value_usd": 2.97,
-     "value_luna": 58.147495,
+     "value_luna": 58.146834,
      "unrealized_usd": 2.97,
-     "unrealized_luna": 58.147495,
+     "unrealized_luna": 58.146834,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -80218,7 +80219,7 @@
     },
     "positions_with_unmatched_units": 1,
     "net_usd": 102.02,
-    "net_luna": 3589.384788
+    "net_luna": 3589.384127
    }
   },
   {
@@ -81417,11 +81418,11 @@
     },
     "open": {
      "cost_usd": 47.13,
-     "cost_luna": 977.738316,
+     "cost_luna": 977.727202,
      "value_usd": 35.21,
-     "value_luna": 689.709348,
+     "value_luna": 689.70151,
      "unrealized_usd": -11.91,
-     "unrealized_luna": -288.028967,
+     "unrealized_luna": -288.025693,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -81433,7 +81434,7 @@
     },
     "positions_with_unmatched_units": 2,
     "net_usd": -925.13,
-    "net_luna": 26509.304607
+    "net_luna": 26509.307881
    }
   },
   {
@@ -82398,10 +82399,10 @@
     "open": {
      "cost_usd": 544.95,
      "cost_luna": 1098.673328,
-     "value_usd": 584.69,
-     "value_luna": 11451.787214,
+     "value_usd": 584.7,
+     "value_luna": 11451.833457,
      "unrealized_usd": 39.74,
-     "unrealized_luna": 10353.113886,
+     "unrealized_luna": 10353.160129,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -82412,7 +82413,7 @@
      "bribes_luna": 0
     },
     "net_usd": 64.09,
-    "net_luna": 10526.193483
+    "net_luna": 10526.239726
    }
   },
   {
@@ -82500,13 +82501,13 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 5005.41,
+     "in_usd": 5005.4,
      "out_usd": 4864.81,
-     "delta_usd": -140.6,
-     "in_luna": 65974.773009,
-     "out_luna": 89178.555243,
-     "delta_luna": 23203.782235,
-     "market_usd": -124.62,
+     "delta_usd": -140.59,
+     "in_luna": 65974.754277,
+     "out_luna": 89178.535776,
+     "delta_luna": 23203.7815,
+     "market_usd": -124.61,
      "lp_usd": -15.98,
      "trips_valued": 4,
      "trips_blank": 1
@@ -82527,8 +82528,8 @@
      "bribes_usd": 0,
      "bribes_luna": 0
     },
-    "net_usd": 388.27,
-    "net_luna": 32192.70613
+    "net_usd": 388.28,
+    "net_luna": 32192.705395
    }
   },
   {
@@ -86654,7 +86655,7 @@
      "positions_unvalued": 0
     },
     "rewards": {
-     "claims_luna": 12494.620728,
+     "claims_luna": 12494.62072,
      "claims_usd": 1982.06,
      "unattributed_luna": 12.087736,
      "bribes_usd": 197.19,
@@ -86664,7 +86665,7 @@
     "positions_with_unmatched_units": 2,
     "positions_disputed": 1,
     "net_usd": 1988.78,
-    "net_luna": 26453.48931
+    "net_luna": 26453.489302
    }
   },
   {
@@ -88240,9 +88241,9 @@
      "cost_usd": 169.12,
      "cost_luna": 2543.299407,
      "value_usd": 158.81,
-     "value_luna": 3110.504927,
+     "value_luna": 3110.504924,
      "unrealized_usd": -10.3,
-     "unrealized_luna": 567.20552,
+     "unrealized_luna": 567.205517,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -88253,7 +88254,7 @@
      "bribes_luna": 0
     },
     "net_usd": 6.44,
-    "net_luna": 860.310028
+    "net_luna": 860.310025
    }
   },
   {
@@ -88795,13 +88796,13 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 4014.98,
-     "out_usd": 4758.26,
-     "delta_usd": 743.3,
-     "in_luna": 41481.678057,
-     "out_luna": 75202.841505,
-     "delta_luna": 33721.163448,
-     "market_usd": 656.36,
+     "in_usd": 4014.94,
+     "out_usd": 4758.22,
+     "delta_usd": 743.29,
+     "in_luna": 41481.293388,
+     "out_luna": 75202.125488,
+     "delta_luna": 33720.832099,
+     "market_usd": 656.35,
      "lp_usd": 86.93,
      "trips_valued": 8,
      "trips_blank": 2
@@ -88823,8 +88824,8 @@
      "bribes_luna": 71.071447
     },
     "positions_with_unmatched_units": 1,
-    "net_usd": 2191.56,
-    "net_luna": 48356.441454
+    "net_usd": 2191.55,
+    "net_luna": 48356.110105
    }
   },
   {
@@ -91185,10 +91186,10 @@
     "open": {
      "cost_usd": 76966.45,
      "cost_luna": 1490812.97302,
-     "value_usd": 76009.49,
-     "value_luna": 1488718.271851,
-     "unrealized_usd": -956.96,
-     "unrealized_luna": -2094.701169,
+     "value_usd": 75843.53,
+     "value_luna": 1485467.823922,
+     "unrealized_usd": -1122.92,
+     "unrealized_luna": -5345.149098,
      "positions_unvalued": 1
     },
     "rewards": {
@@ -91199,8 +91200,8 @@
      "bribes_luna": 0
     },
     "positions_with_unmatched_units": 2,
-    "net_usd": 25420.26,
-    "net_luna": 901417.237593
+    "net_usd": 25254.3,
+    "net_luna": 898166.789664
    }
   },
   {
@@ -92060,13 +92061,13 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 11468.39,
-     "out_usd": 13215.26,
-     "delta_usd": 1746.85,
-     "in_luna": 140478.856259,
-     "out_luna": 152641.455083,
-     "delta_luna": 12162.598824,
-     "market_usd": 1786.63,
+     "in_usd": 11468.34,
+     "out_usd": 13215.19,
+     "delta_usd": 1746.83,
+     "in_luna": 140477.614444,
+     "out_luna": 152640.115014,
+     "delta_luna": 12162.50057,
+     "market_usd": 1786.61,
      "lp_usd": -39.8,
      "trips_valued": 9,
      "trips_blank": 4
@@ -92088,8 +92089,8 @@
      "bribes_luna": 52.046853,
      "bribes_unpriced_coins": 1
     },
-    "net_usd": 2179.72,
-    "net_luna": 17535.35879
+    "net_usd": 2179.7,
+    "net_luna": 17535.260536
    }
   },
   {
@@ -93183,28 +93184,28 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 2174316.55,
-     "out_usd": 1885085.07,
-     "delta_usd": -289231.59,
-     "in_luna": 15860652.874577,
-     "out_luna": 16107355.972798,
-     "delta_luna": 246703.098218,
-     "market_usd": -270356.79,
+     "in_usd": 2174316.27,
+     "out_usd": 1885084.82,
+     "delta_usd": -289231.57,
+     "in_luna": 15860649.595174,
+     "out_luna": 16107353.099416,
+     "delta_luna": 246703.504239,
+     "market_usd": -270356.77,
      "lp_usd": -18874.98,
      "trips_valued": 871,
      "trips_blank": 70
     },
     "open": {
-     "cost_usd": 43429.34,
-     "cost_luna": 819582.341475,
-     "value_usd": 41781.87,
-     "value_luna": 818337.794151,
+     "cost_usd": 43429.33,
+     "cost_luna": 819582.186581,
+     "value_usd": 41781.86,
+     "value_luna": 818337.63944,
      "unrealized_usd": -1647.46,
-     "unrealized_luna": -1244.547323,
+     "unrealized_luna": -1244.547142,
      "positions_unvalued": 0
     },
     "rewards": {
-     "claims_luna": 982751.552136,
+     "claims_luna": 982751.565108,
      "claims_usd": 130936.25,
      "unattributed_luna": 322.196621,
      "bribes_usd": 0,
@@ -93212,8 +93213,8 @@
     },
     "positions_with_unmatched_units": 1,
     "positions_disputed": 1,
-    "net_usd": -159942.8,
-    "net_luna": 1228210.103031
+    "net_usd": -159942.78,
+    "net_luna": 1228210.522205
    }
   },
   {
@@ -94161,12 +94162,12 @@
      "trips_blank": 0
     },
     "open": {
-     "cost_usd": 2024.54,
-     "cost_luna": 33538.930871,
-     "value_usd": 1972.58,
-     "value_luna": 38634.951885,
+     "cost_usd": 2024.52,
+     "cost_luna": 33538.585633,
+     "value_usd": 1972.56,
+     "value_luna": 38634.547908,
      "unrealized_usd": -51.95,
-     "unrealized_luna": 5096.021015,
+     "unrealized_luna": 5095.962275,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -94177,7 +94178,7 @@
      "bribes_luna": 0
     },
     "net_usd": 137.75,
-    "net_luna": 8751.230857
+    "net_luna": 8751.172117
    }
   },
   {
@@ -94556,9 +94557,9 @@
      "cost_usd": 0,
      "cost_luna": 0,
      "value_usd": 0.08,
-     "value_luna": 1.476931,
+     "value_luna": 1.476914,
      "unrealized_usd": 0.08,
-     "unrealized_luna": 1.476931,
+     "unrealized_luna": 1.476914,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -94569,7 +94570,7 @@
      "bribes_luna": 0
     },
     "net_usd": 0.08,
-    "net_luna": 1.476931
+    "net_luna": 1.476914
    }
   },
   {
@@ -95599,11 +95600,11 @@
     },
     "open": {
      "cost_usd": 98.05,
-     "cost_luna": 1920.311044,
+     "cost_luna": 1920.311098,
      "value_usd": 98.09,
      "value_luna": 1921.109395,
      "unrealized_usd": 0.04,
-     "unrealized_luna": 0.79835,
+     "unrealized_luna": 0.798297,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -95616,7 +95617,7 @@
     },
     "positions_with_unmatched_units": 2,
     "net_usd": 1641.38,
-    "net_luna": 15229.793368
+    "net_luna": 15229.793314
    }
   },
   {
@@ -97774,9 +97775,9 @@
      "cost_usd": 2022.92,
      "cost_luna": 9268.102153,
      "value_usd": 1036.31,
-     "value_luna": 20297.151158,
+     "value_luna": 20297.151049,
      "unrealized_usd": -986.61,
-     "unrealized_luna": 11029.049005,
+     "unrealized_luna": 11029.048896,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -97788,7 +97789,7 @@
     },
     "positions_with_unmatched_units": 6,
     "net_usd": -5342.28,
-    "net_luna": 15470.043463
+    "net_luna": 15470.043354
    }
   },
   {
@@ -98077,9 +98078,9 @@
      "cost_usd": 0.12,
      "cost_luna": 0.294839,
      "value_usd": 0.65,
-     "value_luna": 12.788263,
+     "value_luna": 12.788127,
      "unrealized_usd": 0.53,
-     "unrealized_luna": 12.493424,
+     "unrealized_luna": 12.493288,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -98090,7 +98091,7 @@
      "bribes_luna": 0
     },
     "net_usd": -1684.64,
-    "net_luna": 19545.674393
+    "net_luna": 19545.674257
    }
   },
   {
@@ -98550,9 +98551,9 @@
      "cost_usd": 1958.45,
      "cost_luna": 39910.566946,
      "value_usd": 2114.87,
-     "value_luna": 41421.674368,
+     "value_luna": 41421.674526,
      "unrealized_usd": 156.41,
-     "unrealized_luna": 1511.107422,
+     "unrealized_luna": 1511.10758,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -98565,7 +98566,7 @@
     },
     "positions_with_unmatched_units": 2,
     "net_usd": -1932.48,
-    "net_luna": 26475.619746
+    "net_luna": 26475.619904
    }
   },
   {
@@ -99200,11 +99201,11 @@
     },
     "open": {
      "cost_usd": 81272.82,
-     "cost_luna": 1591953.797286,
+     "cost_luna": 1591953.782871,
      "value_usd": 81270.88,
-     "value_luna": 1591767.681089,
+     "value_luna": 1591767.668811,
      "unrealized_usd": -1.94,
-     "unrealized_luna": -186.116196,
+     "unrealized_luna": -186.11406,
      "positions_unvalued": 1
     },
     "rewards": {
@@ -99216,7 +99217,7 @@
     },
     "positions_with_unmatched_units": 63,
     "net_usd": 5521.6,
-    "net_luna": 929517.835992
+    "net_luna": 929517.838128
    }
   },
   {
@@ -100531,11 +100532,11 @@
     },
     "open": {
      "cost_usd": 132.7,
-     "cost_luna": 2640.500834,
+     "cost_luna": 2640.500833,
      "value_usd": 131.8,
-     "value_luna": 2581.378128,
+     "value_luna": 2581.378105,
      "unrealized_usd": -0.91,
-     "unrealized_luna": -59.122706,
+     "unrealized_luna": -59.122728,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -100548,7 +100549,7 @@
     },
     "positions_with_unmatched_units": 2,
     "net_usd": -28.23,
-    "net_luna": 9011.728652
+    "net_luna": 9011.728631
    }
   },
   {
@@ -102042,12 +102043,12 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 9630.99,
-     "out_usd": 10166.03,
+     "in_usd": 9630.94,
+     "out_usd": 10165.98,
      "delta_usd": 535.04,
-     "in_luna": 74055.755347,
-     "out_luna": 154956.888938,
-     "delta_luna": 80901.133597,
+     "in_luna": 74055.262849,
+     "out_luna": 154955.599941,
+     "delta_luna": 80900.337096,
      "market_usd": 202.41,
      "lp_usd": 332.6,
      "trips_valued": 20,
@@ -102071,7 +102072,7 @@
     },
     "positions_with_unmatched_units": 5,
     "net_usd": 4108.96,
-    "net_luna": 113040.069262
+    "net_luna": 113039.272761
    }
   },
   {
@@ -102786,9 +102787,9 @@
      "cost_usd": 23787.93,
      "cost_luna": 120522.147297,
      "value_usd": 4477.32,
-     "value_luna": 87692.575254,
+     "value_luna": 87692.574563,
      "unrealized_usd": -19310.61,
-     "unrealized_luna": -32829.572043,
+     "unrealized_luna": -32829.572734,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -102799,7 +102800,7 @@
      "bribes_luna": 0
     },
     "net_usd": -18637.97,
-    "net_luna": 28213.579366
+    "net_luna": 28213.578675
    }
   },
   {
@@ -103798,12 +103799,12 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 6508.48,
-     "out_usd": 6645.08,
+     "in_usd": 6508.44,
+     "out_usd": 6645.04,
      "delta_usd": 136.59,
-     "in_luna": 53505.431755,
-     "out_luna": 108368.373403,
-     "delta_luna": 54862.941648,
+     "in_luna": 53505.042599,
+     "out_luna": 108367.378415,
+     "delta_luna": 54862.335817,
      "market_usd": 24.69,
      "lp_usd": 111.92,
      "trips_valued": 14,
@@ -103827,7 +103828,7 @@
     },
     "positions_with_unmatched_units": 4,
     "net_usd": 2254.66,
-    "net_luna": 77262.684285
+    "net_luna": 77262.078454
    }
   },
   {
@@ -104166,9 +104167,9 @@
      "cost_usd": 0.37,
      "cost_luna": 1.068049,
      "value_usd": 0.13,
-     "value_luna": 2.6415,
+     "value_luna": 2.641501,
      "unrealized_usd": -0.24,
-     "unrealized_luna": 1.573451,
+     "unrealized_luna": 1.573452,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -104179,7 +104180,7 @@
      "bribes_luna": 0
     },
     "net_usd": -0.24,
-    "net_luna": 1.573451
+    "net_luna": 1.573452
    }
   },
   {
@@ -104655,10 +104656,10 @@
     "open": {
      "cost_usd": 2.39,
      "cost_luna": 32.131511,
-     "value_usd": 2.07,
-     "value_luna": 40.621257,
-     "unrealized_usd": -0.31,
-     "unrealized_luna": 8.489746,
+     "value_usd": 448.71,
+     "value_luna": 8788.424196,
+     "unrealized_usd": 446.32,
+     "unrealized_luna": 8756.292685,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -104670,10 +104671,8 @@
      "bribes_unpriced_coins": 1
     },
     "positions_with_unmatched_units": 2,
-    "positions_not_held": 1,
-    "not_held_usd": 446.64,
-    "net_usd": 3868.65,
-    "net_luna": 41234.593624
+    "net_usd": 4315.29,
+    "net_luna": 49982.396564
    }
   },
   {
@@ -104867,9 +104866,9 @@
      "cost_usd": 1.32,
      "cost_luna": 9.539637,
      "value_usd": 2.26,
-     "value_luna": 44.347159,
+     "value_luna": 44.347153,
      "unrealized_usd": 0.94,
-     "unrealized_luna": 34.807522,
+     "unrealized_luna": 34.807516,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -104880,7 +104879,7 @@
      "bribes_luna": 0
     },
     "net_usd": 0.94,
-    "net_luna": 34.807522
+    "net_luna": 34.807516
    }
   },
   {
@@ -105262,9 +105261,9 @@
      "cost_usd": 951.21,
      "cost_luna": 5892.353863,
      "value_usd": 700.56,
-     "value_luna": 13721.104944,
+     "value_luna": 13721.104949,
      "unrealized_usd": -250.65,
-     "unrealized_luna": 7828.751081,
+     "unrealized_luna": 7828.751086,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -105275,7 +105274,7 @@
      "bribes_luna": 0
     },
     "net_usd": -1493.04,
-    "net_luna": 58219.101897
+    "net_luna": 58219.101902
    }
   },
   {
@@ -106433,12 +106432,12 @@
      "trips_blank": 9
     },
     "open": {
-     "cost_usd": 2323.33,
-     "cost_luna": 45504.729156,
+     "cost_usd": 2323.34,
+     "cost_luna": 45504.730449,
      "value_usd": 2323.57,
      "value_luna": 45509.268221,
      "unrealized_usd": 0.23,
-     "unrealized_luna": 4.539065,
+     "unrealized_luna": 4.537772,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -106450,7 +106449,7 @@
     },
     "positions_with_unmatched_units": 2,
     "net_usd": 459.92,
-    "net_luna": 34562.713279
+    "net_luna": 34562.711986
    }
   },
   {
@@ -108109,12 +108108,12 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 2508.68,
-     "out_usd": 2467.26,
+     "in_usd": 2508.66,
+     "out_usd": 2467.24,
      "delta_usd": -41.39,
-     "in_luna": 43716.836623,
-     "out_luna": 43977.770181,
-     "delta_luna": 260.933558,
+     "in_luna": 43716.58325,
+     "out_luna": 43977.492695,
+     "delta_luna": 260.909444,
      "market_usd": -16.89,
      "lp_usd": -24.48,
      "trips_valued": 61,
@@ -108140,7 +108139,7 @@
     "positions_not_held": 1,
     "not_held_usd": 5.03,
     "net_usd": 38.13,
-    "net_luna": 1890.393941
+    "net_luna": 1890.369827
    }
   },
   {
@@ -109243,9 +109242,9 @@
      "cost_usd": 0,
      "cost_luna": 0,
      "value_usd": 102.17,
-     "value_luna": 2001.194053,
+     "value_luna": 2001.171306,
      "unrealized_usd": 102.17,
-     "unrealized_luna": 2001.194053,
+     "unrealized_luna": 2001.171306,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -109256,7 +109255,7 @@
      "bribes_luna": 0
     },
     "net_usd": 102.17,
-    "net_luna": 2001.194053
+    "net_luna": 2001.171306
    }
   },
   {
@@ -109642,9 +109641,9 @@
      "cost_usd": 1447.07,
      "cost_luna": 24294.439388,
      "value_usd": 1229.45,
-     "value_luna": 24080.039088,
+     "value_luna": 24080.035532,
      "unrealized_usd": -217.62,
-     "unrealized_luna": -214.400301,
+     "unrealized_luna": -214.403857,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -109657,9 +109656,9 @@
     },
     "positions_with_unmatched_units": 5,
     "positions_not_held": 1,
-    "not_held_usd": 5025.11,
+    "not_held_usd": 5025.05,
     "net_usd": 4837.8,
-    "net_luna": 60774.423811
+    "net_luna": 60774.420255
    }
   },
   {
@@ -110101,9 +110100,9 @@
      "cost_usd": 59.15,
      "cost_luna": 317.561495,
      "value_usd": 20.28,
-     "value_luna": 397.15526,
+     "value_luna": 397.154683,
      "unrealized_usd": -38.87,
-     "unrealized_luna": 79.593764,
+     "unrealized_luna": 79.593188,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -110114,7 +110113,7 @@
      "bribes_luna": 0
     },
     "net_usd": -5.27,
-    "net_luna": 244.86337
+    "net_luna": 244.862794
    }
   },
   {
@@ -113303,9 +113302,9 @@
      "cost_usd": 0,
      "cost_luna": 0,
      "value_usd": 0.16,
-     "value_luna": 3.152831,
+     "value_luna": 3.152796,
      "unrealized_usd": 0.16,
-     "unrealized_luna": 3.152831,
+     "unrealized_luna": 3.152796,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -113316,7 +113315,7 @@
      "bribes_luna": 0
     },
     "net_usd": -40.29,
-    "net_luna": 334.153675
+    "net_luna": 334.15364
    }
   },
   {
@@ -113460,12 +113459,12 @@
      "trips_blank": 0
     },
     "open": {
-     "cost_usd": 4662.42,
-     "cost_luna": 76697.784008,
-     "value_usd": 4518.79,
-     "value_luna": 88504.839138,
-     "unrealized_usd": -143.63,
-     "unrealized_luna": 11807.05513,
+     "cost_usd": 4662.37,
+     "cost_luna": 76697.026303,
+     "value_usd": 4518.75,
+     "value_luna": 88503.947003,
+     "unrealized_usd": -143.62,
+     "unrealized_luna": 11806.9207,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -113476,7 +113475,7 @@
      "bribes_luna": 0
     },
     "net_usd": 307.81,
-    "net_luna": 20384.297785
+    "net_luna": 20384.163355
    }
   },
   {
@@ -113859,12 +113858,12 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 6025.25,
-     "out_usd": 6604.92,
+     "in_usd": 6025.2,
+     "out_usd": 6604.87,
      "delta_usd": 579.66,
-     "in_luna": 59048.59202,
-     "out_luna": 138708.341737,
-     "delta_luna": 79659.749715,
+     "in_luna": 59048.098837,
+     "out_luna": 138707.082333,
+     "delta_luna": 79658.983494,
      "market_usd": 288.33,
      "lp_usd": 291.35,
      "trips_valued": 10,
@@ -113888,7 +113887,7 @@
     },
     "positions_with_unmatched_units": 2,
     "net_usd": 3555.39,
-    "net_luna": 108109.055258
+    "net_luna": 108108.289037
    }
   },
   {
@@ -114857,10 +114856,10 @@
     "open": {
      "cost_usd": 3195.1,
      "cost_luna": 31626.954299,
-     "value_usd": 2855.62,
-     "value_luna": 55930.063211,
-     "unrealized_usd": -339.48,
-     "unrealized_luna": 24303.108912,
+     "value_usd": 2855.32,
+     "value_luna": 55924.238075,
+     "unrealized_usd": -339.78,
+     "unrealized_luna": 24297.283776,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -114871,8 +114870,8 @@
      "bribes_luna": 0
     },
     "positions_with_unmatched_units": 9,
-    "net_usd": -529.59,
-    "net_luna": 37840.479885
+    "net_usd": -529.88,
+    "net_luna": 37834.654749
    }
   },
   {
@@ -116133,9 +116132,9 @@
      "cost_usd": 70,
      "cost_luna": 607.905283,
      "value_usd": 35.86,
-     "value_luna": 702.366452,
+     "value_luna": 702.366453,
      "unrealized_usd": -34.14,
-     "unrealized_luna": 94.461169,
+     "unrealized_luna": 94.46117,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -116148,7 +116147,7 @@
     },
     "positions_with_unmatched_units": 6,
     "net_usd": 5356.3,
-    "net_luna": 35141.565273
+    "net_luna": 35141.565274
    }
   },
   {
@@ -118941,9 +118940,9 @@
      "cost_usd": 80.11,
      "cost_luna": 1057.142051,
      "value_usd": 497.11,
-     "value_luna": 9736.417591,
+     "value_luna": 9736.320293,
      "unrealized_usd": 417,
-     "unrealized_luna": 8679.27554,
+     "unrealized_luna": 8679.178242,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -118954,8 +118953,8 @@
      "bribes_luna": 16.497582,
      "bribes_unpriced_coins": 1
     },
-    "net_usd": 695.81,
-    "net_luna": 11703.0891
+    "net_usd": 695.8,
+    "net_luna": 11702.991802
    }
   },
   {
@@ -119298,8 +119297,8 @@
      "in_usd": 152.29,
      "out_usd": 151.88,
      "delta_usd": -0.44,
-     "in_luna": 2803.923107,
-     "out_luna": 2831.881401,
+     "in_luna": 2803.923088,
+     "out_luna": 2831.881382,
      "delta_luna": 27.958292,
      "market_usd": -1.41,
      "lp_usd": 0.97,
@@ -119874,11 +119873,11 @@
     },
     "open": {
      "cost_usd": 1817.73,
-     "cost_luna": 35738.319143,
-     "value_usd": 1788.22,
-     "value_luna": 35023.903411,
+     "cost_luna": 35738.291682,
+     "value_usd": 1788.21,
+     "value_luna": 35023.884036,
      "unrealized_usd": -29.52,
-     "unrealized_luna": -714.415731,
+     "unrealized_luna": -714.407646,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -119890,7 +119889,7 @@
     },
     "positions_with_unmatched_units": 1,
     "net_usd": -5111.84,
-    "net_luna": 64738.680929
+    "net_luna": 64738.689014
    }
   },
   {
@@ -120878,9 +120877,9 @@
     },
     "open": {
      "cost_usd": 2623.08,
-     "cost_luna": 51093.630761,
+     "cost_luna": 51093.620823,
      "value_usd": 2589.33,
-     "value_luna": 50714.458464,
+     "value_luna": 50714.448525,
      "unrealized_usd": -33.75,
      "unrealized_luna": -379.172298,
      "positions_unvalued": 1
@@ -121337,9 +121336,9 @@
      "cost_usd": 1644.08,
      "cost_luna": 33231.118821,
      "value_usd": 1677.18,
-     "value_luna": 32849.112566,
+     "value_luna": 32849.112705,
      "unrealized_usd": 33.09,
-     "unrealized_luna": -382.006255,
+     "unrealized_luna": -382.006115,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -121350,7 +121349,7 @@
      "bribes_luna": 864.805748
     },
     "net_usd": -329.01,
-    "net_luna": 15331.400203
+    "net_luna": 15331.400342
    }
   },
   {
@@ -122774,9 +122773,9 @@
      "cost_usd": 66293.41,
      "cost_luna": 1247661.57238,
      "value_usd": 65198.33,
-     "value_luna": 1276971.50911,
+     "value_luna": 1276971.509043,
      "unrealized_usd": -1095.07,
-     "unrealized_luna": 29309.93673,
+     "unrealized_luna": 29309.936663,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -122792,7 +122791,7 @@
     "positions_not_held": 1,
     "not_held_usd": 9.82,
     "net_usd": 52118.57,
-    "net_luna": 5954672.081831
+    "net_luna": 5954672.081764
    }
   },
   {
@@ -124838,9 +124837,9 @@
      "cost_usd": 363.53,
      "cost_luna": 2425.101076,
      "value_usd": 303.01,
-     "value_luna": 5934.749026,
+     "value_luna": 5934.745432,
      "unrealized_usd": -60.52,
-     "unrealized_luna": 3509.64795,
+     "unrealized_luna": 3509.644357,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -124853,7 +124852,7 @@
     },
     "positions_with_unmatched_units": 2,
     "net_usd": -588.8,
-    "net_luna": 4064.668783
+    "net_luna": 4064.66519
    }
   },
   {
@@ -127880,10 +127879,10 @@
     "open": {
      "cost_usd": 141.69,
      "cost_luna": 2775.092837,
-     "value_usd": 141.66,
-     "value_luna": 2774.552321,
-     "unrealized_usd": -0.03,
-     "unrealized_luna": -0.540516,
+     "value_usd": 208.73,
+     "value_luna": 4088.258955,
+     "unrealized_usd": 67.05,
+     "unrealized_luna": 1313.166118,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -127895,10 +127894,10 @@
      "bribes_unpriced_coins": 1
     },
     "positions_with_unmatched_units": 2,
-    "positions_not_held": 3,
-    "not_held_usd": 5623.95,
-    "net_usd": 1626.06,
-    "net_luna": 8093.982047
+    "positions_not_held": 2,
+    "not_held_usd": 5556.83,
+    "net_usd": 1693.13,
+    "net_luna": 9407.688681
    }
   },
   {
@@ -129296,12 +129295,12 @@
      "trips_blank": 1
     },
     "open": {
-     "cost_usd": 3470.85,
-     "cost_luna": 35823.310536,
-     "value_usd": 4007.27,
-     "value_luna": 78486.150733,
+     "cost_usd": 3470.81,
+     "cost_luna": 35822.901818,
+     "value_usd": 4007.22,
+     "value_luna": 78485.255262,
      "unrealized_usd": 536.42,
-     "unrealized_luna": 42662.840196,
+     "unrealized_luna": 42662.353444,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -129312,8 +129311,8 @@
      "bribes_luna": 76.853336
     },
     "positions_with_unmatched_units": 2,
-    "net_usd": 2863.91,
-    "net_luna": 75005.273988
+    "net_usd": 2863.9,
+    "net_luna": 75004.787235
    }
   },
   {
@@ -130746,9 +130745,9 @@
      "cost_usd": 46.47,
      "cost_luna": 903.934688,
      "value_usd": 47.21,
-     "value_luna": 924.689355,
+     "value_luna": 924.689354,
      "unrealized_usd": 0.74,
-     "unrealized_luna": 20.754668,
+     "unrealized_luna": 20.754666,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -130761,7 +130760,7 @@
     },
     "positions_with_unmatched_units": 9,
     "net_usd": 217.65,
-    "net_luna": 16283.62587
+    "net_luna": 16283.625868
    }
   },
   {
@@ -131248,9 +131247,9 @@
      "cost_usd": 5.71,
      "cost_luna": 43.663913,
      "value_usd": 3.83,
-     "value_luna": 75.103148,
+     "value_luna": 75.103132,
      "unrealized_usd": -1.87,
-     "unrealized_luna": 31.439234,
+     "unrealized_luna": 31.439218,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -131263,7 +131262,7 @@
     },
     "positions_with_unmatched_units": 8,
     "net_usd": -1396.47,
-    "net_luna": 83.322827
+    "net_luna": 83.322811
    }
   },
   {
@@ -131649,10 +131648,10 @@
     "open": {
      "cost_usd": 136.03,
      "cost_luna": 2102.4174,
-     "value_usd": 173.11,
-     "value_luna": 3390.547418,
-     "unrealized_usd": 37.08,
-     "unrealized_luna": 1288.130018,
+     "value_usd": 161.06,
+     "value_luna": 3154.453764,
+     "unrealized_usd": 25.02,
+     "unrealized_luna": 1052.036364,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -131662,8 +131661,8 @@
      "bribes_usd": 0,
      "bribes_luna": 0
     },
-    "net_usd": 37.08,
-    "net_luna": 1288.130018
+    "net_usd": 25.02,
+    "net_luna": 1052.036364
    }
   },
   {
@@ -131962,9 +131961,9 @@
      "cost_usd": 99.66,
      "cost_luna": 1341.338756,
      "value_usd": 117.27,
-     "value_luna": 2296.910534,
+     "value_luna": 2296.905812,
      "unrealized_usd": 17.62,
-     "unrealized_luna": 955.571778,
+     "unrealized_luna": 955.567056,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -131975,7 +131974,7 @@
      "bribes_luna": 0
     },
     "net_usd": -1780.77,
-    "net_luna": 132873.145508
+    "net_luna": 132873.140786
    }
   },
   {
@@ -132100,12 +132099,12 @@
    "address": "terra1yct7ls8kw3x2ucm66rxg7mgtyvw7kr5v4t4xsx",
    "label": null,
    "counts": {
-    "deposit": 209,
-    "withdraw": 108,
+    "deposit": 211,
+    "withdraw": 110,
     "claim": 126
    },
    "first_event": "2024-09-02T14:43:13Z",
-   "last_event": "2026-09-28T07:37:56Z",
+   "last_event": "2026-09-28T09:52:54Z",
    "first_by_type": {
     "claim": "2024-09-06T16:05:24Z",
     "deposit": "2024-09-02T14:43:13Z",
@@ -132113,15 +132112,21 @@
    },
    "last_by_type": {
     "claim": "2026-09-27T21:23:36Z",
-    "deposit": "2026-09-28T07:37:56Z",
-    "withdraw": "2026-09-28T07:37:04Z"
+    "deposit": "2026-09-28T09:52:54Z",
+    "withdraw": "2026-09-28T09:49:38Z"
    },
    "eras": {
     "fcd": true,
     "walker": true
    },
-   "deposits_with_cost": 67,
+   "deposits_with_cost": 68,
    "zap_inputs": {
+    "ampLUNA": {
+     "amount_display": 1313.017129,
+     "usd_at_event": 156.19273712597925,
+     "valued_legs": 5,
+     "unvalued_legs": 0
+    },
     "ampROAR": {
      "amount_display": 21422524.238815002,
      "usd_at_event": 20.28078801060781,
@@ -132178,7 +132183,7 @@
     }
    },
    "zap_inputs_unknown": {},
-   "zap_input_usd_at_event": 2393.407503933853,
+   "zap_input_usd_at_event": 2549.6002410598326,
    "fees": {
     "ampLUNA": {
      "spread_display": 0,
@@ -132229,11 +132234,11 @@
      "unvalued_legs": 2
     },
     "LUNA": {
-     "spread_display": 0.036695,
-     "commission_display": 0.002303,
-     "maker_display": 0.000767,
-     "usd_at_event": 0.01458414630658,
-     "valued_legs": 4,
+     "spread_display": 1.333278,
+     "commission_display": 5.443731,
+     "maker_display": 2.721479,
+     "usd_at_event": 0.49751816651757996,
+     "valued_legs": 9,
      "unvalued_legs": 0
     },
     "ROAR": {
@@ -132257,6 +132262,14 @@
      "commission_display": 0.000862,
      "maker_display": 0.000287,
      "usd_at_event": 0.0011829379134700002,
+     "valued_legs": 1,
+     "unvalued_legs": 0
+    },
+    "USDC.inj": {
+     "spread_display": 0.07519,
+     "commission_display": 0.074805,
+     "maker_display": 0.037402,
+     "usd_at_event": 0.187358958409,
      "valued_legs": 1,
      "unvalued_legs": 0
     },
@@ -132286,12 +132299,12 @@
     }
    },
    "fees_unknown_legs": 0,
-   "fees_usd_at_event": 28.858068615992213,
+   "fees_usd_at_event": 29.52836159461221,
    "lp_amounts": {
-    "deposit_shares_raw": "82756055081295969",
+    "deposit_shares_raw": "82756055780839686",
     "deposit_lp_raw": "4023366103290855",
-    "withdraw_lp_raw": "4918097535395385",
-    "withdraw_shares_raw": "43584604108278038"
+    "withdraw_lp_raw": "4918097535395389",
+    "withdraw_shares_raw": "43584604172062555"
    },
    "claims": {
     "count": 126,
@@ -132331,8 +132344,8 @@
      "claim_usd_at_event": 0
     },
     "cw20:terra14h48hukanmfv6wrrs50m4w2f9hf09lakwl5d5pkpt4rpl3gtg7ks4ye6d4": {
-     "deposits": 3,
-     "withdraws": 3,
+     "deposits": 4,
+     "withdraws": 4,
      "claims": 0,
      "claim_usd_at_event": 0
     },
@@ -132487,8 +132500,8 @@
      "claim_usd_at_event": 0
     },
     "cw20:terra1qcxemmzaphmr4y6uwygd646erv7vvguf5lp79edqamly7wn25auqem5s0p": {
-     "deposits": 2,
-     "withdraws": 0,
+     "deposits": 3,
+     "withdraws": 1,
      "claims": 0,
      "claim_usd_at_event": 0
     },
@@ -132593,24 +132606,24 @@
     "as_of_epoch": 205,
     "as_of_day": "2026-09-28",
     "realized": {
-     "in_usd": 1286993.28,
-     "out_usd": 1155111.21,
-     "delta_usd": -131882.1,
-     "in_luna": 8187874.446434,
-     "out_luna": 9526073.645238,
-     "delta_luna": 1338199.198802,
+     "in_usd": 1287229.11,
+     "out_usd": 1155238.76,
+     "delta_usd": -131990.38,
+     "in_luna": 8192452.645563,
+     "out_luna": 9528571.776652,
+     "delta_luna": 1336119.131087,
      "market_usd": -191372.81,
-     "lp_usd": 59490.69,
-     "trips_valued": 88,
+     "lp_usd": 59382.41,
+     "trips_valued": 90,
      "trips_blank": 20
     },
     "open": {
-     "cost_usd": 236476.47,
-     "cost_luna": 4587239.07951,
-     "value_usd": 238127.09,
-     "value_luna": 4663945.935363,
-     "unrealized_usd": 1650.62,
-     "unrealized_luna": 76706.855853,
+     "cost_usd": 236653.08,
+     "cost_luna": 4590739.175509,
+     "value_usd": 238300.98,
+     "value_luna": 4667351.85554,
+     "unrealized_usd": 1647.9,
+     "unrealized_luna": 76612.680031,
      "positions_unvalued": 1
     },
     "rewards": {
@@ -132621,8 +132634,8 @@
      "bribes_luna": 0
     },
     "positions_with_unmatched_units": 12,
-    "net_usd": -72209.59,
-    "net_luna": 1805993.11596
+    "net_usd": -72320.59,
+    "net_luna": 1803818.872423
    }
   },
   {
@@ -133387,9 +133400,9 @@
      "cost_usd": 0,
      "cost_luna": 0,
      "value_usd": 2.89,
-     "value_luna": 56.611489,
+     "value_luna": 56.611984,
      "unrealized_usd": 2.89,
-     "unrealized_luna": 56.611489,
+     "unrealized_luna": 56.611984,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -133400,7 +133413,7 @@
      "bribes_luna": 0
     },
     "net_usd": 3.11,
-    "net_luna": 57.564151
+    "net_luna": 57.564646
    }
   },
   {
@@ -137037,9 +137050,9 @@
      "cost_usd": 3470.7,
      "cost_luna": 69714.719898,
      "value_usd": 3557.95,
-     "value_luna": 69685.850544,
+     "value_luna": 69685.850706,
      "unrealized_usd": 87.25,
-     "unrealized_luna": -28.869354,
+     "unrealized_luna": -28.869192,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -137050,7 +137063,7 @@
      "bribes_luna": 0.366854
     },
     "net_usd": 192.07,
-    "net_luna": 2666.888021
+    "net_luna": 2666.888183
    }
   },
   {
@@ -139567,9 +139580,9 @@
      "cost_usd": 208879.9,
      "cost_luna": 3494249.077266,
      "value_usd": 16344.54,
-     "value_luna": 320123.453605,
+     "value_luna": 320123.453613,
      "unrealized_usd": -192535.36,
-     "unrealized_luna": -3174125.623662,
+     "unrealized_luna": -3174125.623654,
      "positions_unvalued": 1
     },
     "rewards": {
@@ -139581,7 +139594,7 @@
     },
     "positions_disputed": 2,
     "net_usd": -192535.36,
-    "net_luna": -3174125.623662
+    "net_luna": -3174125.623654
    }
   },
   {
@@ -140514,9 +140527,9 @@
      "cost_usd": 3377.78,
      "cost_luna": 30681.175697,
      "value_usd": 1546.66,
-     "value_luna": 30292.806767,
+     "value_luna": 30292.806917,
      "unrealized_usd": -1831.12,
-     "unrealized_luna": -388.36893,
+     "unrealized_luna": -388.36878,
      "positions_unvalued": 2
     },
     "rewards": {
@@ -140529,7 +140542,7 @@
     },
     "positions_with_unmatched_units": 1,
     "net_usd": -4563.09,
-    "net_luna": 51169.541875
+    "net_luna": 51169.542024
    }
   },
   {
@@ -140702,9 +140715,9 @@
      "cost_usd": 284.59,
      "cost_luna": 1813.164648,
      "value_usd": 284.19,
-     "value_luna": 5566.19884,
+     "value_luna": 5566.173098,
      "unrealized_usd": -0.4,
-     "unrealized_luna": 3753.034192,
+     "unrealized_luna": 3753.008449,
      "positions_unvalued": 0
     },
     "rewards": {
@@ -140715,8 +140728,8 @@
      "bribes_luna": 0
     },
     "positions_with_unmatched_units": 1,
-    "net_usd": 79.72,
-    "net_luna": 4429.151104
+    "net_usd": 79.71,
+    "net_luna": 4429.125361
    }
   },
   {
