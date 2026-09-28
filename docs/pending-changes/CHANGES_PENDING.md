@@ -1,5 +1,51 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER 2026-09-28 (b) — Member Portfolio 4.0: the page walk, built (read this first; the (a) ledger below still holds)
+
+Owner walk (2026-09-28): two charts that each showed part of the picture; liquid tokens missing from value and trends; "how you've done"
+not everything and contradicting its own total bar; no alert panel; no DAODAO picture; no logos; claimable TLA-only; VP without its
+LUNA; trips hard to read (USD↔LUNA should be USD↔Tokens, APR noise, $0.00 for unpriced, raw names, twin rows); the total bar "sells it
+short"; locks without age. Owner decisions: ECharts; NFTs OFF by default — aDAO counts at the BACKING of unbroken NFTs, the floor toggle
+replaces the backing (never both); How you've done = everything combined, each source switchable; no mockup — push to production.
+
+### DELIVERED (3 ZIPs — gates green on real data)
+- **aDAO-links-site** (ONE commit): member-portfolio 4.0 · lib/portfolio-pnl.js 2.0.0 · lib/portfolio-chart.js 1.0.0 (new) ·
+  lib/token-logos.js 1.0.0 (new) · gate-portfolio-pnl.mjs — 111/111 with the new P&L build + the seeded series (OVERLAY_DIR),
+  110/110 on main's ledger (Tokens checks wait for the PNL=force build).
+- **platform-crons**: member-data 1.5.0 (history-series.js + mock-run-history.js H1–H6 19/19 under 200 MB) · tla-flows pnl 1.3.0 /
+  pnl-positions 1.4.0 (tokens in / out per trip, open tokens vs now, hold value; mock-run-pnl-v3 V15, 32/32 under 200 MB).
+- **tla-core**: this ledger.
+
+### OWNER TO-DO (in order)
+1. Commit platform-crons → Render redeploys **org-member-data** and **org-tla-flows** (Manual Deploy if not).
+2. **org-member-data**: the next run seeds `member-data/history/series/` (2026-08-11 → today, ~1.2 MB, one commit) — no env var needed
+   (`HISTORY=force` rebuilds, `HISTORY=0` disables). Check `member-data/history/series/index.json` appears.
+3. **org-tla-flows**: set `PNL=force`, let ONE run build (the heartbeat's builder reads `tla-flows-pnl-1.3.0`), then REMOVE `PNL=force`.
+   This also delivers pnl 1.2.5 (the GMC row's "sent to GMC Backing Wallet").
+4. Commit aDAO-links-site (one commit). Walk the page: identity bar (picture, days in TLA, alert chips), net worth incl. liquid +
+   staked + backing, the chart (views / ranges / LUNA / Table), How you've done (switch sources), positions (Tokens lens, scorecard),
+   locks (age / LUNA / decay), Credia card.
+5. Check env vars for leftovers (none force-style looked on from the data): BY_WALLET_ALL, BY_TOKEN_ALL, FORCE_ROLLUPS, FORCE_CENSUS,
+   REPRICE_ALL, FORCE_PUBLISH, ASTRO_WEEKLY_BACKFILL, SS_FORCE_MONTHLY, SCAN_ALL.
+
+### FOUND
+- The 08-17 → 08-23 "dip" on the old trend was a hole in the CAPA supply history (captures 08-09 → 08-24): the DAO stake is now carried
+  across it where it is held on both sides (cuS=2, flagged) — the owner's total no longer drops $10K for a week.
+- Bribes: Income read the voting rollup ($4.1K), the P&L build the price oracle ($6.8K; CAPA, ampLUNA priced differently). One number now:
+  the build's. (The rollup's pricing is a separate question.)
+- The member feed only asked DAODAO for a picture when a member had NO name — the page now reads pfpk live for every wallet.
+- Lock P&L (lib lockLeg) from nft-collections tla-locks by-wallet events: every create / add at that day's oracle price, merges /
+  migrations / withdraws / transfers followed; the owner: $18.9K in → $6.9K now (−$13.6K LUNA's price, +$1.6K LST staking), + $6.8K
+  bribes; 5 locks sent away ($3.8K cost — one into a Votion vault, counted there) left out.
+- Solid's oracle wBTC 828.44 × 100 = $82,844 ≈ the price feed's $82,923 → the oracle is USD per 6-decimal unit (wBTC has 8); the catalog's
+  WBTC.axl $60.5K is the stale one (check one more 8-decimal token before calling it settled).
+
+### NEXT
+Solid card (SPEC-portfolio-solid; a liquidation-search probe run as an Action — the workspace cannot reach the chain) · settle the two wBTC
+prices · then the deep history RAW capture — the chart's categories are its capture list (bank + cw20 balances, LUNA staking, other
+chains, NFT holdings, Solid, Credia, DAO stakes per day, per cohort wallet) into the SAME series files (`src: 'd'`; SPEC-deep-history §4
+now points at `member-data/history/series/<c>.json`, sharded by the character after "terra1", instead of per-wallet folders).
+
 ## OPEN LEDGER 2026-09-28 — IN PROGRESS: "The Member Portfolio" (Milestone A step 3) — handover for a chat move (the 2026-09-27 ledger stays below)
 
 The descriptive handover is `docs/pending-changes/HANDOVER-portfolio-2026-09-28.md`. Two new specs: `SPEC-portfolio-solid.md` (the Solid
