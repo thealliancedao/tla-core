@@ -12,6 +12,12 @@
 //             metrics, Solid market / oracle / whitelist, DAO NFT-voting totals — from the week the cohort first touched each one.
 //             The boundary heights are resolved once (dex-state-history's for epochs 97+, block-time search for the rest) →
 //             archive/layer2/heights.json; answers → archive/layer2/<code>/<contract>.jsonl.gz (one row per week); resumable.
+//   layer3  — per-wallet CHECKPOINTS the events cannot fully give: bank balances (all native denoms), staking delegations and
+//             unbonding at the first weekly boundary of every month from the wallet's first tx → archive/layer3/<shard>/<wallet>.jsonl.gz.
+//             Everything else per wallet (cw20s, LP tokens, amp shares, locks, Credia, Solid, Votion) is rebuilt from its own events.
+//   flows   — the derive, no chain reads: every native (coin_spent / coin_received) and cw20 (transfer / send / mint / burn) balance
+//             change of each wallet from layer 1, with its counterparty, → archive/derived/flows/<shard>/<wallet>.json.gz: per-denom
+//             balances at every weekly boundary + the flow list; checked against the layer 3 checkpoints where they exist.
 //   layer1  — for each cohort wallet not yet done: tx_search for every attribute a wallet appears under (§8 list), deduplicated by hash,
 //             decoded, and written as gzip parts to archive/layer1/<shard>/<wallet>/part-NNN.jsonl.gz + a per-wallet summary in the
 //             manifest. Resumable (done wallets skipped), committed every few wallets, stops cleanly before the time budget.
@@ -19,7 +25,7 @@
 // sequences are dropped. The log prints COUNTS ONLY (this Action's log is public) — never a wallet, a hash or an amount.
 import fs from 'fs'; import path from 'path'; import zlib from 'zlib'; import { execSync } from 'child_process'; import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const VERSION = 'deep-walk-1.2';   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
+const VERSION = 'deep-walk-1.3';   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
 const MODE = process.env.MODE || 'timing';
 const RPCS = [process.env.ARCHIVE_RPC, process.env.RPC_URL].map(s => String(s || '').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '')).filter(Boolean);
 const LCD = String(process.env.ARCHIVE_LCD || process.env.LCD || 'https://terra-lcd.publicnode.com').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '');
@@ -325,7 +331,108 @@ async function layer2() {
   console.log(`layer2 run: ${n} reads · ok ${ok} · contract not yet / no longer there ${absent} · failed ${bad} (retried next run) · ${minutes().toFixed(0)} min · ${left > 0 ? left + ' reads left — run again' : 'ALL DONE'}`);
 }
 
-if (!RPCS.length && MODE !== 'cohort' && MODE !== 'inventory') { console.error('ARCHIVE_RPC not set'); process.exit(1); }
+// ── helpers shared by layer3 / flows ──────────────────────────────────────────────────────────────────────────────────────
+function walletTxs(w) {   // every layer-1 record of one wallet (small enough per wallet; the parts are read one at a time)
+  const dir = A(`layer1/${w.slice(-1)}/${w}`); const out = []; if (!fs.existsSync(dir)) return out;
+  for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.jsonl.gz')).sort()) for (const line of zlib.gunzipSync(fs.readFileSync(path.join(dir, f))).toString('utf8').split('\n')) { if (line) { try { out.push(JSON.parse(line)); } catch { } } }
+  return out.sort((a, b) => a.h - b.h || (a.i || 0) - (b.i || 0));
+}
+async function lcdAt(p, height) {
+  for (let i = 0; i < 4; i++) { stats.requests++;
+    try { const r = await fetch(`${LCD}${p}`, { headers: { Accept: 'application/json', 'User-Agent': UA, 'x-cosmos-block-height': String(height) }, signal: AbortSignal.timeout(30000) }); const t = await r.text();
+      if (r.ok) return { ok: true, json: JSON.parse(t) }; if (r.status < 500 && r.status !== 429) return { ok: false, status: r.status, body: t.slice(0, 200) }; } catch (e) { }
+    stats.retries++; await sleep(1000 * (i + 1)); }
+  stats.errors++; return { ok: false, status: 0 };
+}
+function monthlyBoundaries() { const H = readJson('layer2/heights.json', null); if (!H) return null; const seen = new Set(); const out = [];
+  for (const [d, x] of Object.entries(H.rows)) { const m = d.slice(0, 7); if (seen.has(m)) continue; seen.add(m); out.push({ d, h: x.h }); } return out; }
+
+// ── mode: layer3 (checkpoints) ────────────────────────────────────────────────────────────────────────────────────────────
+async function layer3() {
+  const C = readJson('cohort/current.json', null); if (!C) throw new Error('no cohort');
+  const months = monthlyBoundaries(); if (!months) { console.log('layer3: layer2/heights.json not there yet — run layer2 first (it resolves the boundary heights), then layer3'); try { fs.writeFileSync('layer3_left.txt', '1'); } catch { } return; }
+  const man = readJson('layer3/_manifest.json', { version: VERSION, wallets: {} });
+  const tasks = [];
+  for (const w of Object.keys(C.wallets).filter(shardOk)) {
+    const m = man.wallets[w] || (man.wallets[w] = { done: {} });
+    if (m.first_h == null) { const txs = walletTxs(w); m.first_h = txs.length ? txs[0].h : null; }
+    if (m.first_h == null) continue;
+    for (const b of months) if (b.h >= m.first_h - 450000 && !m.done[b.d]) tasks.push([w, b]);   // from the month before its first tx
+  }
+  console.log(`layer3: ${Object.keys(man.wallets).length} wallets · ${months.length} monthly boundaries · ${tasks.length} checkpoints to read (3 reads each) · concurrency ${CONC}`);
+  const buf = new Map(); let n = 0, ok = 0, bad = 0, lastCommit = Date.now();
+  const flush = () => { for (const [w, rows] of buf) { const f = `layer3/${w.slice(-1)}/${w}.jsonl.gz`; let old = ''; try { old = zlib.gunzipSync(fs.readFileSync(A(f))).toString('utf8'); } catch { } fs.mkdirSync(path.dirname(A(f)), { recursive: true }); fs.writeFileSync(A(f), zlib.gzipSync(old + rows.map(r => JSON.stringify(r)).join('\n') + '\n')); } buf.clear(); man.updated_at = new Date().toISOString(); writeJson('layer3/_manifest.json', man); };
+  await pool(tasks, CONC, async ([w, b]) => {
+    if (overBudget()) return; n++;
+    const [bank, del, unb] = await Promise.all([lcdAt(`/cosmos/bank/v1beta1/balances/${w}?pagination.limit=500`, b.h), lcdAt(`/cosmos/staking/v1beta1/delegations/${w}?pagination.limit=200`, b.h), lcdAt(`/cosmos/staking/v1beta1/delegators/${w}/unbonding_delegations?pagination.limit=200`, b.h)]);
+    if (!bank.ok) { bad++; return; }   // retried next run
+    const row = { d: b.d, h: b.h, bank: (bank.json.balances || []).map(c => [c.denom, c.amount]),
+      delegations: del.ok ? (del.json.delegation_responses || []).map(x => [x.delegation.validator_address, x.balance && x.balance.amount]) : null,
+      unbonding: unb.ok ? (unb.json.unbonding_responses || []).map(x => [x.validator_address, (x.entries || []).map(e => [e.balance, e.completion_time])]) : null };
+    ok++; (buf.get(w) || buf.set(w, []).get(w)).push(row); man.wallets[w].done[b.d] = 1;
+    if (n % 1000 === 0) console.log(`  … ${n}/${tasks.length} checkpoints · ok ${ok} · failed ${bad} · ${minutes().toFixed(0)} min`);
+    if (Date.now() - lastCommit > 8 * 60000) { lastCommit = Date.now(); flush(); commitPush(`layer3: +${n} checkpoints`); }
+  });
+  flush(); commitPush(`layer3: ${ok} checkpoints`);
+  const left = tasks.length - ok; try { fs.writeFileSync('layer3_left.txt', String(Math.max(0, left))); } catch { }
+  console.log(`layer3 run: ${n} checkpoints · ok ${ok} · failed ${bad} (retried next run) · ${minutes().toFixed(0)} min · ${left > 0 ? left + ' left — run again' : 'ALL DONE'}`);
+}
+
+// ── mode: flows (derive, no chain reads) ─────────────────────────────────────────────────────────────────────────────────
+// Native: coin_spent (spender = w) / coin_received (receiver = w) — every native balance change in a tx, fees included (a failed tx
+// carries only its fee events). cw20: wasm transfer / send / transfer_from / send_from (from / to), mint (to), burn / burn_from (from),
+// on the token's own contract. Counterparty: the other side of the matching bank transfer / cw20 event (a contract, a wallet, a module).
+function flowsOf(w, txs) {
+  const flows = [];   // [h, denom, delta(string, signed), counterparty|null, tx-kind]
+  const addAmt = (s) => String(s || '').split(',').map(x => x.trim().match(/^(\d+)(.+)$/)).filter(Boolean).map(m => [m[2], m[1]]);
+  for (const t of txs) {
+    const kind = (t.m && t.m[0] && t.m[0].type || '').split('.').pop() || null;
+    const cps = {};   // native counterparties from bank transfer events
+    for (const e of t.e || []) if (e.t === 'transfer') { const a = Object.fromEntries(e.a);   // keyed by denom AND amount, so a fee is not tagged with the swap next to it
+      if (a.recipient === w && a.sender) for (const [d, amt] of addAmt(a.amount)) { cps['in ' + d + ' ' + amt] = a.sender; cps['in ' + d] = cps['in ' + d] || a.sender; }
+      if (a.sender === w && a.recipient) for (const [d, amt] of addAmt(a.amount)) { cps['out ' + d + ' ' + amt] = a.recipient; cps['out ' + d] = cps['out ' + d] || a.recipient; } }
+    const feeAmts = new Set(((t.f && t.f.amount) || []).map(x => { const m = String(x).match(/^(\d+)(.+)$/); return m ? m[2] + ' ' + m[1] : ''; }));
+    let feeSeen = false;
+    for (const e of t.e || []) {
+      if (e.t === 'coin_received' || e.t === 'coin_spent') { const a = Object.fromEntries(e.a); const who = e.t === 'coin_received' ? a.receiver : a.spender; if (who !== w) continue;
+        for (const [d, amt] of addAmt(a.amount)) { const dir = e.t === 'coin_received' ? 'in ' : 'out ';
+          // the tx fee: the first spend matching the fee in the auth info (tagged 'fee', no counterparty)
+          if (dir === 'out ' && !feeSeen && feeAmts.has(d + ' ' + amt)) { feeSeen = true; flows.push([t.h, d, '-' + amt, null, 'fee']); continue; }
+          flows.push([t.h, d, (dir === 'in ' ? '' : '-') + amt, cps[dir + d + ' ' + amt] || cps[dir + d] || null, kind]); } }
+      else if (/^wasm/.test(e.t)) { const a = Object.fromEntries(e.a); const tok = a._contract_address; const act = a.action; if (!tok || !a.amount || !/^\d+$/.test(a.amount)) continue;
+        if (['transfer', 'send', 'transfer_from', 'send_from'].includes(act)) { if (a.to === w && a.from !== w) flows.push([t.h, 'cw20:' + tok, a.amount, a.from || null, kind]); else if (a.from === w && a.to !== w) flows.push([t.h, 'cw20:' + tok, '-' + a.amount, a.to || a.contract || null, kind]); }
+        else if (act === 'mint' && a.to === w) flows.push([t.h, 'cw20:' + tok, a.amount, tok, kind]);
+        else if ((act === 'burn' || act === 'burn_from') && a.from === w) flows.push([t.h, 'cw20:' + tok, '-' + a.amount, tok, kind]);
+      }
+    }
+  }
+  return flows;
+}
+async function flowsMode() {
+  const C = readJson('cohort/current.json', null); if (!C) throw new Error('no cohort');
+  const H = readJson('layer2/heights.json', null); const weeks = H ? Object.entries(H.rows).map(([d, x]) => ({ d, h: x.h })) : [];
+  let n = 0, nFlows = 0, checked = 0, agree = 0; const mism = {};
+  for (const w of Object.keys(C.wallets).filter(shardOk)) {
+    if (overBudget()) break;
+    const txs = walletTxs(w); const flows = flowsOf(w, txs); n++; nFlows += flows.length;
+    // balances at each weekly boundary (BigInt — raw units)
+    const byDenom = {}; for (const f of flows) (byDenom[f[1]] = byDenom[f[1]] || []).push(f);
+    const bal = {}; for (const [d, list] of Object.entries(byDenom)) { let i = 0, acc = 0n; bal[d] = weeks.map(wk => { while (i < list.length && list[i][0] <= wk.h) { acc += BigInt(list[i][2]); i++; } return acc.toString(); }); }
+    // check against the layer 3 bank checkpoints (native only — the events that happen outside txs show up here as drift)
+    const cp = fs.existsSync(A(`layer3/${w.slice(-1)}/${w}.jsonl.gz`)) ? zlib.gunzipSync(fs.readFileSync(A(`layer3/${w.slice(-1)}/${w}.jsonl.gz`))).toString('utf8').split('\n').filter(Boolean).map(l => JSON.parse(l)) : [];
+    const drift = [];
+    for (const c of cp) { const wi = weeks.findIndex(x => x.d === c.d); if (wi < 0) continue; const chain = Object.fromEntries(c.bank || []);
+      for (const d of new Set([...Object.keys(chain), ...Object.keys(bal).filter(k => !k.startsWith('cw20:'))])) { checked++; const mine = bal[d] ? BigInt(bal[d][wi]) : 0n; const theirs = BigInt(chain[d] || '0'); if (mine === theirs) agree++; else { drift.push([c.d, d, (theirs - mine).toString()]); mism[d] = (mism[d] || 0) + 1; } } }
+    const out = { wallet: w, version: VERSION, weeks: weeks.map(x => x.d), balances: bal, flows, checkpoint_drift: drift };
+    const f = `derived/flows/${w.slice(-1)}/${w}.json.gz`; fs.mkdirSync(path.dirname(A(f)), { recursive: true }); fs.writeFileSync(A(f), zlib.gzipSync(JSON.stringify(out)));
+    if (n % 100 === 0) { console.log(`  … ${n} wallets · ${nFlows} balance changes`); }
+  }
+  const report = { version: VERSION, day: DAY, wallets: n, flows: nFlows, checkpoints_compared: checked, agree, agree_pct: checked ? +(100 * agree / checked).toFixed(1) : null, drift_by_denom_top: Object.fromEntries(Object.entries(mism).sort((a, b) => b[1] - a[1]).slice(0, 30)) };
+  writeJson(`derived/flows/_report.json`, report); commitPush(`flows: ${n} wallets, ${nFlows} balance changes`);
+  console.log(`flows: ${n} wallets · ${nFlows} balance changes · checkpoints compared ${checked}, exact ${agree} (${report.agree_pct ?? '—'}%)${checked ? '' : ' — no layer 3 checkpoints yet (run layer3, then flows again)'}`);
+}
+
+if (!RPCS.length && !['cohort', 'inventory', 'flows'].includes(MODE)) { console.error('ARCHIVE_RPC not set'); process.exit(1); }
 if (!T) console.log('note: cosmjs-types not installed — messages will not be decoded (events are still kept)');
-const run = { timing, cohort, layer1, inventory, layer2 }[MODE]; if (!run) { console.error('unknown MODE ' + MODE); process.exit(1); }
+const run = { timing, cohort, layer1, inventory, layer2, layer3, flows: flowsMode }[MODE]; if (!run) { console.error('unknown MODE ' + MODE); process.exit(1); }
 await run();
