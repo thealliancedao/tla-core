@@ -8,10 +8,10 @@ on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'timing → cohort → layer1 (repeat until all wallets are done) → inventory'
+        description: 'timing → cohort → layer1 → inventory → layer2 (layer2 re-starts itself until done — see chain)'
         required: true
         type: choice
-        options: ['timing', 'cohort', 'layer1', 'inventory']
+        options: ['timing', 'cohort', 'layer1', 'inventory', 'layer2']
         default: 'timing'
       concurrency:
         description: 'layer1: wallets walked at once (use what timing showed the node can take)'
@@ -32,8 +32,14 @@ on:
         required: false
         type: string
         default: '0'
+      chain:
+        description: 'layer2: how many more runs may start themselves after this one if reads are left (0 = stop after this run)'
+        required: false
+        type: string
+        default: '4'
 permissions:
   contents: write   # inventory commits ONE aggregate file to tla-core (docs/deep-history/contracts-seen.json — counts, no wallets)
+  actions: write    # layer2 starts its own next run while reads are left (bounded by the chain input)
 concurrency:
   group: deep-walk-${{ github.event.inputs.mode }}-${{ github.event.inputs.shards }}
 jobs:
@@ -78,3 +84,17 @@ jobs:
           if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
           git commit -m "deep-history: contracts the cohort touched ($(date -u +%Y-%m-%d))"
           for i in 1 2 3 4 5 6; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep $((i * 15)); done; exit 1
+      - name: layer2 — start the next run while reads are left (bounded by chain)
+        if: always() && github.event.inputs.mode == 'layer2'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHAIN: ${{ github.event.inputs.chain }}
+          CONC: ${{ github.event.inputs.concurrency }}
+          MAXM: ${{ github.event.inputs.max_minutes }}
+        run: |
+          LEFT=$(cat layer2_left.txt 2>/dev/null || echo 1)
+          echo "reads left: $LEFT · chain: $CHAIN"
+          if [ "$LEFT" != "0" ] && [ "${CHAIN:-0}" -gt 0 ]; then
+            gh workflow run deep-walk.yml --ref main -f mode=layer2 -f concurrency="$CONC" -f max_minutes="$MAXM" -f chain=$((CHAIN - 1))
+            echo "started the next layer2 run (chain $((CHAIN - 1)) left)"
+          fi
