@@ -1,4 +1,7 @@
-// ── Credia (Creda Finance) probe 1.0 (2026-09-28) — READ-ONLY, one-off (GitHub Action; the workspace cannot reach the chain).
+// ── Credia (Creda Finance) probe 1.1 (2026-09-28) · 1.1 (after the first run): HISTORY FIRST (it is the scarce part), the census only on
+//    Credia's own lists (portfolio all_accounts / portfolios / asset_states + receipt tokens' holders — never the whole ampLUNA / arbLUNA
+//    holder list), wallet answers only from Credia's contracts, and cw20s named by the configs get token_info only
+// ── 1.0 (2026-09-28) — READ-ONLY, one-off (GitHub Action; the workspace cannot reach the chain).
 // What the deep-history walk (SPEC-deep-history §4b/§8) needs from Credia before it is built on — the Solid probe's lessons applied:
 //   A. contracts: the four documented core contracts (+ whatever their configs name, one round) → contract_info (label, code id, admin)
 //      and every QUERY VARIANT each accepts (an unknown query {"__probe__":{}} makes a CosmWasm contract list them — "expected one of …")
@@ -25,7 +28,7 @@ const CORE = {   // docs.creda.finance/developers/contract-addresses, verified o
 };
 const BRIBE_MANAGER = 'terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh';
 const T0 = Date.now(); const overBudget = () => (Date.now() - T0) / 60000 > MAX_MIN;
-const sleep = (ms) => new Promise(r => setTimeout(r, ms)); const UA = 'thealliancedao.com credia-probe/1.0 (one-off; contact via the site)';
+const sleep = (ms) => new Promise(r => setTimeout(r, ms)); const UA = 'thealliancedao.com credia-probe/1.1 (one-off; contact via the site)';
 async function getJson(url, tries = 4, timeoutMs = 30000) { let last = null;
   for (let i = 0; i < tries; i++) { try { const r = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': UA }, signal: AbortSignal.timeout(timeoutMs) }); const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch { }
       if (r.ok) return { ok: true, json: j }; last = { ok: false, status: r.status, body: (j && (j.message || j.error)) || t.slice(0, 400) }; if (r.status < 500 && r.status !== 429) return last; } catch (e) { last = { ok: false, status: 0, body: e.message }; }
@@ -33,7 +36,7 @@ async function getJson(url, tries = 4, timeoutMs = 30000) { let last = null;
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64');
 async function smart(addr, q) { await sleep(120); const r = await getJson(`${LCD}/cosmwasm/wasm/v1/contract/${addr}/smart/${b64(q)}`); return r.ok ? { ok: true, data: r.json && r.json.data } : { ok: false, error: `HTTP ${r.status}: ${String(r.body).slice(0, 400)}` }; }
 const variantsOf = (err) => { const m = String(err || '').match(/expected (?:one of )?(.+?)(?::|$| at line)/); return m ? [...m[1].matchAll(/`([a-z0-9_]+)`/g)].map(x => x[1]) : []; };
-const out = { probe: 'credia-probe 1.0', ran_at: new Date().toISOString(), lcd: LCD, rpcs: RPCS.map((u, i) => (i === 0 && process.env.ARCHIVE_RPC ? 'ARCHIVE_RPC (secret)' : u)), wallets: WALLETS,
+const out = { probe: 'credia-probe 1.1', ran_at: new Date().toISOString(), lcd: LCD, rpcs: RPCS.map((u, i) => (i === 0 && process.env.ARCHIVE_RPC ? 'ARCHIVE_RPC (secret)' : u)), wallets: WALLETS,
   contracts: {}, metrics: null, markets: {}, wallet_answers: {}, census: {}, history: { portfolio: null, liquidator: null, action_sets: {}, samples: [], wallets_seen: 0, first_height: null, last_height: null, tribute: null }, notes: [] };
 const save = () => { try { fs.mkdirSync(OUT.replace(/\/[^/]+$/, ''), { recursive: true }); out.elapsed_min = +((Date.now() - T0) / 60000).toFixed(1); fs.writeFileSync(OUT, JSON.stringify(out, null, 1) + '\n'); } catch (e) { console.error('save failed', e.message); } };
 for (const sig of ['SIGTERM', 'SIGINT']) process.on(sig, () => { out.notes.push('cancelled (' + sig + ') — saved what it had'); save(); process.exit(0); });
@@ -44,7 +47,9 @@ async function describe(addr, role) {
   const v = await smart(addr, { __probe__: {} }); const vs = variantsOf(v.error);
   const c = { role, label: ci && ci.label, code_id: ci && ci.code_id, admin: ci && ci.admin, creator: ci && ci.creator, query_variants: vs, variants_raw_error: vs.length ? undefined : String(v.error || '').slice(0, 300), answers: {} };
   // every variant that takes no argument (config, state, metrics, markets …) — the protocol's own description of itself
-  for (const q of vs) { if (overBudget()) break; const r = await smart(addr, { [q]: {} }); if (r.ok) c.answers[q] = r.data; else if (!/missing field/.test(r.error)) c.answers[q] = { error: r.error.slice(0, 200) }; }
+  const cw20 = vs.includes('token_info');   // 1.1: a token (LST, receipt, LP) — its token_info / minter is all we need
+  for (const q of (cw20 ? vs.filter(x => x === 'token_info' || x === 'minter' || x === 'marketing_info') : vs)) { if (overBudget()) break; if (/^all_/.test(q) || q === 'portfolios' || q === 'asset_states') continue;   /* lists are the census's job */ const r = await smart(addr, { [q]: {} }); if (r.ok) c.answers[q] = r.data; else if (!/missing field/.test(r.error)) c.answers[q] = { error: r.error.slice(0, 200) }; }
+  c.kind = cw20 ? 'cw20' : 'contract';
   out.contracts[addr] = c; save(); console.log(`  ${role.padEnd(14)} ${addr.slice(0, 14)}… ${c.label || '?'} (code ${c.code_id}) · ${vs.length} variants: ${vs.join(', ')}`); return c;
 }
 for (const [role, a] of Object.entries(CORE)) await describe(a, role);
@@ -59,35 +64,6 @@ for (const [role, a] of Object.entries(CORE)) await describe(a, role);
   for (const p of proxies) { if (overBudget()) break; const ti = await smart(p, { token_info: {} }); const mi = await smart(p, { minter: {} }); const vv = await smart(p, { __probe__: {} });
     out.markets[p] = { token_info: ti.ok ? ti.data : { error: ti.error }, minter: mi.ok ? mi.data : { error: mi.error }, query_variants: variantsOf(vv.error) }; }
   save(); console.log(`metrics: ${r.ok ? 'ok' : r.error} · ${proxies.length} receipt tokens`); }
-
-// ── C. the probe wallets' own answers (every variant × the usual argument names) ──────────────────────────────────────────────
-for (const w of WALLETS) { out.wallet_answers[w] = {};
-  for (const [addr, c] of Object.entries(out.contracts)) for (const v of c.query_variants) {
-    if (overBudget()) break;
-    for (const arg of [{ address: w }, { user: w }, { owner: w }, { account: w }, { borrower: w }, { wallet: w }]) {
-      const r = await smart(addr, { [v]: arg }); if (r.ok) { out.wallet_answers[w][`${c.role}.${v} ${Object.keys(arg)[0]}`] = r.data; break; }
-      if (!/missing field|unknown field|invalid type|Error parsing|expected/.test(r.error)) { out.wallet_answers[w][`${c.role}.${v} ${Object.keys(arg)[0]}`] = { error: r.error.slice(0, 200) }; break; }
-    }
-  }
-  for (const [p] of Object.entries(out.markets)) { const r = await smart(p, { balance: { address: w } }); out.wallet_answers[w]['receipt ' + p] = r.ok ? r.data : { error: r.error.slice(0, 120) }; }
-}
-save();
-
-// ── D. census: list-shaped variants paged to the end; the receipt tokens' holders ────────────────────────────────────────────
-async function pageAll(addr, variant, extra = {}) {
-  const rows = []; let after = null, pages = 0, err = null;
-  while (!overBudget() && pages < 400) { const q = { [variant]: Object.assign({ limit: PAGE_LIMIT }, extra, after ? { start_after: after } : {}) }; const r = await smart(addr, q); pages++;
-    if (!r.ok) { err = r.error.slice(0, 300); break; } const list = Array.isArray(r.data) ? r.data : (Object.values(r.data || {}).find(Array.isArray) || []);
-    rows.push(...list); if (!list.length) break; const last = list[list.length - 1]; const next = typeof last === 'string' ? last : (last.address || last.owner || last.user || last.account || last.borrower || last.id || null);
-    if (!next || next === after) break; after = next; }
-  return { rows: rows.length, pages, complete: !err && !overBudget(), error: err || undefined, data: rows };
-}
-for (const [addr, c] of Object.entries(out.contracts)) for (const v of c.query_variants) {
-  if (!/^(all_|portfolios|positions|users|accounts|borrowers|suppliers|list_)/.test(v) && !/(portfolios|positions|accounts|users)$/.test(v)) continue;
-  const res = await pageAll(addr, v); out.census[`${c.role}.${v}`] = Object.assign({ contract: addr }, res); save();
-  console.log(`  census ${c.role}.${v}: ${res.rows} rows in ${res.pages} pages${res.error ? ' — ' + res.error.slice(0, 80) : ''}`);
-}
-for (const [p, m] of Object.entries(out.markets)) { if (!(m.query_variants || []).includes('all_accounts')) continue; const res = await pageAll(p, 'all_accounts'); out.census['receipt ' + ((m.token_info && m.token_info.symbol) || p.slice(-6)) + '.all_accounts'] = Object.assign({ contract: p }, res); save(); }
 
 // ── E. history (tx_search) ───────────────────────────────────────────────────────────────────────────────────────────────────
 async function txsearch(q, perPage, page, order = 'desc') {
@@ -123,7 +99,37 @@ out.history.wallets_seen = seen.size; out.history.wallet_attribute_keys = keysSe
     if ((r.txs || []).length < 100) break; }
   out.history.tribute = { add_bribe_txs_read: read, with_a_credia_contract: hits.length, samples: hits.slice(0, 5) }; }
 save();
-console.log(`\ncredia-probe 1.0: ${Object.keys(out.contracts).length} contracts · metrics ${out.metrics && !out.metrics.error ? 'ok' : 'FAILED'} · ${Object.keys(out.markets).length} receipt tokens`);
+// ── C. the probe wallets' own answers (every variant × the usual argument names) ──────────────────────────────────────────────
+for (const w of WALLETS) { out.wallet_answers[w] = {};
+  for (const [addr, c] of Object.entries(out.contracts)) for (const v of (c.kind === 'cw20' ? [] : c.query_variants)) {
+    if (overBudget()) break;
+    for (const arg of [{ address: w }, { user: w }, { owner: w }, { account: w }, { borrower: w }, { wallet: w }]) {
+      const r = await smart(addr, { [v]: arg }); if (r.ok) { out.wallet_answers[w][`${c.role}.${v} ${Object.keys(arg)[0]}`] = r.data; break; }
+      if (!/missing field|unknown field|invalid type|Error parsing|expected/.test(r.error)) { out.wallet_answers[w][`${c.role}.${v} ${Object.keys(arg)[0]}`] = { error: r.error.slice(0, 200) }; break; }
+    }
+  }
+  for (const [p] of Object.entries(out.markets)) { const r = await smart(p, { balance: { address: w } }); out.wallet_answers[w]['receipt ' + p] = r.ok ? r.data : { error: r.error.slice(0, 120) }; }
+}
+save();
+
+// ── D. census: list-shaped variants paged to the end; the receipt tokens' holders ────────────────────────────────────────────
+async function pageAll(addr, variant, extra = {}) {
+  const rows = []; let after = null, pages = 0, err = null;
+  while (!overBudget() && pages < 400) { const q = { [variant]: Object.assign({ limit: PAGE_LIMIT }, extra, after ? { start_after: after } : {}) }; const r = await smart(addr, q); pages++;
+    if (!r.ok) { err = r.error.slice(0, 300); break; } const list = Array.isArray(r.data) ? r.data : (Object.values(r.data || {}).find(Array.isArray) || []);
+    rows.push(...list); if (!list.length) break; const last = list[list.length - 1]; const next = typeof last === 'string' ? last : (last.address || last.owner || last.user || last.account || last.borrower || last.id || null);
+    if (!next || next === after) break; after = next; }
+  return { rows: rows.length, pages, complete: !err && !overBudget(), error: err || undefined, data: rows };
+}
+for (const [addr, c] of Object.entries(out.contracts)) for (const v of (c.kind === 'cw20' || c.role === 'named' ? [] : c.query_variants)) {
+  if (/allowances|addresses$/.test(v)) continue;
+  if (!/^(all_|portfolios|asset_states|positions|users|accounts|borrowers|suppliers|list_)/.test(v) && !/(portfolios|positions|accounts|users)$/.test(v)) continue;
+  const res = await pageAll(addr, v); out.census[`${c.role}.${v}`] = Object.assign({ contract: addr }, res); save();
+  console.log(`  census ${c.role}.${v}: ${res.rows} rows in ${res.pages} pages${res.error ? ' — ' + res.error.slice(0, 80) : ''}`);
+}
+for (const [p, m] of Object.entries(out.markets)) { if (!(m.query_variants || []).includes('all_accounts')) continue; const res = await pageAll(p, 'all_accounts'); out.census['receipt ' + ((m.token_info && m.token_info.symbol) || p.slice(-6)) + '.all_accounts'] = Object.assign({ contract: p }, res); save(); }
+
+console.log(`\ncredia-probe 1.1: ${Object.keys(out.contracts).length} contracts · metrics ${out.metrics && !out.metrics.error ? 'ok' : 'FAILED'} · ${Object.keys(out.markets).length} receipt tokens`);
 console.log(`  census: ${Object.entries(out.census).map(([k, v]) => k + ' ' + v.rows).join(' · ') || 'no list-shaped query'}`);
 console.log(`  portfolio txs read ${out.history.portfolio && out.history.portfolio.txs_read} of ${out.history.portfolio && out.history.portfolio.total} · wallets seen ${out.history.wallets_seen} · tribute hits ${out.history.tribute && out.history.tribute.with_a_credia_contract} · action sets:`);
 for (const [k, v] of Object.entries(out.history.action_sets).sort((a, b) => b[1].n - a[1].n).slice(0, 40)) console.log(`   ${v.n}× ${k}`);
