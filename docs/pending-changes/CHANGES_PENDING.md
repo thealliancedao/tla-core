@@ -35,7 +35,24 @@
   height, chain label / code id / admin, our registry's name), message types, IBC channels, denoms; full copy in the archive, an
   AGGREGATE (no wallets) committed to tla-core `docs/deep-history/contracts-seen.json` for labeling. Workflow gains `contents: write`
   for that one file.
-- Next: run inventory → label the unknown contracts → layers 2/3.
+- **Inventory RAN (2026-09-29):** 4,601 contracts · 605,748 txs · 38 message types · 532 code ids → docs/deep-history/contracts-seen.json.
+  Draft labels `docs/deep-history/protocol-labels.json` (108 code ids = 95.6 % of contract activity; owner: URA DEX 2961, Knowhere 136;
+  402 / 2580 / 793 unknown; 1723 = the 2022 Terraswap-era pairs, not Solid Swap).
+- **Deep Walk 1.2 — mode `layer2`:** protocol state at every weekly boundary (Monday 00:00 UTC, the epoch calendar extended back to
+  2022-05-30; heights from dex-state-history for epochs 97+, a block-time search for the rest → archive/layer2/heights.json): every DEX
+  pair the cohort touched ({pool:{}} — Astroport, URA, Terraswap-era, SkeletonSwap, Phoenix, the new transmuter), Credia metrics, Solid
+  market / oracle / whitelist, DAO NFT-voting totals — from the week the cohort first touched each. Resumable per target × week; a run
+  that ends with reads left starts the next one itself (`chain`, default 4). Mock: 227 boundaries, block search exact, absent contracts
+  recorded, rows per target.
+- **Deep Walk 1.3 — modes `layer3` + `flows`:** layer3 = per-wallet CHECKPOINTS at the first weekly boundary of every month from the
+  month before the wallet's first tx (bank balances, staking delegations, unbonding → archive/layer3/<shard>/<wallet>.jsonl.gz);
+  resumable, restarts itself like layer2 (`chain`); needs layer2/heights.json. flows = no chain reads: every native (coin_spent /
+  coin_received) and cw20 (transfer / send / *_from / mint / burn) balance change per wallet rebuilt from layer 1, fees tagged `fee`,
+  counterparty matched by denom + amount; weekly balances; checked against the layer3 bank checkpoints → archive/derived/flows/ +
+  _report.json (agreement %, drift by denom — drift = balance moved outside a tx, e.g. rewards). Private archive only; no memos.
+  Mock: checkpoints resume, fee vs swap tagged apart, a 3-uluna out-of-tx change shows as drift.
+- Next: net deposits (exchange-flow summaries per §8b: day · direction · token · amount · value, HMAC dedup key), weekly position
+  values from layer2 + prices, then P&L — then ONE round of page edits.
 
 ## OPEN LEDGER 2026-09-28 (c) — Solid on the portfolio + the 4.0 walk-back fixes (read this first; (b) and (a) below still hold)
 
