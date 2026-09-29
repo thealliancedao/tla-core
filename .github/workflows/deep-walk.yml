@@ -3,15 +3,15 @@ name: Deep Walk
 # SPEC-deep-history §8 — the deep-history backfill, LAYER 1 (every tx of every cohort wallet) into the PRIVATE repo
 # thealliancedao/tla-archive. Runs here (public repo: unlimited Action minutes); writes there with ARCHIVE_REPO_TOKEN.
 # Modes: timing (how fast the archive answers — run first) · cohort (the cut-date wallet list — once) · layer1 (resumable; run again
-# until the log says every wallet is done). PRIVACY (§8b): memos are never stored; this log prints counts only.
+# until the log says every wallet is done) · inventory (every contract the cohort touched, labeled — an aggregate, no wallets, into tla-core). PRIVACY (§8b): memos are never stored; this log prints counts only.
 on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'timing → cohort → layer1 (repeat layer1 until all wallets are done)'
+        description: 'timing → cohort → layer1 (repeat until all wallets are done) → inventory'
         required: true
         type: choice
-        options: ['timing', 'cohort', 'layer1']
+        options: ['timing', 'cohort', 'layer1', 'inventory']
         default: 'timing'
       concurrency:
         description: 'layer1: wallets walked at once (use what timing showed the node can take)'
@@ -33,7 +33,7 @@ on:
         type: string
         default: '0'
 permissions:
-  contents: read
+  contents: write   # inventory commits ONE aggregate file to tla-core (docs/deep-history/contracts-seen.json — counts, no wallets)
 concurrency:
   group: deep-walk-${{ github.event.inputs.mode }}-${{ github.event.inputs.shards }}
 jobs:
@@ -45,6 +45,7 @@ jobs:
         with:
           sparse-checkout: |
             .github/scripts/deep-walk
+            docs/deep-history
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -67,4 +68,13 @@ jobs:
           ARCHIVE_LCD: ${{ secrets.ARCHIVE_LCD }}
           FLOW_KEY: ${{ secrets.FLOW_KEY }}
           ARCHIVE_DIR: archive
+          CORE_OUT: docs/deep-history
         run: node .github/scripts/deep-walk/walk.mjs
+      - name: publish the contract inventory (aggregate only)
+        if: github.event.inputs.mode == 'inventory'
+        run: |
+          git config user.name "deep-walk" && git config user.email "bot@thealliancedao.com"
+          git add docs/deep-history/contracts-seen.json
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -m "deep-history: contracts the cohort touched ($(date -u +%Y-%m-%d))"
+          for i in 1 2 3 4 5 6; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep $((i * 15)); done; exit 1
