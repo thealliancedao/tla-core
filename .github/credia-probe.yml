@@ -1,0 +1,55 @@
+name: Credia Probe
+
+# One-off, READ-ONLY on chain (2026-09-28, SPEC-deep-history §4b: Credia's event + state vocabulary before the deep-history walk).
+# 1.1: history first; the census only on Credia's own lists (never the whole ampLUNA / arbLUNA holder list).
+# The four core contracts' query variants + configs, metrics + every market's receipt token, the probe wallets' answers, every
+# list-shaped query paged to the end, and the portfolio contract's tx history (action sets + verbatim samples + wallets seen) —
+# ARCHIVE_RPC when the secret is set. Commits ONE file: docs/fixtures/<date>/credia-probe.json. Nothing else is written.
+on:
+  workflow_dispatch:
+    inputs:
+      max_pages:
+        description: 'pages of 100 portfolio-contract txs to read (newest first)'
+        required: false
+        type: string
+        default: '80'
+      wallets:
+        description: 'Comma-separated wallets to ask every query for (default: the owner wallet)'
+        required: false
+        type: string
+      lcd:
+        description: 'LCD base URL'
+        required: false
+        type: string
+        default: 'https://terra-lcd.publicnode.com'
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/credia-probe
+            docs/fixtures
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: probe
+        env:
+          WALLETS: ${{ github.event.inputs.wallets }}
+          LCD: ${{ github.event.inputs.lcd }}
+          MAX_MINUTES: '60'
+          MAX_PAGES: ${{ github.event.inputs.max_pages }}
+          ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
+        run: node .github/scripts/credia-probe/probe.mjs
+      - name: commit the fixture (even if the probe stopped early — it saves after every phase)
+        if: always()
+        run: |
+          git config user.name "credia-probe" && git config user.email "bot@thealliancedao.com"
+          git add docs/fixtures
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -m "credia-probe fixture $(date -u +%Y-%m-%dT%H:%M)Z"
+          for i in 1 2 3 4 5 6; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep $((i * 15)); done; exit 1
