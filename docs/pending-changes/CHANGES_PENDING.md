@@ -28,7 +28,14 @@
   messages kept, MEMO + signer data dropped — gzip parts per wallet, resumable manifest, commits every 8 min, stops cleanly at the
   budget; `shards` lets runs split the work). Dry-run on a mock chain + a local bare repo: cohort, 242 txs deduped from 243, no memo /
   signature in the output, resume skips done wallets. Log prints counts only.
-- Next: owner runs timing → cohort → layer1 (limit 5 first); then the contract inventory; then layers 2/3.
+- **Deep Walk RAN (2026-09-29):** timing — tx_search 1.67 pages/s and smart-at-height 1.5/s at concurrency 8, no failures; cohort —
+  **1,159 wallets** (aDAO 802 · Pixel Lions staked 506 · Burning Lions 7 · auto-max VP > 100K 32); **layer 1 COMPLETE in 31 min:
+  1,159/1,159 wallets, 605,041 txs, 34,700 requests, 0 failed searches, 0 retries** — in the private archive.
+- **Deep Walk 1.1** — mode `inventory`: reads layer 1 back → every contract the cohort touched (txs, wallets, top actions, first/last
+  height, chain label / code id / admin, our registry's name), message types, IBC channels, denoms; full copy in the archive, an
+  AGGREGATE (no wallets) committed to tla-core `docs/deep-history/contracts-seen.json` for labeling. Workflow gains `contents: write`
+  for that one file.
+- Next: run inventory → label the unknown contracts → layers 2/3.
 
 ## OPEN LEDGER 2026-09-28 (c) — Solid on the portfolio + the 4.0 walk-back fixes (read this first; (b) and (a) below still hold)
 
