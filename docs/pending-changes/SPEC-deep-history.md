@@ -1,6 +1,6 @@
 # SPEC — Deep history: who qualifies, what the one-time backfill captures, and forward tracking
 
-Status: DRAFT 2026-09-28, owner answers folded in (§6). **Why this exists (owner):** a correct P&L needs every past transaction and
+Status: 2026-09-28, owner answers folded in (§6); §1 + §8 REVISED 2026-09-28 (capture wide, show by setting; the three-layer walk). The first gate build (address-catalog 1.4.0) is ON HOLD — to be reworked into facts + settings. **Why this exists (owner):** a correct P&L needs every past transaction and
 past state, and that needs the ARCHIVE NODE — which we have today and may lose any day. So: capture it now, once, for the people who have
 been loyal to us and our allies, KEEP it (if the node goes, their data stays), and forward-capture from then on. Not for everyone — too
 many addresses, too much storage.
@@ -9,25 +9,29 @@ many addresses, too much storage.
 wallet per epoch, stored as read (§8) — started EARLY because the node is the scarce thing; (3) finish the page; (4) derive the series
 from the stored raw reads (repeatable, no node needed); (5) forward tracking. Docs update + new chat at the milestone.
 
-## 1. Eligibility (owner, 2026-09-28 — as stated)
-A wallet qualifies for deep history if ANY of:
-1. **aDAO NFT staked for more than 90 days.**
-2. **aDAO and/or Lion DAO NFT staked, with a DAO-registered handle.** Lion DAO = **Pixel Lions staked in the Pixel Lions DAO for 90 days**
-   (owner: Burning Lions have no DAO, so they do not qualify). Read as: an aDAO or Pixel Lions NFT staked ≥ 90 days in its DAO + a
-   DAO-registered handle. (Rule 1 already covers aDAO ≥ 90 days without a handle.)
-3. **TLA auto-max lock held for more than 90 days, with a DAO-registered name.**
+## 1. Who is captured, who is shown (owner, 2026-09-28 — REVISED: capture wide, show by a setting)
+**Capture is decided by cost, display by a settings file.** Storage is not the limit when data is kept compact (measured: the daily
+series is 105 bytes per wallet per day ≈ 45 MB/yr for 1,155 wallets; full daily snapshots at ~15 KB per wallet per day are what would
+break the repo and get pruned to 90 days). Archive-node TIME is the limit, so the backfill is shaped to spend it well (§8).
 
-How each is checked from data we already capture (no new chain source needed):
-| Test | Source |
-|---|---|
-| aDAO NFT staked since | `nft-collections/adao/ledger` (stake / unstake events per token → continuous-stake start per wallet) |
-| Pixel Lions NFT staked ≥ 90 days | `nft-collections/pixel-lions/ledger` (the Pixel Lions DAO's staking) |
-| DAO-registered handle / name | the DAODAO profile name (`pfpk.daodao.zone`) the positions crons already resolve (`name`, `has_pfpk_profile`) |
-| Auto-max lock held since | `nft-collections/tla-locks/ledger` (lock lifecycle) + the locks product's `is_auto_max_locked` |
+**The backfill cohort (the cut date)** — a wallet is in if ANY of (DAODAO and Enterprise stakes both count):
+1. holds an aDAO NFT (any state) — 801 wallets on 2026-09-28;
+2. has a Pixel Lion staked, or holds a Burning Lion — 506 (+4 Burning Lion holders, all already counted);
+3. holds a TLA auto-max lock with total VP > 100K — 32.
+**Union: 1,155 wallets** (192 of them have TLA flow history; the rest have NFT history only — so far as TLA shows).
 
-Product: `member-data/eligibility/current.json` — per wallet {rules_met[], evidence per rule (since dates, handle), tier, cohort, as_of};
-re-evaluated daily by member-data (cheap: reads three ledgers + the names it already has). `lib/eligibility.js` holds the rules ONCE; the
-page, the backfill Action and the forward job all read the product (one number, one code path).
+**After the cut date (owner):** a wallet that meets the rules AND breaks an aDAO NFT gets its own deep backfill, automatically — a small
+Render job watches the aDAO ledger for `break` events by wallets with no deep history; if they qualify and the archive node is still
+reachable it runs that one wallet (~5–10 min); if nobody breaks, nothing runs; if the node is gone the wallet is marked forward-only.
+Without the archive a newcomer still gets everything rebuildable from events (LP, locks, votes, bribes, claims, NFTs) — only past
+state-only facts (Credia / Solid / balances on past dates) are missing.
+
+**Wallets that have done nothing in TLA (owner):** they stay watched. The forward watcher (§8, layer 1 forward) sees every tx they sign;
+the first time one touches a protocol we read (Solid, Credia, Votion, TLA, Astroport …) their portfolio + P&L for it starts from that tx.
+
+**Who the portfolio page shows** = a settings file (`docs/curated/portfolio-access.json`, rules any-of / all-of over per-wallet FACTS:
+NFTs held / staked + since, broken NFTs, lock count / auto-max / VP, DAODAO name, name history). The daily identity job writes the facts,
+not a verdict — a rule change is a one-line edit, and nobody's data depends on it. Name history (`catalog/names/history.json`) as built.
 
 ## 2. Tiers
 - **Cohort (deep):** wallets qualifying on the CUT DATE (the day the deep backfill runs) — full history reconstructed back to their first
@@ -43,8 +47,9 @@ page, the backfill Action and the forward job all read the product (one number, 
   interpolated. A returning wallet was in the cohort once, so it gets its gap filled; a brand-new qualifier still gets forward-only.
 
 ## 3. Public by design
-Everything committed to `tla-core` is public, and the site has no wallet connection (owner: none planned). So the rules decide **which
-wallets we spend archive reads and storage on**; anyone can view any tracked wallet — which is also what makes the leaderboards (§7) work.
+Everything committed to `tla-core` is public, and the site has no wallet connection (owner: none planned). The rules decide which wallets
+we spend archive reads and storage on AND (owner, 2026-09-28) which wallets the member portfolio page shows — the data stays public in the
+repo; the page tells the whole story only for covered wallets. Leaderboards (§7) are cohort-only by construction.
 
 ## 4. What the deep backfill captures (every domain; built from what the page needs)
 Granularity: **per epoch (weekly) for the deep past, daily from the cut date forward** — per-epoch is ~7× cheaper and matches how TLA pays
@@ -71,6 +76,50 @@ Mechanics: a GitHub Action (one-time work → Actions; scheduled → Render), AR
 heap-bounded (read → fold → drop), a gate that re-reads a sample of rows against the live chain for the current day. Size check before
 running: cohort × epochs × reads (e.g. 100 wallets × 110 epochs × ~15 reads ≈ 165K archive reads).
 
+### 4b. Protocol inventory — what the walk must look for (2026-09-28, owner list + what our data shows)
+Layer 1 (every tx of every cohort wallet, §8) catches ALL of these without a list; this table is what layers 2/3 read at each epoch and
+what the page will derive. **Order: layer 1 first → `contracts_seen` + `contract_info` (code id, label, admin) for every contract any
+cohort wallet touched → the owner labels anything unknown → layers 2/3.** That is how "did we miss a protocol" gets answered by the chain.
+
+| Protocol | What users do | Have today | The walk adds |
+|---|---|---|---|
+| TLA (vAMP locks, votes, bribes, amp/non-amp LP) | lock, vote, provide, claim | flows since 2024-08, locks ledger genesis, votes, bribes | per-wallet state per epoch (layer 3) |
+| aDAO | hold / stake / list / sell / break, DAO votes, backing | NFT ledger genesis, DAO capture | voting power at height |
+| Pixel Lions · Lion DAO (ROAR) · pyROAR · Burning Lions | stake NFTs / ROAR, votes, DAODAO rewards | PL ledger genesis; ROAR/Lion DAO forward only; pyROAR holder list; Burning Lions snapshot only (7 tokens, no ledger) | ROAR stake + rewards history; Burning Lions ledger (tiny) |
+| Solid (Capapult) + CAPA / ampCAPA DAO | deposit / lock / borrow (0.5 % mint fee) / repay, liquidations, **bid in the liquidation queue**, wrap bridged tokens (bond / redeem) | census + oracle + liquidation vocabulary PROVEN (full census 2026-09-28, S1–S9) | per-wallet queue bids (`bids_by_user`), borrow / repay / fee events, per-epoch state |
+| Credia (Creda Finance) | supply / withdraw / borrow / repay, collateral + e-mode switches, receipt transfers (e.g. wBTC.creda.a staked in the TLA single gauge), flash-loan liquidations | current state for TLA participants | probe 1.1 PROVEN (2026-09-29, below) — history is derivable from events alone |
+| Votion | deposit / withdraw vaults | events since 2025-02 + vault rates + holder P&L | nothing new beyond layer 1 |
+| Eris (ampLUNA, arbLUNA hubs, amplifier, gov) | bond / unbond / claim, amp vaults | hub ratios (price-history), amp flows via TLA | unbond queue per wallet, non-TLA Eris use |
+| Backbone Labs (bLUNA, BBL marketplace) · Stader (LunaX — turned off in Solid; history only) | LST bond / unbond; NFT trades | hub ratios; BBL venue in NFT ledgers | unbond queues; LunaX ratio history |
+| Astroport · Skeleton Swap (White Whale) | swap, provide / withdraw, incentives | TLA pools only | LP outside TLA, swaps (fees paid), incentive claims |
+| DAODAO · Enterprise (legacy) · Polytone | stake, vote, propose, rewards | our DAOs + allies | every DAO a cohort wallet is in (voting power at height) |
+| Native staking · Alliance module · chain governance | delegate / undelegate / redelegate / claim, alliance delegate, votes | live read only | delegations + rewards per epoch, gov votes |
+| Marketplaces: BBL · Boost · Atrium · NFT Switch | list / sell / buy / bid (NFTs and TLA locks) | venue-attributed ledgers | nothing new (layer 1 keeps the raw) |
+| Bridges & routers: IBC (Osmosis, Noble USDC), Axelar, Wormhole, Skip / TFM | move assets in / out, routed swaps | IBC counterparties found live on the page | cross-chain in/out per wallet (cost basis of what arrived) |
+| **Wallet token flows** (owner 2026-09-28) | every token in / out of the wallet: bank sends, cw20 transfers, IBC in / out | amp-token wallet↔wallet moves only (tla-flows/transfers); balances live | every transfer from layer 1, each counterparty labeled: protocol contract · our registry (DAOs, members, the wallet's own linked addresses) · bridge / IBC chain · **exchange** (curated list + a volume heuristic; see §8b — no memo is ever stored) · unknown ("external"). Valued at that day's price → **net deposits** per wallet, which turns the P&L into value now − (money in − money out) across everything, not only TLA; moves between a member's own wallets cancel out |
+| Warp (automation), feegrant, authz, token factory | automated jobs (seen placing Solid bids), fee grants, permissions, factory denoms | authz live on the page | the jobs / grants a wallet created |
+| Allies / watched: Galactic Mining Club, Galactic Punks | NFTs, BTC backing | registry entries | their DAOs via the DAODAO row |
+
+**Solid — status 2026-09-28 (probe 1.4, the full census):** 219 wallets with collateral, 551 borrower records, 202 with a loan; the
+protocol's limit reproduced within 1 % on every priced position (114/114); **59 wallets still owe SOLID with no collateral left**
+(liquidated to zero — new band `debt_no_collateral`); the bridged wrappers (wBTC, wETH) report 6 decimals but count in the wrapped
+token's units (reader 1.0.1 fixes the token counts; USD was never affected); wBNB has no oracle price (blank); **1,655 liquidations on
+chain** (custody `liquidate_collateral` totals), 190/190 sampled tie borrower + collateral taken + SOLID repaid. Still to prove before
+the Solid history: queue bids per wallet, borrow/repay fee attributes, the wrapper bond/redeem events.
+
+
+**Credia — status 2026-09-29 (probe 1.1, docs/fixtures/2026-09-29/credia-probe.json):** 14 markets (LUNA, ampLUNA, arbLUNA, wBTC, USDC,
+PAXG, wstETH, EURe, USDi / USDC pairs, five TLA ampLP tokens — only the ampLP markets carry the 2 % take rate). **Census complete in one
+paged query:** `portfolios` returns every position with values — **183 portfolios** (8 pages), the same shape as `portfolio{address}` —
+so the hourly reader can cover every Credia user in 8 calls instead of one call per participant. **12,995 portfolio txs** since height
+18,251,767 (8,000 newest read), 127 wallets in them, 51 liquidator txs. **Every event carries the position's full snapshot** (portfolio,
+value, vamount, lthf, supplied / collateral / borrowed / lt / ltv values, APRs): `creda-portfolio/supply | withdraw | borrow | repay |
+transfer (owner → recipient, both snapshots) | change_emode | liquidate (liquidated, debt repaid USD, bonus liquidator / protocol,
+lthf before → after) | flashloan` — **Credia's history needs no per-wallet archive state reads**; balances are vamount × the market's
+supply / borrow index (metrics). Tribute hypothesis: NOT supported — the add_bribe seen next to Credia events is TLA's own weekly
+take-rate distribution, which takes a slice of the wBTC.creda.a receipts staked in the single gauge (a `creda-portfolio/transfer` to the
+take collector); where Credia's 2 % ampLP take goes is still unseen.
+
 ## 5. Why "all" on the trend looks short today (found 2026-09-28)
 - The org daily archive `member-data/positions/daily` starts **2026-08-11** (49 files). The page's `CONFIG.trackStart` still says
   2026-06-13 — the pre-migration days (06-13 → 08-10) are not in tla-core (the legacy repos are private/unreachable from the session).
@@ -95,19 +144,63 @@ running: cohort × epochs × reads (e.g. 100 wallets × 110 epochs × ~15 reads 
 - Name shown = the DAO-registered handle (every cohort wallet under rules 2–3 has one; rule-1 wallets without one show a short address).
 - Guard: a ranking needs ≥ N weeks of history and a minimum capital, so a one-week lucky wallet does not top it (N and the floor in config).
 
-## 8. Raw first (the archive is the scarce thing)
-The backfill stores **what the chain answered**, per cohort wallet per epoch height, before deriving anything:
-`member-data/history-raw/<wallet>/<epoch>.json` = { height, time, reads: { query → answer } } for every query in the §4 table (compounder
-user_info, alliance staking, locks, Votion vault balances, Credia portfolio, Solid collaterals / borrower_info, DAO voting power, bank +
-cw20 balances). Series are then DERIVED from these files by a normal job — so if the page later wants something new, or a bug is found,
-we recompute without the node. Size first: cohort × epochs × reads, compressed; a gate re-reads a sample live for the current epoch.
+## 8. The backfill walk — take EVERYTHING (owner: "make sure we get everything, even stuff we may not know we need yet")
+The node is the scarce thing, so the walk stores what the chain says in the most general form first, and derives later. Three layers:
+
+**Layer 1 — every tx of every cohort wallet (protocol-agnostic, the widest net).** Archive RPC `tx_search` for each wallet as signer
+(`message.sender`) AND everywhere else a wallet appears in an indexed attribute — measured from 111K txs of our own raw corpus
+(tla-flows/raw) plus the Solid census: `transfer.recipient`, `coin_received.receiver`, `withdraw_rewards.delegator`, `wasm.receiver`,
+`wasm.recipient`, `wasm.to`, `wasm.user`, `wasm.owner` / `wasm.new_owner` / `wasm.old_owner`, `wasm.borrower` (a liquidation is not
+signed by the borrower), `wasm.bidder`, `wasm.seller`, `wasm.portfolio`, `wasm.address`, `wasm-erishub/*.receiver`,
+`fungible_token_packet.receiver` — full tx result with events, deduplicated by hash. This captures protocols we do not read yet —
+any future feature re-derives from it. Cheap in reads (100 txs per page), heavy in bytes (est. ~1 GB gzip for the cohort) → stored
+OUTSIDE tla-core git (§8a). **Forward:** a daily Render job runs the same searches from the last height for all captured wallets (one or
+two pages each) — this is also what activates a dormant wallet (above) and what replaces the archive once it is gone.
+
+**Layer 2 — protocol state at every epoch boundary (per protocol, not per wallet).** Pool reserves + LP supply, compounder / Alliance
+share prices, LST hub rates, Votion vault rates, Credia market states + oracle, Solid market / overseer / oracle, vAMP totals, DAO voting
+module totals, bribe state — a few hundred reads per epoch × ~110 epochs. This is what VALUES the positions layer 1 reconstructs.
+
+**Layer 3 — per-wallet state where events cannot rebuild it, only where layer 1 says the wallet was there.** Compounder `user_info` per
+pool it touched, Alliance staking, Credia portfolio / health, Solid collaterals / borrower_info, Votion vault balances, DAO voting power,
+bank + the cw20s it ever received — at each epoch boundary from its first tx on. Layer 1 decides which contracts to ask, so no read is
+spent on a protocol a wallet never used.
+
+**Also saved:** the list of every contract any cohort wallet ever called (`contracts_seen`, with first/last height and counts) — so
+unknown protocols surface and can be labeled later.
+
+**8b. Privacy rules (owner 2026-09-28: "I'm trying to help, not hurt our users — this must not become ammo against them").** Binding on
+every layer, the raw included:
+- **No memos, ever.** Tx memos are not stored in the raw, the derived products or the pages (an exchange deposit memo is the exchange's
+  customer id — the one field that ties a wallet to a person). The walk drops `tx.body.memo` before anything is written; the existing
+  raw corpus (tla-flows/raw) holds events only and has none. (Supporter gifts keep only the fact that the agreed tag matched — the donor
+  chose to write it.)
+- **Exchange flows are summaries, not trails.** A transfer to / from an exchange is kept as {day, direction, token, amount, value that
+  day, "exchange"} — no tx hash, no counterparty address, no exchange name on the page. Dedup during the walk uses a keyed hash (HMAC with
+  a secret held in the Action), so the stored key cannot be looked up on an explorer.
+- **The raw archive is PRIVATE** (a private repo / private storage, not tla-core): full txs are needed to re-derive features, but they are
+  not published. Only derived, summarised products are public.
+- **No new identity links.** We never guess who owns a wallet, never link wallets to each other unless the owner linked them on the page
+  (their own browser) or they share a DAODAO name they chose to register; the exchange heuristic labels ADDRESSES as exchanges, never
+  people as exchange customers.
+- The footer's tax / no-liability notice stands: figures are orientation, not records.
+
+**8a. Where it lives.** Raw layers 1–3: gzip, write-once per wallet × chunk, in a SEPARATE **private** archive repo (e.g. `thealliancedao/tla-archive`,
+never rewritten, so git grows only by the data; private per §8b) — tla-core keeps only the compact derived products (weekly points, daily series, P&L
+ledgers, facts). A gate re-reads a sample live for the current epoch. **Step 0** before any of it: a 15-minute timing probe (tx_search
+pages/s + payload size, smart queries/s at height) to size the run for real.
+
+**Estimates (to be replaced by the probe):** layer 1 ≈ 1,155 wallets × ~6 searches × a few pages ≈ 20–40K requests; layer 2 ≈ 30–60K
+reads; layer 3 ≈ 150–250K reads for the 192 TLA wallets + whatever layer 1 shows the others touched. At 3–10 reads/s: roughly 1–3 days,
+run as resumable GitHub Action chunks (6 h cap each).
 
 ## 9. Charts on weekly points (owner)
 Every deep-history chart point is clickable: a panel with that epoch's totals and its breakdown (locks / LP by pool / Votion / NFTs /
 Credia / Solid / wallet), each figure labelled with its source; points with a gap say so.
 
 ## 10. Still open
-- Rule 2 duration as read above (aDAO or Pixel Lions ≥ 90 days staked + handle) — confirm.
+- Auto-max history: the switch is read as it is today; a lock set to auto-max recently counts from acquisition (record the switch forward).
+- Enterprise-DAO stakes (504 aDAO / 683 Pixel Lions tokens still in state staked_enterprise) do not count — confirm.
 - The cohort size estimate (run the eligibility product first) → storage + archive-read budget.
 - Leaderboard N-weeks and capital floor.
 

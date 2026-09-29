@@ -1,5 +1,35 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER 2026-09-28 (d) — design turn: capture wide, show by a setting; Solid full census (read first)
+
+- **Coverage gate ON HOLD** (address-catalog 1.4.0 identity.js + member-portfolio 4.2 built, gated 127/127 and 10/10, NOT delivered):
+  the owner chose to capture wide and make "who the page shows" a settings file over per-wallet facts. SPEC-deep-history §1 / §4b / §8
+  rewritten: cohort = aDAO holders + Pixel Lions stakers (DAODAO + Enterprise) + Burning Lion holders + auto-max lock with VP > 100K =
+  **1,155 wallets**; three-layer walk (every tx per wallet → protocol state per epoch → per-wallet state where the wallet was); raw kept
+  outside tla-core; break-an-aDAO-NFT triggers a newcomer's backfill; the forward tx watcher activates dormant wallets. Name history
+  (catalog/names) carries over as built.
+- **Solid probe 1.4 ran** (docs/fixtures/2026-09-28/solid-liquidations.json). **platform-crons** `lib/solid-reader.js` **1.0.1**: bridged
+  wrappers take the wrapped token's decimals (wBTC 8, wETH 18 — their token_info says 6; token counts were wrong, USD never was); a loan
+  with no collateral left = band `debt_no_collateral` (59 wallets). `mock-run-solid.js` 13/13 (S8 full census 114/114 within 1 %, S8b, S8c,
+  S9 liquidation vocabulary 190/190). **aDAO-links-site** member-portfolio **4.1.1** (from main): that band reads "SOLID still owed · no
+  collateral left" + an alert, never "no loan".
+- **Credia Probe 1.1 RAN** (docs/fixtures/2026-09-29/credia-probe.json, 53 min): census complete (`portfolios` = all 183 positions in 8
+  pages), 12,995 portfolio txs (8,000 read), full event vocabulary — every Credia event carries the position's snapshot, so the history
+  is derivable from events alone (SPEC-deep-history §4b). Tribute hypothesis not supported (the co-occurring add_bribe is TLA's own take
+  distribution). Follow-up: the hourly Credia reader can switch to the `portfolios` census (all users, 8 calls).
+- Solid finding: 29 of the 59 no-collateral loans come from ONE mass liquidation (height 22,730,546); the rest are older single
+  liquidations. The leftover loan is the part the collateral did not cover — the borrower still holds the SOLID they borrowed.
+- Stader LunaX is turned off in Solid (owner) — still read for history; it takes no new collateral.
+- **Deep Walk 1.0** (NEW Action `deep-walk.yml`, script `.github/scripts/deep-walk/walk.mjs`) — SPEC-deep-history §8 layer 1, writing to
+  the PRIVATE repo thealliancedao/tla-archive (secrets in tla-core: ARCHIVE_RPC, ARCHIVE_LCD, ARCHIVE_REPO_TOKEN, FLOW_KEY — all set
+  2026-09-29). Modes: `timing` (tx_search pages/s and smart-at-height/s at concurrency 1/2/4/8 → archive/timing/<day>.json) · `cohort`
+  (aDAO holders + Pixel Lions staked incl. Enterprise + Burning Lion holders + auto-max lock VP > 100K, from public products →
+  archive/cohort/current.json) · `layer1` (every tx under 20 wallet-valued attribute keys, deduplicated, decoded with cosmjs-types —
+  messages kept, MEMO + signer data dropped — gzip parts per wallet, resumable manifest, commits every 8 min, stops cleanly at the
+  budget; `shards` lets runs split the work). Dry-run on a mock chain + a local bare repo: cohort, 242 txs deduped from 243, no memo /
+  signature in the output, resume skips done wallets. Log prints counts only.
+- Next: owner runs timing → cohort → layer1 (limit 5 first); then the contract inventory; then layers 2/3.
+
 ## OPEN LEDGER 2026-09-28 (c) — Solid on the portfolio + the 4.0 walk-back fixes (read this first; (b) and (a) below still hold)
 
 **Shipped in this batch (ZIPs, not yet confirmed on main):**
