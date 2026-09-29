@@ -1,0 +1,70 @@
+name: Deep Walk
+
+# SPEC-deep-history §8 — the deep-history backfill, LAYER 1 (every tx of every cohort wallet) into the PRIVATE repo
+# thealliancedao/tla-archive. Runs here (public repo: unlimited Action minutes); writes there with ARCHIVE_REPO_TOKEN.
+# Modes: timing (how fast the archive answers — run first) · cohort (the cut-date wallet list — once) · layer1 (resumable; run again
+# until the log says every wallet is done). PRIVACY (§8b): memos are never stored; this log prints counts only.
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'timing → cohort → layer1 (repeat layer1 until all wallets are done)'
+        required: true
+        type: choice
+        options: ['timing', 'cohort', 'layer1']
+        default: 'timing'
+      concurrency:
+        description: 'layer1: wallets walked at once (use what timing showed the node can take)'
+        required: false
+        type: string
+        default: '4'
+      max_minutes:
+        description: 'stop cleanly after this many minutes (the job limit is 6 h)'
+        required: false
+        type: string
+        default: '320'
+      shards:
+        description: 'layer1: only wallets ending in these characters, e.g. "0-9" or "a,c" (empty = all) — lets two runs work in parallel'
+        required: false
+        type: string
+      limit_wallets:
+        description: 'layer1: walk at most this many wallets this run (0 = all) — use 5 for a first test'
+        required: false
+        type: string
+        default: '0'
+permissions:
+  contents: read
+concurrency:
+  group: deep-walk-${{ github.event.inputs.mode }}-${{ github.event.inputs.shards }}
+jobs:
+  walk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/deep-walk
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: decoder
+        run: cd .github/scripts/deep-walk && npm init -y >/dev/null && npm i --no-audit --no-fund cosmjs-types@0.9.0 >/dev/null
+      - name: the private archive
+        env:
+          TOKEN: ${{ secrets.ARCHIVE_REPO_TOKEN }}
+        run: |
+          git clone -q --depth 1 "https://x-access-token:${TOKEN}@github.com/thealliancedao/tla-archive.git" archive
+          cd archive && git config user.name "deep-walk" && git config user.email "bot@thealliancedao.com"
+      - name: walk
+        env:
+          MODE: ${{ github.event.inputs.mode }}
+          CONCURRENCY: ${{ github.event.inputs.concurrency }}
+          MAX_MINUTES: ${{ github.event.inputs.max_minutes }}
+          SHARDS: ${{ github.event.inputs.shards }}
+          LIMIT_WALLETS: ${{ github.event.inputs.limit_wallets }}
+          ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
+          ARCHIVE_LCD: ${{ secrets.ARCHIVE_LCD }}
+          FLOW_KEY: ${{ secrets.FLOW_KEY }}
+          ARCHIVE_DIR: archive
+        run: node .github/scripts/deep-walk/walk.mjs
