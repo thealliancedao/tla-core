@@ -41,6 +41,13 @@ placeholder. No writers yet.
   org-ally-positions-liondao (governance by the dao-governance cron). Also phoenix-directive/governance/ (2026-09-23).
 - **tla-core/docs/ecosystem-knowledge/LION-DAO.md** (2026-09-26) — the ally's knowledge doc (help-agent corpus).
 
+## Private archive repo (2026-09-29)
+- **thealliancedao/tla-archive — PRIVATE.** The deep-history RAW data (SPEC-deep-history §8a/§8b): cohort/, timing/, layer1/ (every tx of
+  1,159 cohort wallets, gzip per wallet, memos never stored), inventory/, layer2/ (weekly protocol state + heights.json), layer3/ (monthly
+  balances + staking), derived/flows/ (+ _report.json). Written ONLY by tla-core's deep-walk Action (ARCHIVE_REPO_TOKEN, fine-grained,
+  this repo only). Never published; the site and the help bot read only the public derived summaries in tla-core.
+- tla-core/docs/deep-history/ — the PUBLIC aggregates from it: contracts-seen.json, protocol-labels.json (no wallets).
+
 ## ORG RENDER CRON CATALOG (module headers + observed heartbeat cadence)
 | Job (Render) | Purpose (its own header) | Writes (tla-core) | Observed cadence* |
 |---|---|---|---|

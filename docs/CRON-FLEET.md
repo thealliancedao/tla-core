@@ -47,6 +47,14 @@ then removed); tla-flows-pnl → org-tla-flows 3.4.1 duty (month-at-a-time — 3
 archive walk completed at 21,481,530). What remains under `.github/` is dispatch-only (harvests, walks, fills, one-off
 repairs). LAW: the archive node is for history the public endpoints cannot see — no scheduled job depends on it.
 
+**2026-09-28 → 30 dispatch-only Actions (added):** `solid-probe.yml` (Solid census + liquidation vocabulary, probe 1.4) · `credia-probe.yml`
+(Credia census + events, probe 1.1) · **`deep-walk.yml`** (the deep-history backfill, walk.mjs 1.6 — modes timing · cohort · layer1 ·
+inventory · layer2 · layer3 · flows; writes RAW data to the PRIVATE repo thealliancedao/tla-archive with ARCHIVE_REPO_TOKEN; layer2/layer3
+chain themselves via the `chain` input and stop red with no next run when reads fail). All one-time; history in
+docs/changelogs/deep-walk-log.md. Measured 2026-09-30: the archive node keeps contract state only from 2023-10-23 and balances from spring
+2023 (queries.md §21). Cloning tla-archive into a run took up to 26 min as it grew — use a sparse / partial clone before any repeated job
+reads it. The planned forward tx watcher (Render, daily) must use neutral / public endpoints, not the archive node.
+
 ## Registration checklist — every time a job is added, renamed, or rescheduled
 1. This file (row + the minute map below).
 2. `aDAO-links-site/lib/cron-registry.js` — one entry (key, sourceUrl = its heartbeat, tsPath, job, cadence preset).

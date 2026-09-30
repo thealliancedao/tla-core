@@ -1296,16 +1296,59 @@ borrow_amount, mint_fee) / `repay_stable` (borrower, repay_amount). Deposit = cw
 ### Gotchas
 - **Deposited ≠ locked.** A custody holds what was deposited (`borrower.balance`); only what the overseer LOCKED backs a loan
   (`collaterals`). The owner's bLUNA test showed `balance` 92 raw locked, `spendable` 0.
-- **The oracle's unit is unconfirmed.** Oracle v2 read wBTC at `828.44` (base_asset `uusd`) while the token catalog prices WBTC.axl ≈ $60.5K.
-  Do not derive USD from it until the unit is proven (decimals-adjusted per asset, or a stale feed).
-- **Liquidations:** no liquidation was found in the probe window, so their event vocabulary is still unknown — capture one before building the history.
-- **Census:** the probe's discovery used its 40-minute budget, so the paged censuses (all_collaterals, borrowers, borrower_infos) did not run;
-  the single-page answers above prove the shapes. The Solid reader pages them itself.
+- **The oracle unit — SETTLED (2026-09-28):** oracle v2 prices are USD per 6-decimal unit: USD = raw × price / 1e6. wBTC 828.44 × 100 =
+  $82,844, matching the network-and-prices feed — the token catalog's WBTC.axl ≈ $60.5K is the stale number.
+- **Wrapper decimals:** the bridged wrappers (wBTC, wETH) say 6 decimals in token_info but count in the WRAPPED token's units (wBTC 8, wETH
+  18). Token counts must use the wrapped token's decimals; USD (above) is unaffected. wBNB has no oracle price → blank.
+- **Liquidations — vocabulary PROVEN (probe 1.4):** custody `liquidate_collateral {borrower, amount}` · queue `execute_bid
+  {collateral_amount, repay_amount}` · market `repay_stable {borrower}` (a liquidation is NOT signed by the borrower — search by
+  `wasm.borrower`). Also seen: `claim_liquidations`, `submit_bid` / `retract_bid` / `activate_bids`, flash-mint liquidators
+  (`market:flash_mint`, `private_flash_end`), Warp jobs placing bids. 1,655 liquidations on chain (LunaX 1,028 · ampLUNA 349 · bLUNA 250 ·
+  wBTC 14 · wETH 6 · wBNB 5 · wSOL 3); 190/190 samples tie borrower + collateral taken + SOLID repaid.
+- **Debt with no collateral:** 59 borrowers still owe SOLID with nothing locked (29 of them from ONE mass liquidation at height
+  22,730,546). It is the part the collateral did not cover — the borrower still holds the SOLID borrowed. Band `debt_no_collateral`.
+- **Census paging stops on an EMPTY page**, not a short one. Full census 2026-09-28: 219 collateral rows (9 pages), 551 borrower rows (20
+  pages), 202 wallets with a loan; the protocol's borrow limit reproduced within 1 % on 114/114 priced positions.
+- Stader **LunaX is turned off** as new collateral (owner, 2026-09-29) — still read for history.
+- Still to prove: queue bids per wallet (`bids_by_user`), borrow/repay fee attributes (mint fee 0.5 %), wrapper bond/redeem events.
+
+## 20. Credia portfolio contract — the census and the event stream (2026-09-29, credia-probe 1.1)
+
+Portfolio contract `creda_portfolio` (code **3995**) — the fixture is `docs/fixtures/2026-09-29/credia-probe.json`.
+```
+Q-Credia-Portfolios   { "portfolios": { "start_after"?, "limit"? } } → every user's position, the same shape as portfolio{address}
+                      2026-09-29: ALL 183 portfolios in 8 pages — one paged read covers every Credia user (no per-wallet reads)
+Q-Credia-Metrics      { "metrics": {} } → platform totals + every market (price, supplied / borrowed / collateral, indexes, APYs, LTVs, take rate)
+```
+- **Events carry the full position:** `creda-portfolio/supply | withdraw | borrow | repay | transfer (owner → recipient, both snapshots) |
+  change_emode | liquidate (liquidated, debt repaid USD, bonus liquidator / protocol, lthf before → after) | flashloan` — each with the
+  position's snapshot (portfolio, value, vamount, lthf, supplied / collateral / borrowed / lt / ltv values, APRs). History is rebuilt from
+  events alone; balances = vamount × the market's supply / borrow index.
+- 14 markets (LUNA, ampLUNA, arbLUNA, wBTC, USDC, PAXG, wstETH, EURe, USDi / USDC pairs, five TLA ampLP tokens — only the ampLP markets carry
+  the 2 % take rate). 12,995 portfolio txs since height 18,251,767; 127 wallets; 51 liquidator txs. Other codes: oracle 3843, global config
+  3745, liquidator 3997, receipt proxies 3750.
+- The "take rate funds the gauge tributes" hypothesis is NOT supported: the add_bribe next to Credia events is TLA's own weekly take-rate
+  distribution (a `creda-portfolio/transfer` of wBTC.creda.a receipts to the take collector). Where Credia's own 2 % ampLP take goes is
+  still unseen.
+
+## 21. Reading PAST state (at height) — what the archive node answers (2026-09-30, Deep Walk 1.4–1.6)
+
+- Two routes reach the same state: RPC `abci_query?path="/cosmwasm.wasm.v1.Query/SmartContractState"&data=0x<protobuf>&height=H`
+  (also `/cosmos.bank.v1beta1.Query/AllBalances`, `/cosmos.staking.v1beta1.Query/DelegatorDelegations` / `DelegatorUnbondingDelegations`;
+  encode/decode with cosmjs-types) and the LCD with header `x-cosmos-block-height: H`.
+- The archive node behind ARCHIVE_RPC keeps the FULL tx history (tx_search from 2022) but **bank/staking state only from block 4,063,549**
+  and **contract state only from block 7,324,381 (week of 2023-10-23)**.
+- Below the state floor: "failed to load state at height N; version mismatch on immutable IAVL tree; version does not exist. Version has
+  either been pruned…" (LCD: "codespace sdk code 18"). Below the contract floor: RPC "panic: unknown request" / LCD "codespace undefined
+  code 111222: panic" — this does NOT mean the contract lacks the query; test several heights before concluding anything.
+- Deterministic errors (pruned, unknown request, no such contract) are never retried; measure the floors BEFORE sizing a backfill.
+- Public LCDs are pruned — past state needs the archive; everything older than the floors is rebuilt from tx events.
 
 ---
 
 | Date | Change |
 |---|---|
+| 2026-09-30 | §19 gotchas: oracle unit settled (USD = raw × price / 1e6), wrapper decimals, liquidation vocabulary proven + counts, debt with no collateral, census paging. §20 Credia `portfolios` census + event stream. §21 reading past state: the two routes, the archive node's state and contract floors, the error messages. |
 | 2026-09-28 | Section 19: Solid (Capapult CDP) — overseer / market / liquidation / collector / oracles / 8 custodies, query shapes and events from the solid-probe 1.3 fixture; open items (oracle unit, liquidation events). |
 | 2026-07-14 | Moved to `tla-core/docs/` (SPEC-docs-consolidation). Update pass from the 2026-07-13/14 probe sessions: VP definition law added to header; `distributions` block rewritten (time param, full per-period history to floor 96, epoch mechanics, 1-indexed period lock-in); `last_distribution_period` explanation corrected; `gauge_infos` (per-pool voting_power + fixed_amount + slope) added; gauge `user_info` verified block added; `lock_info` expanded to the full verified shape (coefficient/slope/fixed_amount/underlying_amount/time); `total_vamp` added (canonical Total TLA VP + `time:{period}` projection, `at_period` rejected); escrow `user_info` flagged unverified; §18 connector-alliance rescued from CRON-FIXES-BRIEF. |
 | 2026-06-02 | Initial document created at the close of catalog audit. All current `tla-registry` cron queries inventoried, plus the wishlist queries for Vote Intelligence, Portfolio Tracker, Pool Detail View, and the future query tool. SS API gotcha documented after empirical deposit test + on-chain pair{} verification on 17 pairs. |
