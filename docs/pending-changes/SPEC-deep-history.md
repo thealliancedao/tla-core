@@ -9,6 +9,21 @@ many addresses, too much storage.
 wallet per epoch, stored as read (§8) — started EARLY because the node is the scarce thing; (3) finish the page; (4) derive the series
 from the stored raw reads (repeatable, no node needed); (5) forward tracking. Docs update + new chat at the milestone.
 
+
+## 0. STATUS — the backfill RAN (2026-09-29 → 30)
+| Layer | Result | Coverage |
+|---|---|---|
+| cohort | 1,159 wallets | cut 2026-09-29 |
+| layer1 (every tx per wallet) | ~606K txs, no memos | 2022 → now |
+| inventory | 4,601 contracts / 532 code ids; labels for 108 codes (95.6 % of activity) | — |
+| layer2 (weekly protocol state) | ~66.9K reads (486 pairs, Credia, Solid ×3, DAO voting ×6) | 2023-10-23 → now |
+| layer3 (monthly bank / staking per wallet) | 44,324 checkpoints, 0 failed | 2023-04-03 → now |
+| flows (derive) | 1,569,362 balance changes; 94.9 % of 491,860 checkpoint comparisons exact | 2022 → now |
+
+**The archive node keeps full TX history but not all old STATE:** bank/staking from block 4,063,549; contract state from block 7,324,381
+(2023-10-23). Everything earlier is rebuilt from layer-1 events (marked "events only"). Plan as if the node can vanish. Next: drift classification (the 5.1 %), monthly re-anchoring on layer3, net deposits (§8b),
+weekly position values, Credia/Solid histories from events, public summary products, then ONE page-edit round.
+
 ## 1. Who is captured, who is shown (owner, 2026-09-28 — REVISED: capture wide, show by a setting)
 **Capture is decided by cost, display by a settings file.** Storage is not the limit when data is kept compact (measured: the daily
 series is 105 bytes per wallet per day ≈ 45 MB/yr for 1,155 wallets; full daily snapshots at ~15 KB per wallet per day are what would

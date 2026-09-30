@@ -51,6 +51,18 @@
   counterparty matched by denom + amount; weekly balances; checked against the layer3 bank checkpoints → archive/derived/flows/ +
   _report.json (agreement %, drift by denom — drift = balance moved outside a tx, e.g. rewards). Private archive only; no memos.
   Mock: checkpoints resume, fee vs swap tagged apart, a 3-uluna out-of-tx change shows as drift.
+- **Layer2 outcome (2026-09-30, corrected):** run #6 (3 h 49 m) read ~66,900 of ~75,700 weekly pool / Credia / Solid / DAO-voting states;
+  runs #7–#9 only retried the 8,846 left, which the archive node cannot serve ("version does not exist … pruned" / "panic: unknown
+  request"). (An earlier note here said #6–#9 read nothing — wrong: only #9's log was seen, and it held only the leftovers.)
+  **The node's limits, measured:** bank / staking state from block 4,063,549 (week of 2023-03-13); CONTRACT state from block 7,324,381
+  (week of 2023-10-23); full TX history (layer 1 complete). So weekly protocol state is covered 2023-10-23 → today; everything before
+  that needs another source (layer-1 events, or another node).
+  **layer3 RAN:** 44,324 monthly checkpoints, 0 failed (2023-04-03 → now; 5,714 older skipped). **flows RAN:** 1,569,362 balance changes
+  for 1,159 wallets; 466,571 of 491,860 checkpoint comparisons exact (94.9 %) — the 5.1 % drift is balance moving outside tx events.
+  **Deep Walk 1.4–1.6** (hardening from that night): state reads through the archive RPC (`abci_query`) with the LCD as fallback;
+  before reading, each state mode measures the node's bank floor and contract floor (binary search, a 7-point spread printed) and
+  skips older reads (reported, not retried, not counted as left); a run stops red with no next run when no route answers or 150 reads
+  fail in a row (`<mode>_stop.txt`, read by the chain step); the top failure messages are printed with URLs masked.
 - Next: net deposits (exchange-flow summaries per §8b: day · direction · token · amount · value, HMAC dedup key), weekly position
   values from layer2 + prices, then P&L — then ONE round of page edits.
 
