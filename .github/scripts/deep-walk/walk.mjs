@@ -25,7 +25,7 @@
 // sequences are dropped. The log prints COUNTS ONLY (this Action's log is public) — never a wallet, a hash or an amount.
 import fs from 'fs'; import path from 'path'; import zlib from 'zlib'; import { execSync } from 'child_process'; import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const VERSION = 'deep-walk-1.3';   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
+const VERSION = 'deep-walk-1.4';   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
 const MODE = process.env.MODE || 'timing';
 const RPCS = [process.env.ARCHIVE_RPC, process.env.RPC_URL].map(s => String(s || '').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '')).filter(Boolean);
 const LCD = String(process.env.ARCHIVE_LCD || process.env.LCD || 'https://terra-lcd.publicnode.com').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '');
@@ -69,7 +69,7 @@ async function txSearch(q, page, perPage = 100) {
   return { error: last ? `HTTP ${last.status}: ${String(last.body).slice(0, 120)}` : 'no RPC' };
 }
 const b64 = (o) => Buffer.from(JSON.stringify(o)).toString('base64');
-async function smartAt(addr, q, height) {
+async function smartLcd(addr, q, height) {
   const url = `${LCD}/cosmwasm/wasm/v1/contract/${addr}/smart/${b64(q)}`;
   let last = null;
   for (let i = 0; i < 4; i++) { stats.requests++;
@@ -77,6 +77,55 @@ async function smartAt(addr, q, height) {
     catch (e) { last = { status: 0 }; } stats.retries++; await sleep(1000 * (i + 1)); }
   stats.errors++; return { ok: false, status: last && last.status, body: last && last.body };
 }
+// ── 1.4: state reads through the archive RPC (abci_query — the path layer 1 proved) with the LCD as the fallback ──────────
+// 2026-09-30: layer2 runs #6–#9 failed EVERY read through the LCD (instant errors, 4 retries each, 13 h for nothing). Now every
+// state-reading mode tests both routes first, picks one that answers at an OLD height, and stops (red, no chain) when neither does.
+const Q = (() => { try { return { w: require('cosmjs-types/cosmwasm/wasm/v1/query'), b: require('cosmjs-types/cosmos/bank/v1beta1/query'), s: require('cosmjs-types/cosmos/staking/v1beta1/query') }; } catch { return null; } })();
+const NO_RETRY = /no such contract|not found|unknown variant|parse|Error parsing|unknown request|does not exist|invalid/i;
+async function abci(route, bytes, height) {
+  let last = null;
+  for (let i = 0; i < 4; i++) { for (const rpc of RPCS) { stats.requests++;
+    try { const r = await fetch(`${rpc}/abci_query?path=${encodeURIComponent('"' + route + '"')}&data=0x${Buffer.from(bytes).toString('hex')}&height=${height}&prove=false`, { headers: { Accept: 'application/json', 'User-Agent': UA }, signal: AbortSignal.timeout(30000) });
+      const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch { } const resp = j && j.result && j.result.response;
+      if (r.ok && resp) { if (!resp.code) return { ok: true, value: Buffer.from(resp.value || '', 'base64') };
+        last = { status: 500, body: String(resp.log || resp.info || 'abci code ' + resp.code).slice(0, 300) }; if (NO_RETRY.test(last.body)) { stats.errors++; return { ok: false, ...last }; } }
+      else last = { status: r.status, body: String((j && j.error && (j.error.data || j.error.message)) || t).slice(0, 300) };
+    } catch (e) { last = { status: 0, body: e.message }; } }
+    stats.retries++; await sleep(1000 * (i + 1)); }
+  stats.errors++; return { ok: false, ...last };
+}
+async function smartRpc(addr, q, height) {
+  const r = await abci('/cosmwasm.wasm.v1.Query/SmartContractState', Q.w.QuerySmartContractStateRequest.encode({ address: addr, queryData: Buffer.from(JSON.stringify(q)) }).finish(), height);
+  if (!r.ok) return r; try { return { ok: true, json: { data: JSON.parse(Buffer.from(Q.w.QuerySmartContractStateResponse.decode(r.value).data).toString('utf8')) } }; } catch (e) { return { ok: false, status: 0, body: 'decode: ' + e.message }; }
+}
+async function stateRpc(kind, w, height) {   // layer 3 — answers in the LCD's JSON shape
+  if (kind === 'bank') { const r = await abci('/cosmos.bank.v1beta1.Query/AllBalances', Q.b.QueryAllBalancesRequest.encode(Q.b.QueryAllBalancesRequest.fromPartial({ address: w, pagination: { limit: 500n } })).finish(), height); if (!r.ok) return r;
+    return { ok: true, json: { balances: Q.b.QueryAllBalancesResponse.decode(r.value).balances.map(c => ({ denom: c.denom, amount: c.amount })) } }; }
+  if (kind === 'delegations') { const r = await abci('/cosmos.staking.v1beta1.Query/DelegatorDelegations', Q.s.QueryDelegatorDelegationsRequest.encode(Q.s.QueryDelegatorDelegationsRequest.fromPartial({ delegatorAddr: w, pagination: { limit: 200n } })).finish(), height); if (!r.ok) return r;
+    return { ok: true, json: { delegation_responses: Q.s.QueryDelegatorDelegationsResponse.decode(r.value).delegationResponses.map(x => ({ delegation: { validator_address: x.delegation && x.delegation.validatorAddress }, balance: { amount: x.balance && x.balance.amount } })) } }; }
+  const r = await abci('/cosmos.staking.v1beta1.Query/DelegatorUnbondingDelegations', Q.s.QueryDelegatorUnbondingDelegationsRequest.encode(Q.s.QueryDelegatorUnbondingDelegationsRequest.fromPartial({ delegatorAddr: w, pagination: { limit: 200n } })).finish(), height); if (!r.ok) return r;
+  return { ok: true, json: { unbonding_responses: Q.s.QueryDelegatorUnbondingDelegationsResponse.decode(r.value).unbondingResponses.map(x => ({ validator_address: x.validatorAddress, entries: (x.entries || []).map(e => ({ balance: e.balance, completion_time: e.completionTime ? new Date(Number(e.completionTime.seconds) * 1000).toISOString() : null })) })) } };
+}
+let ROUTE = (Q && RPCS.length) ? 'rpc' : 'lcd';
+const smartAt = (addr, q, height) => ROUTE === 'rpc' ? smartRpc(addr, q, height) : smartLcd(addr, q, height);
+const say = (r) => r.ok ? 'ok' : `HTTP ${r.status}: ${String(r.body || '').replace(/https?:\/\/[^\s"']+/g, '<url>').slice(0, 160)}`;
+// test both routes on real reads (a recent height AND an old one); pick the first that answers both; false = stop the run
+async function pickRoute(label, tests) {
+  const res = {};
+  for (const route of ['rpc', 'lcd']) { if (route === 'rpc' && !(Q && RPCS.length)) continue; if (route === 'lcd' && !process.env.ARCHIVE_LCD) continue;
+    res[route] = []; for (const t of tests) res[route].push(await t(route)); }
+  for (const [route, rs] of Object.entries(res)) console.log(`route test (${label}) · ${route}: ${rs.map((r, i) => (i ? 'old ' : 'recent ') + say(r)).join(' · ')}`);
+  const good = Object.entries(res).find(([, rs]) => rs.every(r => r.ok || /no such contract|not found/i.test(r.body || '')));
+  if (good) { ROUTE = good[0]; console.log(`route: ${ROUTE}`); return true; }
+  console.log('route: NEITHER the archive RPC nor the LCD answered at an old height — stopping (nothing written, no next run). Fix the node / secret, then run again.');
+  try { fs.writeFileSync(`${MODE}_stop.txt`, '1'); } catch { } process.exitCode = 1; return false;
+}
+function breaker() {   // stops a run after 150 failures in a row — a dead route must not burn hours again
+  let inRow = 0; const samples = {};
+  return { ok() { inRow = 0; }, bad(r) { inRow++; const k = say(r).slice(0, 90); samples[k] = (samples[k] || 0) + 1; return inRow >= 150; },
+    report() { const top = Object.entries(samples).sort((a, b) => b[1] - a[1]).slice(0, 3); if (top.length) console.log('failures seen: ' + top.map(([k, v]) => `${v}× ${k}`).join(' | ')); } };
+}
+
 async function pool(items, n, fn) { const out = new Array(items.length); let i = 0; await Promise.all(Array.from({ length: n }, async () => { while (i < items.length) { const k = i++; out[k] = await fn(items[k], k); } })); return out; }
 
 // ── decoding: messages kept, memo / signer data dropped (§8b) ───────────────────────────────────────────────────────────────
@@ -313,19 +362,25 @@ async function layer2() {
   const T = layer2Targets(); const man = readJson('layer2/_manifest.json', { version: VERSION, targets: {} });
   const tasks = []; for (const t of T) { const m = man.targets[t.key] || (man.targets[t.key] = { kind: t.kind, done: {} }); for (const w of weeks) if (w.h >= t.from_h - 120000 && !m.done[w.d]) tasks.push([t, w]); }
   console.log(`layer2: ${T.length} targets (${Object.entries(T.reduce((o, t) => (o[t.kind] = (o[t.kind] || 0) + 1, o), {})).map(([k, v]) => k + ' ' + v).join(' · ')}) · ${tasks.length} reads to do · concurrency ${CONC}`);
+  if (tasks.length) {   // the busiest target, read at the newest week and a week a quarter into its own history (an answer there proves old state is served)
+    const per = new Map(); for (const [x, w] of tasks) (per.get(x) || per.set(x, []).get(x)).push(w);
+    const [t, ws] = [...per.entries()].sort((a, b) => b[1].length - a[1].length)[0]; const recent = ws[ws.length - 1]; const old = ws[Math.floor(ws.length / 4)];
+    if (!(await pickRoute('layer2', [(rt) => (rt === 'rpc' ? smartRpc : smartLcd)(t.addr, t.q, recent.h), (rt) => (rt === 'rpc' ? smartRpc : smartLcd)(t.addr, t.q, old.h)]))) return; }
+  const brk = breaker(); let halted = false;
   const buf = new Map(); let n = 0, ok = 0, absent = 0, bad = 0, lastCommit = Date.now();
   const flush = () => { for (const [key, rows] of buf) { const f = `layer2/${key}.jsonl.gz`; let old = ''; try { old = zlib.gunzipSync(fs.readFileSync(A(f))).toString('utf8'); } catch { } fs.mkdirSync(path.dirname(A(f)), { recursive: true }); fs.writeFileSync(A(f), zlib.gzipSync(old + rows.map(r => JSON.stringify(r)).join('\n') + '\n')); } buf.clear(); man.updated_at = new Date().toISOString(); writeJson('layer2/_manifest.json', man); };
   await pool(tasks, CONC, async ([t, w]) => {
-    if (overBudget()) return;
+    if (overBudget() || halted) return;
     const r = await smartAt(t.addr, t.q, w.h); n++;
     let row; if (r.ok) { ok++; let data = r.json && r.json.data; if (t.kind === 'pair' && data) data = { assets: (data.assets || []).map(a => [a.info && (a.info.native_token ? a.info.native_token.denom : a.info.token && a.info.token.contract_addr), a.amount]), total_share: data.total_share }; row = { d: w.d, h: w.h, data }; }
     else if (/no such contract|not found/i.test(r.body || '')) { absent++; row = { d: w.d, h: w.h, absent: true }; }
-    else { bad++; return; }   // not recorded as done — retried next run
+    else { bad++; if (brk.bad(r) && !halted) { halted = true; console.log('layer2: 150 failures in a row — stopping this run (no next run)'); try { fs.writeFileSync('layer2_stop.txt', '1'); } catch { } process.exitCode = 1; } return; }   // not recorded as done — retried next run
+    brk.ok();
     (buf.get(t.key) || buf.set(t.key, []).get(t.key)).push(row); man.targets[t.key].done[w.d] = 1;
     if (n % 2000 === 0) console.log(`  … ${n}/${tasks.length} reads · ok ${ok} · absent ${absent} · failed ${bad} · ${minutes().toFixed(0)} min`);
     if (Date.now() - lastCommit > 8 * 60000) { lastCommit = Date.now(); flush(); commitPush(`layer2: +${n} reads`); }
   });
-  flush(); commitPush(`layer2: ${ok} answers`);
+  flush(); if (ok || absent) commitPush(`layer2: ${ok} answers`); brk.report();
   const left = tasks.length - ok - absent;
   try { fs.writeFileSync('layer2_left.txt', String(Math.max(0, left))); } catch { }
   console.log(`layer2 run: ${n} reads · ok ${ok} · contract not yet / no longer there ${absent} · failed ${bad} (retried next run) · ${minutes().toFixed(0)} min · ${left > 0 ? left + ' reads left — run again' : 'ALL DONE'}`);
@@ -338,11 +393,12 @@ function walletTxs(w) {   // every layer-1 record of one wallet (small enough pe
   return out.sort((a, b) => a.h - b.h || (a.i || 0) - (b.i || 0));
 }
 async function lcdAt(p, height) {
+  let last = { status: 0, body: '' };
   for (let i = 0; i < 4; i++) { stats.requests++;
     try { const r = await fetch(`${LCD}${p}`, { headers: { Accept: 'application/json', 'User-Agent': UA, 'x-cosmos-block-height': String(height) }, signal: AbortSignal.timeout(30000) }); const t = await r.text();
-      if (r.ok) return { ok: true, json: JSON.parse(t) }; if (r.status < 500 && r.status !== 429) return { ok: false, status: r.status, body: t.slice(0, 200) }; } catch (e) { }
+      if (r.ok) return { ok: true, json: JSON.parse(t) }; last = { status: r.status, body: t.slice(0, 200) }; if (r.status < 500 && r.status !== 429) return { ok: false, ...last }; } catch (e) { last = { status: 0, body: e.message }; }
     stats.retries++; await sleep(1000 * (i + 1)); }
-  stats.errors++; return { ok: false, status: 0 };
+  stats.errors++; return { ok: false, ...last };
 }
 function monthlyBoundaries() { const H = readJson('layer2/heights.json', null); if (!H) return null; const seen = new Set(); const out = [];
   for (const [d, x] of Object.entries(H.rows)) { const m = d.slice(0, 7); if (seen.has(m)) continue; seen.add(m); out.push({ d, h: x.h }); } return out; }
@@ -360,12 +416,16 @@ async function layer3() {
     for (const b of months) if (b.h >= m.first_h - 450000 && !m.done[b.d]) tasks.push([w, b]);   // from the month before its first tx
   }
   console.log(`layer3: ${Object.keys(man.wallets).length} wallets · ${months.length} monthly boundaries · ${tasks.length} checkpoints to read (3 reads each) · concurrency ${CONC}`);
+  if (tasks.length) { const [w0] = tasks[0]; const recent = months[months.length - 1]; const old = tasks[0][1];
+    if (!(await pickRoute('layer3', [(rt) => rt === 'rpc' ? stateRpc('bank', w0, recent.h) : lcdAt(`/cosmos/bank/v1beta1/balances/${w0}?pagination.limit=500`, recent.h), (rt) => rt === 'rpc' ? stateRpc('bank', w0, old.h) : lcdAt(`/cosmos/bank/v1beta1/balances/${w0}?pagination.limit=500`, old.h)]))) return; }
+  const brk = breaker(); let halted = false;
   const buf = new Map(); let n = 0, ok = 0, bad = 0, lastCommit = Date.now();
   const flush = () => { for (const [w, rows] of buf) { const f = `layer3/${w.slice(-1)}/${w}.jsonl.gz`; let old = ''; try { old = zlib.gunzipSync(fs.readFileSync(A(f))).toString('utf8'); } catch { } fs.mkdirSync(path.dirname(A(f)), { recursive: true }); fs.writeFileSync(A(f), zlib.gzipSync(old + rows.map(r => JSON.stringify(r)).join('\n') + '\n')); } buf.clear(); man.updated_at = new Date().toISOString(); writeJson('layer3/_manifest.json', man); };
   await pool(tasks, CONC, async ([w, b]) => {
-    if (overBudget()) return; n++;
-    const [bank, del, unb] = await Promise.all([lcdAt(`/cosmos/bank/v1beta1/balances/${w}?pagination.limit=500`, b.h), lcdAt(`/cosmos/staking/v1beta1/delegations/${w}?pagination.limit=200`, b.h), lcdAt(`/cosmos/staking/v1beta1/delegators/${w}/unbonding_delegations?pagination.limit=200`, b.h)]);
-    if (!bank.ok) { bad++; return; }   // retried next run
+    if (overBudget() || halted) return; n++;
+    const [bank, del, unb] = ROUTE === 'rpc' ? await Promise.all(['bank', 'delegations', 'unbonding'].map(k => stateRpc(k, w, b.h))) : await Promise.all([lcdAt(`/cosmos/bank/v1beta1/balances/${w}?pagination.limit=500`, b.h), lcdAt(`/cosmos/staking/v1beta1/delegations/${w}?pagination.limit=200`, b.h), lcdAt(`/cosmos/staking/v1beta1/delegators/${w}/unbonding_delegations?pagination.limit=200`, b.h)]);
+    if (!bank.ok) { bad++; if (brk.bad(bank) && !halted) { halted = true; console.log('layer3: 150 failures in a row — stopping this run (no next run)'); try { fs.writeFileSync('layer3_stop.txt', '1'); } catch { } process.exitCode = 1; } return; }   // retried next run
+    brk.ok();
     const row = { d: b.d, h: b.h, bank: (bank.json.balances || []).map(c => [c.denom, c.amount]),
       delegations: del.ok ? (del.json.delegation_responses || []).map(x => [x.delegation.validator_address, x.balance && x.balance.amount]) : null,
       unbonding: unb.ok ? (unb.json.unbonding_responses || []).map(x => [x.validator_address, (x.entries || []).map(e => [e.balance, e.completion_time])]) : null };
@@ -373,7 +433,7 @@ async function layer3() {
     if (n % 1000 === 0) console.log(`  … ${n}/${tasks.length} checkpoints · ok ${ok} · failed ${bad} · ${minutes().toFixed(0)} min`);
     if (Date.now() - lastCommit > 8 * 60000) { lastCommit = Date.now(); flush(); commitPush(`layer3: +${n} checkpoints`); }
   });
-  flush(); commitPush(`layer3: ${ok} checkpoints`);
+  flush(); if (ok) commitPush(`layer3: ${ok} checkpoints`); brk.report();
   const left = tasks.length - ok; try { fs.writeFileSync('layer3_left.txt', String(Math.max(0, left))); } catch { }
   console.log(`layer3 run: ${n} checkpoints · ok ${ok} · failed ${bad} (retried next run) · ${minutes().toFixed(0)} min · ${left > 0 ? left + ' left — run again' : 'ALL DONE'}`);
 }
