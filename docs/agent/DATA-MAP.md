@@ -166,6 +166,21 @@ move-rule.json`; grades + wind-down alerts = `lp-grades/snapshots/current.json` 
 Wrong-object guards: Votion's raw VP ≠ real VP (÷ k ≈ 1.11–1.12); a round's pots ≠ `active_now` (that is the PRIOR round); "comes back"
 is $0 unless the wallet votes that pool; the 1% line is per bucket.
 
+## Deep history — past positions, balances, flows for the cohort (2026-09-30)
+- **Status:** the one-time backfill RAN (SPEC-deep-history §0): 1,159 cohort wallets; every tx since 2022; weekly protocol state
+  2023-10-23 → now; monthly balances + staking 2023-04 → now; 1.57M rebuilt balance changes (94.9 % exact vs the chain's checkpoints).
+- **The RAW data is PRIVATE** (repo thealliancedao/tla-archive) — the bot cannot read it and must not describe any individual's raw history
+  from it. Public derived products (weekly points, net deposits, P&L per cohort wallet) are NOT built yet — say "coming with the next
+  portfolio update", never estimate.
+- **Public now:** `docs/deep-history/contracts-seen.json` (every contract the cohort touched: txs, wallets, top actions, first/last height,
+  code id, label — an aggregate, no wallets) and `docs/deep-history/protocol-labels.json` (code id → protocol for 108 codes = 95.6 % of
+  activity; e.g. 2961 URA DEX (dead), 136 Knowhere (old marketplace), 1723 the 2022 Terraswap-era pairs, 3995 Credia portfolio).
+- **Coverage limits:** past CONTRACT state exists only from 2023-10-23 and past balances from spring 2023 on the archive node used; older
+  history is rebuilt from transactions ("events only"). Credia's history comes from its events (each carries the full position); Solid's
+  from liquidation/borrow/repay events (queries.md §19–§21).
+- **Privacy rules (owner):** no memos, exchange flows only as {day, direction, token, amount, value, "exchange"} (no hash, no counterparty,
+  no exchange name), no identity guessing, no linking wallets unless the wallet's owner linked them.
+
 ## When the map has no route
 Say plainly what was checked and what does not exist yet (e.g. per-pool APR
 before E184, member-count history). Never substitute an adjacent object.
