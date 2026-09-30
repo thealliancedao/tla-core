@@ -93,6 +93,7 @@ jobs:
           MAXM: ${{ github.event.inputs.max_minutes }}
           MODE: ${{ github.event.inputs.mode }}
         run: |
+          if [ -f "${MODE}_stop.txt" ]; then echo "the run stopped itself (reads failing) — no next run; read the route test / failures lines above"; exit 0; fi
           LEFT=$(cat ${MODE}_left.txt 2>/dev/null || echo 1)
           echo "reads left: $LEFT · chain: $CHAIN"
           if [ "$LEFT" != "0" ] && [ "${CHAIN:-0}" -gt 0 ]; then
