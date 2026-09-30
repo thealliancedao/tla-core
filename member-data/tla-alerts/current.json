@@ -3,7 +3,7 @@
  "cron": "member-data",
  "module": "tla-alerts",
  "version": "1.0.0",
- "generated_at": "2026-09-29T23:48:46.823Z",
+ "generated_at": "2026-09-30T23:48:28.741Z",
  "config": {
   "path": "docs/curated/alert-thresholds.json",
   "sha": "12e0eabccb6a",
@@ -82,10 +82,10 @@
  },
  "history": {
   "days": 90,
-  "from": "2026-07-01",
+  "from": "2026-07-02",
   "snapshots": 91,
-  "apr_days": 59,
-  "volume_days": 96
+  "apr_days": 60,
+  "volume_days": 97
  },
  "multipliers": [
   0.5,
@@ -126,7 +126,7 @@
     "min_vp": 500000
    },
    "description": "A bucket's total VP moved inside an epoch (boundary days excluded).",
-   "fired_30d": 3,
+   "fired_30d": 2,
    "fired_90d": 9,
    "per_month_at": {
     "1": 3,
@@ -156,12 +156,12 @@
     "min_usd": 25000
    },
    "description": "Staked liquidity in a TLA pool changed in a day (both directions).",
-   "fired_30d": 3,
-   "fired_90d": 8,
+   "fired_30d": 4,
+   "fired_90d": 9,
    "per_month_at": {
-    "1": 2.7,
+    "1": 3,
     "2": 0.7,
-    "0.5": 14.5
+    "0.5": 14.9
    }
   },
   "pool_volume_spike": {
@@ -172,12 +172,12 @@
     "median_days": 28
    },
    "description": "A pool's 24h DEX volume against its own trailing median.",
-   "fired_30d": 10,
-   "fired_90d": 26,
+   "fired_30d": 11,
+   "fired_90d": 27,
    "per_month_at": {
-    "1": 8.8,
+    "1": 9.1,
     "2": 3.4,
-    "0.5": 26
+    "0.5": 26.3
    }
   },
   "pool_apr_move": {
@@ -187,16 +187,62 @@
     "min_rel_pct": 40
    },
    "description": "A gauge's Eris APR moved in a day (points AND relative). Epoch-boundary days are skipped — APR resets with the pots every Monday; the epoch_flip card carries that.",
-   "fired_30d": 27,
-   "fired_90d": 33,
+   "fired_30d": 28,
+   "fired_90d": 34,
    "per_month_at": {
-    "1": 11.1,
+    "1": 11.5,
     "2": 3,
-    "0.5": 30.7
+    "0.5": 31.4
    }
   }
  },
  "rows": [
+  {
+   "ts": "2026-09-30T00:00:00Z",
+   "date": "2026-09-30",
+   "rule": "pool_liquidity_move",
+   "gauge_pool_id": "cw20:terra1s275y73lfupag0g03nglxaedfnsw5z4m5zc9wk66guy503zuw5ss889tlx",
+   "name": "LUNA-USDC.nbl",
+   "bucket": "stable",
+   "label": "LUNA-USDC.nbl staked liquidity down 55%",
+   "value": "$69,512 → $30,986",
+   "raw": {
+    "from": 69511.77233489924,
+    "to": 30985.609229335638,
+    "pct": -55.4239401636161
+   }
+  },
+  {
+   "ts": "2026-09-30T00:00:00Z",
+   "date": "2026-09-30",
+   "rule": "pool_apr_move",
+   "gauge_pool_id": "native:ibc/65B3EB6263482979FD7A80E3FFB9D0C85CFBF6DB63EB8DDE918B2984A40CEAB6",
+   "name": "xASTRO",
+   "bucket": "single",
+   "label": "xASTRO APR up 281.7 pts (56%)",
+   "value": "504.3% → 786.0%",
+   "raw": {
+    "from": 504.3491295779676,
+    "to": 786.0119540250638,
+    "pts": 281.6628244470962,
+    "rel": 55.846794993537074
+   }
+  },
+  {
+   "ts": "2026-09-30T00:00:00Z",
+   "date": "2026-09-30",
+   "rule": "pool_volume_spike",
+   "pool_address": "terra1heml6j6ewfmjj845vmhm27a4xt9hfgs67uv8qfsjkyza0auelyksmm6cxv",
+   "name": "LUNA-USDC.inj",
+   "bucket": "stable",
+   "label": "LUNA-USDC.inj volume 124.4× its 28d median",
+   "value": "$23,536 vs median $189",
+   "raw": {
+    "vol": 23536.3,
+    "median": 189.13,
+    "multiple": 124.44509067836937
+   }
+  },
   {
    "ts": "2026-09-29T00:00:00Z",
    "date": "2026-09-29",
@@ -1242,19 +1288,6 @@
      }
     ],
     "total_vp": 108462795.0434
-   }
-  },
-  {
-   "ts": "2026-08-30T00:00:00Z",
-   "date": "2026-08-30",
-   "rule": "bucket_vp_move",
-   "bucket": "stable",
-   "label": "stable bucket VP down 4.1% inside epoch 200",
-   "value": "28.32M → 27.15M VP",
-   "raw": {
-    "from": 28321542.287733,
-    "to": 27150355.12465,
-    "pct": -4.135322685411374
    }
   }
  ]
