@@ -22,6 +22,8 @@
 //             stored, the flows drift classified, cw20 balances vs the chain (sample), txs the search keys missed (sample), busy contracts
 //             layer 2 never read (with their query API), price coverage of everything held → archive/audit/<day>.json + a counts-only
 //             docs/deep-history/audit.json in tla-core. Run it before any more node time is spent.
+//   gapfill — (1.8) fetches what the audit found missing (layer1b: 16 more search keys · layer2b: TLA / LST / CAPA / Lion DAO state
+//             weekly · layer3b: missing delegations), then re-runs flows and the audit. Chains itself while work is left.
 //   layer1  — for each cohort wallet not yet done: tx_search for every attribute a wallet appears under (§8 list), deduplicated by hash,
 //             decoded, and written as gzip parts to archive/layer1/<shard>/<wallet>/part-NNN.jsonl.gz + a per-wallet summary in the
 //             manifest. Resumable (done wallets skipped), committed every few wallets, stops cleanly before the time budget.
@@ -29,7 +31,7 @@
 // sequences are dropped. The log prints COUNTS ONLY (this Action's log is public) — never a wallet, a hash or an amount.
 import fs from 'fs'; import path from 'path'; import zlib from 'zlib'; import { execSync } from 'child_process'; import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const VERSION = 'deep-walk-1.7';   // 1.7 (2026-09-30): mode audit — every layer checked against what was expected (and why anything is missing), the flows drift classified per wallet × denom, cw20 balances checked on a sample, layer-1 search keys checked on a sample, busy contracts layer 2 never read listed with their query API, price coverage of everything held; nothing re-read in bulk   // 1.6 (2026-09-30): contract reads get their own floor (the 1.5 run: bank reads from 2023-03, every older contract read "panic: unknown request") — found on the earliest-starting contract that answers, with a 7-point spread printed; "unknown request" is no longer read as the contract refusing (the 1.5 marks are cleared)   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
+const VERSION = 'deep-walk-1.8';   // 1.8 (2026-09-30): mode gapfill — what the audit found missing, in one run: layer1b (every cohort wallet searched under 16 more keys, new txs only), layer2b (TLA v2 hub 2580, v3 buckets / gauges / vAMP / compounder / connectors, the 5 LST hubs, CAPA gov + staking, Lion DAO LP staking — weekly from the contract floor), layer3b (delegations the layer-3 rows lack); then flows and the audit re-run   // 1.7 (2026-09-30): mode audit — every layer checked against what was expected (and why anything is missing), the flows drift classified per wallet × denom, cw20 balances checked on a sample, layer-1 search keys checked on a sample, busy contracts layer 2 never read listed with their query API, price coverage of everything held; nothing re-read in bulk   // 1.6 (2026-09-30): contract reads get their own floor (the 1.5 run: bank reads from 2023-03, every older contract read "panic: unknown request") — found on the earliest-starting contract that answers, with a 7-point spread printed; "unknown request" is no longer read as the contract refusing (the 1.5 marks are cleared)   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
 const MODE = process.env.MODE || 'timing';
 const RPCS = [process.env.ARCHIVE_RPC, process.env.RPC_URL].map(s => String(s || '').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '')).filter(Boolean);
 const LCD = String(process.env.ARCHIVE_LCD || process.env.LCD || 'https://terra-lcd.publicnode.com').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '');
@@ -629,6 +631,13 @@ async function audit() {
   if (l2.readable_missing) gaps.push({ id: 'layer2-missing', severity: 'high', node: true, what: `${l2.readable_missing} weekly reads the node CAN serve are not in the archive` });
   console.log(`audit · layer2: ${l2.targets} targets · ${Object.entries(l2.by_kind).map(([k, v]) => `${k} ok ${v.ok}/${v.readable} (missing ${v.missing}, events-only ${v.below_floor})`).join(' · ')}`);
 
+  // ── 2b. layer 2b (1.8 gapfill): TLA / LST / CAPA / Lion DAO state, weekly ──
+  { const M = readJson('layer2b/_manifest.json', null);
+    if (M) { const t = Object.entries(M.targets || {}); const rows = t.reduce((x, [k]) => x + ((readJsonl(`layer2b/${k}.jsonl.gz`) || []).filter(r => r.data != null).length), 0);
+      S.layer2b = { targets: t.length, answering: t.filter(([, m]) => !m.dropped).length, dropped: t.filter(([, m]) => m.dropped).map(([k, m]) => [k, String(m.dropped).slice(0, 100)]), weeks_answered: rows };
+      if (S.layer2b.dropped.length) gaps.push({ id: 'layer2b-dropped', severity: 'low', node: true, what: `${S.layer2b.dropped.length} layer-2b questions were not answered by their contract — see layer2b.dropped for the message` }); }
+    else S.layer2b = { not_run: true }; }
+  S.layer1.searched_under_1_8_keys = Object.values(L1M.wallets).filter(x => x.top18).length;
   // ── 3. layer 3: monthly checkpoints per wallet ──
   const months = monthlyBoundaries() || []; const l3 = { wallets_with_first_tx: 0, expected: 0, below_floor: 0, readable: 0, rows: 0, missing: 0, wallets_missing_some: 0, delegations_null: 0, unbonding_null: 0 };
   for (const w of cohort) { const m = L3M.wallets[w]; if (!m || m.first_h == null) continue; l3.wallets_with_first_tx++;
@@ -747,7 +756,136 @@ async function audit() {
   console.log('audit · GAPS:'); for (const s of out.summary) console.log('  ' + s); if (!gaps.length) console.log('  none — the archive holds everything the derive needs');
 }
 
+// ── 1.8: GAPFILL — fetch exactly what the 2026-09-30 audit said is missing, then re-derive flows and re-audit, in one run ───────
+// The audit (docs/deep-history/audit.json): layers 1–3 complete where the node can serve them; cw20 99.3 % exact; BUT (1) txs found
+// under keys the walk never searched (wasm.sender +81 in 40 wallets — IBC acknowledgements, ~2,300 cohort-wide; ibc_transfer.sender);
+// (2) TLA / LST state never read weekly — the pre-v3 TLA staking hub (code 2580, 2023-08 → 2024-09, before dex state-history), the v3
+// buckets / gauges / vAMP escrow / compounder / Alliance connectors, the five LST hubs, CAPA staking, the Lion DAO LP staking;
+// (3) 3,688 layer-3 checkpoints saved the bank balances but not the delegations. Steps (each resumable, each skipped when done):
+//   layer1b  every cohort wallet searched under KEYS_18 → new txs only (dedup by hash against its stored txs) as new parts
+//   layer2b  the targets below at every weekly boundary from max(contract floor, first use) → archive/layer2b/<key>.jsonl.gz
+//   layer3b  the delegations of every checkpoint that lacks them, written back into its row
+//   then flows (all wallets, with the new txs) and the audit.
+const KEYS_18 = ['wasm.sender', 'ibc_transfer.sender', 'fungible_token_packet.sender', 'wasm-erishub/bonded.receiver', 'wasm-erishub/unbonded_withdrawn.receiver',
+  'wasm-erishub/unbond_queued.receiver', 'wasm-steakhub/bonded.steak_receiver', 'unbond.delegator', 'proposal_vote.voter', 'wasm.minter', 'wasm.addr', 'wasm.job_owner',
+  'wasm.staker_addr', 'wasm.bidder_addr', 'wasm.player_address', 'wasm.executor'];
+for (const k of KEYS_18) if (!KEYS.includes(k)) KEYS.push(k);   // newcomers walked from now on get these keys too
+const TLA = { gauge: 'terra1hfksrhchkmsj4qdq33wkksrslnfles6y2l77fmmzeep0xmq24l2smsd3lj', escrow: 'terra1uqhj8agyeaz8fu6mdggfuwr3lp32jlrx5hqag4jxexde92rzkamq3l62zg',
+  compounder: 'terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx', hub2580: 'terra1jwyzzsaag4t0evnuukc35ysyrx9arzdde2kg9cld28alhjurtthq0prs2s',
+  buckets: { stable: 'terra1v399cx9drllm70wxfsgvfe694tdsd9x96p9ha36w7muffe4znlusqswspq', project: 'terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa', bluechip: 'terra14mmvqn0kthw6sre75vku263lafn5655mkjdejqjedjga4cw0qx2qlf4arv', single: 'terra1qdz5qgafx88kp5mf6m2tah8742g4u5g2cek0m3jrgssexexk7g4qw6e23k' } };
+const LST_HUBS = { ampLUNA: ['terra10788fkzah89xrdm27zkj5yvhj9x3494lxawzm5qq3vvxcqz2yzaqyd3enk', { exchange_rates: {} }], arbLUNA: ['terra1r9gls56glvuc4jedsvc3uwh6vj95mqm9efc7hnweqxa2nlme5cyqxygy5m', { state: {} }],
+  ampROAR: ['terra1vklefn7n6cchn0u962w3gaszr4vf52wjvd4y95t2sydwpmpdtszsqvk9wy', { state: {} }], ampCAPA: ['terra186rpfczl7l2kugdsqqedegl4es4hp624phfc7ddy8my02a4e8lgq5rlx7y', { state: {} }],
+  bLUNA: ['terra1l2nd99yze5fszmhl5svyh5fky9wm4nz4etlgnztfu4e8809gd52q04n3ea', { state: {} }] };   // platform-crons config/contracts.js LST_HUBS (proven shapes)
+function layer2bTargets() {
+  const invF = fs.readdirSync(A('inventory')).filter(f => /^\d{4}-\d\d-\d\d\.json$/.test(f)).sort().pop(); const I = invF ? readJson('inventory/' + invF, { contracts: {} }) : { contracts: {} };
+  const first = (a) => (I.contracts[a] && I.contracts[a].first_h) || 0; const T = [];
+  const add = (key, addr, q, kind) => T.push({ key, addr, q, kind, from_h: first(addr) });
+  add('tla/hub2580_total_staked', TLA.hub2580, { total_staked_balances: {} }, 'tla_v2'); add('tla/hub2580_reward_distribution', TLA.hub2580, { reward_distribution: {} }, 'tla_v2'); add('tla/hub2580_whitelisted_assets', TLA.hub2580, { whitelisted_assets: {} }, 'tla_v2');
+  for (const [b, a] of Object.entries(TLA.buckets)) { add(`tla/bucket_${b}_assets`, a, { whitelisted_asset_details: {} }, 'tla_v3'); add(`tla/bucket_${b}_reward_distribution`, a, { reward_distribution: {} }, 'tla_v3'); }
+  for (const g of ['stable', 'project', 'bluechip', 'single']) add(`tla/gauge_${g}`, TLA.gauge, { gauge_infos: { gauge: g, time: 'next' } }, 'tla_v3');
+  add('tla/escrow_total_vamp', TLA.escrow, { total_vamp: {} }, 'tla_v3'); add('tla/escrow_total_fixed', TLA.escrow, { total_fixed: {} }, 'tla_v3');
+  add('tla/compounder_asset_configs', TLA.compounder, { asset_configs: {} }, 'tla_v3'); add('tla/compounder_exchange_rates', TLA.compounder, { exchange_rates: {} }, 'tla_v3'); add('tla/compounder_amplp_exchange_rates', TLA.compounder, { amplp_exchange_rates: {} }, 'tla_v3');
+  for (const [a, x] of Object.entries(I.contracts)) { const code = String(x.code_id || '');
+    if (code === '3120') add(`tla/connector_${a.slice(-8)}`, a, { state: {} }, 'tla_v3');
+    if (code === '180') add(`liondao/lp_staking_${a.slice(-8)}`, a, { state: {} }, 'liondao');
+    if (code === '1545') add(`capa/gov_${a.slice(-8)}`, a, { state: {} }, 'capa');
+    if (code === '1625') add(`capa/staking_${a.slice(-8)}`, a, { state: {} }, 'capa'); }
+  for (const [s, [a, q]] of Object.entries(LST_HUBS)) add(`lst/${s}`, a, q, 'lst_hub');
+  return T;
+}
+async function layer1b() {
+  const C = readJson('cohort/current.json', null); if (!C) throw new Error('no cohort');
+  const man = readJson('layer1/_manifest.json', null); if (!man) throw new Error('no layer1 manifest');
+  const todo = Object.keys(C.wallets).filter(shardOk).filter(w => !(man.wallets[w] && man.wallets[w].top18));
+  console.log(`layer1b: ${todo.length} wallets to search under ${KEYS_18.length} more keys · concurrency ${CONC}`);
+  let done = 0, added = 0, errs = 0, lastCommit = Date.now(); const byKey = {};
+  await pool(todo, CONC, async (w) => {
+    if (overBudget()) return;
+    const have = new Set(); eachTx(w, (t) => have.add(t.x)); const dir = `layer1/${w.slice(-1)}/${w}`;
+    let partNo = fs.existsSync(A(dir)) ? fs.readdirSync(A(dir)).filter(f => /^part-\d+\.jsonl\.gz$/.test(f)).length : 0; let part = []; const searches = {}; let failed = 0, n = 0;
+    const flush = () => { if (!part.length) return; fs.mkdirSync(A(dir), { recursive: true }); fs.writeFileSync(A(`${dir}/part-${String(partNo++).padStart(3, '0')}.jsonl.gz`), zlib.gzipSync(part.map(x => JSON.stringify(x)).join('\n') + '\n')); part = []; };
+    for (const key of KEYS_18) { let page = 1, got = 0, total = null, err = null;
+      while (true) { if (overBudget()) return; const r = await txSearch(`${key}='${w}'`, page); if (r.error) { err = r.error; break; } total = r.total; got += r.txs.length;
+        for (const t of r.txs) { if (have.has(t.hash)) continue; have.add(t.hash); const rec = shapeTx(t); rec.k = key; part.push(rec); n++; bumpA(byKey, key); if (part.length >= PART_TXS) flush(); }
+        if (!r.txs.length || got >= total) break; page++; }
+      searches[key] = { total, pages: page, error: err || undefined }; if (err) failed++; }
+    flush(); const m = man.wallets[w] || (man.wallets[w] = { done: true, txs: 0, parts: 0, searches: {} });
+    m.txs = (m.txs || 0) + n; m.parts = partNo; Object.assign(m.searches || (m.searches = {}), searches); m.top18 = failed === 0; m.top18_added = (m.top18_added || 0) + n;
+    done++; added += n; if (failed) errs++;
+    if (Date.now() - lastCommit > 8 * 60000) { lastCommit = Date.now(); man.updated_at = new Date().toISOString(); writeJson('layer1/_manifest.json', man); commitPush(`layer1b: +${done} wallets`); }
+    if (done % 100 === 0) console.log(`  … ${done}/${todo.length} wallets · +${added} txs · ${errs} with a failed search · ${minutes().toFixed(0)} min`);
+  });
+  man.keys = [...new Set([...(man.keys || []), ...KEYS_18])]; man.updated_at = new Date().toISOString();
+  man.counts = { wallets_done: Object.values(man.wallets).filter(x => x.done).length, txs: Object.values(man.wallets).reduce((x, v) => x + (v.txs || 0), 0), top18_done: Object.values(man.wallets).filter(x => x.top18).length };
+  writeJson('layer1/_manifest.json', man); commitPush(`layer1b: ${done} wallets, +${added} txs`);
+  const left = Object.keys(C.wallets).filter(w => !(man.wallets[w] && man.wallets[w].top18)).length;
+  console.log(`layer1b run: ${done} wallets · +${added} new txs (${Object.entries(byKey).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v).join(' · ') || 'none'}) · ${errs} with a failed search · ${left ? left + ' wallets left' : 'ALL DONE'}`);
+  return left;
+}
+async function layer2b(floors) {
+  const H = readJson('layer2/heights.json', null); if (!H) throw new Error('no layer2/heights.json');
+  const weeks = Object.entries(H.rows).map(([d, x]) => ({ d, h: x.h })); const T = layer2bTargets(); const man = readJson('layer2b/_manifest.json', { version: VERSION, targets: {} });
+  // each target is tried once at the newest week: a question it does not answer (wrong shape / no such variant) is printed and dropped —
+  // a deterministic error is never retried (law 2026-09-30), and the message says how to fix the query
+  const newest = weeks[weeks.length - 1]; const live = [];
+  for (const t of T) { const m = man.targets[t.key] || (man.targets[t.key] = { kind: t.kind, addr: t.addr, q: t.q, done: {} }); if (m.dropped) continue;
+    if (Object.keys(m.done).length) { live.push(t); continue; }
+    const r = await smartAt(t.addr, t.q, newest.h); if (r.ok) { live.push(t); continue; }
+    const lastUse = t.from_h ? weeks.filter(w => w.h >= t.from_h) : weeks; const probeW = lastUse.find(w => w.h >= (floors.contract || 0));   // a retired contract answers only in its own weeks
+    const r2 = probeW && probeW.d !== newest.d ? await smartAt(t.addr, t.q, probeW.h) : r;
+    if (r2.ok) { live.push(t); continue; }
+    if (/no such contract|not found/i.test(r2.body || '')) { m.dropped = 'no such contract'; console.log(`layer2b: ${t.key} — no such contract (dropped)`); continue; }
+    m.dropped = say(r2).slice(0, 160); console.log(`layer2b: ${t.key} — does not answer ${JSON.stringify(t.q)}: ${m.dropped} (dropped — fix the query to read it)`); }
+  const tasks = []; for (const t of live) { const m = man.targets[t.key]; for (const w of weeks) if (w.h >= Math.max(floors.contract || 0, (t.from_h || 0) - 120000) && !m.done[w.d]) tasks.push([t, w]); }
+  console.log(`layer2b: ${T.length} targets (${live.length} answer) · ${Object.entries(T.reduce((o, t) => (o[t.kind] = (o[t.kind] || 0) + 1, o), {})).map(([k, v]) => k + ' ' + v).join(' · ')} · ${tasks.length} weekly reads to do`);
+  const brk = breaker(); let halted = false; const buf = new Map(); let n = 0, ok = 0, absent = 0, bad = 0, lastCommit = Date.now();
+  const flush = () => { for (const [key, rows] of buf) { const f = `layer2b/${key}.jsonl.gz`; let old = ''; try { old = zlib.gunzipSync(fs.readFileSync(A(f))).toString('utf8'); } catch { } fs.mkdirSync(path.dirname(A(f)), { recursive: true }); fs.writeFileSync(A(f), zlib.gzipSync(old + rows.map(r => JSON.stringify(r)).join('\n') + '\n')); } buf.clear(); man.updated_at = new Date().toISOString(); writeJson('layer2b/_manifest.json', man); };
+  await pool(tasks, CONC, async ([t, w]) => {
+    if (overBudget() || halted) return; const r = await smartAt(t.addr, t.q, w.h); n++; let row;
+    if (r.ok) { ok++; row = { d: w.d, h: w.h, data: r.json && r.json.data }; }
+    else if (/no such contract|not found|unknown variant|Error parsing into type/i.test(r.body || '')) { absent++; row = { d: w.d, h: w.h, absent: say(r).slice(0, 100) }; }   // not there yet / no longer / older version without this query
+    else { bad++; if (brk.bad(r) && !halted) { halted = true; console.log('layer2b: 150 failures in a row — stopping'); try { fs.writeFileSync('gapfill_stop.txt', '1'); } catch { } process.exitCode = 1; } return; }
+    brk.ok(); (buf.get(t.key) || buf.set(t.key, []).get(t.key)).push(row); man.targets[t.key].done[w.d] = 1;
+    if (n % 1000 === 0) console.log(`  … ${n}/${tasks.length} reads · ok ${ok} · not there ${absent} · failed ${bad} · ${minutes().toFixed(0)} min`);
+    if (Date.now() - lastCommit > 8 * 60000) { lastCommit = Date.now(); flush(); commitPush(`layer2b: +${n} reads`); } });
+  flush(); commitPush(`layer2b: ${ok} answers`); brk.report();
+  const left = tasks.length - ok - absent; console.log(`layer2b run: ${n} reads · ok ${ok} · not there that week ${absent} · failed ${bad} · ${left > 0 ? left + ' left' : 'ALL DONE'}`);
+  return Math.max(0, left);
+}
+async function layer3b() {
+  const C = readJson('cohort/current.json', null); const L3M = readJson('layer3/_manifest.json', { wallets: {} });
+  const tasks = []; const files = new Map();
+  for (const w of Object.keys(C.wallets).filter(shardOk)) { const f = `layer3/${w.slice(-1)}/${w}.jsonl.gz`; const rows = readJsonl(f); if (!rows) continue; const miss = rows.filter(r => r.delegations == null); if (!miss.length) continue; files.set(w, rows); for (const r of miss) tasks.push([w, r]); }
+  console.log(`layer3b: ${tasks.length} checkpoints without delegations (${files.size} wallets)`);
+  const brk = breaker(); let ok = 0, bad = 0, halted = false; const failSeen = {};
+  await pool(tasks, CONC, async ([w, r]) => { if (overBudget() || halted) return;
+    const del = ROUTE === 'rpc' ? await stateRpc('delegations', w, r.h) : await lcdAt(`/cosmos/staking/v1beta1/delegations/${w}?pagination.limit=200`, r.h);
+    if (!del.ok) { bad++; bumpA(failSeen, say(del).slice(0, 80)); if (brk.bad(del) && !halted) { halted = true; console.log('layer3b: 150 failures in a row — stopping'); } return; }
+    brk.ok(); ok++; r.delegations = (del.json.delegation_responses || []).map(x => [x.delegation.validator_address, x.balance && x.balance.amount]); });
+  for (const [w, rows] of files) gz(`layer3/${w.slice(-1)}/${w}.jsonl.gz`, rows);
+  if (ok) { L3M.delegations_refilled = (L3M.delegations_refilled || 0) + ok; writeJson('layer3/_manifest.json', L3M); commitPush(`layer3b: ${ok} delegations refilled`); }
+  if (bad) console.log('layer3b failures: ' + Object.entries(failSeen).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${v}× ${k}`).join(' | '));
+  console.log(`layer3b run: ${ok} refilled · ${bad} failed (${bad ? 'kept as null — re-run gapfill to retry' : 'none'})`);
+  return bad;
+}
+function gz(p, rows) { fs.mkdirSync(path.dirname(A(p)), { recursive: true }); fs.writeFileSync(A(p), zlib.gzipSync(rows.map(r => JSON.stringify(r)).join('\n') + '\n')); }
+async function gapfill() {
+  const H = readJson('layer2/heights.json', null); const weeks = H ? Object.entries(H.rows).map(([d, x]) => ({ d, h: x.h })) : [];
+  const samples = layer2bTargets().filter(t => t.kind === 'tla_v3');
+  const pick = await chooseRoute('gapfill', samples, weeks); if (!pick) return;
+  const floors = { bank: pick.floor, contract: pick.wasmFloor }; console.log(`gapfill · node floors: bank ${floors.bank.toLocaleString('en-US')} · contracts ${floors.contract.toLocaleString('en-US')}`);
+  const left1 = await layer1b(); if (overBudget() || fs.existsSync('gapfill_stop.txt')) return finish(left1 || 1);
+  const left2 = await layer2b(floors); if (overBudget() || fs.existsSync('gapfill_stop.txt')) return finish(left2 || 1);
+  const left3 = await layer3b(); if (overBudget()) return finish(1);
+  function finish(left) { try { fs.writeFileSync('gapfill_left.txt', String(left)); } catch { } console.log(`gapfill: stopped with work left — the next run continues (chain)`); }
+  // everything fetched → re-derive and re-audit (no chain needed after this)
+  console.log('gapfill · all fetched — re-running flows (with the new txs) and the audit');
+  await flowsMode(); await audit();
+  try { fs.writeFileSync('gapfill_left.txt', '0'); } catch { }
+  console.log(`gapfill: DONE${left1 || left2 || left3 ? ` (with ${left1 + left2 + left3} items that failed and were kept for a later run — see the lines above)` : ''}`);
+}
+
 if (!RPCS.length && !['cohort', 'inventory', 'flows', 'audit'].includes(MODE)) { console.error('ARCHIVE_RPC not set'); process.exit(1); }
 if (!T) console.log('note: cosmjs-types not installed — messages will not be decoded (events are still kept)');
-const run = { timing, cohort, layer1, inventory, layer2, layer3, flows: flowsMode, audit }[MODE]; if (!run) { console.error('unknown MODE ' + MODE); process.exit(1); }
+const run = { timing, cohort, layer1, inventory, layer2, layer3, flows: flowsMode, audit, gapfill }[MODE]; if (!run) { console.error('unknown MODE ' + MODE); process.exit(1); }
 await run();

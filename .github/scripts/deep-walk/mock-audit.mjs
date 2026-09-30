@@ -15,7 +15,7 @@ const wr = (p, o) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.wr
 const gz = (p, rows) => { fs.mkdirSync(path.dirname(p), { recursive: true }); fs.writeFileSync(p, zlib.gzipSync(rows.map(r => JSON.stringify(r)).join('\n') + '\n')); };
 const CH = '023456789acdefghjklmnpqrstuvwxyz'; const addr = (seed, len) => { const h = require('crypto').createHash('sha256').update('mock' + seed).digest(); return 'terra1' + Array.from({ length: len }, (_, i) => CH[(h[i % 32] ^ (i >> 5)) & 31]).join(''); };
 const wallets = [1, 2, 3, 4, 5, 6].map(s => addr(s, 38));
-const PAIR = addr(101, 58), ROAR = addr(102, 58), AMP = addr(103, 58), COMP = addr(104, 58), LP = addr(105, 58);
+const PAIR = addr(101, 58), ROAR = addr(102, 58), AMP = addr(103, 58), COMP = addr(104, 58), LP = addr(105, 58), CONN = addr(106, 58);
 // 20 Mondays from 2024-01-01; heights 100,000 apart. Bank floor 500,000 (week 5), contract floor 1,000,000 (week 10).
 const weeks = Array.from({ length: 20 }, (_, i) => ({ d: new Date(Date.UTC(2024, 0, 1) + i * 7 * 864e5).toISOString().slice(0, 10), h: 100000 * (i + 1) }));
 const BANK_FLOOR = 500000, WASM_FLOOR = 1000000, TOP = 2100000;
@@ -28,7 +28,7 @@ wallets.forEach((w, k) => {
   const txs = [
     tx(150000, [ev('coin_received', { receiver: w, amount: '5000000uluna' }), ev('transfer', { recipient: w, sender: 'terra1faucetfaucetfaucetfaucetfaucetfaucet2', amount: '5000000uluna' })]),
     tx(250000, [ev('coin_spent', { spender: w, amount: '1000uluna' }), ev('wasm', { _contract_address: ROAR, action: 'transfer', from: PAIR, to: w, amount: '700' }), ev('wasm', { _contract_address: PAIR, action: 'swap' })]),
-    tx(1250000, [ev('coin_spent', { spender: w, amount: '1000uluna' }), ev('wasm', { _contract_address: ROAR, action: 'transfer', from: w, to: PAIR, amount: '200' }), ev('wasm', { _contract_address: AMP, action: 'mint', to: w, amount: '300' }), ev('wasm', { _contract_address: COMP, action: 'bond', ...(k === 0 ? { staker_addr: w } : {}) })]),
+    tx(1250000, [ev('coin_spent', { spender: w, amount: '1000uluna' }), ev('wasm', { _contract_address: ROAR, action: 'transfer', from: w, to: PAIR, amount: '200' }), ev('wasm', { _contract_address: AMP, action: 'mint', to: w, amount: '300' }), ev('wasm', { _contract_address: COMP, action: 'bond', ...(k === 0 ? { depositor: w } : {}) })]),
   ];
   L1[w] = txs; gz(`${ARC}/layer1/${w.slice(-1)}/${w}/part-000.jsonl.gz`, txs);
   L1M.wallets[w] = { done: true, txs: k === 1 ? txs.length + 2 : txs.length, searches: { 'message.sender': { total: 2 } } };
@@ -36,7 +36,7 @@ wallets.forEach((w, k) => {
 wr(`${ARC}/layer1/_manifest.json`, L1M);
 // inventory — codes: 392 pair (in layer 2), 1317 ROAR, 12 amp token, 3778 compounding (NOT in layer 2), 69 LP token (held by nobody)
 const cinfo = (code, txs, first_h, actions) => ({ code_id: code, txs, wallets: 6, first_h, last_h: 1250000, actions });
-wr(`${ARC}/inventory/2024-05-13.json`, { contracts: { [PAIR]: cinfo('392', 12, 250000, { swap: 6 }), [ROAR]: cinfo('1317', 12, 250000, { transfer: 12 }), [AMP]: cinfo('12', 6, 1250000, { mint: 6 }), [COMP]: cinfo('3778', 50, 1250000, { bond: 6 }) },
+wr(`${ARC}/inventory/2024-05-13.json`, { contracts: { [PAIR]: cinfo('392', 12, 250000, { swap: 6 }), [ROAR]: cinfo('1317', 12, 250000, { transfer: 12 }), [AMP]: cinfo('12', 6, 1250000, { mint: 6 }), [COMP]: cinfo('3778', 50, 1250000, { bond: 6 }), [CONN]: cinfo('3120', 9, 1100000, { 'ca/claim_rewards': 3 }) },
   by_code_id: { '392': { contracts: 1, txs: 12 }, '1317': { contracts: 1, txs: 12 }, '12': { contracts: 1, txs: 6 }, '3778': { contracts: 1, txs: 50 } } });
 wr(`${CORE}/protocol-labels.json`, { by_code_id: { '392': { protocol: 'Astroport', what: 'pairs' }, '1317': { protocol: 'cw20 tokens', what: 'generic cw20' }, '12': { protocol: 'Eris', what: 'amp compounder tokens + LST tokens' }, '3778': { protocol: 'Eris / TLA', what: 've3 asset compounding (amp)' } } });
 // layer 2 — pair rows for every readable week except one (planted gap); weeks below the contract floor are events-only
@@ -48,7 +48,7 @@ const L3M = { wallets: {}, state_floor: { block: BANK_FLOOR } };
 wallets.forEach((w, k) => { const rows = []; L3M.wallets[w] = { first_h: 150000, done: {} };
   for (const b of monthly) { if (b.h < BANK_FLOOR) continue; if (k === 3 && b === monthly[monthly.length - 1]) continue;
     const spent = (b.h >= 250000 ? 1000 : 0) + (b.h >= 1250000 ? 1000 : 0); let lun = 5000000 - spent; if (k === 2) lun += 20000000;
-    rows.push({ d: b.d, h: b.h, bank: [['uluna', String(lun)]], delegations: [], unbonding: [] }); L3M.wallets[w].done[b.d] = 1; }
+    rows.push({ d: b.d, h: b.h, bank: [['uluna', String(lun)]], delegations: k === 4 ? null : [], unbonding: [] }); L3M.wallets[w].done[b.d] = 1; }
   gz(`${ARC}/layer3/${w.slice(-1)}/${w}.jsonl.gz`, rows); });
 wr(`${ARC}/layer3/_manifest.json`, L3M);
 // public files the audit fetches (token catalog, the denom-symbol rule, price series)
@@ -63,6 +63,7 @@ wr(`${PUB}/tla-core/main/price-history/series/ROAR.json`, { daily: { '2023-01-01
 const blockTime = (h) => Date.parse(weeks[0].d) + (h - weeks[0].h) * (7 * 864e5 / 100000);
 const allTx = Object.values(L1).flat();
 const hidden = wallets.slice(0, 3).map((w, k) => tx(1350000 + k, [ev('coin_received', { receiver: w, amount: '777uluna' })]));   // only under coin_received.receiver
+const acks = wallets.slice(0, 2).map((w, k) => tx(1450000 + k, [ev('wasm', { _contract_address: PAIR, action: 'acknowledge', sender: w })]));   // only under wasm.sender (a 1.8 key)
 const toRpcTx = (t) => ({ hash: t.x, height: String(t.h), index: 0, tx_result: { code: 0, gas_wanted: '1', gas_used: '1', events: t.e.map(e => ({ type: e.t, attributes: e.a.map(([key, value]) => ({ key, value })) })) }, tx: null });
 const abciResp = (res, value, log) => res.end(JSON.stringify({ result: { response: log ? { code: 18, log } : { code: 0, value: Buffer.from(value).toString('base64') } } }));
 const server = http.createServer((req, res) => {
@@ -70,7 +71,7 @@ const server = http.createServer((req, res) => {
   if (u.pathname.endsWith('/status')) return res.end(JSON.stringify({ result: { sync_info: { latest_block_height: String(TOP) } } }));
   if (u.pathname.endsWith('/block')) { const h = Number(u.searchParams.get('height')); return res.end(JSON.stringify({ result: { block: { header: { time: new Date(blockTime(h)).toISOString() } } } })); }
   if (u.pathname.endsWith('/tx_search')) { const q = u.searchParams.get('query').replace(/^"|"$/g, ''); const [key, v] = q.split("='"); const w = v.replace(/'$/, ''); const [type, attr] = key.split('.');
-    const pool = [...allTx, ...hidden].filter(t => t.e.some(e => e.t === type && e.a.some(([k, x]) => k === attr && x === w)));
+    const pool = [...allTx, ...hidden, ...acks].filter(t => t.e.some(e => e.t === type && e.a.some(([k, x]) => k === attr && x === w)));
     return res.end(JSON.stringify({ result: { total_count: String(pool.length), txs: pool.map(toRpcTx) } })); }
   if (u.pathname.endsWith('/abci_query')) { const route = u.searchParams.get('path').replace(/"/g, ''); const h = Number(u.searchParams.get('height')); const data = Buffer.from(u.searchParams.get('data').slice(2), 'hex');
     if (/bank/.test(route)) { if (h < BANK_FLOOR) return abciResp(res, null, `failed to load state at height ${h}; version mismatch on immutable IAVL tree; version does not exist. Version has either been pruned, or is for a future block height`);
@@ -84,6 +85,8 @@ const server = http.createServer((req, res) => {
       if (msg.balance) { const w = msg.balance.address; const k = wallets.indexOf(w); let bal = 0; for (const t of allTx.filter(t => t.h <= h)) for (const e of t.e) { const a = Object.fromEntries(e.a); if (a._contract_address !== q.address) continue; if (a.to === w) bal += Number(a.amount); if (a.from === w) bal -= Number(a.amount); }
         if (q.address === AMP) bal += 50;   // planted: the amp token rebases / is credited outside the events we read
         return reply({ balance: String(bal) }); }
+      if (msg.gauge_infos) return abciResp(res, null, 'Error parsing into type ve3_gauge::QueryMsg: missing field `time`: query wasm contract failed');
+      const k = Object.keys(msg)[0]; if (['state', 'total_vamp', 'total_fixed', 'asset_configs', 'exchange_rates', 'amplp_exchange_rates', 'whitelisted_asset_details', 'reward_distribution', 'total_staked_balances', 'whitelisted_assets'].includes(k)) return reply({ mock: k, h });
       return abciResp(res, null, 'Error parsing into type x: unknown variant'); }
   }
   // public files
@@ -100,7 +103,7 @@ try {
   const pubTxt = fs.readFileSync(path.join(CORE, 'audit.json'), 'utf8');
   check('A1 node floors measured (bank ≈ 500K, contract ≈ 1.0M)', S.node.floors.source === 'measured now' && Math.abs(S.node.floors.bank - BANK_FLOOR) <= 2000 && S.node.floors.contract >= WASM_FLOOR && S.node.floors.contract - WASM_FLOOR <= 50000, S.node.floors);
   check('A2 layer1: stored txs ≠ manifest found (1 wallet)', S.layer1.parts_txs_mismatch === 1 && S.layer1.txs === 18, S.layer1);
-  check('A3 layer1: extra key wasm.staker_addr seen', (S.layer1_extra_keys['wasm.staker_addr'] || 0) === 1, S.layer1_extra_keys);
+  check('A3 layer1: extra key wasm.depositor seen (a key no walk searches)', (S.layer1_extra_keys['wasm.depositor'] || 0) === 1, S.layer1_extra_keys);
   check('A4 layer2: exactly one readable week missing; pre-floor weeks counted events-only (floor measured to ~1,000 blocks)', S.layer2.readable_missing === 1 && S.layer2.by_kind.pair.below_floor === 9 && S.layer2.by_kind.pair.readable === 10 && S.layer2.by_kind.pair.ok === 9, S.layer2);
   check('A5 layer3: one month missing (1 wallet)', S.layer3.missing === 1 && S.layer3.wallets_missing_some === 1, S.layer3);
   check('A6 flows: the opening balance classed constant_from_first_checkpoint, chain higher', S.flows.by_class.constant_from_first_checkpoint && S.flows.by_class.constant_from_first_checkpoint.pairs === 1 && S.flows.by_class.constant_from_first_checkpoint.chain_higher === 1, S.flows);
@@ -117,6 +120,21 @@ try {
   check('A13 no stop file left, exit clean', !fs.existsSync(path.join(root, 'audit_stop.txt')), null);
   // node down → offline audit still completes, chain sections skipped
   lab.by_code_id['3778'].what = 've3 asset compounding (amp)'; wr(path.join(CORE, 'protocol-labels.json'), lab);
+  // ── 1.8 gapfill on the same archive ──
+  const logG = await runMode('gapfill'); console.log(logG.split('\n').filter(l => /^(gapfill|layer1b|layer2b|layer3b|flows)/.test(l)).join('\n'));
+  const M1 = JSON.parse(fs.readFileSync(path.join(ARC, 'layer1/_manifest.json'), 'utf8'));
+  check('F1 layer1b: every wallet searched under the 1.8 keys; the 2 IBC acks added as new parts', Object.values(M1.wallets).every(x => x.top18) && Object.values(M1.wallets).reduce((a, x) => a + (x.top18_added || 0), 0) === 2 && fs.readdirSync(path.join(ARC, 'layer1', wallets[0].slice(-1), wallets[0])).length === 2, M1.counts);
+  const M2 = JSON.parse(fs.readFileSync(path.join(ARC, 'layer2b/_manifest.json'), 'utf8'));
+  const g = M2.targets['tla/gauge_stable'] || {}; const conn = Object.keys(M2.targets).find(k => k.startsWith('tla/connector_'));
+  check('F2 layer2b: the refused gauge question is dropped WITH its message; others read weekly from the floor', /missing field/.test(g.dropped || '') && conn && Object.keys(M2.targets[conn].done).length === 10 && Object.keys(M2.targets['lst/bLUNA'].done).length === 10, { g, conn: conn && M2.targets[conn].done });
+  const row = fs.readFileSync(path.join(ARC, 'layer2b', 'tla', 'escrow_total_vamp.jsonl.gz')); const rr = zlib.gunzipSync(row).toString().trim().split('\n').map(l => JSON.parse(l));
+  check('F3 layer2b rows keep the raw answer + week + height', rr.length === 10 && rr[0].data && rr[0].data.mock === 'total_vamp' && rr.every(r => r.h >= WASM_FLOOR), rr[0]);
+  const l3 = zlib.gunzipSync(fs.readFileSync(path.join(ARC, 'layer3', wallets[4].slice(-1), wallets[4] + '.jsonl.gz'))).toString().trim().split('\n').map(l => JSON.parse(l));
+  check('F4 layer3b: the missing delegations are refilled', l3.length && l3.every(r => Array.isArray(r.delegations)), l3[0]);
+  const fin = JSON.parse(fs.readFileSync(path.join(CORE, 'audit.json'), 'utf8'));
+  check('F5 flows + audit re-ran: the audit sees layer 2b, the 1.8 keys and no missing delegations', fin.sections.layer2b.targets > 0 && fin.sections.layer2b.dropped.length === 4 && fin.sections.layer1.searched_under_1_8_keys === 6 && fin.sections.layer3.delegations_null === 0 && fin.sections.layer1.txs === 20, { l2b: fin.sections.layer2b, l1: fin.sections.layer1.txs, l3: fin.sections.layer3.delegations_null });
+  check('F6 no work left → the chain stops', fs.readFileSync(path.join(root, 'gapfill_left.txt'), 'utf8') === '0', null);
+  const logG2 = await runMode('gapfill'); check('F7 a second gapfill run finds nothing to do (resumable, no duplicates)', /layer1b: 0 wallets/.test(logG2) && /0 weekly reads to do/.test(logG2) && /layer3b: 0 checkpoints/.test(logG2), logG2.slice(0, 600));
   env.ARCHIVE_RPC = 'http://127.0.0.1:9'; const logDown = await runMode('audit'); const full2 = JSON.parse(fs.readFileSync(path.join(ARC, 'audit', new Date().toISOString().slice(0, 10) + '.json'), 'utf8'));
   check('A14 node down: offline sections still run, probes skipped, floors from manifests', full2.sections.node.reachable === false && full2.sections.cw20_check.skipped && full2.sections.layer2.readable_missing === 1 && full2.sections.node.floors.source === 'manifests', full2.sections.node);
 } catch (e) { console.log('FAIL  run: ' + e.message.slice(0, 1500)); fails++; }
