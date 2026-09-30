@@ -18,6 +18,10 @@
 //   flows   — the derive, no chain reads: every native (coin_spent / coin_received) and cw20 (transfer / send / mint / burn) balance
 //             change of each wallet from layer 1, with its counterparty, → archive/derived/flows/<shard>/<wallet>.json.gz: per-denom
 //             balances at every weekly boundary + the flow list; checked against the layer 3 checkpoints where they exist.
+//   audit   — (1.7) reads the whole archive + a few small node samples and says what is missing and why: layer 1/2/3 expected vs
+//             stored, the flows drift classified, cw20 balances vs the chain (sample), txs the search keys missed (sample), busy contracts
+//             layer 2 never read (with their query API), price coverage of everything held → archive/audit/<day>.json + a counts-only
+//             docs/deep-history/audit.json in tla-core. Run it before any more node time is spent.
 //   layer1  — for each cohort wallet not yet done: tx_search for every attribute a wallet appears under (§8 list), deduplicated by hash,
 //             decoded, and written as gzip parts to archive/layer1/<shard>/<wallet>/part-NNN.jsonl.gz + a per-wallet summary in the
 //             manifest. Resumable (done wallets skipped), committed every few wallets, stops cleanly before the time budget.
@@ -25,7 +29,7 @@
 // sequences are dropped. The log prints COUNTS ONLY (this Action's log is public) — never a wallet, a hash or an amount.
 import fs from 'fs'; import path from 'path'; import zlib from 'zlib'; import { execSync } from 'child_process'; import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const VERSION = 'deep-walk-1.6';   // 1.6 (2026-09-30): contract reads get their own floor (the 1.5 run: bank reads from 2023-03, every older contract read "panic: unknown request") — found on the earliest-starting contract that answers, with a 7-point spread printed; "unknown request" is no longer read as the contract refusing (the 1.5 marks are cleared)   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
+const VERSION = 'deep-walk-1.7';   // 1.7 (2026-09-30): mode audit — every layer checked against what was expected (and why anything is missing), the flows drift classified per wallet × denom, cw20 balances checked on a sample, layer-1 search keys checked on a sample, busy contracts layer 2 never read listed with their query API, price coverage of everything held; nothing re-read in bulk   // 1.6 (2026-09-30): contract reads get their own floor (the 1.5 run: bank reads from 2023-03, every older contract read "panic: unknown request") — found on the earliest-starting contract that answers, with a 7-point spread printed; "unknown request" is no longer read as the contract refusing (the 1.5 marks are cleared)   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
 const MODE = process.env.MODE || 'timing';
 const RPCS = [process.env.ARCHIVE_RPC, process.env.RPC_URL].map(s => String(s || '').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '')).filter(Boolean);
 const LCD = String(process.env.ARCHIVE_LCD || process.env.LCD || 'https://terra-lcd.publicnode.com').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '');
@@ -39,7 +43,7 @@ const DAY = new Date().toISOString().slice(0, 10);
 const T0 = Date.now(); const minutes = () => (Date.now() - T0) / 60000; const overBudget = () => minutes() > MAX_MIN;
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const UA = 'thealliancedao.com deep-walk/1.0';
-const RAW = 'https://raw.githubusercontent.com/thealliancedao';
+const RAW = process.env.RAW_BASE || 'https://raw.githubusercontent.com/thealliancedao';   // RAW_BASE: mocks only
 
 // the attribute keys a wallet appears under (measured on our own raw corpus + the Solid and Credia probes — SPEC §8 layer 1)
 const KEYS = ['message.sender', 'transfer.recipient', 'withdraw_rewards.delegator', 'fungible_token_packet.receiver',
@@ -141,7 +145,7 @@ async function chooseRoute(label, samples, weeks) {
       const start = Math.max(floor, (t.from_h || 0) + 20000);
       const spread = []; for (let k = 0; k <= 6; k++) { const h = Math.floor(start + (recent.h - start) * k / 6); const r = await smartVia(rt, t.addr, t.q, h); spread.push(`${dateOf(h).replace('week of ', '')}: ${r.ok ? 'ok' : say(r).slice(0, 60)}`); }
       console.log(`route test (${label}) · ${rt}: ${t.key} across its history → ${spread.join(' | ')}`);
-      if (!(await good(start))) { let lo = start, hi = recent.h; while (hi - lo > 50000) { const mid = Math.floor((lo + hi) / 2); if (await good(mid)) hi = mid; else lo = mid; } wasmFloor = hi; }
+      if (!(await good(start))) { let lo = start, hi = recent.h; while (hi - lo > (MODE === 'audit' ? 1000 : 50000)) { const mid = Math.floor((lo + hi) / 2); if (await good(mid)) hi = mid; else lo = mid; } wasmFloor = hi; }
       else wasmFloor = floor;
       console.log(`route test (${label}) · ${rt}: contract reads work from block ${wasmFloor.toLocaleString('en-US')} (${dateOf(wasmFloor)})`); }
     ROUTE = rt; console.log(`route: ${rt}`); return { floor, wasmFloor };
@@ -539,7 +543,211 @@ async function flowsMode() {
   console.log(`flows: ${n} wallets · ${nFlows} balance changes · checkpoints compared ${checked}, exact ${agree} (${report.agree_pct ?? '—'}%)${checked ? '' : ' — no layer 3 checkpoints yet (run layer3, then flows again)'}`);
 }
 
-if (!RPCS.length && !['cohort', 'inventory', 'flows'].includes(MODE)) { console.error('ARCHIVE_RPC not set'); process.exit(1); }
+// ── mode: audit (1.7) — "do we have everything the derive needs?" before any more node time is spent ─────────────────────
+// Reads EVERYTHING in the archive (no writes to layers) and asks the node a few SMALL samples. Answers, per layer: what was expected,
+// what is there, what is missing and why; classifies the flows drift; checks cw20 balances against the chain on a sample; finds txs
+// the layer-1 search keys missed on a sample; lists the busy contracts layer 2 never read, with their query API (the node's own
+// "expected one of …" answer); and measures how much of the cohort's holding history can be priced. Output:
+//   archive/audit/<day>.json (full, private)  +  docs/deep-history/audit.json in tla-core (COUNTS ONLY — no wallet; guarded).
+const AUDIT_SAMPLE = Math.max(10, Number(process.env.AUDIT_SAMPLE || 80));
+const AUDIT_PROBE_PAGES = Math.max(1, Number(process.env.AUDIT_PROBE_PAGES || 10));
+const STATIC_EXTRA_KEYS = ['coin_received.receiver', 'coin_spent.spender', 'wasm.old_owner', 'wasm.sender'];
+function readJsonl(p) { try { return zlib.gunzipSync(fs.readFileSync(A(p))).toString('utf8').split('\n').filter(Boolean).map(l => JSON.parse(l)); } catch { return null; } }
+function eachTx(w, fn) {   // streams one wallet's layer-1 records (parts one at a time — no need to hold 600K txs)
+  const dir = A(`layer1/${w.slice(-1)}/${w}`); if (!fs.existsSync(dir)) return 0; let n = 0;
+  for (const f of fs.readdirSync(dir).filter(f => f.endsWith('.jsonl.gz')).sort()) for (const line of zlib.gunzipSync(fs.readFileSync(path.join(dir, f))).toString('utf8').split('\n')) { if (!line) continue; let t; try { t = JSON.parse(line); } catch { continue; } n++; fn(t); }
+  return n;
+}
+const topN = (o, n = 20) => Object.fromEntries(Object.entries(o).sort((a, b) => b[1] - a[1]).slice(0, n));
+const bumpA = (o, k, n = 1) => { o[k] = (o[k] || 0) + n; };
+async function loadResolver() {   // THE denom → symbol rule (platform-crons/lib/denom-symbol.js), loaded at run time — one rule, no copy
+  try { const src = await (await fetch(`${RAW}/platform-crons/main/lib/denom-symbol.js`, { signal: AbortSignal.timeout(20000) })).text(); const f = path.join(process.env.RUNNER_TEMP || '/tmp', 'denom-symbol.cjs'); fs.writeFileSync(f, src);
+    const lib = require(f); const cat = await getJson(`${RAW}/tla-core/main/token-catalog/snapshots/current.json`, 3, 30000); if (!cat.ok) return null; return lib.buildResolver(cat.json); } catch { return null; }
+}
+async function audit() {
+  const out = { version: VERSION, day: DAY, sections: {} }; const S = out.sections; const gaps = [];
+  const C = readJson('cohort/current.json', null); if (!C) throw new Error('no cohort');
+  const cohort = Object.keys(C.wallets).sort(); const cohortSet = new Set(cohort);
+  const H = readJson('layer2/heights.json', null); const weeks = H ? Object.entries(H.rows).map(([d, x]) => ({ d, h: x.h })) : [];
+  const L2M = readJson('layer2/_manifest.json', { targets: {} }); const L3M = readJson('layer3/_manifest.json', { wallets: {} }); const L1M = readJson('layer1/_manifest.json', { wallets: {} });
+  const invF = fs.existsSync(A('inventory')) ? fs.readdirSync(A('inventory')).filter(f => /^\d{4}-\d\d-\d\d\.json$/.test(f)).sort().pop() : null; const I = invF ? readJson('inventory/' + invF, null) : null;
+  let labels = {}; try { labels = JSON.parse(fs.readFileSync(path.join(process.env.CORE_OUT || 'docs/deep-history', 'protocol-labels.json'), 'utf8')).by_code_id || {}; } catch { }
+  const codeOf = (addr) => (I && I.contracts[addr] && String(I.contracts[addr].code_id || '')) || null;
+  const protoOf = (code) => (labels[code] && `${labels[code].protocol} — ${labels[code].what}`.slice(0, 90)) || null;
+
+  // ── 0. the node: is it there, and what are its floors today (law: step 0 measures floors, not only speed) ──
+  let node = { reachable: false }; let floors = { bank: (L3M.state_floor || {}).block || null, contract: (L2M.state_floor || {}).contract_reads_from || null, source: 'manifests' };
+  if (RPCS.length) { const top = await latestHeight(); node = { reachable: !!top, latest_height: top || null };
+    if (top && weeks.length && I) { const samples = layer2Targets().filter(t => t.kind === 'pair').sort((a, b) => (I.contracts[b.addr] ? I.contracts[b.addr].txs : 0) - (I.contracts[a.addr] ? I.contracts[a.addr].txs : 0));
+      const pick = await chooseRoute('audit', samples, weeks); if (pick) { floors = { bank: pick.floor, contract: pick.wasmFloor, source: 'measured now', route: ROUTE }; } else node.reachable = false; } }
+  try { fs.rmSync(`${MODE}_stop.txt`, { force: true }); } catch { } process.exitCode = 0;   // an unreachable node does not fail the offline audit
+  S.node = { ...node, floors, floors_before: { bank: (L3M.state_floor || {}).block || null, contract: (L2M.state_floor || {}).contract_reads_from || null } };
+  if (!node.reachable) gaps.push({ id: 'node', severity: 'high', node: true, what: 'the archive node did not answer — the chain probes below were skipped; only the offline audit ran' });
+  const weekOf = (h) => { let lo = 0, hi = weeks.length; while (lo < hi) { const m = (lo + hi) >> 1; if (weeks[m].h >= h) hi = m; else lo = m + 1; } return lo < weeks.length ? weeks[lo].d : null; };
+  const yearOf = (h) => (weekOf(h) || DAY).slice(0, 4);
+  console.log(`audit · node: ${node.reachable ? 'answers' : 'NOT reachable'} · bank state from ${floors.bank ? floors.bank.toLocaleString('en-US') + ' (' + weekOf(floors.bank) + ')' : '?'} · contract state from ${floors.contract ? floors.contract.toLocaleString('en-US') + ' (' + weekOf(floors.contract) + ')' : '?'}`);
+
+  // ── 1. cohort + layer 1 (one streaming pass over every tx; also collects what sections 5–8 need) ──
+  const l1 = { cohort: cohort.length, in_manifest: 0, done: 0, with_failed_search: 0, missing_dir: 0, zero_txs: 0, txs: 0, failed_txs: 0, decode_errors: 0, undecoded_msgs: {}, by_year: {}, search_totals: {}, last_height_max: 0, last_height_min: null, parts_txs_mismatch: 0 };
+  const extraKeys = {};     // event.attr keys the wallet appears under that the search did NOT use (txs per key)
+  const hashes = new Map(); // sample wallets only — their layer-1 hashes (for the missed-keys probe)
+  const cw20Count = new Map(); // wallet → { token: flows } (sample for the cw20 check)
+  const KEYSET = new Set(KEYS);
+  const sample = []; { const step = Math.max(1, Math.floor(cohort.length / (AUDIT_SAMPLE * 2))); for (let i = 0; i < cohort.length && sample.length < AUDIT_SAMPLE * 2; i += step) sample.push(cohort[i]); }
+  const sampleSet = new Set(sample);
+  for (const w of cohort) {
+    const m = L1M.wallets[w]; if (m) { l1.in_manifest++; if (m.done) l1.done++; else l1.with_failed_search++; for (const [k, s] of Object.entries(m.searches || {})) { if (s && s.total != null) bumpA(l1.search_totals, k, s.total); } }
+    if (!fs.existsSync(A(`layer1/${w.slice(-1)}/${w}`))) { l1.missing_dir++; if (m && m.txs) l1.parts_txs_mismatch++; else l1.zero_txs++; continue; }
+    const hs = sampleSet.has(w) ? new Set() : null; const cw = sampleSet.has(w) ? {} : null; let maxH = 0;
+    const n = eachTx(w, (t) => { l1.txs++; if (t.c) l1.failed_txs++; if (t.m_error) l1.decode_errors++; maxH = Math.max(maxH, t.h);
+      bumpA(l1.by_year, yearOf(t.h)); if (hs) hs.add(t.x);
+      for (const mm of t.m || []) if (mm.raw && !mm.decode_error) bumpA(l1.undecoded_msgs, mm.type);
+      const seenK = new Set(); for (const e of t.e || []) for (const [k, v] of e.a) { if (v !== w) continue; const key = `${e.t}.${k}`; if (!KEYSET.has(key) && !seenK.has(key)) { seenK.add(key); bumpA(extraKeys, key); } }
+      if (cw) for (const e of t.e || []) if (/^wasm/.test(e.t)) { const a = Object.fromEntries(e.a); if (a.amount && (a.to === w || a.from === w) && /^(transfer|send|transfer_from|send_from|mint|burn|burn_from)$/.test(a.action || '')) bumpA(cw, a._contract_address); } });
+    if (m && m.txs != null && m.txs !== n) l1.parts_txs_mismatch++;
+    if (!n) l1.zero_txs++; if (hs) hashes.set(w, hs); if (cw) cw20Count.set(w, cw);
+    if (maxH) { l1.last_height_max = Math.max(l1.last_height_max, maxH); }
+  }
+  l1.undecoded_msgs = topN(l1.undecoded_msgs, 15); l1.search_totals = topN(l1.search_totals, 30);
+  S.layer1 = l1; S.layer1_extra_keys = topN(extraKeys, 25);
+  if (l1.with_failed_search || l1.missing_dir - l1.zero_txs > 0 || l1.parts_txs_mismatch) gaps.push({ id: 'layer1-incomplete', severity: 'high', node: true, what: `${l1.with_failed_search} wallets with a failed search, ${l1.parts_txs_mismatch} whose stored txs ≠ the manifest` });
+  console.log(`audit · layer1: ${l1.done}/${l1.cohort} wallets done · ${l1.txs} txs · ${l1.zero_txs} with no tx · ${l1.with_failed_search} with a failed search · ${l1.parts_txs_mismatch} stored≠manifest · decode errors ${l1.decode_errors}`);
+
+  // ── 2. layer 2: every target — expected weeks (from the week the cohort first touched it), readable (≥ the contract floor), done, answered ──
+  const l2 = { targets: 0, by_kind: {}, events_only_weeks: 0, readable_missing: 0, targets_with_missing: [] };
+  if (I && weeks.length) for (const t of layer2Targets()) { l2.targets++;
+    const k = l2.by_kind[t.kind] || (l2.by_kind[t.kind] = { targets: 0, expected: 0, below_floor: 0, readable: 0, done: 0, ok: 0, absent: 0, unsupported: 0, empty: 0, missing: 0 }); k.targets++;
+    const man = L2M.targets[t.key] || { done: {} }; const rows = readJsonl(`layer2/${t.key}.jsonl.gz`) || []; const byD = new Map(rows.map(r => [r.d, r]));
+    let miss = 0; for (const w of weeks) { if (w.h < t.from_h - 120000) continue; k.expected++;
+      if (floors.contract && w.h < floors.contract) { k.below_floor++; continue; } k.readable++;
+      const r = byD.get(w.d); if (man.done[w.d]) k.done++; if (!r) { k.missing++; miss++; continue; }
+      if (r.absent) k.absent++; else if (r.unsupported) k.unsupported++; else if (r.data == null || (t.kind === 'pair' && !(r.data.assets || []).length)) k.empty++; else k.ok++; }
+    if (miss) l2.targets_with_missing.push([t.kind, codeOf(t.addr) || t.key, miss]); }
+  for (const k of Object.values(l2.by_kind)) { l2.events_only_weeks += k.below_floor; l2.readable_missing += k.missing; }
+  l2.targets_with_missing = l2.targets_with_missing.sort((a, b) => b[2] - a[2]).slice(0, 20);
+  S.layer2 = l2;
+  if (l2.readable_missing) gaps.push({ id: 'layer2-missing', severity: 'high', node: true, what: `${l2.readable_missing} weekly reads the node CAN serve are not in the archive` });
+  console.log(`audit · layer2: ${l2.targets} targets · ${Object.entries(l2.by_kind).map(([k, v]) => `${k} ok ${v.ok}/${v.readable} (missing ${v.missing}, events-only ${v.below_floor})`).join(' · ')}`);
+
+  // ── 3. layer 3: monthly checkpoints per wallet ──
+  const months = monthlyBoundaries() || []; const l3 = { wallets_with_first_tx: 0, expected: 0, below_floor: 0, readable: 0, rows: 0, missing: 0, wallets_missing_some: 0, delegations_null: 0, unbonding_null: 0 };
+  for (const w of cohort) { const m = L3M.wallets[w]; if (!m || m.first_h == null) continue; l3.wallets_with_first_tx++;
+    const rows = readJsonl(`layer3/${w.slice(-1)}/${w}.jsonl.gz`) || []; const have = new Set(rows.map(r => r.d)); let miss = 0;
+    for (const r of rows) { if (r.delegations == null) l3.delegations_null++; if (r.unbonding == null) l3.unbonding_null++; } l3.rows += rows.length;
+    for (const b of months) { if (b.h < m.first_h - 450000) continue; l3.expected++; if (floors.bank && b.h < floors.bank) { l3.below_floor++; continue; } l3.readable++; if (!have.has(b.d)) { miss++; l3.missing++; } }
+    if (miss) l3.wallets_missing_some++; }
+  S.layer3 = l3;
+  if (l3.missing) gaps.push({ id: 'layer3-missing', severity: 'medium', node: true, what: `${l3.missing} monthly checkpoints the node can serve are missing (${l3.wallets_missing_some} wallets)` });
+  if (l3.delegations_null || l3.unbonding_null) gaps.push({ id: 'layer3-partial', severity: 'low', node: true, what: `${l3.delegations_null} checkpoints without delegations, ${l3.unbonding_null} without unbonding (the bank part was saved)` });
+  console.log(`audit · layer3: ${l3.rows} checkpoints · readable ${l3.readable} · missing ${l3.missing} · before the bank floor ${l3.below_floor} · delegations null ${l3.delegations_null}`);
+
+  // ── 4. flows: classify the drift (per wallet × denom, not per checkpoint — one missed event repeats at every later checkpoint) ──
+  const resolve = await loadResolver(); const sym = (d) => { if (!resolve) return null; const r = resolve(d.startsWith('cw20:') ? d : d); return r && r.symbol; };
+  const fl = { wallets: 0, flows: 0, pairs_drifting: 0, by_class: {}, first_drift_month: {}, never_in_flows_denoms: {}, class_denoms: {} };
+  const holding = {};   // denom → wallet-weeks held (> 0 at the boundary) — for section 7
+  const flowsByW = new Map();   // sample wallets → {weeks, balances}
+  for (const w of cohort) { let F; try { F = JSON.parse(zlib.gunzipSync(fs.readFileSync(A(`derived/flows/${w.slice(-1)}/${w}.json.gz`))).toString('utf8')); } catch { continue; }
+    fl.wallets++; fl.flows += (F.flows || []).length;
+    for (const [d, arr] of Object.entries(F.balances || {})) { let n = 0; for (const v of arr) if (v !== '0' && !String(v).startsWith('-')) n++; if (n) bumpA(holding, d, n); }
+    if (sampleSet.has(w)) flowsByW.set(w, { weeks: F.weeks, balances: F.balances });
+    const cps = (readJsonl(`layer3/${w.slice(-1)}/${w}.jsonl.gz`) || []).map(r => r.d).sort(); const firstCp = cps[0];
+    const per = {}; for (const [d, denom, diff] of F.checkpoint_drift || []) (per[denom] = per[denom] || []).push([d, diff]);
+    for (const [denom, list] of Object.entries(per)) { fl.pairs_drifting++; list.sort((a, b) => a[0] < b[0] ? -1 : 1);
+      const distinct = new Set(list.map(x => x[1])).size; const firstD = list[0][0]; const after = cps.filter(c => c >= firstD).length; const gapsIn = after - list.length;
+      const neverInFlows = !(F.balances || {})[denom];
+      const cls = neverInFlows ? 'never_in_flows' : distinct === 1 ? (firstD === firstCp ? 'constant_from_first_checkpoint' : 'constant_from_a_month') : gapsIn > 0 && distinct <= 3 ? 'intermittent' : distinct <= 5 ? 'steps' : 'creeping';
+      const c = fl.by_class[cls] || (fl.by_class[cls] = { pairs: 0, checkpoints: 0, chain_higher: 0, chain_lower: 0 }); c.pairs++; c.checkpoints += list.length; if (BigInt(list[list.length - 1][1]) > 0n) c.chain_higher++; else c.chain_lower++;
+      bumpA(fl.class_denoms[cls] || (fl.class_denoms[cls] = {}), (sym(denom) || denom).slice(0, 70)); bumpA(fl.first_drift_month, firstD.slice(0, 7));
+      if (neverInFlows) bumpA(fl.never_in_flows_denoms, (sym(denom) || denom).slice(0, 70)); } }
+  for (const k of Object.keys(fl.class_denoms)) fl.class_denoms[k] = topN(fl.class_denoms[k], 10); fl.never_in_flows_denoms = topN(fl.never_in_flows_denoms, 15);
+  fl.first_drift_month = Object.fromEntries(Object.entries(fl.first_drift_month).sort());
+  S.flows = fl;
+  console.log(`audit · flows: ${fl.wallets} wallets · ${fl.pairs_drifting} wallet×denom pairs drift · ${Object.entries(fl.by_class).map(([k, v]) => `${k} ${v.pairs}`).join(' · ')}`);
+
+  // ── 5. cw20: the rebuilt balances were never checked (layer 3 is native only) — a sample against the chain ──
+  const cw = { wallets: 0, reads: 0, agree: 0, differ: 0, failed: 0, chain_higher: 0, chain_lower: 0, rebuilt_negative: 0, by_token: {}, fail_reasons: {} };
+  if (node.reachable && floors.contract && weeks.length) {
+    const top = weeks[weeks.length - 1]; const pickW = (iso) => { const w = weeks.find(x => x.d >= iso); return w && w.h >= floors.contract ? w : null; };
+    const checkWeeks = [pickW('2024-06-01'), pickW('2025-06-01'), top].filter(Boolean);
+    const tasks = []; for (const w of sample) { const cnt = cw20Count.get(w); const F = flowsByW.get(w); if (!cnt || !F) continue; const toks = Object.entries(cnt).sort((a, b) => b[1] - a[1]).slice(0, 6).map(x => x[0]); if (!toks.length) continue; cw.wallets++; if (cw.wallets > AUDIT_SAMPLE) break;
+      for (const tok of toks) for (const wk of checkWeeks) { const i = F.weeks.indexOf(wk.d); const arr = F.balances['cw20:' + tok]; tasks.push([w, tok, wk, i >= 0 && arr ? arr[i] : '0']); } }
+    await pool(tasks, CONC, async ([w, tok, wk, mine]) => { if (overBudget()) return; const r = await smartAt(tok, { balance: { address: w } }, wk.h); cw.reads++;
+      const bt = cw.by_token[tok] || (cw.by_token[tok] = { reads: 0, agree: 0, differ: 0, failed: 0 }); bt.reads++;
+      if (!r.ok || !r.json || !r.json.data || r.json.data.balance == null) { cw.failed++; bt.failed++; bumpA(cw.fail_reasons, say(r).slice(0, 80)); return; }
+      const chain = BigInt(r.json.data.balance); const m = BigInt(mine || '0'); if (m < 0n) cw.rebuilt_negative++;
+      if (chain === m) { cw.agree++; bt.agree++; } else { cw.differ++; bt.differ++; if (chain > m) cw.chain_higher++; else cw.chain_lower++; } });
+    cw.agree_pct = cw.reads - cw.failed ? +(100 * cw.agree / (cw.reads - cw.failed)).toFixed(1) : null;
+    cw.worst_tokens = Object.entries(cw.by_token).filter(([, v]) => v.differ).sort((a, b) => b[1].differ - a[1].differ).slice(0, 15).map(([t, v]) => ({ token: t, symbol: sym('cw20:' + t), code: codeOf(t), protocol: protoOf(codeOf(t)), ...v }));
+    delete cw.by_token; cw.fail_reasons = topN(cw.fail_reasons, 5); cw.weeks = checkWeeks.map(x => x.d);
+    if (cw.agree_pct != null && cw.agree_pct < 99) gaps.push({ id: 'cw20-drift', severity: 'high', node: false, what: `cw20 balances rebuilt from events agree with the chain on ${cw.agree_pct} % of sampled reads — the flows derive misses some cw20 movements` });
+  } else cw.skipped = 'node not reachable';
+  S.cw20_check = cw;
+  console.log(`audit · cw20 sample: ${cw.reads} reads · agree ${cw.agree} · differ ${cw.differ} (chain higher ${cw.chain_higher}, lower ${cw.chain_lower}) · failed ${cw.failed}${cw.skipped ? ' — ' + cw.skipped : ''}`);
+
+  // ── 6. layer-1 keys: search a sample under keys the walk did not use; count txs that are not in the archive ──
+  const kp = { wallets: 0, keys: {}, missed_by_kind: {} };
+  if (node.reachable) {
+    const cand = [...new Set([...STATIC_EXTRA_KEYS, ...Object.keys(S.layer1_extra_keys).filter(k => /^[a-z0-9_-]+\.[a-z0-9_]+$/i.test(k))])].slice(0, 10);
+    const ws = sample.filter(w => hashes.has(w)).slice(0, Math.min(40, AUDIT_SAMPLE));
+    for (const k of cand) kp.keys[k] = { wallets: 0, total_on_chain: 0, fetched: 0, not_in_archive: 0, wallets_with_missed: 0, capped: 0, errors: 0 };
+    await pool(ws.flatMap(w => cand.map(k => [w, k])), CONC, async ([w, k]) => { if (overBudget()) return; const s = kp.keys[k]; s.wallets++; const have = hashes.get(w); let page = 1, got = 0, miss = 0;
+      while (page <= AUDIT_PROBE_PAGES) { const r = await txSearch(`${k}='${w}'`, page); if (r.error) { s.errors++; break; } if (page === 1) s.total_on_chain += r.total; got += r.txs.length;
+        for (const t of r.txs) if (!have.has(t.hash)) { miss++; const rec = shapeTx(t); const kind = (rec.m && rec.m[0] && rec.m[0].type || '?').split('.').pop(); const act = ((rec.e || []).find(e => /^wasm/.test(e.t)) || { a: [] }).a.find(a => a[0] === 'action'); bumpA(kp.missed_by_kind, `${kind}${act ? ' · ' + act[1] : ''}`.slice(0, 80)); }
+        if (!r.txs.length || got >= r.total) break; page++; }
+      if (page > AUDIT_PROBE_PAGES) s.capped++; s.fetched += got; s.not_in_archive += miss; if (miss) s.wallets_with_missed++; });
+    kp.wallets = ws.length; kp.missed_by_kind = topN(kp.missed_by_kind, 20);
+    const missed = Object.entries(kp.keys).filter(([, s]) => s.not_in_archive); for (const [k, s] of missed) s.estimated_cohort_missed = s.fetched ? Math.round(s.not_in_archive / s.fetched * s.total_on_chain * cohort.length / Math.max(1, s.wallets)) : null;
+    if (missed.length) gaps.push({ id: 'layer1-keys', severity: 'high', node: false, what: `txs found under ${missed.map(([k]) => k).join(', ')} that are not in layer 1 — re-search the cohort under these keys (tx history stays on this node, and public nodes keep recent txs)` });
+  } else kp.skipped = 'node not reachable';
+  S.layer1_keys_probe = kp;
+  console.log(`audit · layer1 keys (sample of ${kp.wallets}): ${Object.entries(kp.keys).map(([k, s]) => `${k} +${s.not_in_archive}`).join(' · ') || kp.skipped}`);
+
+  // ── 7. protocol state layer 2 never read: busy code ids, with their query API (the node answers an unknown query with its list) ──
+  const covered = new Set([...PAIR_CODES, '3995', '3193', '2413', '1431', '2410']);
+  const pr = { codes_checked: 0, uncovered: [] };
+  if (I && I.by_code_id) { const codes = Object.entries(I.by_code_id).filter(([c]) => c !== '?' && !covered.has(c)).sort((a, b) => b[1].txs - a[1].txs).slice(0, 60);
+    for (const [code, b] of codes) { const cs = Object.entries(I.contracts).filter(([, x]) => String(x.code_id) === code).sort((p, q) => q[1].txs - p[1].txs); const [addr, x] = cs[0] || [];
+      const readable = x ? weeks.filter(w => w.h >= Math.max(x.first_h - 120000, floors.contract || 0)).length : 0;
+      const row = { code, protocol: protoOf(code), contracts: b.contracts, txs: b.txs, busiest: addr || null, busiest_first_week: x ? weekOf(x.first_h) : null, readable_weeks_busiest: readable, reads_all_contracts: readable * b.contracts };
+      if (node.reachable && addr && weeks.length) { pr.codes_checked++; const r = await smartAt(addr, { __audit_probe__: {} }, weeks[weeks.length - 1].h); const txt = String((r && r.body) || '');
+        const mm = txt.match(/expected (?:one of )?(.+?)(?:: query wasm|$)/); row.query_api = mm ? (mm[1].match(/`([^`]+)`/g) || []).map(s => s.slice(1, -1)).slice(0, 30) : null; if (!row.query_api) row.probe_answer = say(r).slice(0, 120); }
+      pr.uncovered.push(row); } }
+  S.protocol_state_not_in_layer2 = pr;
+  console.log(`audit · protocol state: ${pr.uncovered.length} busy code ids layer 2 never read · query APIs read for ${pr.codes_checked}`);
+
+  // ── 8. prices: how much of what the cohort held (wallet-weeks) can be valued, and with what ──
+  const series = {}; const pairAssets = new Map();   // asset → set of other assets seen in a layer-2 pair with it
+  if (I) for (const t of layer2Targets().filter(t => t.kind === 'pair')) { const rows = readJsonl(`layer2/${t.key}.jsonl.gz`); const last = rows && rows.filter(r => r.data && r.data.assets).pop(); if (!last) continue; const as = last.data.assets.map(a => a[0]); for (const a of as) { const s = pairAssets.get(a) || new Set(); for (const b of as) if (b !== a) s.add(b); pairAssets.set(a, s); } }
+  const seriesOf = async (s) => { if (!(s in series)) { const r = await getJson(`${RAW}/tla-core/main/price-history/series/${encodeURIComponent(s)}.json`, 2, 20000); const days = r.ok && r.json.daily ? Object.keys(r.json.daily).sort() : []; series[s] = days.length ? { from: days[0], to: days[days.length - 1] } : null; } return series[s]; };
+  const pc = { denoms: 0, wallet_weeks: 0, by_class: {}, top: [] };
+  for (const [d, ww] of Object.entries(holding).sort((a, b) => b[1] - a[1])) { pc.denoms++; pc.wallet_weeks += ww;
+    const bareD = d.startsWith('cw20:') ? d.slice(5) : d; const s = sym(d); const code = d.startsWith('cw20:') ? codeOf(bareD) : null; const proto = code ? protoOf(code) : null; let cls, ser = null;
+    if (s) { ser = await seriesOf(s); cls = ser ? 'symbol + price series' : 'symbol, no price series'; }
+    else if (code && /LP token|amp compounder|LST/i.test(proto || '')) cls = /amp|LST/i.test(proto) ? 'amp / LST token — needs its exchange rate' : 'LP token — value = pool share (layer 2)';
+    else if (pairAssets.has(bareD) && [...pairAssets.get(bareD)].some(x => x === 'uluna' || sym(x.startsWith('terra1') ? 'cw20:' + x : x))) cls = 'no symbol — priceable from a layer-2 pool';
+    else cls = 'unpriced';
+    const c = pc.by_class[cls] || (pc.by_class[cls] = { denoms: 0, wallet_weeks: 0 }); c.denoms++; c.wallet_weeks += ww;
+    if (pc.top.length < 40) pc.top.push({ denom: d.slice(0, 90), symbol: s, code, protocol: proto, wallet_weeks: ww, class: cls, series: ser }); }
+  for (const c of Object.values(pc.by_class)) c.share_pct = pc.wallet_weeks ? +(100 * c.wallet_weeks / pc.wallet_weeks).toFixed(1) : null;
+  pc.resolver = resolve ? `platform-crons/lib/denom-symbol.js (${resolve.size} catalog symbols)` : 'NOT loaded — every denom counted as unresolved';
+  S.prices = pc;
+  const unval = Object.entries(pc.by_class).filter(([k]) => k !== 'symbol + price series').reduce((x, [, v]) => x + v.wallet_weeks, 0);
+  if (unval) gaps.push({ id: 'prices', severity: 'medium', node: false, what: `${pc.wallet_weeks ? (100 * unval / pc.wallet_weeks).toFixed(1) : '?'} % of wallet-weeks held are in tokens without a direct price series (LP / amp / unlisted) — see prices.by_class` });
+  console.log(`audit · prices: ${pc.denoms} denoms held · ${Object.entries(pc.by_class).map(([k, v]) => `${k} ${v.share_pct}%`).join(' · ')}`);
+
+  if (pr.uncovered.some(r => /Eris \/ TLA|LST|hub|BackBone/i.test(r.protocol || ''))) gaps.push({ id: 'layer2-tla-lst', severity: 'high', node: true, what: 'TLA (ve3 compounding / staking / gauges / vAMP) and LST hub state are not in layer 2 — needed to value amp positions before the dex state-history (epoch 97)' });
+  out.gaps = gaps; out.summary = gaps.map(g => `[${g.severity}${g.node ? ' · needs the node' : ''}] ${g.id}: ${g.what}`);
+
+  // ── write: full (private) + counts only (public, guarded: no cohort wallet may appear) ──
+  writeJson(`audit/${DAY}.json`, out); commitPush(`audit ${DAY}: ${gaps.length} gaps`);
+  const pub = JSON.parse(JSON.stringify(out)); pub.note = 'Deep-history backfill audit — COUNTS ONLY: no wallet is named (checked before writing). The full report is in the private archive.';
+  const txt = JSON.stringify(pub, null, 1); const leak = (txt.match(/terra1[02-9ac-hj-np-z]{38}(?![02-9ac-hj-np-z])/g) || []).filter(a => cohortSet.has(a));
+  if (leak.length) { console.log(`audit: the public copy would name ${leak.length} cohort wallet(s) — NOT written`); process.exitCode = 1; }
+  else if (process.env.CORE_OUT) { fs.mkdirSync(process.env.CORE_OUT, { recursive: true }); fs.writeFileSync(path.join(process.env.CORE_OUT, 'audit.json'), txt + '\n'); }
+  console.log('audit · GAPS:'); for (const s of out.summary) console.log('  ' + s); if (!gaps.length) console.log('  none — the archive holds everything the derive needs');
+}
+
+if (!RPCS.length && !['cohort', 'inventory', 'flows', 'audit'].includes(MODE)) { console.error('ARCHIVE_RPC not set'); process.exit(1); }
 if (!T) console.log('note: cosmjs-types not installed — messages will not be decoded (events are still kept)');
-const run = { timing, cohort, layer1, inventory, layer2, layer3, flows: flowsMode }[MODE]; if (!run) { console.error('unknown MODE ' + MODE); process.exit(1); }
+const run = { timing, cohort, layer1, inventory, layer2, layer3, flows: flowsMode, audit }[MODE]; if (!run) { console.error('unknown MODE ' + MODE); process.exit(1); }
 await run();
