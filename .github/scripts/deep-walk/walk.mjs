@@ -25,7 +25,7 @@
 // sequences are dropped. The log prints COUNTS ONLY (this Action's log is public) — never a wallet, a hash or an amount.
 import fs from 'fs'; import path from 'path'; import zlib from 'zlib'; import { execSync } from 'child_process'; import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const VERSION = 'deep-walk-1.5';   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
+const VERSION = 'deep-walk-1.6';   // 1.6 (2026-09-30): contract reads get their own floor (the 1.5 run: bank reads from 2023-03, every older contract read "panic: unknown request") — found on the earliest-starting contract that answers, with a 7-point spread printed; "unknown request" is no longer read as the contract refusing (the 1.5 marks are cleared)   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
 const MODE = process.env.MODE || 'timing';
 const RPCS = [process.env.ARCHIVE_RPC, process.env.RPC_URL].map(s => String(s || '').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '')).filter(Boolean);
 const LCD = String(process.env.ARCHIVE_LCD || process.env.LCD || 'https://terra-lcd.publicnode.com').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '');
@@ -130,10 +130,21 @@ async function chooseRoute(label, samples, weeks) {
       while (hi - lo > 2000) { const mid = Math.floor((lo + hi) / 2); const r = await bankVia(rt, TREASURY, mid); if (r.ok) hi = mid; else if (PRUNED.test(r.body || '')) lo = mid; else { odd = r; break; } }
       if (odd) { console.log(`route test (${label}) · ${rt}: the state-floor search hit an unexpected answer — ${say(odd)}`); continue; }
       floor = hi; }
-    const recent = weeks[weeks.length - 1]; const tried = []; let hit = !samples.length;
-    for (const t of samples.slice(0, 8)) { const r = await smartVia(rt, t.addr, t.q, recent.h); tried.push(`${t.key}: ${say(r)}`.slice(0, 140)); if (r.ok) { hit = true; break; } }
+    const recent = weeks[weeks.length - 1]; const tried = []; const oks = [];
+    for (const t of samples.slice(0, 8)) { const r = await smartVia(rt, t.addr, t.q, recent.h); tried.push(`${t.key}: ${say(r)}`.slice(0, 140)); if (r.ok) oks.push(t); }
     console.log(`route test (${label}) · ${rt}: state kept from block ${floor.toLocaleString('en-US')} (${dateOf(floor)}) — ${floor > 2 ? 'older weeks are not readable on this node' : 'full history'}${tried.length ? ' · contract reads at the newest week: ' + tried.join(' | ') : ''}`);
-    if (hit) { ROUTE = rt; console.log(`route: ${rt}`); return { floor }; }
+    if (samples.length && !oks.length) continue;
+    // 1.6: bank reads going back further than contract reads (the 1.5 run: bank from 2023-03, every contract read below "recent" said
+    // "panic: unknown request"). So contract reads get their OWN floor, found on the earliest-starting contract that answered.
+    let wasmFloor = floor;
+    if (oks.length) { const t = oks.sort((a, b) => (a.from_h || 0) - (b.from_h || 0))[0]; const good = async (h) => (await smartVia(rt, t.addr, t.q, h)).ok;
+      const start = Math.max(floor, (t.from_h || 0) + 20000);
+      const spread = []; for (let k = 0; k <= 6; k++) { const h = Math.floor(start + (recent.h - start) * k / 6); const r = await smartVia(rt, t.addr, t.q, h); spread.push(`${dateOf(h).replace('week of ', '')}: ${r.ok ? 'ok' : say(r).slice(0, 60)}`); }
+      console.log(`route test (${label}) · ${rt}: ${t.key} across its history → ${spread.join(' | ')}`);
+      if (!(await good(start))) { let lo = start, hi = recent.h; while (hi - lo > 50000) { const mid = Math.floor((lo + hi) / 2); if (await good(mid)) hi = mid; else lo = mid; } wasmFloor = hi; }
+      else wasmFloor = floor;
+      console.log(`route test (${label}) · ${rt}: contract reads work from block ${wasmFloor.toLocaleString('en-US')} (${dateOf(wasmFloor)})`); }
+    ROUTE = rt; console.log(`route: ${rt}`); return { floor, wasmFloor };
   }
   console.log('route: no route answered — stopping (nothing written, no next run). Read the route test lines above.');
   try { fs.writeFileSync(`${MODE}_stop.txt`, '1'); } catch { } process.exitCode = 1; return null;
@@ -378,6 +389,14 @@ function layer2Targets() {
 async function layer2() {
   const weeks = await boundaries(); console.log(`layer2: ${weeks.length} weekly boundaries resolved (${weeks[0] && weeks[0].d} → ${weeks[weeks.length - 1] && weeks[weeks.length - 1].d})`);
   const T = layer2Targets(); const man = readJson('layer2/_manifest.json', { version: VERSION, targets: {} });
+  if (!man.fixed_16) {   // 1.5 marked targets "not supported" on the node's "unknown request" — clear those marks and their rows
+    let cleared = 0; for (const [key, m] of Object.entries(man.targets)) { const f = A(`layer2/${key}.jsonl.gz`); let rows = [];
+      try { rows = zlib.gunzipSync(fs.readFileSync(f)).toString('utf8').split('\n').filter(Boolean).map(l => JSON.parse(l)); } catch { }
+      const bad = rows.filter(r => r.unsupported && /unknown request/i.test(r.unsupported)); if (!bad.length && !m.unsupported_n) continue;
+      for (const r of bad) delete m.done[r.d]; delete m.unsupported_n; cleared += bad.length;
+      const keep = rows.filter(r => !(r.unsupported && /unknown request/i.test(r.unsupported)));
+      if (keep.length) fs.writeFileSync(f, zlib.gzipSync(keep.map(r => JSON.stringify(r)).join('\n') + '\n')); else { try { fs.unlinkSync(f); } catch { } } }
+    man.fixed_16 = true; if (cleared) console.log(`layer2: cleared ${cleared} rows the 1.5 run wrongly marked "not supported"`); }
   const tasks = []; for (const t of T) { const m = man.targets[t.key] || (man.targets[t.key] = { kind: t.kind, done: {} }); if ((m.unsupported_n || 0) >= 3) continue; for (const w of weeks) if (w.h >= t.from_h - 120000 && !m.done[w.d]) tasks.push([t, w]); }
   console.log(`layer2: ${T.length} targets (${Object.entries(T.reduce((o, t) => (o[t.kind] = (o[t.kind] || 0) + 1, o), {})).map(([k, v]) => k + ' ' + v).join(' · ')}) · ${tasks.length} reads to do · concurrency ${CONC}`);
   let below = 0, unsupported = 0;
@@ -385,9 +404,9 @@ async function layer2() {
     const per = new Map(); for (const [x] of tasks) per.set(x, (per.get(x) || 0) + 1);
     const samples = [...per.entries()].sort((a, b) => b[1] - a[1]).map(([x]) => x);
     const pick = await chooseRoute('layer2', samples, weeks); if (!pick) return;
-    man.state_floor = { route: ROUTE, block: pick.floor, checked_at: new Date().toISOString() };
-    const keep = tasks.filter(([, w]) => w.h >= pick.floor); below = tasks.length - keep.length; tasks.length = 0; tasks.push(...keep);
-    if (below) console.log(`layer2: ${below} reads are older than the node's state (skipped — not retried; they need another source)`); }
+    man.state_floor = { route: ROUTE, block: pick.floor, contract_reads_from: pick.wasmFloor, checked_at: new Date().toISOString() };
+    const keep = tasks.filter(([, w]) => w.h >= pick.wasmFloor); below = tasks.length - keep.length; tasks.length = 0; tasks.push(...keep);
+    if (below) console.log(`layer2: ${below} reads are older than the contract state this node can read (skipped — not retried; they need another source)`); }
   const brk = breaker(); let halted = false;
   const buf = new Map(); let n = 0, ok = 0, absent = 0, bad = 0, lastCommit = Date.now();
   const flush = () => { for (const [key, rows] of buf) { const f = `layer2/${key}.jsonl.gz`; let old = ''; try { old = zlib.gunzipSync(fs.readFileSync(A(f))).toString('utf8'); } catch { } fs.mkdirSync(path.dirname(A(f)), { recursive: true }); fs.writeFileSync(A(f), zlib.gzipSync(old + rows.map(r => JSON.stringify(r)).join('\n') + '\n')); } buf.clear(); man.updated_at = new Date().toISOString(); writeJson('layer2/_manifest.json', man); };
@@ -396,7 +415,7 @@ async function layer2() {
     const r = await smartAt(t.addr, t.q, w.h); n++;
     let row; if (r.ok) { ok++; let data = r.json && r.json.data; if (t.kind === 'pair' && data) data = { assets: (data.assets || []).map(a => [a.info && (a.info.native_token ? a.info.native_token.denom : a.info.token && a.info.token.contract_addr), a.amount]), total_share: data.total_share }; row = { d: w.d, h: w.h, data }; }
     else if (/no such contract|not found/i.test(r.body || '')) { absent++; row = { d: w.d, h: w.h, absent: true }; }
-    else if (/unknown variant|Error parsing into type|unknown request/i.test(r.body || '')) { unsupported++; row = { d: w.d, h: w.h, unsupported: String(r.body).slice(0, 120) }; }   // this contract does not answer this question — recorded once per week, not retried
+    else if (/unknown variant|Error parsing into type/i.test(r.body || '')) { unsupported++; row = { d: w.d, h: w.h, unsupported: String(r.body).slice(0, 120) }; }   // this contract does not answer this question — recorded once per week, not retried
     else { bad++; if (brk.bad(r) && !halted) { halted = true; console.log('layer2: 150 failures in a row — stopping this run (no next run)'); try { fs.writeFileSync('layer2_stop.txt', '1'); } catch { } process.exitCode = 1; } return; }   // not recorded as done — retried next run
     brk.ok();
     if (row.unsupported) man.targets[t.key].unsupported_n = (man.targets[t.key].unsupported_n || 0) + 1;   // 3 refusals → the target is skipped from then on
