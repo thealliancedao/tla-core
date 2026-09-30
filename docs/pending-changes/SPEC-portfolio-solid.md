@@ -5,6 +5,15 @@ the liquidation risk, how much SOLID they have borrowed, and any P&L aspects we 
 in `docs/queries.md` §19 and `platform-crons/config/contracts.js` `SOLID` (found by solid-probe 1.3, fixture
 `docs/fixtures/2026-09-28/solid-probe.json`).
 
+**Status 2026-09-30: the card is LIVE (member-portfolio 4.1 → 4.1.2, platform-crons lib/solid-reader 1.0.1, member-data 1.6.0 — Solid for
+28 members).** Resolved since the draft: the oracle unit (USD = raw × price / 1e6 — wBTC 828.44 × 100 = $82,844, the catalog's $60.5K is
+stale); the census (probe 1.4: 219 collateral rows, 551 borrower rows, 202 with a loan; limit reproduced within 1 % on 114/114); the
+liquidation vocabulary (custody liquidate_collateral → queue execute_bid → market repay_stable; 1,655 liquidations; 190/190 samples tie);
+wrapper decimals (wBTC 8 / wETH 18 though token_info says 6); the band `debt_no_collateral` (59 wallets, 29 from one mass liquidation at
+22,730,546) reads "SOLID still owed · no collateral left". Still open: per-wallet queue bids, borrow/repay fee attributes (0.5 % mint fee
+seen), wrapper bond/redeem events, interest (none observed). The Solid HISTORY / P&L (section below) comes from events in the deep-history
+derive — the cohort's txs are already in the private archive (SPEC-deep-history §0).
+
 ## What a member sees (page: member-portfolio, a "Solid" card beside Credia)
 
 | Line | Source | Notes |
@@ -44,8 +53,8 @@ A wallet with no Solid position gets no card (not "$0").
   - what the borrowed SOLID was used for is out of scope (it leaves Solid).
 - **Daily series** for the deep-history cohort (SPEC-deep-history): collateral, debt, health per day from the archive at height.
 
-## Open items (resolve before numbers go on the page)
-1. **Oracle unit**: oracle v2 read wBTC 828.44 (`uusd` base) vs the catalog's WBTC.axl ≈ $60.5K. Health does not need it (borrow_limit is
+## Open items (resolve before numbers go on the page) — items 1, 2 and 4 RESOLVED 2026-09-28 (see Status)
+1. **Oracle unit** (resolved): oracle v2 read wBTC 828.44 (`uusd` base) vs the catalog's WBTC.axl ≈ $60.5K. Health does not need it (borrow_limit is
    Solid's own number); any liquidation PRICE we print uses the catalog, labelled.
 2. **Liquidation events** — see above.
 3. **Interest**: none observed; mint_fee on borrow. Confirm from the market config / docs before calling the loan interest-free.

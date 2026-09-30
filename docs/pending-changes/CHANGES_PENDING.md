@@ -1,5 +1,54 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER 2026-09-30 (e) — SESSION CLOSE: the backfill is done; the path, the pivots, the lessons (read first)
+
+**Where things stand.** The deep-history backfill ran end to end (docs/changelogs/deep-walk-log.md, SPEC-deep-history §0): 1,159 cohort
+wallets · every tx since 2022 (605K, no memos) · weekly protocol state 2023-10-23 → now · monthly balances 2023-04 → now · 1.57M rebuilt
+balance changes, 94.9 % exact against the chain. Nothing on the live page has changed from it yet (owner: one round of page edits after the
+derive). Member Portfolio 4.1.2 + the Solid card are live; history-series 1.2.0, solid-reader 1.0.1, pnl 1.3.1 are on main.
+
+**Owed uploads (check origin/main before assuming):** aDAO-links-site **index.html 4.42** (CoinGecko refusal → prices from our own
+network-and-prices seed; the fix for the 2026-09-29 "page full of errors") — NOT on main at 2026-09-30 09:10 UTC. This session-close batch
+(changelogs, knowledge docs, queries.md, DATA-MAP, CRON-FLEET, REPO-CATALOG, specs; help-agent 1.17.1).
+
+**Held (not for upload):** access gate member-portfolio 4.2 + lib/address-picker.js + gate-portfolio-pnl.mjs; address-catalog identity
+1.4.0. Returns as "facts + settings" (docs/curated/portfolio-access.json) after the derive; the owner still owes the default rule.
+
+**The path this session took (2026-09-28 → 30), in one screen:**
+1. Portfolio walk → 4.0 (one ECharts chart, NFTs off by default, aDAO at backing, tokens per trip) → 4.1 Solid card + walk-back fixes
+   (echarts CDN, alert board = pressing only, sent-away group, footer disclaimer) → 4.1.1 debt with no collateral.
+2. Access rules → gate built → **pivot: capture wide, show by settings** (storage measured: 105 B/wallet/day is fine; 15 KB snapshots are
+   not). Cohort = aDAO holders + Pixel Lions staked + Burning Lion holders + auto-max lock VP > 100K.
+3. Solid probe 1.4 (census, liquidation vocabulary, 1,655 liquidations, wrapper decimals) → solid-reader 1.0.1. Credia probe 1.1
+   (`portfolios` census; events carry full positions; tribute hypothesis not supported).
+4. **Privacy rules** (SPEC §8b) — the owner's reason: this must never become ammo against members.
+5. Private archive repo + secrets → Deep Walk 1.0 (timing, cohort, layer1 — 605K txs in 31 min) → 1.1 inventory (4,601 contracts) → owner
+   labelled unknown codes → 1.2 layer2 (run #6 overnight).
+6. GMC report ($144 shown for a $33K holder) → page 4.1.2 + history-series 1.2.0 (unpriced = blank).
+7. Audit → pnl 1.3.1 (daily). Owner instruction: **no live-page changes until the derive; then one round.**
+8. Home page errors → not tampering; CoinGecko rate limit shows as CORS → index 4.42.
+9. **The layer2 night:** a wrong "nothing saved" from the last run's log → 1.4 (RPC route, route tests, stop file, breaker) → 1.5 (balance
+   floor; misread "unknown request") → 1.6 (contract floor 2023-10-23) → a real-inventory mock proved run #6 had saved ~66.9K; layer2 was
+   done. Node hosting quote considered and rejected (a full node adds no history).
+10. layer3 (44,324 checkpoints, 0 failed) → flows (94.9 % exact) → handover.
+
+**Lessons → rules (add to the LAWS):**
+- Read the FIRST run's log (or the manifests) before judging a chain; compare "to do" with the expected total.
+- Step 0 of any archive job measures the node's state floors, not only its speed.
+- Deterministic errors are never retried; every run prints the top failure messages; a breaker + stop file end a dead chain.
+- Test an error's meaning at several heights before reclassifying it.
+- Mocks run against the REAL inventory / fixtures and model the provider's failure modes.
+- Every external call has an own-data fallback (CoinGecko → network-and-prices).
+- Unpriced = null, never 0 (again).
+- A handover updates EVERY location — changelogs of each repo, knowledge docs the bot reads, specs, DATA-MAP, CRON-FLEET, REPO-CATALOG,
+  PROJECT_KNOWLEDGE, memory — with the path, the pivots and why. Plan it before the context runs out.
+- After each upload, diff local vs origin/main and name what is missing; grep public ZIPs for private or planning content.
+
+**Next build steps:** (1) classify the 5.1 % flows drift and re-anchor balances monthly on layer3; (2) net deposits under §8b; (3) weekly
+position values (layer1 × layer2 × price-history; pre-2023-10 events only); (4) Credia / Solid history from events; (5) public per-wallet
+summaries; (6) THE page-edit round (+ CoinGecko fully off, astro.png, the Burning Lions activity.json link); (7) forward tx watcher on
+neutral endpoints, newcomer break backfill, access-gate rework, Credia reader → `portfolios`, sparse clone for Actions.
+
 ## OPEN LEDGER 2026-09-28 (d) — design turn: capture wide, show by a setting; Solid full census (read first)
 
 - **Coverage gate ON HOLD** (address-catalog 1.4.0 identity.js + member-portfolio 4.2 built, gated 127/127 and 10/10, NOT delivered):

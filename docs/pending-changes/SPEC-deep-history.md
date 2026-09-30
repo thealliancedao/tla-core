@@ -24,6 +24,23 @@ from the stored raw reads (repeatable, no node needed); (5) forward tracking. Do
 (2023-10-23). Everything earlier is rebuilt from layer-1 events (marked "events only"). Plan as if the node can vanish. Next: drift classification (the 5.1 %), monthly re-anchoring on layer3, net deposits (§8b),
 weekly position values, Credia/Solid histories from events, public summary products, then ONE page-edit round.
 
+
+### 0.1 How we got here — the path and the pivots (so the next session does not repeat them)
+- **Gate first, then capture wide (2026-09-28).** A whole-page access gate was built (address-catalog 1.4.0 + member-portfolio 4.2, gated)
+  and put ON HOLD the same day: the owner chose to capture everyone the archive can afford and decide who the page SHOWS with a settings
+  file over per-wallet facts. The default rule is still his to set.
+- **Private archive (2026-09-29).** Raw data would have bloated public tla-core (1.7 GB, 174K commits) and exposed full tx trails → a
+  private repo, Actions in tla-core writing to it, only summaries public (§8a/§8b).
+- **Privacy rules (2026-09-28)** came from the owner's worry that this could become "ammo" against members (tax authorities) — §8b.
+- **Don't touch the live page until the derive is done (2026-09-29)** — then ONE round of page edits.
+- **The layer2 night (2026-09-29 → 30).** Run #6 saved ~66.9K weekly states; #7–#9 retried 8,846 reads the node cannot serve. Only #9's log
+  was seen at first → a wrong "nothing saved" diagnosis → walk 1.4 (RPC route, route test, stop file, breaker); 1.5 found the balance
+  floor but misread "unknown request" as a contract refusal; 1.6 found the contract floor (2023-10-23) and a real-inventory mock proved #6
+  had succeeded. Lessons: read the FIRST run's log and compare "to do" with the expected total; measure the node's floors in step 0;
+  never retry deterministic errors; print failure reasons.
+- **Events-first for the old years.** No hosted node adds pre-2023 state (a "full node" starts from a recent snapshot); history before the
+  floors is rebuilt from layer-1 events, labelled "events only".
+
 ## 1. Who is captured, who is shown (owner, 2026-09-28 — REVISED: capture wide, show by a setting)
 **Capture is decided by cost, display by a settings file.** Storage is not the limit when data is kept compact (measured: the daily
 series is 105 bytes per wallet per day ≈ 45 MB/yr for 1,155 wallets; full daily snapshots at ~15 KB per wallet per day are what would
