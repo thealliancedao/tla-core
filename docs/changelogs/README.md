@@ -15,6 +15,7 @@ The old-repo copies are ABANDONED as of this date — append only here.
 | catalog-log.md | token catalog page |
 | app-log.md | app.html (Ally, the phone app) |
 | liondao-log.md | every /liondao/ page + lib/home-tiles.js (the ally's home engine) — added 2026-09-26 |
+| deep-walk-log.md | tla-core Actions deep-walk / credia-probe / solid-probe — the deep-history backfill and the protocol probes — added 2026-09-30 |
 
 Runbooks live in docs/runbooks/ (RUNBOOK-add-a-collection.md).
 

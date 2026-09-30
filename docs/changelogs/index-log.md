@@ -1,5 +1,19 @@
 # Index Page Changelog
 
+## index 4.41 → 4.42 — 2026-09-29 — a refused CoinGecko call no longer blanks the dashboard
+
+- Symptom (owner, 2026-09-29): the home page "full of errors" — tiles stuck on spinners or "Error" (DAO Treasury, DAO TLA VP, backing in
+  ampLUNA / LUNA, unclaimed rewards $), marketplace "$0 now". Cause: CoinGecko's keyless API rate-limits per visitor and a refused request
+  arrives WITHOUT a CORS header, so the browser reports it as a **CORS error**; the live pass treated the failed price call as fatal
+  ("Primary API requests failed") and gave up on the whole block. Nothing was tampered with — the rest of the log was the X embed's 429,
+  today's tla-snapshot file not yet written, a never-existing Burning Lions activity.json, a missing astro.png and sw.js repeating each
+  failure.
+- Fix: `paintFromCron` is kept as a promise (`window.__cronPaint`); when CoinGecko refuses or fails, the live pass waits for it (≤ 5 s) and
+  uses the price seed it already builds from OUR `tla-core/network-and-prices` feed. The marketplace uses that seed before calling CoinGecko
+  at all. Browser-tested with CoinGecko returning 429 on every call: the live pass completes, 10 tokens priced (LUNA $0.0507, bLUNA $0.0898).
+- Status: delivered as `site-index-4.42.zip` — **not on main as of 2026-09-30** (upload owed). Still to do in the page-edit round: take
+  CoinGecko off the page entirely (network-and-prices only), the astro.png 404, the Burning Lions activity.json link.
+
 ## ampcapa-tool Rev 2.3 → 2.4 — 2026-09-28 — CAPA in dollars
 
 - A "CAPA price" card (org token catalog — the TLA price, CoinGecko fallback) with the ampCAPA and ampLP prices it implies; a USD column

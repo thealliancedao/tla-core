@@ -1,5 +1,23 @@
 # cron-member-data — changelog
 
+## 1.5.0 → 1.6.0 · history-series 1.0 → 1.2.0 · lib/solid-reader 1.0.0 → 1.0.1 — 2026-09-28 / 29 — the portfolio's series, Solid, blank days
+
+- **member-data 1.5.0** — `history-series.js` 1.0 (new): one compact daily series per wallet (≈ 105 bytes per wallet per day — the storage
+  measurement behind "capture wide": full daily snapshots at ~15 KB per wallet per day are what would break the repo). Mock H1–H6 19/19,
+  under 200 MB heap.
+- **history-series 1.1.0** — the CAPA-supply hole (08-17 → 08-23) no longer drops the DAO stake from the trend (carried across, flag cuS=2).
+- **member-data 1.6.0** — `lib/solid-reader.js` 1.0.0 (new): the Solid census — overseer all_collaterals, market borrower_infos, every
+  custody's borrowers, oracle v2, whitelist; paging stops on an EMPTY page (not a short one). `tla-participants.js` attachSolid (`SOLID=0`
+  turns it off). Live: Solid for 28 members.
+- **solid-reader 1.0.1** — bridged wrappers (wBTC, wETH) report 6 decimals in token_info but count in the WRAPPED token's units (8 / 18):
+  token counts now use the wrapped token's decimals (USD was never affected — USD = raw × price / 1e6). `hasCollateral`; a loan with no
+  collateral left = band **`debt_no_collateral`** (59 wallets; 29 from one mass liquidation at height 22,730,546); health null without
+  collateral. Gate `mock-run-solid.js` 13/13 (S1 tolerance 3 %, S8 full census 114/114 within 1 %, S8b wrappers, S8c no-collateral, S9
+  liquidation vocabulary 190/190).
+- **history-series 1.2.0** (2026-09-29, the GMC report) — a day where ANY LP position has no price is written blank (lp and p = null), never
+  0: the GMC BTC Backing Treasury's history showed zeros under a $33K amplified position. A version change rebuilds every wallet's series.
+  Mock-run-history 21/21 (H8 = the GMC case).
+
 ## 1.3.0 → 1.4.1 — 2026-09-27 / 28 — Credia for every participant · custody in every total · single-asset gauges valued
 
 - **1.4.1** (capture-engine 1.2.1) — single-asset cw20 gauges (wBTC.creda.a) were looked up only by LP-token address → every holder

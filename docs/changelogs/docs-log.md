@@ -1,6 +1,26 @@
 # docs / ecosystem-knowledge — changelog
 
 
+## 2026-09-29 → 30 — deep history ran; Solid, Credia and the archive node written down; the session-close pass
+
+- `docs/deep-history/contracts-seen.json` (the inventory Action — every contract the cohort touched, no wallets) and
+  `docs/deep-history/protocol-labels.json` (108 code ids = 95.6 % of activity; owner-labelled URA DEX 2961, Knowhere 136, 1723 = 2022
+  Terraswap-era pairs).
+- `docs/fixtures/2026-09-28/solid-liquidations.json` (solid-probe 1.4), `docs/fixtures/2026-09-29/credia-probe.json` (credia-probe 1.1).
+- `docs/queries.md` §19 Solid gotchas (oracle unit settled, wrapper decimals, liquidation vocabulary + counts, debt with no collateral,
+  paging), NEW §20 Credia `portfolios` census + event stream, NEW §21 reading past state (the two routes, the archive node's floors, the
+  error messages).
+- `docs/ecosystem-knowledge/member-portfolio.md` (4.1.2: value chart, Solid card live, unpriced = blank, deep history status + privacy
+  rules, three new diagnosis rows), `solid-protocol.md` (what the chain showed), `credia.md` + `credia.facts.json` (census; tribute
+  hypothesis NOT supported).
+- `docs/agent/DATA-MAP.md` — Deep history section (raw is private; what is public; coverage limits; privacy rules).
+- `docs/CRON-FLEET.md` (the three new dispatch-only Actions; archive clone cost; forward watcher on neutral endpoints),
+  `docs/REPO-CATALOG.md` (the private tla-archive repo).
+- `docs/pending-changes/SPEC-deep-history.md` §0 status + §0.1 the path and pivots; `SPEC-portfolio-solid.md` status (card live, items
+  resolved); `CHANGES_PENDING.md` OPEN LEDGER (e) session close; changelogs: portfolio-log (4.0 → 4.1.2, 4.2 held), index-log (4.42),
+  cron-member-data-log, cron-tla-flows-log, help-log (1.17.1), NEW deep-walk-log.md.
+
+
 ## 2026-09-28 — Member Portfolio docs: Solid registered, custodians, deep-history + Solid specs, the bot's portfolio chapter
 
 - `docs/curated/known_contracts.json` +30: Solid (Capapult CDP — overseer, market, liquidation queue, collector, oracles v1/v2, 8

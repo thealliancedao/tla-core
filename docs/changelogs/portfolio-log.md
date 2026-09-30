@@ -2,6 +2,43 @@
 
 ---
 
+## Rev 4.0 → 4.1.2 (+ 4.2 HELD) — 2026-09-28 / 29 — one chart, the Solid card, honest totals, the GMC fix
+
+Owner walked the 3.8 page (2026-09-28) and asked for: one chart instead of two partial ones, liquid tokens in value and trends, a "how
+you've done" that agrees with its own total, an alert panel, the DAODAO picture, logos, readable trips, locks with their age. Decisions:
+ECharts; NFTs OFF by default; aDAO counted at the backing of UNBROKEN NFTs, the floor toggle replaces the backing (never both); "how you've
+done" = everything combined with each source switchable; "no mockup — push to production".
+
+- **4.0** — `lib/portfolio-pnl.js` 2.0.0, `lib/portfolio-chart.js` 1.0.0 (new, ECharts), `lib/token-logos.js` 1.0.0 (new). One value chart
+  over every source; trips read "USD ↔ tokens"; unpriced shows "—", never $0.00; locks show their age. Found on the way: the 08-17 → 08-23
+  dip in the owner's trend was a hole in the CAPA supply history (the DAO stake is now carried across it); bribes were counted two ways
+  ($4.1K rollup vs $6.8K P&L build) — one number now, the build's. Gate gate-portfolio-pnl 111/111.
+- **4.1** — the **Solid card** (SPEC-portfolio-solid): collateral LOCKED vs deposited-not-locked ("idle collateral" warning), SOLID owed,
+  health = the protocol's own borrow limit ÷ loan, % of limit used, the liquidation line (a basket fall for a two-collateral loan — never an
+  invented single price). Walk-back fixes the same day (owner: "The alert bord is ment to alert you of things that are pressing not LP that
+  was sent out of wallet months ago" · "the chart isnt loading" · equal tile heights · explain the tracking requirements · a footer
+  disclaimer): the chart loader goes jsdelivr → unpkg → cdnjs 5.4.3 (**cdnjs never had echarts 5.5.1 — why the chart did not load**); an LP
+  sent away alerts only within 14 days and then sits in a folded "sent away · not counted" group (portfolio-pnl 2.0.1); equal-height cards;
+  a "why isn't this tracked" popup + address-picker hint; `lib/site-footer.js` 3.9 adds tax/accounting and no-liability clauses on every
+  page (plain-language protection, not a lawyer's review); dweb.link / nftstorage.link removed from the IPFS gateways (flagged by
+  Bitdefender); the `/null` allies fetch removed. `portfolio-chart.js` 1.1.0. Gate 119/119.
+- **4.1.1** — a wallet that still OWES SOLID with no collateral left (liquidated to zero — 59 wallets, band `debt_no_collateral` from
+  solid-reader 1.0.1) reads "SOLID still owed · no collateral left" + an alert, never "no loan". Why the debt remains: the collateral did not
+  cover the whole loan; the borrower still holds the SOLID they borrowed (not a double payment).
+- **4.1.2** (2026-09-29) — the GMC report: the page showed **$144** net worth for a wallet with **$33K** in an amplified single-asset LP
+  (wBTC.creda.a). The single-asset reprice read a field that does not exist on that row; fixed in `repriceSummary` (the pool price × the
+  row's own balance, kept only when it agrees with the captured estimate within 3×). Verified in a browser: **$33.7K**. The trend's zero days
+  were fixed upstream (member-data history-series 1.2.0: unpriced days are blank, not 0).
+- **4.2 — HELD, not shipped:** a whole-page access gate (owner's rules then: aDAO staked ≥ 90 d; Pixel Lions staked ≥ 90 d + a DAODAO
+  handle; TLA max lock ≥ 90 d + a handle; name-change history) + `lib/address-picker.js`, gated 127/127. The owner then chose to CAPTURE
+  WIDE and decide who the page shows with a settings file over per-wallet facts (SPEC-deep-history §1) — the gate returns as that rework
+  after the deep-history backfill. The default rule is still the owner's call.
+
+Next for this page: ONE round of page edits once the deep-history derive is done (weekly points back to 2022 for the cohort, clickable
+chart points, net deposits, Credia/Solid history from events) — until then the live page is not changed (owner, 2026-09-29).
+
+---
+
 ## Rev 3.0 → 3.8 — 2026-09-27 / 28 — the Member Portfolio rebuilt: P&L two ways, every card honest (Milestone A step 3, in progress)
 
 The page was rebuilt on build-pnl v3 (tla-flows) and a set of shared libs (`lib/portfolio-pnl.js` 1.0.0 → 1.5.0, `lib/denoms.js`,

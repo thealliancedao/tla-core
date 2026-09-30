@@ -1,6 +1,16 @@
 # Help Page Changelog
 
 
+## v1.17.1 — 2026-09-30 — the bot knows what went live and what the backfill captured
+
+- The portfolio rule no longer calls the Solid card "planned": it is live (member-portfolio 4.1 → 4.1.2) — health, % of limit, liquidation
+  line, and "SOLID still owed · no collateral left" (why the debt remains, never "double pay").
+- Deep history: the backfill RAN (1,159 wallets); the raw archive is PRIVATE and not readable by the bot; the per-wallet history arrives with
+  the next portfolio update — the bot says so and never estimates it. Privacy rules restated (no identity guessing).
+- Grounding already covers the new material through its existing sources (member-portfolio.md, solid-protocol.md, credia.md, DATA-MAP,
+  SPEC-deep-history, SPEC-portfolio-solid, CHANGES_PENDING, CRON-FLEET, REPO-CATALOG) — no new corpus entries needed.
+
+
 ## v1.17.0 — 2026-09-28 — the Member Portfolio: answers, diagnosis, and what to report
 
 - Owner: "the bot should answer questions about their portfolio or others', who to follow or copy for a strategy, what we show and where
