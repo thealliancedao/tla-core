@@ -61,6 +61,19 @@ Geo-blocked (browse-only/redirect): US · CA · UK · AU · NZ · JP · SG.
   for the same collection in different components — capture from chain, not
   from marketplace UI copy.
 
+## What the chain showed (probes 1.3 / 1.4, 2026-09-28) — how Solid actually behaves `[solid.chain_2026_09]`
+- **Units:** oracle v2 prices are USD per 6-decimal unit (USD = raw × price / 1e6; wBTC 828.44 × 100 = $82,844). The bridged wrappers wBTC /
+  wETH say 6 decimals in token_info but count in 8 / 18. wBNB has no oracle price.
+- **Census:** 219 wallets with collateral, 551 borrower records, 202 with a loan; custody borrowers: ampLUNA 162, bLUNA 89, LunaX 44, USDC 16,
+  wBTC 13, wETH 11, wSOL 4, wBNB 3. Total liabilities ≈ 46.6K SOLID. The protocol's borrow limit is reproducible within 1 %.
+- **Liquidations:** 1,655 on chain (LunaX 1,028 · ampLUNA 349 · bLUNA 250 · wBTC 14 · wETH 6 · wBNB 5 · wSOL 3). Custody
+  `liquidate_collateral` → queue `execute_bid` (collateral taken, SOLID repaid) → market `repay_stable`. Liquidators include flash-mint bots;
+  Warp automation jobs place queue bids.
+- **Debt left after liquidation:** 59 wallets owe SOLID with no collateral (29 from one mass liquidation at height 22,730,546). The unpaid part
+  is what the collateral did not cover; the borrower keeps the SOLID they minted — nothing is paid twice.
+- **LunaX (Stader) is switched off** as new collateral (owner, 2026-09-29); positions and history remain.
+- Mint fee 0.5 % (market `borrow_stable` carries `mint_fee`). Query shapes and events: tla-core docs/queries.md §19.
+
 ## CAPA distribution (whitepaper)
 10% staker airdrop · 20% lockdrop (7-day, 20% immediate / 80% + LP program
 at 6 months) · 15% team (4-year linear vest) · 10% SOLID LP providers ·

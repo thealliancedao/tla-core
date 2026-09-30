@@ -55,6 +55,18 @@ Three ways to read Credia, in order of authority:
 3. **Docs** — https://docs.creda.finance, source-available at
    github.com/credafinance/creda-docs.
 
+## What the chain showed (credia-probe 1.1, 2026-09-29)
+
+- **One census covers everyone:** the portfolio contract (code 3995) answers
+  `portfolios` with every user's position — 183 in 8 pages — in the same shape
+  as `portfolio{address}`.
+- **The events are the history:** every `creda-portfolio/*` event (supply,
+  withdraw, borrow, repay, transfer, change_emode, liquidate, flashloan)
+  carries the position's full snapshot, so a wallet's Credia history is
+  rebuilt from its transactions — no archive state reads needed.
+- 14 markets; 12,995 portfolio txs since height 18,251,767; 127 wallets;
+  51 liquidator txs. Query shapes: tla-core docs/queries.md §20.
+
 ## Why TLA Stats cares
 
 **The take-rate connection.** Credia lists the three TLA ampLP factory tokens
@@ -62,12 +74,12 @@ Three ways to read Credia, in order of authority:
 only Credia markets carrying a take rate: `{fixed: 0.02}`, 2% annually on
 supplied ampLP, roughly $150K posted at observation
 (`credia.take_rate.tla_amplp_observed`, mechanism in
-`credia.take_rate.mechanism`). Our **hypothesis — explicitly unconfirmed** —
-is that this take rate feeds the contract-initiated `add_bribe` tributes the
-old event capture was blind to (`credia.take_rate.tribute_hypothesis`). The
-test is mechanical: compare captured add_bribe sender addresses against
-Credia's contracts once bribe_capture data accumulates (first capture at the
-2026-07-19 epoch flip).
+`credia.take_rate.mechanism`). The old **hypothesis** — that this take rate feeds the contract-initiated
+`add_bribe` tributes — was tested on 2026-09-29 (credia-probe 1.1) and is
+**NOT supported**: the add_bribe seen next to Credia events is TLA's own weekly
+take-rate distribution (a `creda-portfolio/transfer` of wBTC.creda.a receipts
+to the take collector). Where Credia's 2 % ampLP take goes is still unseen
+(`credia.take_rate.tribute_hypothesis`).
 
 **The receipt token on the gauge.** Every Credia market deploys a per-asset
 cw20 proxy; receipts use the `vca` prefix (`credia.receipt_tokens`).

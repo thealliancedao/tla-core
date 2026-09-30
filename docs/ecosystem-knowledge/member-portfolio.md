@@ -1,6 +1,6 @@
 # The Member Portfolio — what it shows, where every number comes from, and how to tell right from wrong
 
-Page: https://thealliancedao.com/member-portfolio.html?wallet=<terra1…> (member-portfolio 3.8, 2026-09-28). Open to anyone for any
+Page: https://thealliancedao.com/member-portfolio.html?wallet=<terra1…> (member-portfolio 4.1.2, 2026-09-29). Open to anyone for any
 tracked wallet — there is no wallet connection; all data is public chain data captured by the org crons into the public tla-core repo.
 Tracked = the TLA electorate (every lock holder, ~205 wallets, hourly) plus aDAO members and ally rosters. Owner / maintainer:
 DeFi_Patriot (@DeFi_Patriot on X) — reports go through the Help page's "Report an issue" form (it pre-checks the claim and files it).
@@ -20,6 +20,8 @@ DeFi_Patriot (@DeFi_Patriot on X) — reports go through the Help page's "Report
 | Other Cosmos chains | Tokens, staked, claimable rewards on Cosmos Hub / Osmosis / Neutron / Injective | live chain REST for derived, linked or IBC-found addresses | live |
 | NFTs | aDAO + Pixel Lions held vs paid, floor mark, round trips | nft-collections/<slug>/ledger/by-wallet | nft-flows job |
 | Trend | Portfolio $, VP, LP, locked per archived day | member-data/positions/daily/<date>.json (org archive from 2026-08-11) | daily |
+| Value chart (4.0) | ONE ECharts chart over every source (each switchable); NFTs OFF by default; aDAO at the backing of unbroken NFTs — the floor toggle replaces it | member-data/history/<wallet> series (history-series 1.2.0) + the org daily archive | daily |
+| Solid (4.1) | Collateral LOCKED vs deposited-not-locked (idle warning), SOLID owed, health = the protocol's borrow limit ÷ loan, % of limit used, the liquidation line (a basket fall for a multi-collateral loan); "SOLID still owed · no collateral left" when liquidated to zero (4.1.1) | member-data participants `solid` (lib/solid-reader 1.0.1: overseer / market / custodies / oracle v2) | hourly |
 
 ## The honesty rules the page follows (why a number is blank, moved or kept out)
 
@@ -33,6 +35,12 @@ DeFi_Patriot (@DeFi_Patriot on X) — reports go through the Help page's "Report
   before fees) and stays out of the Liquid total.
 - **Idle is a warning.** LP tokens sitting in the wallet earn swap fees but no TLA rewards or bribes.
 - **P&L two ways.** USD and LUNA lenses; LUNA's own price move is separated from what the position did.
+- **Unpriced is blank, never 0** (2026-09-29): a day where any LP position had no price is blank on the trend — a $33K holder once read $144
+  because unpriced days were written as 0 and a single-asset row was repriced from a field that does not exist (fixed: page 4.1.2,
+  history-series 1.2.0).
+- **Sent away is not counted:** an LP receipt that left the wallet alerts for 14 days, then sits in a folded "sent away · not counted" group.
+- **Alerts are for pressing things only** (owner): liquidation risk, idle collateral, debt with no collateral — not old history.
+- **The footer disclaimer:** figures are orientation, not tax or accounting records; no liability (lib/site-footer 3.9, every page).
 
 ## Diagnosis table — "this number looks wrong"
 
@@ -51,6 +59,9 @@ DeFi_Patriot (@DeFi_Patriot on X) — reports go through the Help page's "Report
 | Change chips jump | A total gained a new component (e.g. custody) — fixed so past days carry it | trend dots vs the CAPA supply history | A jump with no new component |
 | Numbers differ from Eris / another site | Different APR basis / price source / timing | name both sources and their times | Same basis, same time, different number |
 | Votion "untracked vTokens" | vTokens with no archived deposit (moved in, or before the archive) — valued, no basis | holder row untracked_vtokens | — |
+| Net worth tiny but a large LP shows | Single-asset (cw20) gauge row repriced wrongly — fixed 2026-09-29 (page 4.1.2) | tool `portfolio`: lp_live row value vs summary | still after 2026-09-29 |
+| Trend shows 0 on some days | Those days had an unpriced LP; since history-series 1.2.0 they are blank, and a version change rebuilds the series | member-data/history/<wallet> | a 0 day with every position priced |
+| Solid says "SOLID still owed · no collateral left" | The wallet was liquidated to zero and part of the loan was not covered (59 wallets; 29 from one mass liquidation at height 22,730,546); the borrower still holds the SOLID borrowed | participants `solid.band` = debt_no_collateral | the market shows no loan for the wallet |
 | Stale numbers | Check the product's capturedAt / heartbeat | the tool's freshness block | A heartbeat older than its cadence (hourly > 3 h, daily > 30 h) |
 
 **What to send the maintainer when it IS a fault** (the Report form does this; otherwise DM @DeFi_Patriot): the wallet address, the
@@ -63,15 +74,24 @@ card and the number seen, what was expected and why, the tool's finding code, an
 - **Leaderboards are planned, not live** (SPEC-deep-history §7): top wallets per protocol (TLA, Credia, Solid) ranked on the deep P&L
   and APR earned on capital × time — only for wallets in the deep-history cohort, with a minimum history and capital so one lucky week
   does not top it. Until then, the bot can describe what a named wallet does, factually — never as a recommendation.
-- **Deep history** (planned): a one-time archive backfill for supporters of aDAO and its allies — aDAO NFT staked ≥ 90 days; an aDAO
-  or Pixel Lions NFT staked ≥ 90 days with a DAO-registered (DAODAO profile) name; or a TLA auto-max lock held ≥ 90 days with a
-  DAO-registered name. Later qualifiers get forward tracking only.
+- **Deep history — the backfill RAN (2026-09-29 → 30), not on the page yet.** Cohort (anyone who, on 2026-09-29, held an aDAO NFT in any
+  state, had a Pixel Lion staked (DAODAO or Enterprise), held a Burning Lion, or held an auto-max TLA lock with total VP > 100K): **1,159
+  wallets**. Captured: every transaction of every cohort wallet since 2022 (605K txs, memos never stored), weekly protocol state
+  2023-10-23 → now, monthly balances + staking 2023-04 → now, and 1.57M rebuilt balance changes (94.9 % exact against the chain's own
+  checkpoints). The raw data sits in a PRIVATE archive; only compact summaries will be published. Older protocol state is rebuilt from the
+  transactions and labelled "events only". Coming in ONE page update after the derive: weekly points back to each wallet's first
+  transaction, clickable chart points, net deposits (money in − money out, exchange flows as summaries only), Credia/Solid history.
+  Who the page shows will be a settings rule over per-wallet facts (the owner's choice, pending). Newcomers who later break an aDAO NFT get
+  their own backfill while the archive exists.
+- **Privacy (owner's rules):** no memos, no tx hashes or counterparties for exchange flows, no guessing who owns a wallet, no linking
+  wallets unless the owner of the wallet linked them. The bot never speculates about identities.
 
-## Solid (planned card — SPEC-portfolio-solid)
-Collateral locked vs deposited-not-locked, SOLID debt, health = borrow limit ÷ loan (the protocol's own numbers), liquidation price,
-P&L from events (borrowed / repaid / mint fees / liquidations). Not on the page yet.
+## Solid (LIVE since 4.1 — SPEC-portfolio-solid)
+Collateral locked vs deposited-not-locked, SOLID owed, health from the protocol's own numbers (reproduced within 1 % on 114/114 positions),
+liquidation line, bands incl. `debt_no_collateral`. Units: USD = raw × oracle price / 1e6; bridged wBTC / wETH count in 8 / 18 decimals
+though token_info says 6. P&L from events (borrow / repay / 0.5 % mint fees / liquidations) comes with the deep-history derive.
 
 ## Watched ally: Galactic Mining Club
 The GMC Backing Wallet (terra1jd2tam4svukk7pg8fv0dkj7zgwes9yw5c2h3wm0gkjcwdth2mpfsxxw6zd) is GMC's BTC Backing Treasury sub-DAO. As of
-2026-09-28 its backing in TLA is 0.3971 wBTC.creda.a amplified in the ACTIVE single gauge (≈ $33.1K) plus 8 TLA locks — nothing in an
+2026-09-29 its backing in TLA is 0.3971 wBTC.creda.a amplified in the ACTIVE single gauge (≈ $33.7K on the page since 4.1.2) plus 8 TLA locks — nothing in an
 inactive pool. Its portfolio page is public like any tracked wallet.

@@ -5,7 +5,7 @@
     "official_docs": "https://docs.creda.finance",
     "docs_repo": "https://github.com/credafinance/creda-docs",
     "verified_at": "2026-07-16",
-    "summary": "Cosmos-native over-collateralized lending protocol on Terra phoenix-1 (NOT a swap dex). CosmWasm contracts (portfolio/oracle/config/liquidator) + NestJS indexer + GraphQL API. Accepts TLA ampLP tokens as collateral with a 2% fixed take rate — a candidate source of the contract-initiated gauge tributes. Per-asset cw20 receipt tokens carry the vca prefix (e.g. vcawbtc = the gauge's wBTC.creda.a entry).",
+    "summary": "Cosmos-native over-collateralized lending protocol on Terra phoenix-1 (NOT a swap dex). CosmWasm contracts (portfolio/oracle/config/liquidator) + NestJS indexer + GraphQL API. Accepts TLA ampLP tokens as collateral with a 2% fixed take rate — (the tribute hypothesis was tested 2026-09-29 and not supported). Per-asset cw20 receipt tokens carry the vca prefix (e.g. vcawbtc = the gauge's wBTC.creda.a entry).",
     "schema": "see ecosystem-knowledge/README.md",
     "provenance_note": "Doc facts verified against the creda-docs repo @ main, 2026-07-16. Chain facts verified by browser LCD probes 2026-07-16. Observed platform values come from a decoded metrics query captured from the live app the same day — dated snapshots, not live bindings."
   },
@@ -120,15 +120,15 @@
     },
     {
       "id": "credia.take_rate.tribute_hypothesis",
-      "claim": "OUR HYPOTHESIS (unconfirmed): the 2% take rate Credia collects on TLA ampLP collateral is a source of the contract-initiated add_bribe tributes to the TLA gauge — the tribute class the pre-2.3.0 event capture was blind to. To be confirmed against captured add_bribe sender addresses once bribe_capture data accumulates (first capture: 2026-07-19 epoch flip).",
+      "claim": "TESTED 2026-09-29 (credia-probe 1.1) — NOT SUPPORTED: the add_bribe seen beside Credia events is TLA's own weekly take-rate distribution (a creda-portfolio/transfer of wBTC.creda.a receipts to the take collector), not a Credia tribute. Where Credia's 2% ampLP take goes is still unseen. (Original hypothesis: the take rate funds contract-initiated add_bribe tributes to the TLA gauge.)",
       "kind": "static_sourced",
       "source_url": "https://raw.githubusercontent.com/thealliancedao/tla-core/main/docs/pending-changes/CHANGES_PENDING.md",
       "source_section": "tribute/bribe capture rework",
       "source_type": "self",
-      "verified_at": "2026-07-16",
+      "verified_at": "2026-09-29",
       "source_status": "ok",
       "live_ref": null,
-      "notes": "Explicitly labeled a hypothesis, not a sourced fact. If confirmed, Credia becomes a named, quantified briber for the bribe-source attribution work; if refuted, this fact gets corrected — never silently deleted."
+      "notes": "Explicitly labeled a hypothesis, not a sourced fact. If confirmed, Credia becomes a named, quantified briber for the bribe-source attribution work; if refuted, this fact gets corrected — never silently deleted. Fixture docs/fixtures/2026-09-29/credia-probe.json."
     },
     {
       "id": "credia.receipt_tokens",
@@ -297,6 +297,18 @@
       "source_status": "ok",
       "live_ref": null,
       "notes": "Not a Credia fact, but resolved in the same 2026-07-16 probe batch and referenced from the token-catalog work. A gauge asset registered by pair address is a naming/identity edge case the catalog must handle."
+    },
+    {
+      "id": "credia.portfolios_census",
+      "claim": "The portfolio contract (code 3995) answers {\"portfolios\":{}} with every user's position (183 in 8 pages on 2026-09-29), the same shape as portfolio{address}; every creda-portfolio/* event carries the position's full snapshot, so history is derivable from events alone.",
+      "kind": "observed",
+      "source_url": "https://github.com/thealliancedao/tla-core/blob/main/docs/fixtures/2026-09-29/credia-probe.json",
+      "source_section": "credia-probe 1.1",
+      "source_type": "chain",
+      "verified_at": "2026-09-29",
+      "source_status": "ok",
+      "live_ref": null,
+      "notes": "12,995 portfolio txs since height 18,251,767; 127 wallets; 51 liquidator txs; 14 markets."
     }
   ]
 }
