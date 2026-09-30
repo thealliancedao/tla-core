@@ -25,7 +25,7 @@
 // sequences are dropped. The log prints COUNTS ONLY (this Action's log is public) — never a wallet, a hash or an amount.
 import fs from 'fs'; import path from 'path'; import zlib from 'zlib'; import { execSync } from 'child_process'; import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const VERSION = 'deep-walk-1.4';   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
+const VERSION = 'deep-walk-1.5';   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
 const MODE = process.env.MODE || 'timing';
 const RPCS = [process.env.ARCHIVE_RPC, process.env.RPC_URL].map(s => String(s || '').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '')).filter(Boolean);
 const LCD = String(process.env.ARCHIVE_LCD || process.env.LCD || 'https://terra-lcd.publicnode.com').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '');
@@ -73,7 +73,7 @@ async function smartLcd(addr, q, height) {
   const url = `${LCD}/cosmwasm/wasm/v1/contract/${addr}/smart/${b64(q)}`;
   let last = null;
   for (let i = 0; i < 4; i++) { stats.requests++;
-    try { const r = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': UA, 'x-cosmos-block-height': String(height) }, signal: AbortSignal.timeout(30000) }); const t = await r.text(); if (r.ok) return { ok: true, json: JSON.parse(t) }; last = { status: r.status, body: t.slice(0, 300) }; if (/no such contract|not found|unknown variant|parse|Error parsing|unknown request/i.test(t)) break; if (r.status < 500 && r.status !== 429) break; }
+    try { const r = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': UA, 'x-cosmos-block-height': String(height) }, signal: AbortSignal.timeout(30000) }); const t = await r.text(); if (r.ok) return { ok: true, json: JSON.parse(t) }; last = { status: r.status, body: t.slice(0, 300) }; if (/no such contract|not found|unknown variant|parse|Error parsing|unknown request|does not exist|pruned|failed to load state/i.test(t)) break; if (r.status < 500 && r.status !== 429) break; }
     catch (e) { last = { status: 0 }; } stats.retries++; await sleep(1000 * (i + 1)); }
   stats.errors++; return { ok: false, status: last && last.status, body: last && last.body };
 }
@@ -81,7 +81,7 @@ async function smartLcd(addr, q, height) {
 // 2026-09-30: layer2 runs #6–#9 failed EVERY read through the LCD (instant errors, 4 retries each, 13 h for nothing). Now every
 // state-reading mode tests both routes first, picks one that answers at an OLD height, and stops (red, no chain) when neither does.
 const Q = (() => { try { return { w: require('cosmjs-types/cosmwasm/wasm/v1/query'), b: require('cosmjs-types/cosmos/bank/v1beta1/query'), s: require('cosmjs-types/cosmos/staking/v1beta1/query') }; } catch { return null; } })();
-const NO_RETRY = /no such contract|not found|unknown variant|parse|Error parsing|unknown request|does not exist|invalid/i;
+const NO_RETRY = /no such contract|not found|unknown variant|parse|Error parsing|unknown request|does not exist|pruned|failed to load state|invalid/i;
 async function abci(route, bytes, height) {
   let last = null;
   for (let i = 0; i < 4; i++) { for (const rpc of RPCS) { stats.requests++;
@@ -109,16 +109,34 @@ async function stateRpc(kind, w, height) {   // layer 3 — answers in the LCD's
 let ROUTE = (Q && RPCS.length) ? 'rpc' : 'lcd';
 const smartAt = (addr, q, height) => ROUTE === 'rpc' ? smartRpc(addr, q, height) : smartLcd(addr, q, height);
 const say = (r) => r.ok ? 'ok' : `HTTP ${r.status}: ${String(r.body || '').replace(/https?:\/\/[^\s"']+/g, '<url>').slice(0, 160)}`;
-// test both routes on real reads (a recent height AND an old one); pick the first that answers both; false = stop the run
-async function pickRoute(label, tests) {
-  const res = {};
-  for (const route of ['rpc', 'lcd']) { if (route === 'rpc' && !(Q && RPCS.length)) continue; if (route === 'lcd' && !process.env.ARCHIVE_LCD) continue;
-    res[route] = []; for (const t of tests) res[route].push(await t(route)); }
-  for (const [route, rs] of Object.entries(res)) console.log(`route test (${label}) · ${route}: ${rs.map((r, i) => (i ? 'old ' : 'recent ') + say(r)).join(' · ')}`);
-  const good = Object.entries(res).find(([, rs]) => rs.every(r => r.ok || /no such contract|not found/i.test(r.body || '')));
-  if (good) { ROUTE = good[0]; console.log(`route: ${ROUTE}`); return true; }
-  console.log('route: NEITHER the archive RPC nor the LCD answered at an old height — stopping (nothing written, no next run). Fix the node / secret, then run again.');
-  try { fs.writeFileSync(`${MODE}_stop.txt`, '1'); } catch { } process.exitCode = 1; return false;
+// 1.5 (2026-09-30, first 1.4 run): the node answered "version does not exist … pruned" at block 1.83M (mid-2022) on BOTH routes — it keeps
+// the full TX history but NOT all old STATE. So each state mode first finds, per route: (1) the lowest block whose state the node still
+// has (a bank read, binary search to ~2,000 blocks), (2) a contract that answers at the newest week (up to 8 of the busiest targets —
+// one refusing the question is that contract, not the node). Reads below that floor are skipped and reported, never retried.
+const PRUNED = /does not exist|pruned|failed to load state|version mismatch|lowest height is/i;
+const TREASURY = 'terra1sffd4efk2jpdt894r04qwmtjqrrjfc52tmj6vkzjxqhd8qqu2drs3m5vzm';   // any address works for a bank read; this one is public
+const smartVia = (rt, addr, q, h) => rt === 'rpc' ? smartRpc(addr, q, h) : smartLcd(addr, q, h);
+const bankVia = (rt, addr, h) => rt === 'rpc' ? stateRpc('bank', addr, h) : lcdAt(`/cosmos/bank/v1beta1/balances/${addr}?pagination.limit=500`, h);
+async function chooseRoute(label, samples, weeks) {
+  const top = await latestHeight(); if (!top) { console.log('route: the archive RPC /status did not answer — stopping'); try { fs.writeFileSync(`${MODE}_stop.txt`, '1'); } catch { } process.exitCode = 1; return null; }
+  const dateOf = (h) => { const w = weeks.find(x => x.h >= h); return w ? 'week of ' + w.d : 'after the last week'; };
+  const routes = []; if (Q && RPCS.length) routes.push('rpc'); if (process.env.ARCHIVE_LCD) routes.push('lcd');
+  for (const rt of routes) {
+    const rTop = await bankVia(rt, TREASURY, top - 20);
+    if (!rTop.ok) { console.log(`route test (${label}) · ${rt}: a bank read at the newest block failed — ${say(rTop)}`); continue; }
+    let floor = 1; const r1 = await bankVia(rt, TREASURY, 2);
+    if (!r1.ok) { if (!PRUNED.test(r1.body || '')) { console.log(`route test (${label}) · ${rt}: an early bank read failed for a reason other than pruning — ${say(r1)}`); continue; }
+      let lo = 2, hi = top - 20, odd = null;
+      while (hi - lo > 2000) { const mid = Math.floor((lo + hi) / 2); const r = await bankVia(rt, TREASURY, mid); if (r.ok) hi = mid; else if (PRUNED.test(r.body || '')) lo = mid; else { odd = r; break; } }
+      if (odd) { console.log(`route test (${label}) · ${rt}: the state-floor search hit an unexpected answer — ${say(odd)}`); continue; }
+      floor = hi; }
+    const recent = weeks[weeks.length - 1]; const tried = []; let hit = !samples.length;
+    for (const t of samples.slice(0, 8)) { const r = await smartVia(rt, t.addr, t.q, recent.h); tried.push(`${t.key}: ${say(r)}`.slice(0, 140)); if (r.ok) { hit = true; break; } }
+    console.log(`route test (${label}) · ${rt}: state kept from block ${floor.toLocaleString('en-US')} (${dateOf(floor)}) — ${floor > 2 ? 'older weeks are not readable on this node' : 'full history'}${tried.length ? ' · contract reads at the newest week: ' + tried.join(' | ') : ''}`);
+    if (hit) { ROUTE = rt; console.log(`route: ${rt}`); return { floor }; }
+  }
+  console.log('route: no route answered — stopping (nothing written, no next run). Read the route test lines above.');
+  try { fs.writeFileSync(`${MODE}_stop.txt`, '1'); } catch { } process.exitCode = 1; return null;
 }
 function breaker() {   // stops a run after 150 failures in a row — a dead route must not burn hours again
   let inRow = 0; const samples = {};
@@ -360,30 +378,37 @@ function layer2Targets() {
 async function layer2() {
   const weeks = await boundaries(); console.log(`layer2: ${weeks.length} weekly boundaries resolved (${weeks[0] && weeks[0].d} → ${weeks[weeks.length - 1] && weeks[weeks.length - 1].d})`);
   const T = layer2Targets(); const man = readJson('layer2/_manifest.json', { version: VERSION, targets: {} });
-  const tasks = []; for (const t of T) { const m = man.targets[t.key] || (man.targets[t.key] = { kind: t.kind, done: {} }); for (const w of weeks) if (w.h >= t.from_h - 120000 && !m.done[w.d]) tasks.push([t, w]); }
+  const tasks = []; for (const t of T) { const m = man.targets[t.key] || (man.targets[t.key] = { kind: t.kind, done: {} }); if ((m.unsupported_n || 0) >= 3) continue; for (const w of weeks) if (w.h >= t.from_h - 120000 && !m.done[w.d]) tasks.push([t, w]); }
   console.log(`layer2: ${T.length} targets (${Object.entries(T.reduce((o, t) => (o[t.kind] = (o[t.kind] || 0) + 1, o), {})).map(([k, v]) => k + ' ' + v).join(' · ')}) · ${tasks.length} reads to do · concurrency ${CONC}`);
-  if (tasks.length) {   // the busiest target, read at the newest week and a week a quarter into its own history (an answer there proves old state is served)
-    const per = new Map(); for (const [x, w] of tasks) (per.get(x) || per.set(x, []).get(x)).push(w);
-    const [t, ws] = [...per.entries()].sort((a, b) => b[1].length - a[1].length)[0]; const recent = ws[ws.length - 1]; const old = ws[Math.floor(ws.length / 4)];
-    if (!(await pickRoute('layer2', [(rt) => (rt === 'rpc' ? smartRpc : smartLcd)(t.addr, t.q, recent.h), (rt) => (rt === 'rpc' ? smartRpc : smartLcd)(t.addr, t.q, old.h)]))) return; }
+  let below = 0, unsupported = 0;
+  if (tasks.length) {
+    const per = new Map(); for (const [x] of tasks) per.set(x, (per.get(x) || 0) + 1);
+    const samples = [...per.entries()].sort((a, b) => b[1] - a[1]).map(([x]) => x);
+    const pick = await chooseRoute('layer2', samples, weeks); if (!pick) return;
+    man.state_floor = { route: ROUTE, block: pick.floor, checked_at: new Date().toISOString() };
+    const keep = tasks.filter(([, w]) => w.h >= pick.floor); below = tasks.length - keep.length; tasks.length = 0; tasks.push(...keep);
+    if (below) console.log(`layer2: ${below} reads are older than the node's state (skipped — not retried; they need another source)`); }
   const brk = breaker(); let halted = false;
   const buf = new Map(); let n = 0, ok = 0, absent = 0, bad = 0, lastCommit = Date.now();
   const flush = () => { for (const [key, rows] of buf) { const f = `layer2/${key}.jsonl.gz`; let old = ''; try { old = zlib.gunzipSync(fs.readFileSync(A(f))).toString('utf8'); } catch { } fs.mkdirSync(path.dirname(A(f)), { recursive: true }); fs.writeFileSync(A(f), zlib.gzipSync(old + rows.map(r => JSON.stringify(r)).join('\n') + '\n')); } buf.clear(); man.updated_at = new Date().toISOString(); writeJson('layer2/_manifest.json', man); };
   await pool(tasks, CONC, async ([t, w]) => {
-    if (overBudget() || halted) return;
+    if (overBudget() || halted || (man.targets[t.key].unsupported_n || 0) >= 3) return;
     const r = await smartAt(t.addr, t.q, w.h); n++;
     let row; if (r.ok) { ok++; let data = r.json && r.json.data; if (t.kind === 'pair' && data) data = { assets: (data.assets || []).map(a => [a.info && (a.info.native_token ? a.info.native_token.denom : a.info.token && a.info.token.contract_addr), a.amount]), total_share: data.total_share }; row = { d: w.d, h: w.h, data }; }
     else if (/no such contract|not found/i.test(r.body || '')) { absent++; row = { d: w.d, h: w.h, absent: true }; }
+    else if (/unknown variant|Error parsing into type|unknown request/i.test(r.body || '')) { unsupported++; row = { d: w.d, h: w.h, unsupported: String(r.body).slice(0, 120) }; }   // this contract does not answer this question — recorded once per week, not retried
     else { bad++; if (brk.bad(r) && !halted) { halted = true; console.log('layer2: 150 failures in a row — stopping this run (no next run)'); try { fs.writeFileSync('layer2_stop.txt', '1'); } catch { } process.exitCode = 1; } return; }   // not recorded as done — retried next run
     brk.ok();
+    if (row.unsupported) man.targets[t.key].unsupported_n = (man.targets[t.key].unsupported_n || 0) + 1;   // 3 refusals → the target is skipped from then on
     (buf.get(t.key) || buf.set(t.key, []).get(t.key)).push(row); man.targets[t.key].done[w.d] = 1;
     if (n % 2000 === 0) console.log(`  … ${n}/${tasks.length} reads · ok ${ok} · absent ${absent} · failed ${bad} · ${minutes().toFixed(0)} min`);
     if (Date.now() - lastCommit > 8 * 60000) { lastCommit = Date.now(); flush(); commitPush(`layer2: +${n} reads`); }
   });
   flush(); if (ok || absent) commitPush(`layer2: ${ok} answers`); brk.report();
-  const left = tasks.length - ok - absent;
+  const skippedUnsup = tasks.filter(([t, w]) => (man.targets[t.key].unsupported_n || 0) >= 3 && !man.targets[t.key].done[w.d]).length;
+  const left = tasks.length - ok - absent - unsupported - skippedUnsup;
   try { fs.writeFileSync('layer2_left.txt', String(Math.max(0, left))); } catch { }
-  console.log(`layer2 run: ${n} reads · ok ${ok} · contract not yet / no longer there ${absent} · failed ${bad} (retried next run) · ${minutes().toFixed(0)} min · ${left > 0 ? left + ' reads left — run again' : 'ALL DONE'}`);
+  console.log(`layer2 run: ${n} reads · ok ${ok} · contract not yet / no longer there ${absent} · question not supported ${unsupported}${skippedUnsup ? ' (+' + skippedUnsup + ' skipped on those contracts)' : ''} · older than the node's state ${below} · failed ${bad} (retried next run) · ${minutes().toFixed(0)} min · ${left > 0 ? left + ' reads left — run again' : 'ALL DONE'}`);
 }
 
 // ── helpers shared by layer3 / flows ──────────────────────────────────────────────────────────────────────────────────────
@@ -396,7 +421,7 @@ async function lcdAt(p, height) {
   let last = { status: 0, body: '' };
   for (let i = 0; i < 4; i++) { stats.requests++;
     try { const r = await fetch(`${LCD}${p}`, { headers: { Accept: 'application/json', 'User-Agent': UA, 'x-cosmos-block-height': String(height) }, signal: AbortSignal.timeout(30000) }); const t = await r.text();
-      if (r.ok) return { ok: true, json: JSON.parse(t) }; last = { status: r.status, body: t.slice(0, 200) }; if (r.status < 500 && r.status !== 429) return { ok: false, ...last }; } catch (e) { last = { status: 0, body: e.message }; }
+      if (r.ok) return { ok: true, json: JSON.parse(t) }; last = { status: r.status, body: t.slice(0, 200) }; if ((r.status < 500 && r.status !== 429) || /does not exist|pruned|failed to load state/i.test(t)) return { ok: false, ...last }; } catch (e) { last = { status: 0, body: e.message }; }
     stats.retries++; await sleep(1000 * (i + 1)); }
   stats.errors++; return { ok: false, ...last };
 }
@@ -416,8 +441,11 @@ async function layer3() {
     for (const b of months) if (b.h >= m.first_h - 450000 && !m.done[b.d]) tasks.push([w, b]);   // from the month before its first tx
   }
   console.log(`layer3: ${Object.keys(man.wallets).length} wallets · ${months.length} monthly boundaries · ${tasks.length} checkpoints to read (3 reads each) · concurrency ${CONC}`);
-  if (tasks.length) { const [w0] = tasks[0]; const recent = months[months.length - 1]; const old = tasks[0][1];
-    if (!(await pickRoute('layer3', [(rt) => rt === 'rpc' ? stateRpc('bank', w0, recent.h) : lcdAt(`/cosmos/bank/v1beta1/balances/${w0}?pagination.limit=500`, recent.h), (rt) => rt === 'rpc' ? stateRpc('bank', w0, old.h) : lcdAt(`/cosmos/bank/v1beta1/balances/${w0}?pagination.limit=500`, old.h)]))) return; }
+  let below = 0;
+  if (tasks.length) { const pick = await chooseRoute('layer3', [], months); if (!pick) return;
+    man.state_floor = { route: ROUTE, block: pick.floor, checked_at: new Date().toISOString() };
+    const keep = tasks.filter(([, b]) => b.h >= pick.floor); below = tasks.length - keep.length; tasks.length = 0; tasks.push(...keep);
+    if (below) console.log(`layer3: ${below} checkpoints are older than the node's state (skipped — the flows derive covers those months from layer 1)`); }
   const brk = breaker(); let halted = false;
   const buf = new Map(); let n = 0, ok = 0, bad = 0, lastCommit = Date.now();
   const flush = () => { for (const [w, rows] of buf) { const f = `layer3/${w.slice(-1)}/${w}.jsonl.gz`; let old = ''; try { old = zlib.gunzipSync(fs.readFileSync(A(f))).toString('utf8'); } catch { } fs.mkdirSync(path.dirname(A(f)), { recursive: true }); fs.writeFileSync(A(f), zlib.gzipSync(old + rows.map(r => JSON.stringify(r)).join('\n') + '\n')); } buf.clear(); man.updated_at = new Date().toISOString(); writeJson('layer3/_manifest.json', man); };
