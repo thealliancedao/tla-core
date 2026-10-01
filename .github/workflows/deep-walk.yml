@@ -69,6 +69,7 @@ jobs:
           git clone -q --depth 1 "https://x-access-token:${TOKEN}@github.com/thealliancedao/tla-archive.git" archive
           cd archive && git config user.name "deep-walk" && git config user.email "bot@thealliancedao.com"
       - name: walk
+        id: walk
         env:
           MODE: ${{ github.event.inputs.mode }}
           CONCURRENCY: ${{ github.event.inputs.concurrency }}
@@ -109,7 +110,7 @@ jobs:
           git commit -m "deep-history: chain-measured LST rates ($(date -u +%Y-%m-%d))"
           for i in 1 2 3 4 5 6; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep $((i * 15)); done; exit 1
       - name: layer2 / layer3 / gapfill / closeout — start the next run while reads are left (bounded by chain)
-        if: always() && (github.event.inputs.mode == 'layer2' || github.event.inputs.mode == 'layer3' || github.event.inputs.mode == 'gapfill' || github.event.inputs.mode == 'closeout' || github.event.inputs.mode == 'ratios')
+        if: always() && steps.walk.outcome == 'success' && (github.event.inputs.mode == 'layer2' || github.event.inputs.mode == 'layer3' || github.event.inputs.mode == 'gapfill' || github.event.inputs.mode == 'closeout' || github.event.inputs.mode == 'ratios')   # 2.0.1: a run that failed never starts another
         env:
           GH_TOKEN: ${{ github.token }}
           CHAIN: ${{ github.event.inputs.chain }}
@@ -118,7 +119,7 @@ jobs:
           MODE: ${{ github.event.inputs.mode }}
         run: |
           if [ -f "${MODE}_stop.txt" ]; then echo "the run stopped itself (reads failing) — no next run; read the route test / failures lines above"; exit 0; fi
-          LEFT=$(cat ${MODE}_left.txt 2>/dev/null || echo 1)
+          LEFT=$(cat ${MODE}_left.txt 2>/dev/null || echo 0)   # 2.0.1: no accounting written → nothing to continue
           echo "reads left: $LEFT · chain: $CHAIN"
           if [ "$LEFT" != "0" ] && [ "${CHAIN:-0}" -gt 0 ]; then
             gh workflow run deep-walk.yml --ref main -f mode="$MODE" -f concurrency="$CONC" -f max_minutes="$MAXM" -f chain=$((CHAIN - 1))
