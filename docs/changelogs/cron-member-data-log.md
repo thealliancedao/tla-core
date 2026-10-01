@@ -1,5 +1,9 @@
 # cron-member-data — changelog
 
+## history-series 1.2.1 — 2026-09-30 — the treasury's chart gap
+
+- A $0 unpriced row no longer erases a day's LP (priced ≥ 90 % of the last LP → kept, flagged `lpu`). Mock 22/22.
+
 ## 1.5.0 → 1.6.0 · history-series 1.0 → 1.2.0 · lib/solid-reader 1.0.0 → 1.0.1 — 2026-09-28 / 29 — the portfolio's series, Solid, blank days
 
 - **member-data 1.5.0** — `history-series.js` 1.0 (new): one compact daily series per wallet (≈ 105 bytes per wallet per day — the storage

@@ -1,5 +1,11 @@
 # Cron Changelog — tla-flows (org-tla-flows, Render)
 
+## pnl 1.4.0 (tla-flows 3.5.7) — 2026-09-30 — one event per stake; integrity report
+
+- Every stake / unstake in a tx booked with its own pool's legs (1,044 member stakes in 247 wallets were never booked; the aDAO treasury's
+  2026-05-22 proposal was one LUNA-FUEL deposit carrying 11 tokens). Protocol contracts are never wallets. Implausible costs disputed
+  (3 xASTRO, one $33.8B). Unrealized over costed positions only. `tla-flows/pnl/integrity.json` published on every build. Mock 42/43.
+
 ## pnl 1.3.0 → 1.3.1 (tla-flows 3.5.5 → 3.5.6) — 2026-09-28 / 29 — tokens per trip; the P&L runs daily
 
 - **pnl 1.3.0 / pnl-positions 1.4.0** (Portfolio 4.0) — each trip carries the tokens in and out (the page reads "USD ↔ tokens"), one bribe

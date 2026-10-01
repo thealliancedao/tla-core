@@ -7,6 +7,54 @@ ARCHIVE_LCD, ARCHIVE_REPO_TOKEN — fine-grained, tla-archive only — and FLOW_
 
 ---
 
+## CLOSED — 2026-10-01 — the backfill is complete; nothing left that only the node can give
+
+The audit after walk 1.9 (docs/deep-history/audit.json) has one gap left — **[medium] prices**, computed from saved pools in the derive, not
+read from the node. Everything the archive node can serve is in the archive; everything it cannot is named and rebuilt from events.
+
+| Layer | Final | Notes |
+|---|---|---|
+| layer1 — every tx of every cohort wallet | **634,811 txs**, 1,159/1,159 wallets, 0 failed searches | +29,063 from 16 more keys (1.8): fungible_token_packet.sender 23,122 (IBC acks / refunds), wasm.job_owner 3,300, wasm.sender 2,634; 4 keys the node's query parser rejects (`wasm-erishub/…`, `wasm-steakhub/…` — "offset 12: invalid input") dropped; the audit's missed-tx sample is 0 on every key |
+| layer2 — weekly DEX / Credia / Solid / DAO voting | ~66.9K reads, missing 0 | 2023-10-23 → now; earlier weeks events-only |
+| layer2b — weekly TLA + LST state (1.8) | **4,660 weeks**, 37/37 targets, missing 0 | v2 hub 2580 · v3 buckets / gauges / vAMP / compounder / connectors · 5 LST hubs · CAPA gov + staking · Lion DAO LP staking; 402 pre-floor weeks events-only |
+| layer2c — price pools (1.9) | 24 pools, 817 monthly rows | 6 DEX factories listed 1,047 pairs; only 24 hold any of the 319 tokens nothing prices — the rest have **no market** |
+| layer3 — monthly bank / staking | 44,324 checkpoints, missing 0 | 3,688 delegation reads the node fails on ("invalid denom") marked unreadable → rebuilt from delegate / undelegate events |
+| flows | 1,569,460 changes · 94.9 % exact vs layer3 (native) · cw20 sample 99.3 % | the drift is balance moving outside txs (unbonding credits at end-block, the 2022 genesis airdrop) — classes in audit.json; the derive anchors on layer3 |
+
+Node floors (measured 2026-10-01): bank / staking state from block 4,063,817 (2023-03-13), contract state from 7,316,497 (2023-10-23).
+Next: the derive (unbonding credits from undelegate events, genesis anchors, monthly re-anchor on layer3, delegations from events, prices
+from pools incl. layer2c, "received — no cost" for transfers in), then public per-wallet summaries (§8b), then the page-edit round.
+
+---
+
+## walk.mjs 1.9 — 2026-10-01 — closeout: settle without re-walking; price pools
+- The 1.8 run (5 h 18 m) left 1,616 "failed" items, all deterministic: 4 search keys the node rejects (each retried 5× with backoff on all
+  1,159 wallets — most of the 5 h), 300 contract reads below the real floor (1.8 measured the floor on a 2024 bucket and read back to
+  2023-03), 3,688 delegation reads the node fails on. Re-running would have repeated all three.
+- 1.9: a query the node rejects is never retried (`REJECTED_Q`); a key that failed on ≥ 95 % of wallets in the record, or fails the same way
+  on two wallets now, is dropped with the node's message; a key a wallet already searched in full is not searched again (1,159 settled
+  with zero searches); the contract floor is measured on the earliest-starting busy pair, and when a sample starts after the state floor
+  the layer-2 measurement is used; a state read that fails deterministically is marked unreadable (per height after 3 wallets).
+- New **layer2c**: pools for held tokens nothing prices — found through the factories that instantiated the cohort's pairs
+  (contract_info.creator, `{pairs:{start_after,limit}}`), reserves at the first weekly boundary of each month from the contract floor.
+- Audit: layer 2b / 2c counted as covered; "TLA / LST state missing" now means layer 2b does not hold it (1.8's rule matched protocol
+  labels and would have kept firing on ampLUNA / bLUNA token contracts); dropped keys and unreadable delegations reported.
+- Mode `closeout` (gapfill runs it too). Gate mock-audit 30/30, incl. C0–C6: the OLD 1.8 gapfill run against a node that behaves like the
+  archive node reproduces production's failures, then 1.9 settles them with no re-walk; a second closeout has nothing to do.
+- The live run: **4 m 14 s**, closeout DONE — nothing left.
+
+## walk.mjs 1.8 — 2026-09-30 — gapfill
+- What the 1.7 audit found missing, in one run: layer1b (16 more search keys, new txs only), layer2b (TLA / LST / CAPA / Lion DAO state
+  weekly), layer3b (missing delegations), then flows + audit. Run #18: +29,063 txs, 4,660 weekly state reads; left the three deterministic
+  failures settled by 1.9. Mock 23/23 at the time.
+
+## walk.mjs 1.7 — 2026-09-30 — audit
+- Mode `audit`: every layer checked against what was expected and why anything is missing, the flows drift classified per wallet × denom,
+  a cw20 sample against the chain, a layer-1 key sample, the busiest contracts layer 2 never read (with their query API), price coverage of
+  everything held → archive/audit/<day>.json + a counts-only docs/deep-history/audit.json (guarded: no cohort wallet). Mock 16/16.
+
+---
+
 ## RESULT — 2026-09-30 — the backfill is done
 
 | Layer | Result | Coverage |
