@@ -31,7 +31,7 @@
 // sequences are dropped. The log prints COUNTS ONLY (this Action's log is public) — never a wallet, a hash or an amount.
 import fs from 'fs'; import path from 'path'; import zlib from 'zlib'; import { execSync } from 'child_process'; import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const VERSION = 'deep-walk-1.8';   // 1.8 (2026-09-30): mode gapfill — what the audit found missing, in one run: layer1b (every cohort wallet searched under 16 more keys, new txs only), layer2b (TLA v2 hub 2580, v3 buckets / gauges / vAMP / compounder / connectors, the 5 LST hubs, CAPA gov + staking, Lion DAO LP staking — weekly from the contract floor), layer3b (delegations the layer-3 rows lack); then flows and the audit re-run   // 1.7 (2026-09-30): mode audit — every layer checked against what was expected (and why anything is missing), the flows drift classified per wallet × denom, cw20 balances checked on a sample, layer-1 search keys checked on a sample, busy contracts layer 2 never read listed with their query API, price coverage of everything held; nothing re-read in bulk   // 1.6 (2026-09-30): contract reads get their own floor (the 1.5 run: bank reads from 2023-03, every older contract read "panic: unknown request") — found on the earliest-starting contract that answers, with a 7-point spread printed; "unknown request" is no longer read as the contract refusing (the 1.5 marks are cleared)   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
+const VERSION = 'deep-walk-1.9';   // 1.9 (2026-10-01): mode closeout (gapfill now runs it too) — settles what the 1.8 run left without re-walking: a search key the node REJECTS (same error on two wallets) is dropped with its message, never retried (1.8 retried each 5× with backoff on every wallet — most of its 5 h); keys a wallet already searched successfully are not searched again; the contract floor is measured on the earliest-starting contract (1.8 measured it on a 2024 bucket and read back to 2023-03: 300 reads below the real floor); a state read the node fails on deterministically ("invalid denom" — 3,688 delegations) is marked unreadable, not retried; NEW layer2c — price pools for every token the cohort held that nothing prices (pools found through the DEX factories that created the pairs, reserves monthly from the contract floor); the audit counts layer 2b / 2c as covered   // 1.8 (2026-09-30): mode gapfill — what the audit found missing, in one run: layer1b (every cohort wallet searched under 16 more keys, new txs only), layer2b (TLA v2 hub 2580, v3 buckets / gauges / vAMP / compounder / connectors, the 5 LST hubs, CAPA gov + staking, Lion DAO LP staking — weekly from the contract floor), layer3b (delegations the layer-3 rows lack); then flows and the audit re-run   // 1.7 (2026-09-30): mode audit — every layer checked against what was expected (and why anything is missing), the flows drift classified per wallet × denom, cw20 balances checked on a sample, layer-1 search keys checked on a sample, busy contracts layer 2 never read listed with their query API, price coverage of everything held; nothing re-read in bulk   // 1.6 (2026-09-30): contract reads get their own floor (the 1.5 run: bank reads from 2023-03, every older contract read "panic: unknown request") — found on the earliest-starting contract that answers, with a 7-point spread printed; "unknown request" is no longer read as the contract refusing (the 1.5 marks are cleared)   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
 const MODE = process.env.MODE || 'timing';
 const RPCS = [process.env.ARCHIVE_RPC, process.env.RPC_URL].map(s => String(s || '').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '')).filter(Boolean);
 const LCD = String(process.env.ARCHIVE_LCD || process.env.LCD || 'https://terra-lcd.publicnode.com').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '');
@@ -54,12 +54,15 @@ const KEYS = ['message.sender', 'transfer.recipient', 'withdraw_rewards.delegato
 
 // ── http ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 const stats = { requests: 0, errors: 0, retries: 0 };
+const REJECTED_Q = /failed to parse|parse error|syntax error|invalid query|unexpected token|unrecognized/i;   // 1.9
+let DROPPED_KEYS = new Set();   // 1.9: search keys the node rejects (layer1/_manifest.json keys_dropped)
 async function getJson(url, tries = 5, timeoutMs = 45000) {
   let last = null;
   for (let i = 0; i < tries; i++) {
     stats.requests++;
     try { const r = await fetch(url, { headers: { Accept: 'application/json', 'User-Agent': UA }, signal: AbortSignal.timeout(timeoutMs) }); const t = await r.text(); let j = null; try { j = JSON.parse(t); } catch { }
-      if (r.ok && j) return { ok: true, json: j }; last = { ok: false, status: r.status, body: (j && (j.message || j.error && (j.error.data || j.error.message))) || t.slice(0, 200) }; if (r.status >= 400 && r.status < 500 && r.status !== 429) return last; }
+      if (r.ok && j) return { ok: true, json: j }; last = { ok: false, status: r.status, body: (j && (j.message || j.error && (j.error.data || j.error.message))) || t.slice(0, 200) }; if (r.status >= 400 && r.status < 500 && r.status !== 429) return last;
+      if (REJECTED_Q.test(String(last.body))) { stats.errors++; return last; } }   // 1.9: a query the node rejects is never retried
     catch (e) { last = { ok: false, status: 0, body: e.message }; }
     stats.retries++; await sleep(1000 * Math.pow(2, i));
   }
@@ -147,7 +150,11 @@ async function chooseRoute(label, samples, weeks) {
       const start = Math.max(floor, (t.from_h || 0) + 20000);
       const spread = []; for (let k = 0; k <= 6; k++) { const h = Math.floor(start + (recent.h - start) * k / 6); const r = await smartVia(rt, t.addr, t.q, h); spread.push(`${dateOf(h).replace('week of ', '')}: ${r.ok ? 'ok' : say(r).slice(0, 60)}`); }
       console.log(`route test (${label}) · ${rt}: ${t.key} across its history → ${spread.join(' | ')}`);
-      if (!(await good(start))) { let lo = start, hi = recent.h; while (hi - lo > (MODE === 'audit' ? 1000 : 50000)) { const mid = Math.floor((lo + hi) / 2); if (await good(mid)) hi = mid; else lo = mid; } wasmFloor = hi; }
+      if (!(await good(start))) { let lo = start, hi = recent.h; while (hi - lo > (['audit', 'closeout', 'gapfill'].includes(MODE) ? 1000 : 50000)) { const mid = Math.floor((lo + hi) / 2); if (await good(mid)) hi = mid; else lo = mid; } wasmFloor = hi; }
+      else if (start > floor + 50000) {   // 1.9: the earliest sample began after the state floor — it cannot say what lies below it (1.8 then took the BANK floor and read 300 weeks the node cannot serve)
+        const known = (readJson('layer2/_manifest.json', {}).state_floor || {}).contract_reads_from;
+        wasmFloor = known && known >= floor && known <= start ? known : start;
+        console.log(`route test (${label}) · ${rt}: the earliest sample starts after the state floor — contract floor from ${wasmFloor === known ? 'the layer-2 measurement' : 'that sample (conservative)'}`); }
       else wasmFloor = floor;
       console.log(`route test (${label}) · ${rt}: contract reads work from block ${wasmFloor.toLocaleString('en-US')} (${dateOf(wasmFloor)})`); }
     ROUTE = rt; console.log(`route: ${rt}`); return { floor, wasmFloor };
@@ -262,7 +269,7 @@ async function walkWallet(w) {
   const seen = new Set(); const searches = {}; let part = [], partNo = 0, n = 0, maxH = 0; const dir = `layer1/${w.slice(-1)}/${w}`;
   fs.rmSync(A(dir), { recursive: true, force: true });
   const flush = () => { if (!part.length) return; fs.mkdirSync(A(dir), { recursive: true }); fs.writeFileSync(A(`${dir}/part-${String(partNo++).padStart(3, '0')}.jsonl.gz`), zlib.gzipSync(part.map(x => JSON.stringify(x)).join('\n') + '\n')); part = []; };
-  for (const key of KEYS) {
+  for (const key of KEYS) { if (DROPPED_KEYS.has(key)) continue;
     let page = 1, total = null, got = 0, err = null;
     while (true) {
       if (overBudget()) return { incomplete: true };
@@ -278,7 +285,7 @@ async function walkWallet(w) {
 }
 async function layer1() {
   const C = readJson('cohort/current.json', null); if (!C) throw new Error('no cohort — run MODE=cohort first');
-  const man = readJson('layer1/_manifest.json', { version: VERSION, cohort_day: C.cut_day, keys: KEYS, wallets: {} });
+  const man = readJson('layer1/_manifest.json', { version: VERSION, cohort_day: C.cut_day, keys: KEYS, wallets: {} }); DROPPED_KEYS = new Set(Object.keys(man.keys_dropped || {}));
   let todo = Object.keys(C.wallets).filter(shardOk).filter(a => !(man.wallets[a] && man.wallets[a].done));
   if (LIMIT_WALLETS) todo = todo.slice(0, LIMIT_WALLETS);
   console.log(`layer1: ${todo.length} wallets to walk (${Object.values(man.wallets).filter(x => x.done).length} already done) · concurrency ${CONC} · budget ${MAX_MIN} min`);
@@ -635,20 +642,30 @@ async function audit() {
   { const M = readJson('layer2b/_manifest.json', null);
     if (M) { const t = Object.entries(M.targets || {}); const rows = t.reduce((x, [k]) => x + ((readJsonl(`layer2b/${k}.jsonl.gz`) || []).filter(r => r.data != null).length), 0);
       S.layer2b = { targets: t.length, answering: t.filter(([, m]) => !m.dropped).length, dropped: t.filter(([, m]) => m.dropped).map(([k, m]) => [k, String(m.dropped).slice(0, 100)]), weeks_answered: rows };
+      // 1.9: expected / events-only / readable / missing per target, against the contract floor (the run's own, else today's)
+      const fl = floors.contract || M.contract_floor || 0; const tf = new Map(layer2bTargets().map(x => [x.key, x.from_h || 0])); let below = 0, readable = 0, missing = 0;
+      for (const [k, m] of t) { if (m.dropped) continue; const fh = tf.get(k) || 0; for (const w of weeks) { if (w.h < fh - 120000) continue; if (fl && w.h < fl) { below++; continue; } readable++; if (!m.done[w.d]) missing++; } }
+      Object.assign(S.layer2b, { contract_floor: fl, events_only_weeks: below, readable_weeks: readable, missing });
+      if (missing) gaps.push({ id: 'layer2b-missing', severity: 'high', node: true, what: `${missing} weekly TLA / LST reads the node can serve are not in the archive` });
       if (S.layer2b.dropped.length) gaps.push({ id: 'layer2b-dropped', severity: 'low', node: true, what: `${S.layer2b.dropped.length} layer-2b questions were not answered by their contract — see layer2b.dropped for the message` }); }
     else S.layer2b = { not_run: true }; }
   S.layer1.searched_under_1_8_keys = Object.values(L1M.wallets).filter(x => x.top18).length;
+  S.layer1.keys_dropped = L1M.keys_dropped || {};   // 1.9: queries the node rejects (never retried)
+  if (Object.values(L1M.wallets).some(x => x.top18 !== undefined) && S.layer1.searched_under_1_8_keys < cohort.length) gaps.push({ id: 'layer1b-incomplete', severity: 'high', node: true, what: `${cohort.length - S.layer1.searched_under_1_8_keys} wallets not yet searched under every 1.8 key that works` });
   // ── 3. layer 3: monthly checkpoints per wallet ──
   const months = monthlyBoundaries() || []; const l3 = { wallets_with_first_tx: 0, expected: 0, below_floor: 0, readable: 0, rows: 0, missing: 0, wallets_missing_some: 0, delegations_null: 0, unbonding_null: 0 };
   for (const w of cohort) { const m = L3M.wallets[w]; if (!m || m.first_h == null) continue; l3.wallets_with_first_tx++;
     const rows = readJsonl(`layer3/${w.slice(-1)}/${w}.jsonl.gz`) || []; const have = new Set(rows.map(r => r.d)); let miss = 0;
-    for (const r of rows) { if (r.delegations == null) l3.delegations_null++; if (r.unbonding == null) l3.unbonding_null++; } l3.rows += rows.length;
+    for (const r of rows) { if (r.delegations == null && r.delegations_unreadable) l3.delegations_unreadable = (l3.delegations_unreadable || 0) + 1; else if (r.delegations == null) l3.delegations_null++; if (r.unbonding == null) l3.unbonding_null++; } l3.rows += rows.length;
     for (const b of months) { if (b.h < m.first_h - 450000) continue; l3.expected++; if (floors.bank && b.h < floors.bank) { l3.below_floor++; continue; } l3.readable++; if (!have.has(b.d)) { miss++; l3.missing++; } }
     if (miss) l3.wallets_missing_some++; }
   S.layer3 = l3;
   if (l3.missing) gaps.push({ id: 'layer3-missing', severity: 'medium', node: true, what: `${l3.missing} monthly checkpoints the node can serve are missing (${l3.wallets_missing_some} wallets)` });
-  if (l3.delegations_null || l3.unbonding_null) gaps.push({ id: 'layer3-partial', severity: 'low', node: true, what: `${l3.delegations_null} checkpoints without delegations, ${l3.unbonding_null} without unbonding (the bank part was saved)` });
+  if (l3.delegations_null || l3.unbonding_null) gaps.push({ id: 'layer3-partial', severity: 'low', node: true, what: `${l3.delegations_null} checkpoints without delegations, ${l3.unbonding_null} without unbonding (the bank part was saved)${l3.delegations_unreadable ? ` · ${l3.delegations_unreadable} more the node cannot serve (rebuilt from events)` : ''}` });
   console.log(`audit · layer3: ${l3.rows} checkpoints · readable ${l3.readable} · missing ${l3.missing} · before the bank floor ${l3.below_floor} · delegations null ${l3.delegations_null}`);
+  console.log(`audit · layer1 keys dropped (the node rejects them): ${Object.keys(S.layer1.keys_dropped).join(', ') || 'none'} · wallets complete under the 1.8 keys ${S.layer1.searched_under_1_8_keys}/${cohort.length}`);
+  if (S.layer2b && !S.layer2b.not_run) console.log(`audit · layer2b: ${S.layer2b.answering}/${S.layer2b.targets} targets · ${S.layer2b.weeks_answered} weeks answered · missing ${S.layer2b.missing ?? '?'} · events-only ${S.layer2b.events_only_weeks ?? '?'} (before the contract floor)`);
+  console.log(`audit · delegations: ${l3.delegations_null} missing · ${l3.delegations_unreadable || 0} the node cannot serve`);
 
   // ── 4. flows: classify the drift (per wallet × denom, not per checkpoint — one missed event repeats at every later checkpoint) ──
   const resolve = await loadResolver(); const sym = (d) => { if (!resolve) return null; const r = resolve(d.startsWith('cw20:') ? d : d); return r && r.symbol; };
@@ -713,6 +730,7 @@ async function audit() {
 
   // ── 7. protocol state layer 2 never read: busy code ids, with their query API (the node answers an unknown query with its list) ──
   const covered = new Set([...PAIR_CODES, '3995', '3193', '2413', '1431', '2410']);
+  { const M2 = readJson('layer2b/_manifest.json', null); if (M2) for (const m of Object.values(M2.targets || {})) { if (m.dropped) continue; const c = codeOf(m.addr); if (c) covered.add(c); } }   // 1.9: what layer 2b reads weekly is covered
   const pr = { codes_checked: 0, uncovered: [] };
   if (I && I.by_code_id) { const codes = Object.entries(I.by_code_id).filter(([c]) => c !== '?' && !covered.has(c)).sort((a, b) => b[1].txs - a[1].txs).slice(0, 60);
     for (const [code, b] of codes) { const cs = Object.entries(I.contracts).filter(([, x]) => String(x.code_id) === code).sort((p, q) => q[1].txs - p[1].txs); const [addr, x] = cs[0] || [];
@@ -726,6 +744,8 @@ async function audit() {
 
   // ── 8. prices: how much of what the cohort held (wallet-weeks) can be valued, and with what ──
   const series = {}; const pairAssets = new Map();   // asset → set of other assets seen in a layer-2 pair with it
+  { const M3 = readJson('layer2c/_manifest.json', null); if (M3) { let rowsOk = 0; for (const [addr, pm] of Object.entries(M3.pairs || {})) { const rows = (readJsonl(`layer2c/${addr}.jsonl.gz`) || []).filter(r => r.data && r.data.assets); rowsOk += rows.length; const last = rows.pop(); if (!last) continue; const as = last.data.assets.map(a => a[0]); for (const a of as) { const st = pairAssets.get(a) || new Set(); for (const b of as) if (b !== a) st.add(b); pairAssets.set(a, st); } }
+      S.layer2c = { candidates: M3.candidates || null, factories_listed: Object.values(M3.factories || {}).filter(x => x.listed).length, not_factories: Object.values(M3.factories || {}).filter(x => x.not_a_factory).length, factory_errors: Object.entries(M3.factories || {}).filter(([, x]) => x.error).map(([a, x]) => [a.slice(0, 14), x.error]), pools: Object.keys(M3.pairs || {}).length, monthly_rows: rowsOk }; } else S.layer2c = { not_run: true }; }   // 1.9
   if (I) for (const t of layer2Targets().filter(t => t.kind === 'pair')) { const rows = readJsonl(`layer2/${t.key}.jsonl.gz`); const last = rows && rows.filter(r => r.data && r.data.assets).pop(); if (!last) continue; const as = last.data.assets.map(a => a[0]); for (const a of as) { const s = pairAssets.get(a) || new Set(); for (const b of as) if (b !== a) s.add(b); pairAssets.set(a, s); } }
   const seriesOf = async (s) => { if (!(s in series)) { const r = await getJson(`${RAW}/tla-core/main/price-history/series/${encodeURIComponent(s)}.json`, 2, 20000); const days = r.ok && r.json.daily ? Object.keys(r.json.daily).sort() : []; series[s] = days.length ? { from: days[0], to: days[days.length - 1] } : null; } return series[s]; };
   const pc = { denoms: 0, wallet_weeks: 0, by_class: {}, top: [] };
@@ -743,8 +763,9 @@ async function audit() {
   const unval = Object.entries(pc.by_class).filter(([k]) => k !== 'symbol + price series').reduce((x, [, v]) => x + v.wallet_weeks, 0);
   if (unval) gaps.push({ id: 'prices', severity: 'medium', node: false, what: `${pc.wallet_weeks ? (100 * unval / pc.wallet_weeks).toFixed(1) : '?'} % of wallet-weeks held are in tokens without a direct price series (LP / amp / unlisted) — see prices.by_class` });
   console.log(`audit · prices: ${pc.denoms} denoms held · ${Object.entries(pc.by_class).map(([k, v]) => `${k} ${v.share_pct}%`).join(' · ')}`);
+  if (S.layer2c && !S.layer2c.not_run) console.log(`audit · layer2c: ${S.layer2c.candidates} unpriced tokens · ${S.layer2c.factories_listed} factories listed · ${S.layer2c.pools} pools · ${S.layer2c.monthly_rows} monthly reserve rows`);
 
-  if (pr.uncovered.some(r => /Eris \/ TLA|LST|hub|BackBone/i.test(r.protocol || ''))) gaps.push({ id: 'layer2-tla-lst', severity: 'high', node: true, what: 'TLA (ve3 compounding / staking / gauges / vAMP) and LST hub state are not in layer 2 — needed to value amp positions before the dex state-history (epoch 97)' });
+  if (!S.layer2b || S.layer2b.not_run || !S.layer2b.answering) gaps.push({ id: 'layer2-tla-lst', severity: 'high', node: true, what: 'TLA (ve3 compounding / staking / gauges / vAMP) and LST hub state are not in layer 2 — needed to value amp positions before the dex state-history (epoch 97)' });
   out.gaps = gaps; out.summary = gaps.map(g => `[${g.severity}${g.node ? ' · needs the node' : ''}] ${g.id}: ${g.what}`);
 
   // ── write: full (private) + counts only (public, guarded: no cohort wallet may appear) ──
@@ -796,31 +817,45 @@ function layer2bTargets() {
 async function layer1b() {
   const C = readJson('cohort/current.json', null); if (!C) throw new Error('no cohort');
   const man = readJson('layer1/_manifest.json', null); if (!man) throw new Error('no layer1 manifest');
-  const todo = Object.keys(C.wallets).filter(shardOk).filter(w => !(man.wallets[w] && man.wallets[w].top18));
-  console.log(`layer1b: ${todo.length} wallets to search under ${KEYS_18.length} more keys · concurrency ${CONC}`);
-  let done = 0, added = 0, errs = 0, lastCommit = Date.now(); const byKey = {};
+  const cohort = Object.keys(C.wallets).filter(shardOk);
+  // 1.9: a key the node rejects (the same error on two wallets, not a timeout) is dropped with its message and never searched again
+  man.keys_dropped = man.keys_dropped || {}; const norm = (e) => String(e || '').replace(/terra1[0-9a-z]{38,58}/g, '<addr>');
+  { const fails = {}, tried = {}; for (const m of Object.values(man.wallets)) for (const [k, x] of Object.entries(m.searches || {})) { if (!KEYS_18.includes(k) || !x) continue; tried[k] = (tried[k] || 0) + 1; if (x.error) { const e = norm(x.error).slice(0, 200); (fails[k] = fails[k] || {})[e] = (fails[k][e] || 0) + 1; } }
+    for (const k of KEYS_18) { if (man.keys_dropped[k] || !(tried[k] >= 20)) continue; const n = Object.values(fails[k] || {}).reduce((a, b) => a + b, 0);
+      if (n >= 0.95 * tried[k]) { const msg = Object.entries(fails[k]).sort((a, b) => b[1] - a[1])[0][0]; man.keys_dropped[k] = msg; console.log(`layer1b: ${k} — failed on ${n} of ${tried[k]} wallets already (${msg.slice(0, 120)}) — dropped, not retried`); } } }   // the record alone settles it
+  const proven = new Set(); for (const m of Object.values(man.wallets)) for (const [k, x] of Object.entries(m.searches || {})) if (x && x.total != null && !x.error) proven.add(k);   // a key that already answered for some wallet needs no probe
+  for (const key of KEYS_18) { if (man.keys_dropped[key] || proven.has(key)) continue; const errs = [];
+    for (const w of cohort.slice(0, 2)) { const r = await txSearch(`${key}='${w}'`, 1); errs.push(r.error ? norm(r.error) : null); }
+    if (errs.length === 2 && errs[0] && errs[0] === errs[1] && !/HTTP (0|429|502|503|504)\b/.test(errs[0])) { man.keys_dropped[key] = errs[0].slice(0, 200); console.log(`layer1b: ${key} — the node rejects this query: ${errs[0].slice(0, 160)} (dropped, not retried)`); } }
+  DROPPED_KEYS = new Set(Object.keys(man.keys_dropped)); const keys = KEYS_18.filter(k => !DROPPED_KEYS.has(k));
+  const todo = cohort.filter(w => !(man.wallets[w] && man.wallets[w].top18));
+  console.log(`layer1b: ${todo.length} wallets not complete · ${keys.length} keys (${DROPPED_KEYS.size} dropped) · concurrency ${CONC}`);
+  let done = 0, added = 0, errs = 0, settled = 0, lastCommit = Date.now(); const byKey = {};
   await pool(todo, CONC, async (w) => {
     if (overBudget()) return;
+    const m0 = man.wallets[w] || (man.wallets[w] = { done: true, txs: 0, parts: 0, searches: {} }); const prev = m0.searches || {};
+    const run = keys.filter(k => !(prev[k] && prev[k].total != null && !prev[k].error));   // 1.9: a key this wallet already searched in full is not searched again
+    if (!run.length) { m0.top18 = true; settled++; done++; return; }
     const have = new Set(); eachTx(w, (t) => have.add(t.x)); const dir = `layer1/${w.slice(-1)}/${w}`;
     let partNo = fs.existsSync(A(dir)) ? fs.readdirSync(A(dir)).filter(f => /^part-\d+\.jsonl\.gz$/.test(f)).length : 0; let part = []; const searches = {}; let failed = 0, n = 0;
     const flush = () => { if (!part.length) return; fs.mkdirSync(A(dir), { recursive: true }); fs.writeFileSync(A(`${dir}/part-${String(partNo++).padStart(3, '0')}.jsonl.gz`), zlib.gzipSync(part.map(x => JSON.stringify(x)).join('\n') + '\n')); part = []; };
-    for (const key of KEYS_18) { let page = 1, got = 0, total = null, err = null;
+    for (const key of run) { let page = 1, got = 0, total = null, err = null;
       while (true) { if (overBudget()) return; const r = await txSearch(`${key}='${w}'`, page); if (r.error) { err = r.error; break; } total = r.total; got += r.txs.length;
         for (const t of r.txs) { if (have.has(t.hash)) continue; have.add(t.hash); const rec = shapeTx(t); rec.k = key; part.push(rec); n++; bumpA(byKey, key); if (part.length >= PART_TXS) flush(); }
         if (!r.txs.length || got >= total) break; page++; }
       searches[key] = { total, pages: page, error: err || undefined }; if (err) failed++; }
-    flush(); const m = man.wallets[w] || (man.wallets[w] = { done: true, txs: 0, parts: 0, searches: {} });
+    flush(); const m = m0;
     m.txs = (m.txs || 0) + n; m.parts = partNo; Object.assign(m.searches || (m.searches = {}), searches); m.top18 = failed === 0; m.top18_added = (m.top18_added || 0) + n;
     done++; added += n; if (failed) errs++;
     if (Date.now() - lastCommit > 8 * 60000) { lastCommit = Date.now(); man.updated_at = new Date().toISOString(); writeJson('layer1/_manifest.json', man); commitPush(`layer1b: +${done} wallets`); }
     if (done % 100 === 0) console.log(`  … ${done}/${todo.length} wallets · +${added} txs · ${errs} with a failed search · ${minutes().toFixed(0)} min`);
   });
-  man.keys = [...new Set([...(man.keys || []), ...KEYS_18])]; man.updated_at = new Date().toISOString();
+  man.keys = [...new Set([...(man.keys || []), ...keys])]; man.updated_at = new Date().toISOString();
   man.counts = { wallets_done: Object.values(man.wallets).filter(x => x.done).length, txs: Object.values(man.wallets).reduce((x, v) => x + (v.txs || 0), 0), top18_done: Object.values(man.wallets).filter(x => x.top18).length };
   writeJson('layer1/_manifest.json', man); commitPush(`layer1b: ${done} wallets, +${added} txs`);
-  const left = Object.keys(C.wallets).filter(w => !(man.wallets[w] && man.wallets[w].top18)).length;
-  console.log(`layer1b run: ${done} wallets · +${added} new txs (${Object.entries(byKey).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v).join(' · ') || 'none'}) · ${errs} with a failed search · ${left ? left + ' wallets left' : 'ALL DONE'}`);
-  return left;
+  const left = cohort.filter(w => !(man.wallets[w] && man.wallets[w].top18)).length;
+  console.log(`layer1b run: ${done} wallets (${settled} settled without a search — every key already searched) · +${added} new txs (${Object.entries(byKey).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v).join(' · ') || 'none'}) · ${errs} with a failed search · ${left ? left + ' wallets left' : 'ALL DONE'}`);
+  return { left, added };
 }
 async function layer2b(floors) {
   const H = readJson('layer2/heights.json', null); if (!H) throw new Error('no layer2/heights.json');
@@ -844,48 +879,108 @@ async function layer2b(floors) {
     if (overBudget() || halted) return; const r = await smartAt(t.addr, t.q, w.h); n++; let row;
     if (r.ok) { ok++; row = { d: w.d, h: w.h, data: r.json && r.json.data }; }
     else if (/no such contract|not found|unknown variant|Error parsing into type/i.test(r.body || '')) { absent++; row = { d: w.d, h: w.h, absent: say(r).slice(0, 100) }; }   // not there yet / no longer / older version without this query
-    else { bad++; if (brk.bad(r) && !halted) { halted = true; console.log('layer2b: 150 failures in a row — stopping'); try { fs.writeFileSync('gapfill_stop.txt', '1'); } catch { } process.exitCode = 1; } return; }
+    else { bad++; if (brk.bad(r) && !halted) { halted = true; console.log('layer2b: 150 failures in a row — stopping'); try { fs.writeFileSync(`${MODE}_stop.txt`, '1'); } catch { } process.exitCode = 1; } return; }
     brk.ok(); (buf.get(t.key) || buf.set(t.key, []).get(t.key)).push(row); man.targets[t.key].done[w.d] = 1;
     if (n % 1000 === 0) console.log(`  … ${n}/${tasks.length} reads · ok ${ok} · not there ${absent} · failed ${bad} · ${minutes().toFixed(0)} min`);
     if (Date.now() - lastCommit > 8 * 60000) { lastCommit = Date.now(); flush(); commitPush(`layer2b: +${n} reads`); } });
   flush(); commitPush(`layer2b: ${ok} answers`); brk.report();
+  man.contract_floor = floors.contract;   // 1.9: what the audit measures 2b against
+  flush();
   const left = tasks.length - ok - absent; console.log(`layer2b run: ${n} reads · ok ${ok} · not there that week ${absent} · failed ${bad} · ${left > 0 ? left + ' left' : 'ALL DONE'}`);
   return Math.max(0, left);
 }
+const DEAD_STATE = /invalid denom|panic|unknown request|does not exist|pruned|failed to load state|version mismatch/i;   // 1.9: the node fails on its own state here — never retried
 async function layer3b() {
   const C = readJson('cohort/current.json', null); const L3M = readJson('layer3/_manifest.json', { wallets: {} });
   const tasks = []; const files = new Map();
-  for (const w of Object.keys(C.wallets).filter(shardOk)) { const f = `layer3/${w.slice(-1)}/${w}.jsonl.gz`; const rows = readJsonl(f); if (!rows) continue; const miss = rows.filter(r => r.delegations == null); if (!miss.length) continue; files.set(w, rows); for (const r of miss) tasks.push([w, r]); }
+  for (const w of Object.keys(C.wallets).filter(shardOk)) { const f = `layer3/${w.slice(-1)}/${w}.jsonl.gz`; const rows = readJsonl(f); if (!rows) continue; const miss = rows.filter(r => r.delegations == null && !r.delegations_unreadable); if (!miss.length) continue; files.set(w, rows); for (const r of miss) tasks.push([w, r]); }
   console.log(`layer3b: ${tasks.length} checkpoints without delegations (${files.size} wallets)`);
-  const brk = breaker(); let ok = 0, bad = 0, halted = false; const failSeen = {};
+  const brk = breaker(); let ok = 0, bad = 0, dead = 0, halted = false; const failSeen = {}; const deadAt = new Map();
   await pool(tasks, CONC, async ([w, r]) => { if (overBudget() || halted) return;
+    const dh = deadAt.get(r.h); if (dh && dh.n >= 3) { r.delegations_unreadable = dh.msg; dead++; return; }   // 3 wallets failed the same way at this height — the state is gone there
     const del = ROUTE === 'rpc' ? await stateRpc('delegations', w, r.h) : await lcdAt(`/cosmos/staking/v1beta1/delegations/${w}?pagination.limit=200`, r.h);
-    if (!del.ok) { bad++; bumpA(failSeen, say(del).slice(0, 80)); if (brk.bad(del) && !halted) { halted = true; console.log('layer3b: 150 failures in a row — stopping'); } return; }
+    if (!del.ok) { if (DEAD_STATE.test(del.body || '')) { const msg = say(del).slice(0, 120); r.delegations_unreadable = msg; dead++; const x = deadAt.get(r.h) || { n: 0, msg }; x.n++; deadAt.set(r.h, x); return; }
+      bad++; bumpA(failSeen, say(del).slice(0, 80)); if (brk.bad(del) && !halted) { halted = true; console.log('layer3b: 150 failures in a row — stopping'); } return; }
     brk.ok(); ok++; r.delegations = (del.json.delegation_responses || []).map(x => [x.delegation.validator_address, x.balance && x.balance.amount]); });
   for (const [w, rows] of files) gz(`layer3/${w.slice(-1)}/${w}.jsonl.gz`, rows);
-  if (ok) { L3M.delegations_refilled = (L3M.delegations_refilled || 0) + ok; writeJson('layer3/_manifest.json', L3M); commitPush(`layer3b: ${ok} delegations refilled`); }
+  if (ok || dead) { L3M.delegations_refilled = (L3M.delegations_refilled || 0) + ok; L3M.delegations_unreadable = (L3M.delegations_unreadable || 0) + dead; writeJson('layer3/_manifest.json', L3M); commitPush(`layer3b: ${ok} delegations refilled, ${dead} unreadable`); }
   if (bad) console.log('layer3b failures: ' + Object.entries(failSeen).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k, v]) => `${v}× ${k}`).join(' | '));
-  console.log(`layer3b run: ${ok} refilled · ${bad} failed (${bad ? 'kept as null — re-run gapfill to retry' : 'none'})`);
+  console.log(`layer3b run: ${ok} refilled · ${dead} unreadable on this node (marked — the derive rebuilds them from delegate / undelegate events) · ${bad} failed (${bad ? 'kept as null — a later run retries them' : 'none'})`);
   return bad;
 }
 function gz(p, rows) { fs.mkdirSync(path.dirname(A(p)), { recursive: true }); fs.writeFileSync(A(p), zlib.gzipSync(rows.map(r => JSON.stringify(r)).join('\n') + '\n')); }
-async function gapfill() {
+// ── 1.9: layer2c — price pools for every token the cohort held that nothing prices ──────────────────────────────────────
+// The audit found 21 % of wallet-weeks held in tokens with no price series, no LP / amp / LST code and no pool layer 2 reads (layer 2 read
+// only pools the cohort itself swapped or provided in). Those tokens may still trade: the DEX factories that instantiated the cohort's
+// pairs (contract_info.creator) list every pair they made ({pairs:{start_after,limit}} — Astroport, Terraswap-era, White Whale share the
+// shape). Every pair holding a candidate token is read MONTHLY (the first weekly boundary of each month, from the contract floor — these are
+// thin, mostly dead tokens; the derive interpolates) → archive/layer2c/<pair>.jsonl.gz, rows in layer 2's pair format. Resumable.
+const SERIES_SPAN = {};
+async function seriesSpan(sym) { if (!(sym in SERIES_SPAN)) { const r = await getJson(`${RAW}/tla-core/main/price-history/series/${encodeURIComponent(sym)}.json`, 2, 20000); const days = r.ok && r.json.daily ? Object.keys(r.json.daily).sort() : []; SERIES_SPAN[sym] = days.length ? { from: days[0], to: days[days.length - 1] } : null; } return SERIES_SPAN[sym]; }
+const NOT_PRICE_TOKEN = /LP token|amp compounder|LST/i;
+async function layer2c(floors, weeks) {
+  const C = readJson('cohort/current.json', null); const invF = fs.readdirSync(A('inventory')).filter(f => /^\d{4}-\d\d-\d\d\.json$/.test(f)).sort().pop(); const I = readJson('inventory/' + invF, { contracts: {} });
+  let labels = {}; try { labels = JSON.parse(fs.readFileSync(path.join(process.env.CORE_OUT || 'docs/deep-history', 'protocol-labels.json'), 'utf8')).by_code_id || {}; } catch { }
+  const codeOf = (a) => (I.contracts[a] && String(I.contracts[a].code_id || '')) || null; const protoOf = (c) => (labels[c] && `${labels[c].protocol} — ${labels[c].what}`) || '';
+  const man = readJson('layer2c/_manifest.json', { version: VERSION, factories: {}, pairs: {} });
+  const resolve = await loadResolver(); if (!resolve) { console.log('layer2c: the token catalog / denom rule could not be loaded — skipped (every token would look unpriced)'); return 0; }
+  const held = new Map(); for (const w of Object.keys(C.wallets)) { let F; try { F = JSON.parse(zlib.gunzipSync(fs.readFileSync(A(`derived/flows/${w.slice(-1)}/${w}.json.gz`))).toString('utf8')); } catch { continue; }
+    for (const [d, arr] of Object.entries(F.balances || {})) { let n = 0; for (const v of arr) if (v !== '0' && !String(v).startsWith('-')) n++; if (n) held.set(d, (held.get(d) || 0) + n); } }
+  const inPools = new Set(); for (const t of layer2Targets().filter(t => t.kind === 'pair')) for (const r of readJsonl(`layer2/${t.key}.jsonl.gz`) || []) if (r.data && r.data.assets) for (const a of r.data.assets) inPools.add(a[0]);
+  const cand = new Map();
+  for (const [d, ww] of held) { const bare = d.startsWith('cw20:') ? d.slice(5) : d; if (bare === 'uluna' || inPools.has(bare)) continue;
+    const code = d.startsWith('cw20:') ? codeOf(bare) : null; if (code && NOT_PRICE_TOKEN.test(protoOf(code))) continue;
+    const sym = resolve ? (resolve(d) || {}).symbol : null; if (sym && await seriesSpan(sym)) continue;
+    cand.set(bare, ww); }
+  const factories = new Set(); for (const x of Object.values(I.contracts)) if (PAIR_CODES.has(String(x.code_id || '')) && x.creator) factories.add(x.creator);
+  const newest = weeks[weeks.length - 1]; const l2 = new Set(layer2Targets().map(t => t.addr));
+  const assetOf = (ai) => ai && (ai.native_token ? ai.native_token.denom : ai.token ? ai.token.contract_addr : null);
+  for (const f of factories) { const fm = man.factories[f] || (man.factories[f] = {}); if (fm.listed || fm.not_a_factory) continue;
+    let start = null, pages = 0, listed = 0, err = null;
+    while (pages < 400 && !overBudget()) { const r = await smartAt(f, { pairs: start ? { start_after: start, limit: 30 } : { limit: 30 } }, newest.h);
+      if (!r.ok) { err = r; break; } const ps = (r.json && r.json.data && r.json.data.pairs) || []; pages++; listed += ps.length;
+      for (const pr of ps) { const as = (pr.asset_infos || []).map(assetOf); const hit = as.filter(a => cand.has(a)); if (!hit.length || !pr.contract_addr || l2.has(pr.contract_addr)) continue;
+        if (!man.pairs[pr.contract_addr]) man.pairs[pr.contract_addr] = { factory: f, assets: as, weight: hit.reduce((x, a) => x + cand.get(a), 0), done: {} }; }
+      if (ps.length < 30) break; start = ps[ps.length - 1].asset_infos; }
+    if (err) { const msg = say(err).slice(0, 140); if (/unknown variant|Error parsing|no such contract|not found/i.test(err.body || '')) fm.not_a_factory = msg; else fm.error = msg; console.log(`layer2c: ${f.slice(0, 16)}… — not listed: ${msg}`); }
+    else { fm.listed = true; fm.pairs_listed = listed; fm.pages = pages; console.log(`layer2c: factory ${f.slice(0, 16)}… — ${listed} pairs listed`); } }
+  const months = []; { const seen = new Set(); for (const w of weeks) { const m = w.d.slice(0, 7); if (seen.has(m)) continue; seen.add(m); if (w.h >= floors.contract) months.push(w); } }
+  const P = Object.entries(man.pairs).sort((a, b) => b[1].weight - a[1].weight).slice(0, 400);
+  const tasks = []; for (const [addr, pm] of P) for (const m of months) if (!pm.done[m.d]) tasks.push([addr, m]);
+  console.log(`layer2c: ${cand.size} held tokens nothing prices · ${factories.size} pair creators (${Object.values(man.factories).filter(x => x.listed).length} factories listed) · ${Object.keys(man.pairs).length} pools hold them (${P.length} read) · ${tasks.length} monthly reads to do`);
+  const brk = breaker(); let halted = false; const buf = new Map(); let n = 0, ok = 0, absent = 0, bad = 0, lastCommit = Date.now();
+  const flush = () => { for (const [addr, rows] of buf) { const f = `layer2c/${addr}.jsonl.gz`; let old = ''; try { old = zlib.gunzipSync(fs.readFileSync(A(f))).toString('utf8'); } catch { } fs.mkdirSync(path.dirname(A(f)), { recursive: true }); fs.writeFileSync(A(f), zlib.gzipSync(old + rows.map(r => JSON.stringify(r)).join('\n') + '\n')); } buf.clear(); man.updated_at = new Date().toISOString(); man.contract_floor = floors.contract; man.candidates = cand.size; writeJson('layer2c/_manifest.json', man); };
+  await pool(tasks, CONC, async ([addr, m]) => {
+    if (overBudget() || halted) return; const r = await smartAt(addr, { pool: {} }, m.h); n++; let row;
+    if (r.ok) { ok++; const data = r.json && r.json.data; row = { d: m.d, h: m.h, data: data ? { assets: (data.assets || []).map(a => [a.info && (a.info.native_token ? a.info.native_token.denom : a.info.token && a.info.token.contract_addr), a.amount]), total_share: data.total_share } : null }; }
+    else if (/no such contract|not found|unknown variant|Error parsing into type/i.test(r.body || '')) { absent++; row = { d: m.d, h: m.h, absent: true }; }
+    else { bad++; if (brk.bad(r) && !halted) { halted = true; console.log('layer2c: 150 failures in a row — stopping'); try { fs.writeFileSync(`${MODE}_stop.txt`, '1'); } catch { } process.exitCode = 1; } return; }
+    brk.ok(); (buf.get(addr) || buf.set(addr, []).get(addr)).push(row); man.pairs[addr].done[m.d] = 1;
+    if (Date.now() - lastCommit > 8 * 60000) { lastCommit = Date.now(); flush(); commitPush(`layer2c: +${n} reads`); } });
+  flush(); commitPush(`layer2c: ${ok} pool answers`); brk.report();
+  const left = tasks.length - ok - absent; console.log(`layer2c run: ${n} reads · ok ${ok} · pool not there yet ${absent} · failed ${bad} · ${left > 0 ? left + ' left' : 'ALL DONE'}`);
+  return Math.max(0, left);
+}
+// ── 1.9: closeout (gapfill runs it too) — settle what is left, fetch the price pools, re-derive if anything new arrived, re-audit ──
+async function closeout() {
   const H = readJson('layer2/heights.json', null); const weeks = H ? Object.entries(H.rows).map(([d, x]) => ({ d, h: x.h })) : [];
-  const samples = layer2bTargets().filter(t => t.kind === 'tla_v3');
-  const pick = await chooseRoute('gapfill', samples, weeks); if (!pick) return;
-  const floors = { bank: pick.floor, contract: pick.wasmFloor }; console.log(`gapfill · node floors: bank ${floors.bank.toLocaleString('en-US')} · contracts ${floors.contract.toLocaleString('en-US')}`);
-  const left1 = await layer1b(); if (overBudget() || fs.existsSync('gapfill_stop.txt')) return finish(left1 || 1);
-  const left2 = await layer2b(floors); if (overBudget() || fs.existsSync('gapfill_stop.txt')) return finish(left2 || 1);
-  const left3 = await layer3b(); if (overBudget()) return finish(1);
-  function finish(left) { try { fs.writeFileSync('gapfill_left.txt', String(left)); } catch { } console.log(`gapfill: stopped with work left — the next run continues (chain)`); }
-  // everything fetched → re-derive and re-audit (no chain needed after this)
-  console.log('gapfill · all fetched — re-running flows (with the new txs) and the audit');
-  await flowsMode(); await audit();
-  try { fs.writeFileSync('gapfill_left.txt', '0'); } catch { }
-  console.log(`gapfill: DONE${left1 || left2 || left3 ? ` (with ${left1 + left2 + left3} items that failed and were kept for a later run — see the lines above)` : ''}`);
+  const invF = fs.readdirSync(A('inventory')).filter(f => /^\d{4}-\d\d-\d\d\.json$/.test(f)).sort().pop(); const I = readJson('inventory/' + invF, { contracts: {} });
+  const samples = layer2Targets().filter(t => t.kind === 'pair').sort((a, b) => ((I.contracts[b.addr] || {}).txs || 0) - ((I.contracts[a.addr] || {}).txs || 0));   // the floor is measured on the earliest-starting busy pair (1.9)
+  const pick = await chooseRoute(MODE, samples, weeks); if (!pick) return;
+  const floors = { bank: pick.floor, contract: pick.wasmFloor }; console.log(`${MODE} · node floors: bank ${floors.bank.toLocaleString('en-US')} · contracts ${floors.contract.toLocaleString('en-US')}`);
+  const finish = (left) => { try { fs.writeFileSync(`${MODE}_left.txt`, String(left)); } catch { } console.log(`${MODE}: stopped with work left — the next run continues (chain)`); };
+  const stop = () => overBudget() || fs.existsSync(`${MODE}_stop.txt`);
+  const r1 = await layer1b(); if (stop()) return finish(r1.left || 1);
+  const left2 = await layer2b(floors); if (stop()) return finish(left2 || 1);
+  const left3 = await layer3b(); if (stop()) return finish(left3 || 1);
+  const left4 = await layer2c(floors, weeks); if (stop()) return finish(left4 || 1);
+  if (r1.added) { console.log(`${MODE} · +${r1.added} txs — re-running flows`); await flowsMode(); } else console.log(`${MODE} · no new txs — flows unchanged`);
+  await audit();
+  const left = r1.left + left2 + left3 + left4; try { fs.writeFileSync(`${MODE}_left.txt`, '0'); } catch { }   // no self-restart after the audit: what is left failed transiently and is named above
+  console.log(`${MODE}: DONE${left ? ` — ${left} items failed transiently (kept for a later run; nothing the node rejects is retried)` : ' — nothing left'}`);
 }
 
 if (!RPCS.length && !['cohort', 'inventory', 'flows', 'audit'].includes(MODE)) { console.error('ARCHIVE_RPC not set'); process.exit(1); }
 if (!T) console.log('note: cosmjs-types not installed — messages will not be decoded (events are still kept)');
-const run = { timing, cohort, layer1, inventory, layer2, layer3, flows: flowsMode, audit, gapfill }[MODE]; if (!run) { console.error('unknown MODE ' + MODE); process.exit(1); }
+const run = { timing, cohort, layer1, inventory, layer2, layer3, flows: flowsMode, audit, gapfill: closeout, closeout }[MODE]; if (!run) { console.error('unknown MODE ' + MODE); process.exit(1); }
 await run();
