@@ -19,7 +19,14 @@ const PAIR = addr(101, 58), ROAR = addr(102, 58), AMP = addr(103, 58), COMP = ad
 const FACT = addr(107, 58), TOKX = addr(108, 58), PAIR2 = addr(109, 58);   // 1.9: a DEX factory, a held token nothing prices, the pool that prices it (created at 1.5M)
 const BUCKETS = ['terra1v399cx9drllm70wxfsgvfe694tdsd9x96p9ha36w7muffe4znlusqswspq', 'terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa', 'terra14mmvqn0kthw6sre75vku263lafn5655mkjdejqjedjga4cw0qx2qlf4arv', 'terra1qdz5qgafx88kp5mf6m2tah8742g4u5g2cek0m3jrgssexexk7g4qw6e23k'];
 const HUB2580 = 'terra1jwyzzsaag4t0evnuukc35ysyrx9arzdde2kg9cld28alhjurtthq0prs2s';
-const DEL_DEAD = 900000;   // 1.9: below this the node fails delegation reads with "invalid denom: : panic" (as the archive node did)
+const DEL_DEAD = 900000;
+// 2.0 ratios fixtures — the real hub / LST addresses (walk.mjs LST_DEF / LST_HUBS)
+const HUB = { ampLUNA: 'terra10788fkzah89xrdm27zkj5yvhj9x3494lxawzm5qq3vvxcqz2yzaqyd3enk', bLUNA: 'terra1l2nd99yze5fszmhl5svyh5fky9wm4nz4etlgnztfu4e8809gd52q04n3ea', ampROAR: 'terra1vklefn7n6cchn0u962w3gaszr4vf52wjvd4y95t2sydwpmpdtszsqvk9wy' };
+const LSTD = { ampLUNA: 'terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct', bLUNA: 'terra17aj4ty4sz4yhgm08na8drc0v03v2jwr3waxcqrwhajj729zhl7zqnpc0ml', ampROAR: 'factory/terra1vklefn7n6cchn0u962w3gaszr4vf52wjvd4y95t2sydwpmpdtszsqvk9wy/ampROAR' };
+const ROAR_REAL = 'terra1lxx40s29qvkrcj8fsa3yzyehy7w50umdvvnls2r830rys6lu2zns63eelv';
+const STL = 'ibc/STLUNA00000000000000000000000000000000000000000000000000000000', PAIR3 = addr(111, 58), OTHER = 'terra1' + 'q'.repeat(38);
+const rAmp = (h) => 1 + Math.floor(Math.max(h, 200000) / 50000) * 50000 / 1e7;   // ampLUNA's rate moves only at a harvest (every 50K blocks) — the hub's stored history
+const rB = (h) => 1.2 + h / 2e7, rR = (h) => 1.05 + h / 4e7, rS = (h) => 1.3 + h / 1e7;   // 1.9: below this the node fails delegation reads with "invalid denom: : panic" (as the archive node did)
 // 20 Mondays from 2024-01-01; heights 100,000 apart. Bank floor 500,000 (week 5), contract floor 1,000,000 (week 10).
 const weeks = Array.from({ length: 20 }, (_, i) => ({ d: new Date(Date.UTC(2024, 0, 1) + i * 7 * 864e5).toISOString().slice(0, 10), h: 100000 * (i + 1) }));
 const BANK_FLOOR = 500000, WASM_FLOOR = 1000000, TOP = 2100000, PAIR2_FROM = 1500000;
@@ -59,7 +66,7 @@ wr(`${ARC}/layer3/_manifest.json`, L3M);
 // the real rule when a platform-crons checkout is given (DENOM_SYMBOL_JS=…/platform-crons/lib/denom-symbol.js), else its public copy is fetched
 const dsSrc = process.env.DENOM_SYMBOL_JS ? fs.readFileSync(process.env.DENOM_SYMBOL_JS, 'utf8') : await (await fetch('https://raw.githubusercontent.com/thealliancedao/platform-crons/main/lib/denom-symbol.js')).text();
 wr(`${PUB}/platform-crons/main/lib/denom-symbol.js`, dsSrc);
-wr(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, { tokens: [{ denom: ROAR, effective: { symbol: 'ROAR', decimals: 6 } }] });
+wr(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, { tokens: [{ denom: ROAR, effective: { symbol: 'ROAR', decimals: 6 } }, { denom: STL, effective: { symbol: 'stLUNA', decimals: 6 } }] });
 wr(`${PUB}/tla-core/main/price-history/series/LUNA.json`, { daily: { '2022-05-28': 1, '2026-09-30': 0.05 } });
 wr(`${PUB}/tla-core/main/price-history/series/ROAR.json`, { daily: { '2023-01-01': 1e-5, '2026-09-30': 1e-6 } });
 
@@ -71,12 +78,22 @@ const acks = wallets.slice(0, 2).map((w, k) => tx(1450000 + k, [ev('wasm', { _co
 const toRpcTx = (t) => ({ hash: t.x, height: String(t.h), index: 0, tx_result: { code: 0, gas_wanted: '1', gas_used: '1', events: t.e.map(e => ({ type: e.t, attributes: e.a.map(([key, value]) => ({ key, value })) })) }, tx: null });
 const abciResp = (res, value, log) => res.end(JSON.stringify({ result: { response: log ? { code: 18, log } : { code: 0, value: Buffer.from(value).toString('base64') } } }));
 const NODE = { tx_search: 0 };
+const chainTx = []; let cx = 0; const ctx = (h, e) => chainTx.push({ h, x: 'C' + (++cx).toString(16).padStart(8, '0'), i: 0, c: 0, e, m: [{ type: '/cosmwasm.wasm.v1.MsgExecuteContract', value: {} }] });
+for (let h = 120000; h <= 2050000; h += 35000) {   // bonds on every hub, swaps in the stLUNA pool — by someone outside the cohort
+  const amt = 1000000 + h; ctx(h + 7, [ev('transfer', { recipient: HUB.ampLUNA, sender: OTHER, amount: `${amt}uluna` }), ev('wasm', { _contract_address: HUB.ampLUNA, action: 'erishub/bond' }), ev('wasm', { _contract_address: LSTD.ampLUNA, action: 'mint', to: OTHER, amount: String(Math.round(amt / rAmp(h + 7))) })]);
+  ctx(h + 9, [ev('transfer', { recipient: HUB.bLUNA, sender: OTHER, amount: `${amt}uluna` }), ev('wasm', { _contract_address: HUB.bLUNA, action: 'bond' }), ev('wasm', { _contract_address: LSTD.bLUNA, action: 'mint', to: OTHER, amount: String(Math.round(amt / rB(h + 9))) })]);
+  ctx(h + 11, [ev('wasm', { _contract_address: ROAR_REAL, action: 'send', from: OTHER, to: HUB.ampROAR, amount: String(amt * 1000) }), ev('wasm', { _contract_address: HUB.ampROAR, action: 'erishub/bond' }), ev('tf_mint', { mint_to_address: OTHER, amount: `${Math.round(amt * 1000 / rR(h + 11))}${LSTD.ampROAR}` })]);
+  ctx(h + 13, [ev('wasm', { _contract_address: PAIR3, action: 'swap', offer_asset: STL, ask_asset: 'uluna', offer_amount: '1000000', return_amount: String(Math.round(1e6 * rS(h + 13) * 0.997)), commission_amount: String(Math.round(1e6 * rS(h + 13) * 0.003)) })]);
+}
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x'); res.setHeader('content-type', 'application/json');
   if (u.pathname.endsWith('/status')) return res.end(JSON.stringify({ result: { sync_info: { latest_block_height: String(TOP) } } }));
   if (u.pathname.endsWith('/block')) { const h = Number(u.searchParams.get('height')); return res.end(JSON.stringify({ result: { block: { header: { time: new Date(blockTime(h)).toISOString() } } } })); }
   if (u.pathname.endsWith('/tx_search')) { const q = u.searchParams.get('query').replace(/^"|"$/g, ''); NODE.tx_search++;
     if (/^[^=]*\//.test(q)) { res.statusCode = 500; return res.end(JSON.stringify({ jsonrpc: '2.0', id: -1, error: { code: -32603, message: 'Internal error', data: `failed to parse query: "${q}": unexpected token at "/"` } })); }   // 1.9: as the archive node did
+    if (/ AND tx\.height/.test(q)) { const c = (q.match(/_contract_address='([^']+)'/) || [])[1]; const lo = Number((q.match(/tx\.height>=(\d+)/) || [])[1]), hi = Number((q.match(/tx\.height<(\d+)/) || [])[1]);
+      const all = chainTx.filter(t => t.h >= lo && t.h < hi && t.e.some(e => e.a.some(([k, x]) => k === '_contract_address' && x === c))); const pg = Number(u.searchParams.get('page') || 1), pp = Number(u.searchParams.get('per_page') || 30);
+      return res.end(JSON.stringify({ result: { total_count: String(all.length), txs: all.slice((pg - 1) * pp, pg * pp).map(toRpcTx) } })); }
     const [key, v] = q.split("='"); const w = v.replace(/'$/, ''); const [type, attr] = key.split('.');
     const pool = [...allTx, ...hidden, ...acks].filter(t => t.e.some(e => e.t === type && e.a.some(([k, x]) => k === attr && x === w)));
     return res.end(JSON.stringify({ result: { total_count: String(pool.length), txs: pool.map(toRpcTx) } })); }
@@ -88,7 +105,12 @@ const server = http.createServer((req, res) => {
       if (h < WASM_FLOOR) return abciResp(res, null, 'panic: unknown request');
       const reply = (o) => abciResp(res, W.QuerySmartContractStateResponse.encode({ data: Buffer.from(JSON.stringify(o)) }).finish());
       if (msg.__audit_probe__) return abciResp(res, null, 'Error parsing into type ve3_asset_compounding::msg::QueryMsg: unknown variant `__audit_probe__`, expected one of `config`, `exchange_rates`, `user_infos`: query wasm contract failed: invalid request');
-      if (q.address === FACT && msg.pairs) return reply({ pairs: msg.pairs.start_after ? [] : [{ asset_infos: [{ native_token: { denom: 'uluna' } }, { token: { contract_addr: ROAR } }], contract_addr: PAIR, liquidity_token: LP, pair_type: { xyk: {} } }, { asset_infos: [{ native_token: { denom: 'uluna' } }, { token: { contract_addr: TOKX } }], contract_addr: PAIR2, liquidity_token: addr(110, 58), pair_type: { xyk: {} } }] });
+      if (q.address === HUB.ampLUNA) { if (msg.exchange_rates) { const pts = []; for (let x = 200000; x <= h; x += 50000) pts.push([Math.floor(blockTime(x) / 1000), String(rAmp(x))]); pts.reverse(); const sa = msg.exchange_rates.start_after; const lim = msg.exchange_rates.limit || 10; return reply({ exchange_rates: pts.filter(p => sa == null || p[0] < sa).slice(0, lim), apr: '0.1' }); } return abciResp(res, null, 'Error parsing into type eris::hub::QueryMsg: unknown variant'); }
+      if (q.address === HUB.bLUNA) { if (msg.state) return reply({ total_usteak: '1', total_uluna: '1', exchange_rate: String(rB(h)) }); return abciResp(res, null, 'Error parsing into type steak::hub::QueryMsg: unknown variant `exchange_rates`'); }
+      if (q.address === HUB.ampROAR) { if (msg.state) return reply({ exchange_rate: String(rR(h)) }); return abciResp(res, null, 'Error parsing into type eris::hub::QueryMsg: unknown variant `exchange_rates`'); }
+      if (q.address === PAIR3) { if (msg.pool) return reply({ assets: [{ info: { native_token: { denom: STL } }, amount: '9000000' }, { info: { native_token: { denom: 'uluna' } }, amount: '12000000' }], total_share: '100' });
+        if (msg.simulation) { const off = Number(msg.simulation.offer_asset.amount); return reply({ return_amount: String(Math.round(off * rS(h) * 0.997)), spread_amount: '0', commission_amount: String(Math.round(off * rS(h) * 0.003)) }); } }
+      if (q.address === FACT && msg.pairs) return reply({ pairs: msg.pairs.start_after ? [] : [{ asset_infos: [{ native_token: { denom: STL } }, { native_token: { denom: 'uluna' } }], contract_addr: PAIR3, liquidity_token: addr(112, 58), pair_type: { stable: {} } }, { asset_infos: [{ native_token: { denom: 'uluna' } }, { token: { contract_addr: ROAR } }], contract_addr: PAIR, liquidity_token: LP, pair_type: { xyk: {} } }, { asset_infos: [{ native_token: { denom: 'uluna' } }, { token: { contract_addr: TOKX } }], contract_addr: PAIR2, liquidity_token: addr(110, 58), pair_type: { xyk: {} } }] });
       if (q.address === PAIR2) { if (h < PAIR2_FROM) return abciResp(res, null, `query wasm contract failed: contract ${PAIR2}: no such contract`); if (msg.pool) return reply({ assets: [{ info: { native_token: { denom: 'uluna' } }, amount: '500000' }, { info: { token: { contract_addr: TOKX } }, amount: '4000000' }], total_share: '1000' }); }
       if (msg.pool) return reply({ assets: [{ info: { native_token: { denom: 'uluna' } }, amount: '1000000' }, { info: { token: { contract_addr: ROAR } }, amount: '9000000' }], total_share: '5000' });
       if (msg.balance) { const w = msg.balance.address; const k = wallets.indexOf(w); let bal = 0; for (const t of allTx.filter(t => t.h <= h)) for (const e of t.e) { const a = Object.fromEntries(e.a); if (a._contract_address !== q.address) continue; if (a.to === w) bal += Number(a.amount); if (a.from === w) bal -= Number(a.amount); }
@@ -170,6 +192,29 @@ try {
   check('F5 flows + audit re-ran: the audit sees layer 2b, the 1.8 keys and no missing delegations', fin.sections.layer2b.targets > 0 && fin.sections.layer2b.dropped.length === 4 && fin.sections.layer1.searched_under_1_8_keys === 6 && fin.sections.layer3.delegations_null === 0 && fin.sections.layer1.txs === 20, { l2b: fin.sections.layer2b, l1: fin.sections.layer1.txs, l3: fin.sections.layer3.delegations_null });
   check('F6 no work left → the chain stops', fs.readFileSync(path.join(root, 'gapfill_left.txt'), 'utf8') === '0', null);
   const logG2 = await runMode('gapfill'); check('F7 a second gapfill run finds nothing to do (resumable, no duplicates)', /layer1b: 0 wallets/.test(logG2) && /0 weekly reads to do/.test(logG2) && /layer3b: 0 checkpoints/.test(logG2), logG2.slice(0, 600));
+  // ── 2.0 ratios on the same archive ──
+  const lr = await runMode('ratios'); console.log(lr.split('\n').filter(l => /^ratios/.test(l)).join('\n'));
+  const RD = path.join(CORE, 'chain-ratios'); const R = (sym) => JSON.parse(fs.readFileSync(path.join(RD, sym + '.json'), 'utf8'));
+  const dh = (() => { const W = JSON.parse(fs.readFileSync(path.join(ARC, 'layer2/heights.json'), 'utf8')).rows; const rows = Object.entries(W).map(([d, x]) => ({ t: Date.parse(d + 'T00:00:00Z'), h: x.h })); rows.push({ t: blockTime(TOP), h: TOP });
+    const m = new Map(); for (let i = 0; i + 1 < rows.length; i++) for (let t = rows[i].t; t < rows[i + 1].t; t += 864e5) m.set(new Date(t).toISOString().slice(0, 10), Math.round(rows[i].h + (rows[i + 1].h - rows[i].h) * (t - rows[i].t) / (rows[i + 1].t - rows[i].t))); return m; })();
+  const close = (a, b, tol = 1e-9) => Math.abs(a - b) <= tol * Math.max(1, Math.abs(b));
+  const raw = (sym, m) => { const f = path.join(ARC, 'ratios', `${sym}.${m}.jsonl.gz`); return fs.existsSync(f) ? zlib.gunzipSync(fs.readFileSync(f)).toString().trim().split('\n').filter(Boolean).map(l => JSON.parse(l)) : []; };
+  const aH = raw('ampLUNA', 'H').filter(r => r.r), aX = raw('ampLUNA', 'X'), aB = raw('ampLUNA', 'B').filter(r => r.r);
+  check(`R1 ampLUNA: the hub's rate at every post-floor day's block height (${aH.length} days, all exact) and its stored history paged to the start (${aX.length} days)`, aH.length >= 60 && aH.every(r => r.h >= WASM_FLOOR && close(r.r, rAmp(r.h))) && aX.length >= 38 && aX.every(r => Number.isFinite(r.r)) && aX[0].d === new Date(blockTime(200000)).toISOString().slice(0, 10), { H: aH.length, X: aX.length, x0: aX[0] });
+  check(`R2 ampLUNA bond txs before the floor: base in ÷ minted == the hub's rate at the bond (${aB.length} days); a day without bonds is not invented`, aB.length >= 15 && aB.every(r => close(r.r, rAmp(r.h + 7), 2e-6) || close(r.r, rAmp(r.h + 7 + 15000), 2e-6) || Math.abs(r.r / rAmp(r.h) - 1) < 0.006) && raw('ampLUNA', 'B').some(r => r.none), aB.slice(0, 3));
+  const bH = raw('bLUNA', 'H').filter(r => r.r), bB = raw('bLUNA', 'B').filter(r => r.r), bl = R('bLUNA');
+  check(`R3 bLUNA (state only): exact at block height (${bH.length} days); no stored history (dropped, with the hub's answer); bond txs agree with the hub where both exist (median ${bl.validation.B_vs_H && bl.validation.B_vs_H.median_pct} %)`, bH.length >= 60 && bH.every(r => close(r.r, rB(r.h))) && /unknown variant/.test(bl.dropped.X || '') && bB.length >= 15 && bl.validation.B_vs_H && bl.validation.B_vs_H.median_pct < 0.2, { v: bl.validation, d: bl.dropped });
+  const rB2 = raw('ampROAR', 'B').filter(r => r.r);
+  check(`R4 ampROAR (tokenfactory LST on a cw20 base): bond txs read right (${rB2.length} days within 0.2 % of the hub)`, rB2.length >= 15 && rB2.every(r => Math.abs(r.r / rR(r.h) - 1) < 0.002), rB2.slice(0, 2));
+  const ar = R('arbLUNA'), ac = R('ampCAPA');
+  check('R5 a hub that answers no rate is dropped with its answer — no rows, no guess', ar.days === 0 && ac.days === 0 && ar.dropped.H && ac.dropped.H, { ar: ar.dropped, ac: ac.dropped });
+  const sP = raw('stLUNA', 'P').filter(r => r.r), sS = raw('stLUNA', 'S').filter(r => r.r), st = R('stLUNA');
+  check(`R6 stLUNA (hub on another chain): its pool found through the factory; the quote at block height with the fee added back == the true rate (${sP.length} days, stable-swap safe); swaps before the floor (${sS.length} days) agree (median ${st.validation.S_vs_P && st.validation.S_vs_P.median_pct} %)`, sP.length >= 60 && sP.every(r => close(r.r, rS(r.h), 1e-6)) && sS.length >= 15 && sS.every(r => Math.abs(r.r / rS(r.h) - 1) < 0.002) && st.validation.S_vs_P && st.validation.S_vs_P.median_pct < 0.2, { v: st.validation });
+  const am = R('ampLUNA'); const measured = new Set([...aH, ...aX, ...aB].map(r => r.d)); const pub = Object.keys(am.daily);
+  const ix = JSON.parse(fs.readFileSync(path.join(RD, 'index.json'), 'utf8')); const txt = fs.readdirSync(RD).map(f => fs.readFileSync(path.join(RD, f), 'utf8')).join('');
+  check(`R7 no interpolation (every published ampLUNA day is a measured day: ${pub.length}); best source wins (post-floor days are H); no cohort wallet in the public files; index lists ${Object.keys(ix.series).length} series`, pub.every(d => measured.has(d)) && pub.filter(d => dh.get(d) >= WASM_FLOOR + 1000).every(d => am.daily[d][1] === 'H') && !wallets.some(w => txt.includes(w)) && ['ampLUNA', 'bLUNA', 'ampROAR', 'stLUNA'].every(x => ix.series[x] && ix.series[x].days > 0), { srcs: am.by_source });
+  const lr2 = await runMode('ratios');
+  check('R8 a second ratios run reads nothing new (resumable)', !/[1-9]\d* days · not there yet/.test(lr2.split('\n').filter(l => / H \(| P \(/.test(l)).join('\n')) && /ratios: DONE/.test(lr2), lr2.split('\n').filter(l => /^ratios ·.*(H|P|B|S) \(/.test(l)));
   env.ARCHIVE_RPC = 'http://127.0.0.1:9'; const logDown = await runMode('audit'); const full2 = JSON.parse(fs.readFileSync(path.join(ARC, 'audit', new Date().toISOString().slice(0, 10) + '.json'), 'utf8'));
   check('A14 node down: offline sections still run, probes skipped, floors from manifests', full2.sections.node.reachable === false && full2.sections.cw20_check.skipped && full2.sections.layer2.readable_missing === 1 && full2.sections.node.floors.source === 'manifests', full2.sections.node);
 } catch (e) { console.log('FAIL  run: ' + e.message.slice(0, 1500)); fails++; }

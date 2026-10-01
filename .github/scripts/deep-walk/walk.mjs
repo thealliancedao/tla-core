@@ -31,7 +31,7 @@
 // sequences are dropped. The log prints COUNTS ONLY (this Action's log is public) — never a wallet, a hash or an amount.
 import fs from 'fs'; import path from 'path'; import zlib from 'zlib'; import { execSync } from 'child_process'; import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const VERSION = 'deep-walk-1.9';   // 1.9 (2026-10-01): mode closeout (gapfill now runs it too) — settles what the 1.8 run left without re-walking: a search key the node REJECTS (same error on two wallets) is dropped with its message, never retried (1.8 retried each 5× with backoff on every wallet — most of its 5 h); keys a wallet already searched successfully are not searched again; the contract floor is measured on the earliest-starting contract (1.8 measured it on a 2024 bucket and read back to 2023-03: 300 reads below the real floor); a state read the node fails on deterministically ("invalid denom" — 3,688 delegations) is marked unreadable, not retried; NEW layer2c — price pools for every token the cohort held that nothing prices (pools found through the DEX factories that created the pairs, reserves monthly from the contract floor); the audit counts layer 2b / 2c as covered   // 1.8 (2026-09-30): mode gapfill — what the audit found missing, in one run: layer1b (every cohort wallet searched under 16 more keys, new txs only), layer2b (TLA v2 hub 2580, v3 buckets / gauges / vAMP / compounder / connectors, the 5 LST hubs, CAPA gov + staking, Lion DAO LP staking — weekly from the contract floor), layer3b (delegations the layer-3 rows lack); then flows and the audit re-run   // 1.7 (2026-09-30): mode audit — every layer checked against what was expected (and why anything is missing), the flows drift classified per wallet × denom, cw20 balances checked on a sample, layer-1 search keys checked on a sample, busy contracts layer 2 never read listed with their query API, price coverage of everything held; nothing re-read in bulk   // 1.6 (2026-09-30): contract reads get their own floor (the 1.5 run: bank reads from 2023-03, every older contract read "panic: unknown request") — found on the earliest-starting contract that answers, with a 7-point spread printed; "unknown request" is no longer read as the contract refusing (the 1.5 marks are cleared)   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
+const VERSION = 'deep-walk-2.0';   // 2.0 (2026-10-01): mode ratios — every liquid-staking rate measured on chain, daily: the hub at the day's block height (from the contract floor), the hub's stored history, bond txs before the floor (validated against the hub after it), cross-chain LSTs from their Terra pool's quote at block height and swap txs; published per symbol to docs/deep-history/chain-ratios/ with each day's source; no interpolation   // 1.9 (2026-10-01): mode closeout (gapfill now runs it too) — settles what the 1.8 run left without re-walking: a search key the node REJECTS (same error on two wallets) is dropped with its message, never retried (1.8 retried each 5× with backoff on every wallet — most of its 5 h); keys a wallet already searched successfully are not searched again; the contract floor is measured on the earliest-starting contract (1.8 measured it on a 2024 bucket and read back to 2023-03: 300 reads below the real floor); a state read the node fails on deterministically ("invalid denom" — 3,688 delegations) is marked unreadable, not retried; NEW layer2c — price pools for every token the cohort held that nothing prices (pools found through the DEX factories that created the pairs, reserves monthly from the contract floor); the audit counts layer 2b / 2c as covered   // 1.8 (2026-09-30): mode gapfill — what the audit found missing, in one run: layer1b (every cohort wallet searched under 16 more keys, new txs only), layer2b (TLA v2 hub 2580, v3 buckets / gauges / vAMP / compounder / connectors, the 5 LST hubs, CAPA gov + staking, Lion DAO LP staking — weekly from the contract floor), layer3b (delegations the layer-3 rows lack); then flows and the audit re-run   // 1.7 (2026-09-30): mode audit — every layer checked against what was expected (and why anything is missing), the flows drift classified per wallet × denom, cw20 balances checked on a sample, layer-1 search keys checked on a sample, busy contracts layer 2 never read listed with their query API, price coverage of everything held; nothing re-read in bulk   // 1.6 (2026-09-30): contract reads get their own floor (the 1.5 run: bank reads from 2023-03, every older contract read "panic: unknown request") — found on the earliest-starting contract that answers, with a 7-point spread printed; "unknown request" is no longer read as the contract refusing (the 1.5 marks are cleared)   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
 const MODE = process.env.MODE || 'timing';
 const RPCS = [process.env.ARCHIVE_RPC, process.env.RPC_URL].map(s => String(s || '').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '')).filter(Boolean);
 const LCD = String(process.env.ARCHIVE_LCD || process.env.LCD || 'https://terra-lcd.publicnode.com').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '');
@@ -150,7 +150,7 @@ async function chooseRoute(label, samples, weeks) {
       const start = Math.max(floor, (t.from_h || 0) + 20000);
       const spread = []; for (let k = 0; k <= 6; k++) { const h = Math.floor(start + (recent.h - start) * k / 6); const r = await smartVia(rt, t.addr, t.q, h); spread.push(`${dateOf(h).replace('week of ', '')}: ${r.ok ? 'ok' : say(r).slice(0, 60)}`); }
       console.log(`route test (${label}) · ${rt}: ${t.key} across its history → ${spread.join(' | ')}`);
-      if (!(await good(start))) { let lo = start, hi = recent.h; while (hi - lo > (['audit', 'closeout', 'gapfill'].includes(MODE) ? 1000 : 50000)) { const mid = Math.floor((lo + hi) / 2); if (await good(mid)) hi = mid; else lo = mid; } wasmFloor = hi; }
+      if (!(await good(start))) { let lo = start, hi = recent.h; while (hi - lo > (['audit', 'closeout', 'gapfill', 'ratios'].includes(MODE) ? 1000 : 50000)) { const mid = Math.floor((lo + hi) / 2); if (await good(mid)) hi = mid; else lo = mid; } wasmFloor = hi; }
       else if (start > floor + 50000) {   // 1.9: the earliest sample began after the state floor — it cannot say what lies below it (1.8 then took the BANK floor and read 300 weeks the node cannot serve)
         const known = (readJson('layer2/_manifest.json', {}).state_floor || {}).contract_reads_from;
         wasmFloor = known && known >= floor && known <= start ? known : start;
@@ -766,6 +766,10 @@ async function audit() {
   if (S.layer2c && !S.layer2c.not_run) console.log(`audit · layer2c: ${S.layer2c.candidates} unpriced tokens · ${S.layer2c.factories_listed} factories listed · ${S.layer2c.pools} pools · ${S.layer2c.monthly_rows} monthly reserve rows`);
 
   if (!S.layer2b || S.layer2b.not_run || !S.layer2b.answering) gaps.push({ id: 'layer2-tla-lst', severity: 'high', node: true, what: 'TLA (ve3 compounding / staking / gauges / vAMP) and LST hub state are not in layer 2 — needed to value amp positions before the dex state-history (epoch 97)' });
+  // 2.0: the measured liquid-staking rates (docs/deep-history/chain-ratios, written by mode ratios)
+  { let ix = null; try { ix = JSON.parse(fs.readFileSync(path.join(process.env.CORE_OUT || 'docs/deep-history', 'chain-ratios', 'index.json'), 'utf8')); } catch { }
+    S.chain_ratios = ix ? Object.fromEntries(Object.entries(ix.series).map(([k, v]) => [k, { from: v.from, to: v.to, days: v.days, by_source: v.by_source, validation: v.validation }])) : { not_run: true };
+    if (ix) console.log(`audit · chain ratios: ${Object.entries(ix.series).filter(([, v]) => v.days).map(([k, v]) => `${k} ${v.days} d from ${v.from}`).join(' · ')}`); }
   out.gaps = gaps; out.summary = gaps.map(g => `[${g.severity}${g.node ? ' · needs the node' : ''}] ${g.id}: ${g.what}`);
 
   // ── write: full (private) + counts only (public, guarded: no cohort wallet may appear) ──
@@ -980,7 +984,141 @@ async function closeout() {
   console.log(`${MODE}: DONE${left ? ` — ${left} items failed transiently (kept for a later run; nothing the node rejects is retried)` : ' — nothing left'}`);
 }
 
+// ── 2.0: ratios — deep, measured history of every liquid-staking rate, daily, labelled by source; gaps stay gaps ─────────────
+// Owner 2026-10-01: "liquid tokens can have the ratio queried at block height … so this stops happening". Before 2.0 the ratio product held
+// chain reads only from epoch 97 (2024-09); earlier days were a straight line (ampLUNA 537 days) or missing (arbLUNA / ampROAR / ampCAPA),
+// and cross-chain LSTs (stLUNA …) had no ratio at all (priced as their base). Sources, best first, per day:
+//   H  the hub's own rate, read AT the day's block height (state{}.exchange_rate or exchange_rates{limit:1}[0][1]) — from the contract floor
+//   X  the hub's STORED rate history (exchange_rates paged at today's height — Eris keeps it), one point per stored timestamp
+//   B  bond txs on that day: base received by the hub ÷ LST minted, median of the day's bonds — the only measure before the contract floor
+//      (the node keeps every tx); also run on the first 45 days after the floor and compared with H, so the method is validated, not assumed
+//   P  cross-chain LSTs (hub on another chain): the pool's swap quote at the day's height ({simulation} — right on stable-swap pools, where
+//      reserve ratios are not), (return + commission) ÷ offer
+//   S  before the floor: that pool's swap executions on the day (median)
+// Output: archive/ratios/<SYM>.<M>.jsonl.gz (raw) + docs/deep-history/chain-ratios/<SYM>.json in tla-core — public chain facts, no wallet.
+const nd = (d) => String(d == null ? '' : d).replace(/^(native|cw20):/, '');   // denom without a cw20: / native: prefix
+const LST_DEF = { ampLUNA: { lst: 'terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct', base: 'uluna' }, arbLUNA: { lst: 'terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490', base: 'uluna' },
+  ampROAR: { lst: 'factory/terra1vklefn7n6cchn0u962w3gaszr4vf52wjvd4y95t2sydwpmpdtszsqvk9wy/ampROAR', base: 'terra1lxx40s29qvkrcj8fsa3yzyehy7w50umdvvnls2r830rys6lu2zns63eelv' },
+  ampCAPA: { lst: 'factory/terra186rpfczl7l2kugdsqqedegl4es4hp624phfc7ddy8my02a4e8lgq5rlx7y/ampCAPA', base: 'terra1t4p3u8khpd7f8qzurwyafxt648dya6mp6vur3vaapswt6m24gkuqrfdhar' },
+  bLUNA: { lst: 'terra17aj4ty4sz4yhgm08na8drc0v03v2jwr3waxcqrwhajj729zhl7zqnpc0ml', base: 'uluna' } };   // platform-crons config/contracts.js LST_HUBS
+const XCHAIN_LST = { stLUNA: ['LUNA'], stATOM: ['ATOM'], dATOM: ['ATOM'], rSWTH: ['SWTH'], ampWHALE: ['WHALE'], bWHALE: ['WHALE'], wstETH: ['WETH.axl', 'wETH.wh'] };   // LST symbol → base symbol(s) (token catalog)
+const SRC_RANK = { H: 5, X: 4, B: 3, P: 2, S: 1 };
+const pct = (a, b) => Math.abs(a / b - 1) * 100;
+const median = (xs) => { const a = xs.filter(Number.isFinite).sort((x, y) => x - y); return a.length ? a[Math.floor(a.length / 2)] : null; };
+function dayHeights(weeks, top, topT) {   // the block at 00:00 UTC of every day, interpolated between the weekly boundaries (block time is steady — minutes of error, a ratio does not move in minutes)
+  const rows = weeks.map(w => ({ t: Date.parse(w.d + 'T00:00:00Z'), h: w.h })); if (top && topT) rows.push({ t: topT, h: top }); const out = [];
+  for (let i = 0; i + 1 < rows.length; i++) { const a = rows[i], b = rows[i + 1]; for (let t = a.t; t < b.t; t += 864e5) out.push({ d: new Date(t).toISOString().slice(0, 10), h: Math.round(a.h + (b.h - a.h) * (t - a.t) / (b.t - a.t)) }); }
+  return out;
+}
+function parseAmt(s) { const out = []; for (const part of String(s || '').split(',')) { const m = part.trim().match(/^(\d+)(.+)$/); if (m) out.push([m[2], BigInt(m[1])]); } return out; }
+// one tx → { base, lst } raw amounts the hub received / minted in it (cw20 or native / tokenfactory either side)
+function bondLegs(tx, hub, def) {
+  let base = 0n, lst = 0n; const baseCw = /^terra1/.test(def.base), lstCw = /^terra1/.test(def.lst);
+  for (const e of tx.e || []) { const a = Object.fromEntries(e.a);
+    if (!baseCw && e.t === 'transfer' && a.recipient === hub) for (const [d, n] of parseAmt(a.amount)) if (d === def.base) base += n;
+    if (baseCw && /^wasm/.test(e.t) && a._contract_address === def.base && /^(send|transfer)$/.test(a.action || '') && (a.to === hub || a.contract === hub) && /^\d+$/.test(a.amount || '')) base += BigInt(a.amount);
+    if (lstCw && /^wasm/.test(e.t) && a._contract_address === def.lst && a.action === 'mint' && /^\d+$/.test(a.amount || '')) lst += BigInt(a.amount);
+    if (!lstCw && (e.t === 'tf_mint' || e.t === 'coinbase')) for (const [d, n] of parseAmt(a.amount)) if (d === def.lst) lst += n; }
+  return { base, lst };
+}
+function swapLegs(tx, pair, lstD, baseD) {   // → [lst raw, base raw] of every swap in this pair between the two (fee added back: the quote before fees)
+  const out = []; for (const e of tx.e || []) { const a = Object.fromEntries(e.a); if (!/^wasm/.test(e.t) || a._contract_address !== pair || a.action !== 'swap') continue;
+    const off = nd(a.offer_asset || ''), ask = nd(a.ask_asset || ''); const o = BigInt(/^\d+$/.test(a.offer_amount || '') ? a.offer_amount : 0), r = BigInt(/^\d+$/.test(a.return_amount || '') ? a.return_amount : 0) + BigInt(/^\d+$/.test(a.commission_amount || '') ? a.commission_amount : 0);
+    if (!(o > 0n && r > 0n)) continue; if (off === lstD && ask === baseD) out.push([o, r]); else if (off === baseD && ask === lstD) out.push([r, o]); }
+  return out;
+}
+async function windowTxs(addr, h0, h1, pages = 2) {   // txs touching a contract in [h0, h1), oldest first — one or two pages is plenty for a day's rate
+  const out = []; for (let p = 1; p <= pages; p++) { const r = await txSearch(`wasm._contract_address='${addr}' AND tx.height>=${h0} AND tx.height<${h1}`, p, 30); if (r.error) return { error: r.error, txs: out };
+    for (const t of r.txs) out.push(shapeTx(t)); if (out.length >= r.total || !r.txs.length) break; } return { txs: out };
+}
+async function ratios() {
+  const H = readJson('layer2/heights.json', null); if (!H) throw new Error('no layer2/heights.json');
+  const weeks = Object.entries(H.rows).map(([d, x]) => ({ d, h: x.h })); const invF = fs.readdirSync(A('inventory')).filter(f => /^\d{4}-\d\d-\d\d\.json$/.test(f)).sort().pop(); const I = readJson('inventory/' + invF, { contracts: {} });
+  const samples = layer2Targets().filter(t => t.kind === 'pair').sort((a, b) => ((I.contracts[b.addr] || {}).txs || 0) - ((I.contracts[a.addr] || {}).txs || 0));
+  const pick = await chooseRoute(MODE, samples, weeks); if (!pick) return; const floor = pick.wasmFloor;
+  const top = await latestHeight(); const topT = top ? await blockAt(top) : null; const days = dayHeights(weeks, top, topT);
+  const man = readJson('ratios/_manifest.json', { version: VERSION, series: {} }); const dirty = new Set();
+  const S0 = (sym, m) => { const k = `${sym}.${m}`; return man.series[k] || (man.series[k] = { done: {}, dropped: null }); };
+  const rows = {}; const load = (sym, m) => { const k = `${sym}.${m}`; if (!rows[k]) rows[k] = readJsonl(`ratios/${k}.jsonl.gz`) || []; return rows[k]; };
+  const put = (sym, m, row) => { load(sym, m).push(row); dirty.add(`${sym}.${m}`); S0(sym, m).done[row.d] = 1; };
+  const flush = () => { for (const k of dirty) gz(`ratios/${k}.jsonl.gz`, rows[k]); dirty.clear(); man.updated_at = new Date().toISOString(); man.contract_floor = floor; writeJson('ratios/_manifest.json', man); };
+  let lastCommit = Date.now(); const tick = () => { if (Date.now() - lastCommit > 8 * 60000) { lastCommit = Date.now(); flush(); commitPush('ratios: progress'); } };
+  const newest = days[days.length - 1]; const post = days.filter(x => x.h >= floor), pre = days.filter(x => x.h < floor), valid = post.slice(0, 45);
+  console.log(`ratios · ${days.length} days (${days[0].d} → ${newest.d}) · contract floor ${floor.toLocaleString('en-US')} (${post[0] && post[0].d}) · ${pre.length} days before it`);
+  // ── Terra hubs ──
+  for (const [sym, def] of Object.entries(LST_DEF)) { const hub = (LST_HUBS[sym] || [])[0]; if (!hub) continue;
+    // H: which question gives the rate (state first, then exchange_rates)
+    const sh = S0(sym, 'H'); if (!sh.q && !sh.dropped) { const tries = [[{ state: {} }, (d) => d && (d.exchange_rate ?? d.exchange_rate_lst)], [{ exchange_rates: { limit: 1 } }, (d) => d && d.exchange_rates && d.exchange_rates[0] && d.exchange_rates[0][1]]];
+      for (const [q, f] of tries) { const r = await smartAt(hub, q, newest.h); const v = r.ok ? Number(f(r.json && r.json.data)) : NaN; if (Number.isFinite(v) && v > 0) { sh.q = q; sh.f = q.state ? 'state' : 'xr'; break; } sh.last = r.ok ? 'answered without a rate: ' + JSON.stringify(r.json && r.json.data).slice(0, 80) : say(r).slice(0, 120); }
+      if (!sh.q) { sh.dropped = `no rate in state{} or exchange_rates{} (${sh.last})`; console.log(`ratios · ${sym}: hub answers no rate — ${sh.dropped}`); } }
+    const rateOf = (d) => d && (sh.f === 'state' ? Number(d.exchange_rate ?? d.exchange_rate_lst) : Number(d.exchange_rates && d.exchange_rates[0] && d.exchange_rates[0][1]));
+    if (sh.q) { const todo = post.filter(x => !sh.done[x.d]); let ok = 0, absent = 0, bad = 0;
+      await pool(todo, CONC, async (x) => { if (overBudget()) return; const r = await smartAt(hub, sh.q, x.h); const v = r.ok ? rateOf(r.json && r.json.data) : NaN;
+        if (Number.isFinite(v) && v > 0) { ok++; put(sym, 'H', { d: x.d, h: x.h, r: v }); } else if (/no such contract|not found/i.test(r.body || '')) { absent++; put(sym, 'H', { d: x.d, h: x.h, absent: true }); } else bad++; tick(); });
+      console.log(`ratios · ${sym} H (hub at block height): ${ok} days · not there yet ${absent} · failed ${bad}`); }
+    // X: the hub's stored history, paged backwards from today
+    const sx = S0(sym, 'X'); if (!sx.done.all && !sx.dropped) { const seen = new Map(); let start = null, pages = 0, err = null;
+      while (pages < 400 && !overBudget()) { const r = await smartAt(hub, { exchange_rates: start == null ? { limit: 30 } : { start_after: start, limit: 30 } }, newest.h); if (!r.ok) { err = say(r).slice(0, 120); break; }
+        const xs = (r.json && r.json.data && r.json.data.exchange_rates) || []; pages++; let older = null; for (const [ts, v] of xs) { const t = Number(ts); if (!seen.has(t)) seen.set(t, Number(v)); if (older == null || t < older) older = t; }
+        if (!xs.length || older == null || (start != null && older >= start)) break; start = older; }
+      if (!seen.size) { sx.dropped = err || 'empty'; console.log(`ratios · ${sym} X (stored history): none — ${sx.dropped}`); }
+      else { const byDay = new Map(); for (const [t, v] of [...seen].sort((a, b) => a[0] - b[0])) { const d = new Date((t > 1e12 ? t / 1e6 : t * 1000)).toISOString().slice(0, 10); if (d >= '2022' && d <= '2100') byDay.set(d, v); }
+        for (const [d, v] of byDay) put(sym, 'X', { d, r: v }); sx.done.all = 1; const ks = [...byDay.keys()]; console.log(`ratios · ${sym} X (stored history): ${seen.size} points in ${pages} pages → ${byDay.size} days (${ks[0]} → ${ks[ks.length - 1]})`); } }
+    // B: bond txs per day — before the floor, plus the first 45 days after it to validate against H
+    const sb = S0(sym, 'B'); const todoB = [...pre, ...valid].filter(x => !sb.done[x.d]); let okB = 0, noneB = 0, badB = 0;
+    await pool(todoB, CONC, async (x) => { if (overBudget()) return; const i = days.indexOf(x); const h1 = (days[i + 1] || { h: x.h + 15000 }).h;
+      const w = await windowTxs(hub, x.h, h1); if (w.error) { badB++; return; }
+      const rs = []; for (const t of w.txs) { if (t.c) continue; const g = bondLegs(t, hub, def); if (g.base > 0n && g.lst > 0n) { const v = Number(g.base) / Number(g.lst); if (v > 0.5 && v < 20) rs.push(v); } }
+      if (rs.length) { okB++; put(sym, 'B', { d: x.d, h: x.h, r: median(rs), n: rs.length }); } else { noneB++; put(sym, 'B', { d: x.d, h: x.h, none: true }); } tick(); });
+    console.log(`ratios · ${sym} B (bond txs): ${okB} days with bonds · ${noneB} without · failed ${badB}`); }
+  // ── cross-chain LSTs: their pool on Terra ──
+  const cat = await getJson(`${RAW}/tla-core/main/token-catalog/snapshots/current.json`, 3, 30000); const bySym = new Map();
+  for (const t of (cat.ok && cat.json.tokens) || []) { const e = t.effective || {}, g = t.discovered || {}; const sy = e.symbol || g.symbol; if (sy && !bySym.has(sy)) bySym.set(sy, { denom: nd(t.denom), dec: e.decimals ?? g.decimals ?? 6 }); }
+  bySym.set('LUNA', { denom: 'uluna', dec: 6 });
+  const factories = new Set(); for (const x of Object.values(I.contracts)) if (PAIR_CODES.has(String(x.code_id || '')) && x.creator) factories.add(x.creator);
+  const wanted = Object.entries(XCHAIN_LST).map(([sy, bases]) => ({ sy, l: bySym.get(sy), b: bases.map(b => bySym.get(b)).filter(Boolean) })).filter(x => x.l && x.b.length);
+  const assetOf = (ai) => ai && (ai.native_token ? ai.native_token.denom : ai.token ? ai.token.contract_addr : null);
+  const cand = new Map();   // sym → [{pair, base}]
+  if (wanted.some(w => !S0(w.sy, 'P').pair && !S0(w.sy, 'P').dropped)) for (const f of factories) { let start = null, pages = 0;
+    while (pages < 400 && !overBudget()) { const r = await smartAt(f, { pairs: start ? { start_after: start, limit: 30 } : { limit: 30 } }, newest.h); if (!r.ok) break; const ps = (r.json && r.json.data && r.json.data.pairs) || []; pages++;
+      for (const pr of ps) { const as = (pr.asset_infos || []).map(assetOf); for (const w of wanted) if (as.includes(w.l.denom)) for (const b of w.b) if (as.includes(b.denom)) (cand.get(w.sy) || cand.set(w.sy, []).get(w.sy)).push({ pair: pr.contract_addr, base: b }); }
+      if (ps.length < 30) break; start = ps[ps.length - 1].asset_infos; } }
+  for (const w of wanted) { const sp = S0(w.sy, 'P');
+    if (!sp.pair && !sp.dropped) { let best = null; for (const c of cand.get(w.sy) || []) { const r = await smartAt(c.pair, { pool: {} }, newest.h); if (!r.ok) continue; const amt = ((r.json.data || {}).assets || []).find(a => assetOf(a.info) === c.base.denom); const dep = amt ? Number(amt.amount) : 0; if (!best || dep > best.dep) best = { ...c, dep }; }
+      if (best) { sp.pair = best.pair; sp.base = best.base.denom; sp.base_dec = best.base.dec; console.log(`ratios · ${w.sy}: priced from pool ${best.pair.slice(0, 16)}… against ${[...bySym].find(([, v]) => v.denom === best.base.denom)[0]}`); }
+      else { sp.dropped = 'no pool pairs it with its base'; console.log(`ratios · ${w.sy}: no pool pairs it with its base — no market rate`); continue; } }
+    if (!sp.pair) continue; const lstUnit = 10n ** BigInt(w.l.dec); const q = { simulation: { offer_asset: { info: /^terra1/.test(w.l.denom) ? { token: { contract_addr: w.l.denom } } : { native_token: { denom: w.l.denom } }, amount: lstUnit.toString() } } };
+    const scale = 10 ** (w.l.dec - sp.base_dec); let ok = 0, bad = 0, absent = 0;
+    await pool(post.filter(x => !sp.done[x.d]), CONC, async (x) => { if (overBudget()) return; const r = await smartAt(sp.pair, q, x.h);
+      if (r.ok && r.json && r.json.data) { const d = r.json.data; const out = Number(d.return_amount || 0) + Number(d.commission_amount || 0); if (out > 0) { ok++; put(w.sy, 'P', { d: x.d, h: x.h, r: out / Number(lstUnit) * scale }); return; } }
+      if (/no such contract|not found/i.test(r.body || '')) { absent++; put(w.sy, 'P', { d: x.d, h: x.h, absent: true }); } else bad++; tick(); });
+    console.log(`ratios · ${w.sy} P (pool quote at block height): ${ok} days · not there yet ${absent} · failed ${bad}`);
+    const ss = S0(w.sy, 'S'); let okS = 0, noneS = 0;
+    await pool([...pre, ...valid].filter(x => !ss.done[x.d]), CONC, async (x) => { if (overBudget()) return; const i = days.indexOf(x); const h1 = (days[i + 1] || { h: x.h + 15000 }).h; const wt = await windowTxs(sp.pair, x.h, h1); if (wt.error) return;
+      const rs = []; for (const t of wt.txs) for (const [l, b] of swapLegs(t, sp.pair, w.l.denom, sp.base)) rs.push(Number(b) / Number(l) * scale);
+      if (rs.length) { okS++; put(w.sy, 'S', { d: x.d, h: x.h, r: median(rs), n: rs.length }); } else { noneS++; put(w.sy, 'S', { d: x.d, h: x.h, none: true }); } tick(); });
+    console.log(`ratios · ${w.sy} S (swap txs): ${okS} days · ${noneS} without swaps`); }
+  flush(); commitPush('ratios: done');
+  // ── merge per symbol: best source per day; validation where two sources overlap; publish (no wallet appears in any of it) ──
+  const syms = [...new Set(Object.keys(man.series).map(k => k.split('.')[0]))]; const index = { version: VERSION, built: new Date().toISOString(), contract_floor: floor, note: 'Liquid-staking rates measured on chain, one row per day, labelled by source (H hub at block height · X hub stored history · B bond txs · P pool quote at block height · S swap txs). No interpolation: a day with no measurement is absent.', series: {} };
+  const outDir = process.env.CORE_OUT ? path.join(process.env.CORE_OUT, 'chain-ratios') : null; if (outDir) fs.mkdirSync(outDir, { recursive: true });
+  for (const sym of syms) { const by = {}; const lists = {};
+    for (const m of Object.keys(SRC_RANK)) { const rs = (readJsonl(`ratios/${sym}.${m}.jsonl.gz`) || []).filter(r => Number.isFinite(r.r)); lists[m] = new Map(rs.map(r => [r.d, r.r])); for (const r of rs) if (!by[r.d] || SRC_RANK[m] > SRC_RANK[by[r.d][1]]) by[r.d] = [Number(r.r.toPrecision(10)), m]; }
+    const cmp = (a, b) => { const ds = [...lists[a].keys()].filter(d => lists[b].has(d)); const diffs = ds.map(d => pct(lists[a].get(d), lists[b].get(d))); return ds.length ? { days: ds.length, median_pct: +median(diffs).toFixed(3), worst_pct: +Math.max(...diffs).toFixed(3) } : null; };
+    const validation = {}; for (const [a, b] of [['B', 'H'], ['X', 'H'], ['S', 'P'], ['B', 'X']]) { const c = cmp(a, b); if (c) validation[`${a}_vs_${b}`] = c; }
+    const ds = Object.keys(by).sort(); const counts = {}; for (const d of ds) counts[by[d][1]] = (counts[by[d][1]] || 0) + 1;
+    const doc = { symbol: sym, version: VERSION, from: ds[0] || null, to: ds[ds.length - 1] || null, days: ds.length, by_source: counts, validation, dropped: Object.fromEntries(Object.keys(SRC_RANK).map(m => [m, (man.series[`${sym}.${m}`] || {}).dropped]).filter(([, v]) => v)), daily: Object.fromEntries(ds.map(d => [d, by[d]])) };
+    index.series[sym] = { from: doc.from, to: doc.to, days: doc.days, by_source: counts, validation };
+    console.log(`ratios · ${sym}: ${ds.length} days ${doc.from || ''} → ${doc.to || ''} · ${Object.entries(counts).map(([k, v]) => k + ' ' + v).join(' · ')}${Object.keys(validation).length ? ' · check: ' + Object.entries(validation).map(([k, v]) => `${k} median ${v.median_pct}% on ${v.days} days`).join(', ') : ''}`);
+    if (outDir) fs.writeFileSync(path.join(outDir, `${sym}.json`), JSON.stringify(doc) + '\n'); }
+  if (outDir) { const C = readJson('cohort/current.json', { wallets: {} }); const txt = fs.readdirSync(outDir).map(f => fs.readFileSync(path.join(outDir, f), 'utf8')).join('');
+    if (Object.keys(C.wallets).some(w => txt.includes(w))) { console.log('ratios: a cohort wallet would appear in the public files — NOT written'); fs.rmSync(outDir, { recursive: true, force: true }); process.exitCode = 1; }
+    else fs.writeFileSync(path.join(outDir, 'index.json'), JSON.stringify(index, null, 1) + '\n'); }
+  try { fs.writeFileSync(`${MODE}_left.txt`, overBudget() ? '1' : '0'); } catch { }
+  console.log(`ratios: ${overBudget() ? 'stopped at the time budget — the next run continues' : 'DONE'}`);
+}
+
 if (!RPCS.length && !['cohort', 'inventory', 'flows', 'audit'].includes(MODE)) { console.error('ARCHIVE_RPC not set'); process.exit(1); }
 if (!T) console.log('note: cosmjs-types not installed — messages will not be decoded (events are still kept)');
-const run = { timing, cohort, layer1, inventory, layer2, layer3, flows: flowsMode, audit, gapfill: closeout, closeout }[MODE]; if (!run) { console.error('unknown MODE ' + MODE); process.exit(1); }
+const run = { timing, cohort, layer1, inventory, layer2, layer3, flows: flowsMode, audit, gapfill: closeout, closeout, ratios }[MODE]; if (!run) { console.error('unknown MODE ' + MODE); process.exit(1); }
 await run();
