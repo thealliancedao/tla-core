@@ -1,5 +1,45 @@
 # CHANGES_PENDING — read at every session start (with PROJECT_KNOWLEDGE.md)
 
+## OPEN LEDGER 2026-10-01 (f) — MILESTONE CLOSE: "the deep-history backfill is complete" + the P&L can no longer show a bad figure as fact (read first; (e) below still holds)
+
+**Status.** The backfill is closed: the 2026-10-01 audit after walk 1.9 has one gap left, [medium] prices, which the derive computes from
+saved pools. Nothing remains that only the archive node can give. Full table: docs/changelogs/deep-walk-log.md "CLOSED — 2026-10-01".
+
+**Landed this milestone (all live):**
+1. **Deep Walk 1.7 → 1.9** (tla-core Action, private archive): audit (1.7) → gapfill (1.8: +29,063 txs, 4,660 weekly TLA / LST state
+   reads) → closeout (1.9: 4 m 14 s — rejected search keys dropped, pre-floor reads events-only, 3,688 unreadable delegations marked,
+   24 price pools for unpriced tokens). Final: 634,811 txs · layer 2 + 2b + 2c · 44,324 checkpoints.
+2. **P&L 1.4.0** (platform-crons tla-flows 3.5.7): one event per stake (1,044 stakes in 247 wallets were never booked; the aDAO
+   treasury's 2026-05-22 proposal had been one LUNA-FUEL deposit carrying 11 tokens); protocol contracts are not wallets; implausible
+   costs disputed; unrealized over costed positions only; **tla-flows/pnl/integrity.json** published every build. Treasury: 18 positions,
+   net −$13,467 / +89,104 LUNA (was 7 positions, −$18,695 / +26,878).
+3. **history-series 1.2.1** (member-data): the treasury's 17-day LP gap — a $0 unpriced row no longer blanks a day.
+4. **Site gate** (aDAO-links-site middleware.ts 1.1.2): production paused — every page / deep link / API answers "Production has been
+   paused" until unlocked. Owner password = Vercel env SITE_PASSWORD (Production); guest passwords with end dates in a JSON file in a
+   private repo (GATE_CONFIG + a read-only GATE_CONFIG_TOKEN), applied within a minute. No password in any public repo. 44 gate checks.
+
+**Owner rules learned this milestone (binding):**
+- Changelogs and CHANGES_PENDING are updated **only at a milestone** (one docs batch), not with every code upload.
+- A token that arrived by transfer with nothing paid (e.g. the owner's ampCAPA donation to the treasury) costs the receiver **0** — shown
+  as "received — no cost", in holdings, never as trading profit.
+- The treasury claims bribes periodically through DAO proposals — unclaimed bribes are normal, not a finding. Everything the treasury
+  does is a DAO proposal (`wasm.sender` = the DAO core in layer 1).
+- "There should be no way to have bad data": a figure that fails an invariant is flagged "under review", never shown as fact.
+
+**How the P&L bug was missed (kept so it is not repeated):** tests used wallets that do one thing per tx; checks compared what the ledger
+had with the chain but never asked whether everything the chain shows was in the ledger; nothing tested a figure's plausibility; an
+unknown cost counted as profit; a "blank, not zero" rule was applied to a whole day for one $0 row. integrity.json now checks all of it.
+
+**Next (in order):**
+1. **The derive** (private archive → compact products): unbonding credits from undelegate events (end-block, no tx — most of the 5.1 %
+   drift), genesis-airdrop anchors from the first layer-3 checkpoint, monthly re-anchor on layer 3, delegations from events where the
+   node could not serve them, prices from pools (layer 2 + 2c, "no market" where none), "received — no cost" for transfers in.
+2. Public per-wallet summaries under the §8b privacy rules.
+3. The xASTRO cost root cause (3 disputed positions) and the 81 positions with no measured cost (deep history has their entries).
+4. ONE page-edit round: Member Portfolio shows integrity flags as "under review", "received — no cost", partial LP days; xASTRO dust APR.
+
+---
+
 ## OPEN LEDGER 2026-09-30 (e) — SESSION CLOSE: the backfill is done; the path, the pivots, the lessons (read first)
 
 **Where things stand.** The deep-history backfill ran end to end (docs/changelogs/deep-walk-log.md, SPEC-deep-history §0): 1,159 cohort
