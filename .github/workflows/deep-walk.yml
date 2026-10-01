@@ -3,15 +3,15 @@ name: Deep Walk
 # SPEC-deep-history §8 — the deep-history backfill, LAYER 1 (every tx of every cohort wallet) into the PRIVATE repo
 # thealliancedao/tla-archive. Runs here (public repo: unlimited Action minutes); writes there with ARCHIVE_REPO_TOKEN.
 # Modes: timing (how fast the archive answers — run first) · cohort (the cut-date wallet list — once) · layer1 (resumable; run again
-# until the log says every wallet is done) · layer2 (protocol state weekly) · layer3 (monthly bank + staking checkpoints per wallet) · flows (every balance change rebuilt from layer 1, checked against layer 3) · inventory (every contract the cohort touched, labeled — an aggregate, no wallets, into tla-core) · gapfill (1.8: what the audit found missing, then flows + audit again) · audit (1.7: what the archive holds vs what the derive needs — counts only into docs/deep-history/audit.json; run before any more node time). PRIVACY (§8b): memos are never stored; this log prints counts only.
+# until the log says every wallet is done) · layer2 (protocol state weekly) · layer3 (monthly bank + staking checkpoints per wallet) · flows (every balance change rebuilt from layer 1, checked against layer 3) · inventory (every contract the cohort touched, labeled — an aggregate, no wallets, into tla-core) · gapfill (1.8: what the audit found missing, then flows + audit again) · closeout (1.9: settles what is left without re-walking, price pools for unpriced tokens, re-audit) · audit (1.7: what the archive holds vs what the derive needs — counts only into docs/deep-history/audit.json; run before any more node time). PRIVACY (§8b): memos are never stored; this log prints counts only.
 on:
   workflow_dispatch:
     inputs:
       mode:
-        description: 'timing → cohort → layer1 → inventory → layer2 → layer3 → flows → audit → gapfill (layer2 / layer3 / gapfill re-start themselves until done — see chain)'
+        description: 'timing → cohort → layer1 → inventory → layer2 → layer3 → flows → audit → gapfill → closeout (layer2 / layer3 / gapfill / closeout re-start themselves until done — see chain)'
         required: true
         type: choice
-        options: ['timing', 'cohort', 'layer1', 'inventory', 'layer2', 'layer3', 'flows', 'audit', 'gapfill']
+        options: ['timing', 'cohort', 'layer1', 'inventory', 'layer2', 'layer3', 'flows', 'audit', 'gapfill', 'closeout']
         default: 'timing'
       concurrency:
         description: 'layer1: wallets walked at once (use what timing showed the node can take)'
@@ -91,7 +91,7 @@ jobs:
           git commit -m "deep-history: contracts the cohort touched ($(date -u +%Y-%m-%d))"
           for i in 1 2 3 4 5 6; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep $((i * 15)); done; exit 1
       - name: publish the audit (counts only — the script refuses to write it if a cohort wallet would appear)
-        if: always() && (github.event.inputs.mode == 'audit' || github.event.inputs.mode == 'gapfill')
+        if: always() && (github.event.inputs.mode == 'audit' || github.event.inputs.mode == 'gapfill' || github.event.inputs.mode == 'closeout')
         run: |
           git config user.name "deep-walk" && git config user.email "bot@thealliancedao.com"
           [ -f docs/deep-history/audit.json ] || { echo "no public audit written — read the log above"; exit 0; }
@@ -99,8 +99,8 @@ jobs:
           if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
           git commit -m "deep-history: backfill audit ($(date -u +%Y-%m-%d))"
           for i in 1 2 3 4 5 6; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep $((i * 15)); done; exit 1
-      - name: layer2 / layer3 / gapfill — start the next run while reads are left (bounded by chain)
-        if: always() && (github.event.inputs.mode == 'layer2' || github.event.inputs.mode == 'layer3' || github.event.inputs.mode == 'gapfill')
+      - name: layer2 / layer3 / gapfill / closeout — start the next run while reads are left (bounded by chain)
+        if: always() && (github.event.inputs.mode == 'layer2' || github.event.inputs.mode == 'layer3' || github.event.inputs.mode == 'gapfill' || github.event.inputs.mode == 'closeout')
         env:
           GH_TOKEN: ${{ github.token }}
           CHAIN: ${{ github.event.inputs.chain }}
