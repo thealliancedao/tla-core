@@ -24,6 +24,9 @@
 //             docs/deep-history/audit.json in tla-core. Run it before any more node time is spent.
 //   gapfill — (1.8) fetches what the audit found missing (layer1b: 16 more search keys · layer2b: TLA / LST / CAPA / Lion DAO state
 //             weekly · layer3b: missing delegations), then re-runs flows and the audit. Chains itself while work is left.
+//   derive  — (2.1) no chain reads: each cohort wallet's weekly history (balances, staking, positions, value, flows by class, net deposits)
+//             rebuilt from layers 1–3 + 2b/2c + the measured LST rates → archive/derived/history/<shard>/<wallet>.json.gz + public
+//             counts (docs/deep-history/derive.json, price-check.json).
 //   layer1  — for each cohort wallet not yet done: tx_search for every attribute a wallet appears under (§8 list), deduplicated by hash,
 //             decoded, and written as gzip parts to archive/layer1/<shard>/<wallet>/part-NNN.jsonl.gz + a per-wallet summary in the
 //             manifest. Resumable (done wallets skipped), committed every few wallets, stops cleanly before the time budget.
@@ -31,7 +34,7 @@
 // sequences are dropped. The log prints COUNTS ONLY (this Action's log is public) — never a wallet, a hash or an amount.
 import fs from 'fs'; import path from 'path'; import zlib from 'zlib'; import { execSync } from 'child_process'; import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const VERSION = 'deep-walk-2.0.1';   // 2.0.1 (2026-10-02): the first ratios run published bond-tx rates that disagreed with the hub (ampLUNA +3.5 %, bLUNA ×6 — the staking rewards a delegation pays the hub in the same tx were counted as bonded LUNA; ampROAR / ampCAPA −50 % — a tokenfactory mint emits tf_mint AND coinbase, both were counted). Fixed (distribution-module transfers excluded; tf_mint counted, coinbase only without it), B recomputed, stored-history timestamps read in any unit (arbLUNA's were dropped), failed pool quotes say why — and a PUBLISH GATE: a source enters the public file only when it agrees with the hub (B, X ≤ 0.25 %) or the pool quote (S ≤ 1 %) where both exist; otherwise it is withheld with the reason   // 2.0 (2026-10-01): mode ratios — every liquid-staking rate measured on chain, daily: the hub at the day's block height (from the contract floor), the hub's stored history, bond txs before the floor (validated against the hub after it), cross-chain LSTs from their Terra pool's quote at block height and swap txs; published per symbol to docs/deep-history/chain-ratios/ with each day's source; no interpolation   // 1.9 (2026-10-01): mode closeout (gapfill now runs it too) — settles what the 1.8 run left without re-walking: a search key the node REJECTS (same error on two wallets) is dropped with its message, never retried (1.8 retried each 5× with backoff on every wallet — most of its 5 h); keys a wallet already searched successfully are not searched again; the contract floor is measured on the earliest-starting contract (1.8 measured it on a 2024 bucket and read back to 2023-03: 300 reads below the real floor); a state read the node fails on deterministically ("invalid denom" — 3,688 delegations) is marked unreadable, not retried; NEW layer2c — price pools for every token the cohort held that nothing prices (pools found through the DEX factories that created the pairs, reserves monthly from the contract floor); the audit counts layer 2b / 2c as covered   // 1.8 (2026-09-30): mode gapfill — what the audit found missing, in one run: layer1b (every cohort wallet searched under 16 more keys, new txs only), layer2b (TLA v2 hub 2580, v3 buckets / gauges / vAMP / compounder / connectors, the 5 LST hubs, CAPA gov + staking, Lion DAO LP staking — weekly from the contract floor), layer3b (delegations the layer-3 rows lack); then flows and the audit re-run   // 1.7 (2026-09-30): mode audit — every layer checked against what was expected (and why anything is missing), the flows drift classified per wallet × denom, cw20 balances checked on a sample, layer-1 search keys checked on a sample, busy contracts layer 2 never read listed with their query API, price coverage of everything held; nothing re-read in bulk   // 1.6 (2026-09-30): contract reads get their own floor (the 1.5 run: bank reads from 2023-03, every older contract read "panic: unknown request") — found on the earliest-starting contract that answers, with a 7-point spread printed; "unknown request" is no longer read as the contract refusing (the 1.5 marks are cleared)   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
+const VERSION = 'deep-walk-2.1';   // 2.1 (2026-10-02): mode derive — every cohort wallet rebuilt weekly from the archive with no chain reads: native balances from events + unbonding credits (end-block payouts, from each undelegation's completion time) re-anchored on every monthly layer-3 checkpoint (opening balances — genesis airdrop / vesting — carried back from the first checkpoint); delegations from staking messages anchored on readable checkpoints; positions held by staking / gauge / lock / custody contracts, LST unbond queues, Solid debt; prices labelled per raw unit (measured LST rate × base, LP from the pool's reserves that week, amp LP from the compounder's rate where it agrees with deposit txs, the series unless two deep pools overrule it, else the deepest pool, else 'no market'); every flow classed and net deposits across the wallet boundary; exchange flows as keyed summaries only (§8b) → archive/derived/history/ (private) + docs/deep-history/derive.json + price-check.json (counts only, guarded)   // 2.0.1 (2026-10-02): the first ratios run published bond-tx rates that disagreed with the hub (ampLUNA +3.5 %, bLUNA ×6 — the staking rewards a delegation pays the hub in the same tx were counted as bonded LUNA; ampROAR / ampCAPA −50 % — a tokenfactory mint emits tf_mint AND coinbase, both were counted). Fixed (distribution-module transfers excluded; tf_mint counted, coinbase only without it), B recomputed, stored-history timestamps read in any unit (arbLUNA's were dropped), failed pool quotes say why — and a PUBLISH GATE: a source enters the public file only when it agrees with the hub (B, X ≤ 0.25 %) or the pool quote (S ≤ 1 %) where both exist; otherwise it is withheld with the reason   // 2.0 (2026-10-01): mode ratios — every liquid-staking rate measured on chain, daily: the hub at the day's block height (from the contract floor), the hub's stored history, bond txs before the floor (validated against the hub after it), cross-chain LSTs from their Terra pool's quote at block height and swap txs; published per symbol to docs/deep-history/chain-ratios/ with each day's source; no interpolation   // 1.9 (2026-10-01): mode closeout (gapfill now runs it too) — settles what the 1.8 run left without re-walking: a search key the node REJECTS (same error on two wallets) is dropped with its message, never retried (1.8 retried each 5× with backoff on every wallet — most of its 5 h); keys a wallet already searched successfully are not searched again; the contract floor is measured on the earliest-starting contract (1.8 measured it on a 2024 bucket and read back to 2023-03: 300 reads below the real floor); a state read the node fails on deterministically ("invalid denom" — 3,688 delegations) is marked unreadable, not retried; NEW layer2c — price pools for every token the cohort held that nothing prices (pools found through the DEX factories that created the pairs, reserves monthly from the contract floor); the audit counts layer 2b / 2c as covered   // 1.8 (2026-09-30): mode gapfill — what the audit found missing, in one run: layer1b (every cohort wallet searched under 16 more keys, new txs only), layer2b (TLA v2 hub 2580, v3 buckets / gauges / vAMP / compounder / connectors, the 5 LST hubs, CAPA gov + staking, Lion DAO LP staking — weekly from the contract floor), layer3b (delegations the layer-3 rows lack); then flows and the audit re-run   // 1.7 (2026-09-30): mode audit — every layer checked against what was expected (and why anything is missing), the flows drift classified per wallet × denom, cw20 balances checked on a sample, layer-1 search keys checked on a sample, busy contracts layer 2 never read listed with their query API, price coverage of everything held; nothing re-read in bulk   // 1.6 (2026-09-30): contract reads get their own floor (the 1.5 run: bank reads from 2023-03, every older contract read "panic: unknown request") — found on the earliest-starting contract that answers, with a 7-point spread printed; "unknown request" is no longer read as the contract refusing (the 1.5 marks are cleared)   // 1.5 (2026-09-30): the node keeps full TX history but not all old STATE ("version does not exist … pruned" at 1.83M) — each state mode finds the node's state floor (binary search) and skips older reads (reported, not retried); a contract that refuses the question (unknown request / variant) is recorded and skipped after 3; the route test tries up to 8 busiest contracts   // 1.4 (2026-09-30): state reads go through the archive RPC (abci_query) with the LCD as fallback — layer2 runs #6–#9 failed every LCD read; each state mode tests both routes at a recent AND an old height first and stops red (no chain) when neither answers; 150 failures in a row stop a run; the top failure messages are printed   // 1.3 (2026-09-29): modes layer3 (monthly bank + staking checkpoints per wallet) and flows (every native / cw20 balance change per wallet rebuilt from layer 1, sampled weekly)   // 1.2 (2026-09-29): mode layer2 — protocol state at every weekly boundary (pools, Credia, Solid, DAO voting), resumable   // 1.1 (2026-09-29): mode inventory — every contract the cohort touched, labeled, as an AGGREGATE (no wallets) for tla-core
 const MODE = process.env.MODE || 'timing';
 const RPCS = [process.env.ARCHIVE_RPC, process.env.RPC_URL].map(s => String(s || '').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '')).filter(Boolean);
 const LCD = String(process.env.ARCHIVE_LCD || process.env.LCD || 'https://terra-lcd.publicnode.com').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '');
@@ -1099,7 +1102,7 @@ async function ratios() {
     await pool(post.filter(x => !sp.done[x.d]), CONC, async (x) => { if (overBudget()) return; const r = await smartAt(sp.pair, q, x.h);
       if (r.ok && r.json && r.json.data) { const d = r.json.data; const out = Number(d.return_amount || 0) + Number(d.commission_amount || 0); if (out > 0) { ok++; put(w.sy, 'P', { d: x.d, h: x.h, r: out / Number(lstUnit) * scale }); return; } }
       if (/no such contract|not found/i.test(r.body || '')) { absent++; put(w.sy, 'P', { d: x.d, h: x.h, absent: true }); }
-      else { const m = say(r).replace(/\d{6,}/g, 'N').slice(0, 90); why[m] = (why[m] || 0) + 1; if (/Generic error|overflow|divide|insufficient|Error parsing|unknown variant|cannot|invalid|zero/i.test(r.body || '')) { dead++; put(w.sy, 'P', { d: x.d, h: x.h, err: m }); } else bad++; } tick(); });
+      else { const m = say(r).replace(/\d{6,}/g, 'N').slice(0, 90); why[m] = (why[m] || 0) + 1; if (/Generic error|overflow|divide|insufficient|Error parsing|unknown variant|cannot|invalid|zero|RuntimeError|Wasmer|Error calling the VM/i.test(r.body || ''))   /* 2.1: the VM trap on rSWTH / wstETH is deterministic — kept, not retried */ { dead++; put(w.sy, 'P', { d: x.d, h: x.h, err: m }); } else bad++; } tick(); });
     console.log(`ratios · ${w.sy} P (pool quote at block height): ${ok} days · not there yet ${absent} · the pool refused ${dead} (kept, not retried) · failed ${bad}${Object.keys(why).length ? ' · ' + Object.entries(why).sort((a, b) => b[1] - a[1]).slice(0, 2).map(([k, v]) => `${v}× ${k}`).join(' | ') : ''}`);
     const ss = S0(w.sy, 'S'); let okS = 0, noneS = 0;
     await pool([...pre, ...valid].filter(x => !ss.done[x.d]), CONC, async (x) => { if (overBudget()) return; const i = days.indexOf(x); const h1 = (days[i + 1] || { h: x.h + 15000 }).h; const wt = await windowTxs(sp.pair, x.h, h1); if (wt.error) return;
@@ -1132,7 +1135,358 @@ async function ratios() {
   console.log(`ratios: ${overBudget() ? 'stopped at the time budget — the next run continues' : 'DONE'}`);
 }
 
-if (!RPCS.length && !['cohort', 'inventory', 'flows', 'audit'].includes(MODE)) { console.error('ARCHIVE_RPC not set'); process.exit(1); }
+// ── 2.1: derive — every cohort wallet's history rebuilt from the archive, valued weekly, every number with its source ──────────
+// No chain reads (runs with the node gone). Owner 2026-10-02: "im ready" — after the backfill closed and the LST rates were measured.
+// Per wallet, at every weekly boundary (layer2/heights.json — Mondays 00:00 UTC, the TLA epoch calendar):
+//   WALLET  native balances = layer-1 events + unbonding credits (paid at end-block, no tx — rebuilt from each undelegation's completion
+//           time) RE-ANCHORED on every layer-3 monthly checkpoint (C = the chain that week · CE = checkpoint + events since · EG = before
+//           the first checkpoint, events + the opening balance the first checkpoint shows (genesis airdrop / vesting) · E = events only);
+//           cw20 balances from events (E). Negative results are flagged, valued at 0.
+//   STAKED  delegations from delegate / undelegate / redelegate / cancel messages, anchored on readable layer-3 delegations; unbonding
+//           in flight (undelegated, not yet paid) is its own part.
+//   POSITIONS  tokens held by contracts for the wallet: staking / gauge / LP-staking / lock / custody contracts (ESCROW: everything in
+//           minus everything out, per contract × token; Solid liquidations taken out), LST unbond queues (in base units at the day's
+//           measured rate), Solid debt (borrow − repay events, subtracted). Other contracts that took tokens in a one-way tx are kept as
+//           "other protocols (estimated from deposits)" — reported, NOT in the value, until each protocol is modelled.
+//   PRICES  per raw unit, labelled: LST = measured chain rate (docs/deep-history/chain-ratios) × base price · LP = the pool's reserves
+//           that week ÷ its LP supply · amp LP = amp→LP rate (compounder state where it parses AND agrees with deposit txs, else deposit
+//           txs) × LP · series = price-history (a pool may overrule it only when two deep pools agree with each other and both sit >25 %
+//           away) · pool = deepest pool against a priced asset · none = "no market" (counted, never guessed).
+//   FLOWS   every balance change classed: fee · reward · staking · protocol · escrow · debt · bridge · exchange · member · registry ·
+//           external · unknown. NET DEPOSITS = value in − value out across the wallet boundary (bridge · exchange · member · registry ·
+//           external), at the day's price. Exchange flows are summaries only (§8b): {day, direction, token, amount, value} + an HMAC key
+//           (FLOW_KEY) — no hash, no counterparty, no exchange name.
+// Out: archive/derived/history/<shard>/<wallet>.json.gz (private) · docs/deep-history/derive.json + price-check.json in tla-core (counts
+// and token-level facts only — no wallet; the guard refuses to write them otherwise).
+const crypto = require('crypto');
+function bech32(hrp, bytes) {
+  const CH = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l'; const data = []; let acc = 0, bits = 0;
+  for (const b of bytes) { acc = ((acc << 8) | b) & 0xffff; bits += 8; while (bits >= 5) { bits -= 5; data.push((acc >> bits) & 31); } } if (bits) data.push((acc << (5 - bits)) & 31);
+  const G = [0x3b6a57b2, 0x26508e6d, 0x1ea119fa, 0x3d4233dd, 0x2a1462b3]; const poly = (v) => { let c = 1; for (const x of v) { const t = c >>> 25; c = (((c & 0x1ffffff) << 5) ^ x) >>> 0; for (let i = 0; i < 5; i++) if ((t >>> i) & 1) c = (c ^ G[i]) >>> 0; } return c; };
+  const hx = [...hrp].map(c => c.charCodeAt(0) >> 5).concat([0], [...hrp].map(c => c.charCodeAt(0) & 31));
+  const p = (poly([...hx, ...data, 0, 0, 0, 0, 0, 0]) ^ 1) >>> 0; const ck = Array.from({ length: 6 }, (_, i) => (p >>> (5 * (5 - i))) & 31);
+  return hrp + '1' + [...data, ...ck].map(x => CH[x]).join('');
+}
+const sha20 = (b) => crypto.createHash('sha256').update(b).digest().subarray(0, 20);
+const MODULE_CLASS = (() => { const o = {};   // module accounts (sha256(name)[:20]) and the IBC transfer escrows (ADR-028: sha256("ics20-1" 0x00 "transfer/channel-N")[:20])
+  for (const [n, c] of [['distribution', 'reward'], ['bonded_tokens_pool', 'staking'], ['not_bonded_tokens_pool', 'staking'], ['fee_collector', 'fee'], ['gov', 'gov'], ['mint', 'reward'], ['transfer', 'bridge'], ['alliance', 'staking'], ['tokenfactory', 'protocol'], ['feeshare', 'fee']]) o[bech32('terra', sha20(n))] = c;
+  for (let ch = 0; ch < 500; ch++) o[bech32('terra', sha20(Buffer.concat([Buffer.from('ics20-1'), Buffer.from([0]), Buffer.from('transfer/channel-' + ch)])))] = 'bridge';
+  return o; })();
+const ESCROW_CODES = new Set(['4033', '3694', '1715', '3258', '180', '1170', '942', '433', '943', '1231', '1545', '1625', '3092', '2693', '2827', '3392', '3550']);   // contracts that hold the SAME token for the wallet and give it back (protocol-labels.json)
+const BRIDGE_CODES = new Set(['2802', '2724', '148']);   // Astroport / Eris CW20-ICS20, Wormhole wrapped tokens
+const NO_LEDGER_CODES = new Set([...PAIR_CODES, '3239', '3236', '2851', '3845', '2039', '3778', '1257', '2790', '3674', '3242', '3418', '3116', '2413', '1220', '1317', '69', '12', '88', '25', '726', '4']);   // swaps, routers, zappers, the compounder, LST hubs, Solid market, tokens — tokens in ≠ tokens back
+const CREDIA_CODE = '3995';
+const SOLID_TOKEN = 'terra10aa3zdkrc7jwuf8ekl3zq7e7m42vmzqehcmu74e4egc7xkm5kr2s0muyst';
+const CUSTODY_COLL = { terra18uxq2k6wpsqythpakz5n6ljnuzyehrt775zkdclrtdtv6da63gmskqn7dq: 'terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct', terra1fyfrqdf58nf4fev2amrdrytq5d63njulfa7sm75c0zu4pnr693dsqlr7p9: 'terra17aj4ty4sz4yhgm08na8drc0v03v2jwr3waxcqrwhajj729zhl7zqnpc0ml',
+  terra18l7vt34kfy2ycv3aej4fgq286s060n55f7uz0qyw9jpzn5gszkxsy3r7nw: 'terra14xsm2wzvu7xaf567r693vgfkhmvfs08l68h4tjj5wjgyn5ky8e2qvzyanh', terra1xyxxg9z8eep6xkfts4sp7gper677glz0md4wd9krj4d8dllmut8q8tjjrl: 'terra164ye3v3pksjzl8nan9z3jd8xyhwpee7ws82l5y2gfcwqnekz9ujqts7v58',
+  terra1jksfmpavp09wwla8xffera3q7z49ef6r2jx9lu29mwvl64g34ljs7u2hln: 'terra1r6ju9f643v353n88dxaqdvkthdnclycgds2qc6kyddqpmcr9dj5sdkvu37', terra1shc5n0sqg30fzvg0e2j826j0g73ypmjw9vkf592ghdph5dhau25qha2rks: 'terra1qv3gtys4u8hacv9mdzk3gmc88z6gv5w2c9ksmcf868pl8q3er42snwgdn2',
+  terra1e32q545j90agakl32mtkacq05990cnr54czj8wp0wv3nttkrhwlqr9spf5: 'terra1ctelwayk6t2zu30a8v9kdg3u2gr0slpjdfny5pjp7m3tuquk32ysugyjdg', terra1fluajm00hwu9wyy8yuyf4zag7x5pw95vdlgkhh8w03pfzqj6hapsx4673t: 'terra1xc7ynquupyfcn43sye5pfmnlzjcw2ck9keh0l2w2a4rhjnkp64uq4pr388' };   // Solid custody → collateral (KNOWN_ADDRESSES_solid_custodians)
+const BOUNDARY = new Set(['bridge', 'exchange', 'member', 'registry', 'external']);   // net deposits = value crossing these
+const EXCH_MIN = Math.max(3, Number(process.env.EXCH_MIN_WALLETS || 12));   // an address many cohort wallets both send to AND receive from (curated list first)
+const UNBOND_MS = 21 * 864e5;
+const STABLES = new Set(['USDC', 'USDC.n', 'USDC.inj', 'axlUSDC', 'USDT', 'USDt', 'SOLID', 'EURe']); const isStableSymbol = (s) => !!s && STABLES.has(String(s));   // = platform-crons lib/denom-symbol.js STABLE_SYMBOLS (a series, where one exists, wins)
+const kcEscrow = (k) => !!k && k.type === 'staking' && !/Hub|Vault/i.test(k.name || '') && k.protocol !== 'Votion';   // known staking contracts that hold the token itself (not LST hubs / receipt vaults)
+const isContract = (a) => /^terra1[0-9a-z]{58}$/.test(a || '');
+const isAccount = (a) => /^terra1[0-9a-z]{38}$/.test(a || '');
+const toBig = (s) => { try { return BigInt(String(s)); } catch { return 0n; } };
+const amtOf = (s, denom) => { const m = String(s || '').match(/^(\d+)([a-zA-Z].*)?$/); return m && (!m[2] || !denom || m[2] === denom) ? BigInt(m[1]) : null; };
+function flatMsgs(t) { const out = []; const walk = (ms) => { for (const m of ms || []) { if (!m) continue; const ty = String(m.type || '').split('.').pop(); if (ty === 'MsgExec' && m.value && Array.isArray(m.value.msgs)) walk(m.value.msgs); else out.push({ ty, v: m.value || {} }); } }; walk(t.m); return out; }
+function evAttrs(e) { return Object.fromEntries(e.a || []); }
+
+// height ↔ time on the weekly boundaries (block time is steady; minutes of error)
+function timeline(weeks) {
+  const rows = weeks.map(w => ({ h: w.h, t: Date.parse(w.d + 'T00:00:00Z') }));
+  const seg = (k) => [rows[Math.max(0, Math.min(rows.length - 2, k))], rows[Math.max(1, Math.min(rows.length - 1, k + 1))]];
+  const tOf = (h) => { let k = rows.findIndex(r => r.h > h) - 1; if (k < -1) k = rows.length - 2; const [a, b] = seg(k < 0 ? 0 : k); return a.t + (h - a.h) * (b.t - a.t) / Math.max(1, b.h - a.h); };
+  const hOf = (t) => { let k = rows.findIndex(r => r.t > t) - 1; if (k < -1) k = rows.length - 2; const [a, b] = seg(k < 0 ? 0 : k); return Math.round(a.h + (t - a.t) * (b.h - a.h) / Math.max(1, b.t - a.t)); };
+  const wiOf = (h) => { const k = rows.findIndex(r => r.h >= h); return k < 0 ? rows.length - 1 : k; };   // the first boundary at or after a height (the week a flow is counted in)
+  return { tOf, hOf, wiOf, dayOf: (h) => new Date(tOf(h)).toISOString().slice(0, 10) };
+}
+// cumulative weekly sums of [height, BigInt delta] (sorted or not)
+function weeklyCum(list, weeks) { const s = [...list].sort((a, b) => a[0] - b[0]); const out = new Array(weeks.length); let i = 0, acc = 0n; for (let k = 0; k < weeks.length; k++) { while (i < s.length && s[i][0] <= weeks[k].h) { acc += s[i][1]; i++; } out[k] = acc; } return out; }
+// re-anchor an events series on checkpoints [{wi, v}] → { vals, src, drift, opening }
+function anchorSeries(EU, cps, weeks) {
+  const vals = new Array(EU.length), src = new Array(EU.length), drift = []; const c = [...cps].sort((a, b) => a.wi - b.wi);
+  const off0 = c.length ? c[0].v - EU[c[0].wi] : 0n; let k = -1;
+  for (let wi = 0; wi < EU.length; wi++) { while (k + 1 < c.length && c[k + 1].wi <= wi) k++;
+    if (k >= 0) { vals[wi] = c[k].v + EU[wi] - EU[c[k].wi]; src[wi] = c[k].wi === wi ? 'C' : '+'; }
+    else if (c.length && off0 > 0n) { vals[wi] = EU[wi] + off0; src[wi] = 'G'; }
+    else { vals[wi] = EU[wi]; src[wi] = 'E'; } }
+  for (let j = 1; j < c.length; j++) { const pred = c[j - 1].v + EU[c[j].wi] - EU[c[j - 1].wi]; if (pred !== c[j].v) drift.push({ d: weeks[c[j].wi].d, pred: pred.toString(), chain: c[j].v.toString() }); }
+  return { vals, src, drift, opening: off0, compared: Math.max(0, c.length - 1) };
+}
+
+// ── pass 1: units (no prices) ──
+function deriveUnits(w, ctx) {
+  const { weeks, tl, inv, kc, cohortSet, ampSeen, ampSamples, cpStats } = ctx;
+  const txs = walletTxs(w); const codeOf = (a) => (inv[a] && String(inv[a].code_id || '')) || '';
+  const flows = []; const native = {}, cw = {}; const stake = []; const unb = []; const led = {}; const solid = []; const lstq = [];
+  const chk = { credia_txs: 0, lock_moves: 0, liquidations: 0, ibc_refunds: 0, msgs_undecoded: 0 };
+  const ledAdd = (key, kind, cp, denom, h, v) => { const L = led[key] || (led[key] = { kind, cp, denom, code: codeOf(cp), d: [] }); L.d.push([h, v]); };
+  for (const t of txs) {
+    const fl = flowsOf(w, [t]); const ev = t.e || [];
+    const has = (re) => ev.some(e => re.test(e.t)); const msgs = flatMsgs(t); if (t.m_error || (!t.m && !t.c)) chk.msgs_undecoded++;
+    const ibcIn = has(/^recv_packet$/) || msgs.some(m => m.ty === 'MsgRecvPacket'), ibcOut = has(/^send_packet$/) || msgs.some(m => m.ty === 'MsgTransfer'), ibcAck = has(/^(acknowledge_packet|timeout_packet|timeout)$/);
+    let solidTx = false;
+    for (const e of ev) { if (!/^wasm/.test(e.t)) continue; const a = evAttrs(e);
+      if (a._contract_address === SOLID.market && a.borrower === w) { if (/borrow_stable/.test(a.action || '') && a.borrow_amount) { solid.push([t.h, toBig(a.borrow_amount)]); solidTx = true; } if (/repay_stable/.test(a.action || '') && a.repay_amount) { solid.push([t.h, -toBig(a.repay_amount)]); solidTx = true; } }
+      if (CUSTODY_COLL[a._contract_address] && /liquidat/.test(a.action || '') && a.borrower === w && /^\d+$/.test(a.amount || '')) { ledAdd(`${a._contract_address}|cw20:${CUSTODY_COLL[a._contract_address]}`, 'escrow', a._contract_address, 'cw20:' + CUSTODY_COLL[a._contract_address], t.h, -BigInt(a.amount)); chk.liquidations++; }
+      if (a._contract_address === TLA.escrow && /^(transfer_nft|send_nft)$/.test(a.action || '') && (a.sender === w || a.recipient === w)) chk.lock_moves++;
+      if (codeOf(a._contract_address) === CREDIA_CODE && (a.portfolio === w || a.owner === w || a.sender === w || a.user === w)) chk.credia_txs++; }
+    const nonFee = fl.filter(f => f[4] !== 'fee'); const anyIn = nonFee.some(f => !String(f[2]).startsWith('-')), anyOut = nonFee.some(f => String(f[2]).startsWith('-'));
+    if (ibcAck && anyIn) chk.ibc_refunds++;
+    for (const f of fl) { const [h, denom, delta, cp, kind] = f; const v = toBig(delta);
+      const rec = { h, d: denom, v: delta, cp, k: kind, x: t.x, ib: ibcIn ? 1 : 0, ob: ibcOut ? 1 : 0, ab: ibcAck ? 1 : 0, sd: solidTx && nd(denom) === SOLID_TOKEN ? 1 : 0 }; flows.push(rec);
+      (denom.startsWith('cw20:') ? (cw[denom] = cw[denom] || []) : (native[denom] = native[denom] || [])).push([h, v]);
+      if (kind === 'fee' || !cp) continue;
+      if (isAccount(cp) && !cohortSet.has(cp) && !MODULE_CLASS[cp]) { const s = cpStats.get(cp) || { to: new Set(), from: new Set(), n: 0 }; (v < 0n ? s.to : s.from).add(w); s.n++; cpStats.set(cp, s); }
+      if (!isContract(cp) || cp === nd(denom)) continue; const code = codeOf(cp);
+      const lstHub = Object.entries(LST_HUBS).find(([, [a]]) => a === cp);
+      if (lstHub) { const def = LST_DEF[lstHub[0]]; if (anyIn && anyOut) continue;   // a bond (base out, LST in) is a swap at the measured rate — not a position
+        if (v < 0n && def && nd(denom) === nd(def.lst)) lstq.push({ h, sym: lstHub[0], lst: -v }); else if (v > 0n && def && nd(denom) === nd(def.base)) lstq.push({ h, sym: lstHub[0], base: v }); continue; }
+      const escrow = ESCROW_CODES.has(code) || !!CUSTODY_COLL[cp] || kcEscrow(kc[cp]);
+      if (escrow) { ledAdd(`${cp}|${denom}`, 'escrow', cp, denom, h, -v); continue; }
+      if (code === CREDIA_CODE) { if (!(anyIn && anyOut)) ledAdd(`${cp}|${denom}`, 'credia', cp, denom, h, -v); continue; }
+      if (NO_LEDGER_CODES.has(code) || BRIDGE_CODES.has(code) || (kc[cp] && /dao|bridge/.test(kc[cp].type || ''))) continue;
+      if (!(anyIn && anyOut)) ledAdd(`${cp}|${denom}`, 'other', cp, denom, h, -v); }
+    // amp LP rate samples: the compounder's receipt minted (or burned) against exactly one LP token in the same tx (global, once per tx)
+    if (!ampSeen.has(t.x)) { ampSeen.add(t.x); const ins = nonFee.filter(f => !String(f[2]).startsWith('-')), outs = nonFee.filter(f => String(f[2]).startsWith('-'));
+      const amp = (l) => l.filter(f => ctx.isAmp(f[1])), lp = (l) => l.filter(f => ctx.lpPair.has(f[1]) || (String(f[1]).startsWith('factory/') && ctx.pairSet.has(String(f[1]).split('/')[1])));
+      for (const [A, L] of [[amp(ins), lp(outs)], [amp(outs), lp(ins)]]) if (A.length === 1 && L.length === 1) { const a = toBig(A[0][2]), l = toBig(L[0][2]); const aa = a < 0n ? -a : a, ll = l < 0n ? -l : l; if (aa > 0n && ll > 0n) (ampSamples[A[0][1]] = ampSamples[A[0][1]] || []).push({ lp: L[0][1], day: tl.dayOf(t.h), r: Number(ll) / Number(aa) }); } }
+    // staking (successful txs only): messages first, events when the body did not decode
+    if (t.c) continue; const unbondEv = ev.filter(e => e.t === 'unbond').map(evAttrs); let ui = 0;
+    const ops = msgs.filter(m => /^Msg(Delegate|Undelegate|BeginRedelegate|CancelUnbondingDelegation)$/.test(m.ty) && m.v.delegatorAddress === w);
+    if (!msgs.length) for (const e of ev) { const a = evAttrs(e); if (a.delegator !== w) continue; if (e.t === 'delegate') ops.push({ ty: 'MsgDelegate', v: { validatorAddress: a.validator, amount: { amount: String(amtOf(a.amount, 'uluna') || 0n), denom: 'uluna' } } }); if (e.t === 'unbond') ops.push({ ty: 'MsgUndelegate', v: { validatorAddress: a.validator, amount: { amount: String(amtOf(a.amount, 'uluna') || 0n), denom: 'uluna' } }, ev: a }); }
+    for (const m of ops) { const amt = toBig(m.v.amount && m.v.amount.amount); if (!(amt > 0n) || (m.v.amount && m.v.amount.denom && m.v.amount.denom !== 'uluna')) continue;
+      if (m.ty === 'MsgDelegate') stake.push([t.h, amt]);
+      else if (m.ty === 'MsgUndelegate') { stake.push([t.h, -amt]); const e = m.ev || unbondEv.find((x, i) => i >= ui && x.validator === m.v.validatorAddress) || unbondEv[ui]; ui++;
+        const paid = e ? (amtOf(e.amount, 'uluna') ?? amt) : amt; const tc = e && e.completion_time ? Date.parse(e.completion_time) : NaN;
+        unb.push({ h: t.h, val: m.v.validatorAddress, amt: paid, t: Number.isFinite(tc) ? tc : tl.tOf(t.h) + UNBOND_MS, est: !Number.isFinite(tc) }); }
+      else if (m.ty === 'MsgCancelUnbondingDelegation') { stake.push([t.h, amt]); let left = amt; for (const u of [...unb].reverse()) { if (u.val !== m.v.validatorAddress || left <= 0n) continue; const take = u.amt < left ? u.amt : left; u.amt -= take; left -= take; } } } }
+  // unbonding credits: paid to the wallet at completion (end-block — no tx, no event in layer 1)
+  for (const u of unb) if (u.amt > 0n) (native.uluna = native.uluna || []).push([tl.hOf(u.t), u.amt]);
+  // layer-3 checkpoints
+  const cpRows = readJsonl(`layer3/${w.slice(-1)}/${w}.jsonl.gz`) || []; const wiByD = new Map(weeks.map((x, i) => [x.d, i]));
+  const bankCp = {}, delCp = [], unbCp = []; for (const r of cpRows) { const wi = wiByD.get(r.d); if (wi == null) continue;
+    for (const [d, a] of r.bank || []) (bankCp[d] = bankCp[d] || []).push({ wi, v: toBig(a) });
+    for (const d of Object.keys(bankCp)) if (!(r.bank || []).some(b => b[0] === d)) bankCp[d].push({ wi, v: 0n });   // a denom the chain no longer shows is 0 that month
+    if (Array.isArray(r.delegations)) delCp.push({ wi, v: r.delegations.reduce((s, x) => s + toBig(x[1] ? String(x[1]).split('.')[0] : 0), 0n) });
+    if (Array.isArray(r.unbonding)) unbCp.push({ wi, v: r.unbonding.reduce((s, x) => s + (x[1] || []).reduce((q, e) => q + toBig(e[0]), 0n), 0n) }); }
+  for (const r of cpRows) { const wi = wiByD.get(r.d); if (wi == null) continue; for (const d of Object.keys(bankCp)) if (!bankCp[d].some(c => c.wi === wi)) bankCp[d].push({ wi, v: 0n }); }   // denoms first seen later were 0 at earlier checkpoints
+  const tokens = {}; const checks = { bank: { compared: 0, exact: 0, close: 0, off: 0 }, delegations: { compared: 0, exact: 0, close: 0, off: 0 }, unbonding: { compared: 0, exact: 0, close: 0, off: 0 }, negative_weeks: 0, opening_balances: 0, unexplained_before_first_checkpoint: 0, ...chk };
+  const tally = (c, pred, chain) => { c.compared++; if (pred === chain) c.exact++; else { const den = chain === 0n ? (pred < 0n ? -pred : pred) : (chain < 0n ? -chain : chain); const diff = pred > chain ? pred - chain : chain - pred; if (den > 0n && diff * 1000n <= den * 5n) c.close++; else c.off++; } };
+  for (const d of new Set([...Object.keys(native), ...Object.keys(bankCp)])) { const EU = weeklyCum(native[d] || [], weeks); const A = anchorSeries(EU, bankCp[d] || [], weeks);
+    const c = [...(bankCp[d] || [])].sort((a, b) => a.wi - b.wi); for (let j = 1; j < c.length; j++) tally(checks.bank, c[j - 1].v + EU[c[j].wi] - EU[c[j - 1].wi], c[j].v);
+    if (A.opening > 0n) checks.opening_balances++; else if (A.opening < 0n) checks.unexplained_before_first_checkpoint++;
+    tokens[d] = { bal: A.vals, src: A.src, drift: A.drift.slice(0, 24), opening: A.opening.toString() }; }
+  for (const d of Object.keys(cw)) { const EU = weeklyCum(cw[d], weeks); tokens[d] = { bal: EU, src: EU.map(() => 'E') }; }
+  for (const T of Object.values(tokens)) T.bal.forEach(v => { if (v < 0n) checks.negative_weeks++; });
+  // staking
+  const D = weeklyCum(stake, weeks); const DA = anchorSeries(D, delCp, weeks); { const c = [...delCp].sort((a, b) => a.wi - b.wi); for (let j = 1; j < c.length; j++) tally(checks.delegations, c[j - 1].v + D[c[j].wi] - D[c[j - 1].wi], c[j].v); }
+  const U = weeks.map(x => { const t = Date.parse(x.d + 'T00:00:00Z'); return unb.reduce((s, u) => s + (u.h <= x.h && u.t > t ? u.amt : 0n), 0n); });
+  for (const c of unbCp) tally(checks.unbonding, U[c.wi], c.v);
+  checks.unbonding_estimated = unb.filter(u => u.est).length;
+  // positions
+  const positions = {}; for (const [key, L] of Object.entries(led)) { const u = weeklyCum(L.d, weeks); if (u.every(v => v === 0n)) continue; positions[key] = { kind: L.kind, cp: L.cp, code: L.code, denom: L.denom, units: u }; }
+  return { w, txs: txs.length, flows, tokens, staking: { delegated: DA.vals, src: DA.src, unbonding: U }, positions, solid: weeklyCum(solid, weeks), lstq, checks };
+}
+
+// ── prices ──
+async function priceKit(ctx, symbols) {
+  const { weeks, tl, inv, resolve } = ctx; const series = {};
+  await pool([...symbols], 8, async (sym) => { const r = await getJson(`${RAW}/tla-core/main/price-history/series/${encodeURIComponent(sym)}.json`, 2, 20000); if (r.ok && r.json && r.json.daily) { const days = Object.keys(r.json.daily).sort(); series[sym] = { daily: r.json.daily, days }; } });
+  const ratios = {}; const rdir = path.join(process.env.CORE_OUT || 'docs/deep-history', 'chain-ratios'); try { for (const f of fs.readdirSync(rdir)) if (f.endsWith('.json') && f !== 'index.json') { const j = JSON.parse(fs.readFileSync(path.join(rdir, f), 'utf8')); ratios[j.symbol] = j.daily || {}; } } catch { }
+  const meta = (denom) => { const r = resolve ? resolve(denom) : { symbol: denom === 'uluna' ? 'LUNA' : null, decimals: 6 }; return { sym: r.symbol || null, dec: r.decimals == null ? 6 : r.decimals }; };
+  const val = (x) => Number(Array.isArray(x) ? x[0] : x);
+  const near = (daily, days, day, maxBack = 7) => { if (daily[day] != null) return [val(daily[day]), 0]; let lo = 0, hi = days.length - 1, k = -1; while (lo <= hi) { const m = (lo + hi) >> 1; if (days[m] <= day) { k = m; lo = m + 1; } else hi = m - 1; } if (k < 0) return null; const age = Math.round((Date.parse(day) - Date.parse(days[k])) / 864e5); return age <= maxBack ? [val(daily[days[k]]), age] : null; };
+  const rKeys = {}; const lstRate = (sym, day) => { const R = ratios[sym]; if (!R) return null; const v = near(R, rKeys[sym] || (rKeys[sym] = Object.keys(R).sort()), day, 3); return v ? v[0] : null; };
+  // pools: weekly rows (layer 2) + monthly rows (layer 2c, held for the weeks of that month)
+  const wiByD = new Map(weeks.map((x, i) => [x.d, i])); const pools = new Map();   // pair → Map(wi → {assets, total_share, monthly})
+  const L2M = readJson('layer2/_manifest.json', { targets: {} });
+  for (const [key, m] of Object.entries(L2M.targets || {})) { if (m.kind !== 'pair') continue; const addr = key.split('/')[1]; const rows = readJsonl(`layer2/${key}.jsonl.gz`) || []; const M = new Map(); for (const r of rows) { const wi = wiByD.get(r.d); if (wi != null && r.data && r.data.assets) M.set(wi, { assets: r.data.assets, ts: r.data.total_share }); } if (M.size) pools.set(addr, M); }
+  const L2C = readJson('layer2c/_manifest.json', { pairs: {} });
+  for (const addr of Object.keys(L2C.pairs || {})) { const rows = (readJsonl(`layer2c/${addr}.jsonl.gz`) || []).filter(r => r.data && r.data.assets).sort((a, b) => a.h - b.h); if (!rows.length) continue; const M = pools.get(addr) || new Map();
+    for (let wi = 0; wi < weeks.length; wi++) { if (M.has(wi)) continue; const r = [...rows].reverse().find(x => x.d <= weeks[wi].d && x.d.slice(0, 7) === weeks[wi].d.slice(0, 7)); if (r) M.set(wi, { assets: r.data.assets, ts: r.data.total_share, monthly: true }); } if (M.size) pools.set(addr, M); }
+  const byAsset = new Map(); for (const [addr, M] of pools) { const any = M.values().next().value; for (const [d] of any.assets) { const k = d && d.startsWith('terra1') && d.length > 50 ? 'cw20:' + d : d; (byAsset.get(k) || byAsset.set(k, []).get(k)).push(addr); } }
+  const STATS = { by_source: {}, none: {}, disputes: {} }; const cache = new Map();
+  const lstBase = {}; for (const [s, def] of Object.entries(LST_DEF)) lstBase[s] = { lst: def.lst, base: /^terra1/.test(def.base) ? 'cw20:' + def.base : def.base };
+  const lstBySym = new Set([...Object.keys(LST_DEF), ...Object.keys(XCHAIN_LST)]);
+  const seriesPx = (sym, day) => { const S = series[sym]; if (!S) return null; const v = near(S.daily, S.days, day); return v && v[0] > 0 ? v : null; };
+  // anchor price (whole token, USD) without pools: LST rate × base · stable · series
+  function anchorWhole(denom, day) { const { sym } = meta(denom); if (!sym) return null;
+    if (lstBySym.has(sym)) { const rd0 = lstRate(sym, day); const rd = rd0 ? [rd0] : null;
+      const bases = LST_DEF[sym] ? [meta(lstBase[sym].base).sym] : XCHAIN_LST[sym]; let bp = null; for (const b of bases || []) { bp = seriesPx(b, day); if (bp) break; }
+      if (rd && bp) return { p: rd[0] * bp[0], s: 'lst' }; return null; }   // an LST without a measured rate is NOT priced from a stale series
+    if (isStableSymbol(sym) && !series[sym]) return { p: 1, s: 'stable' };
+    const v = seriesPx(sym, day); return v ? { p: v[0], s: v[1] ? 'series≤7d' : 'series' } : null; }
+  function poolQuotes(denom, wi, day) { const out = []; for (const addr of byAsset.get(denom) || []) { const row = pools.get(addr).get(wi); if (!row || row.assets.length !== 2) continue;
+      const [a, b] = row.assets.map(([d, amt]) => ({ d: d && d.startsWith('terra1') && d.length > 50 ? 'cw20:' + d : d, amt: Number(amt) })); const me = a.d === denom ? a : b, ot = a.d === denom ? b : a; if (!(me.amt > 0 && ot.amt > 0)) continue;
+      const op = anchorWhole(ot.d, day); if (!op) continue; const om = meta(ot.d), mm = meta(denom); const depth = ot.amt / 10 ** om.dec * op.p;
+      out.push({ p: depth / (me.amt / 10 ** mm.dec), depth, monthly: !!row.monthly }); } return out.sort((x, y) => y.depth - x.depth); }
+  const lpPair = ctx.lpPair;
+  // USD per RAW unit of any denom at week wi (day = the day it is needed for; defaults to the boundary)
+  function px(denom, wi, day) { day = day || weeks[wi].d; const key = denom + '|' + wi + '|' + day; if (cache.has(key)) return cache.get(key); let r = null; const { sym, dec } = meta(denom);
+    const lp = lpPair.get(denom);
+    if (lp) { const row = pools.get(lp) && pools.get(lp).get(wi); if (!row) r = { p: null, s: 'none', why: weeks[wi].h < (ctx.contractFloor || 0) ? 'LP: no pool state before the node floor' : 'LP: no pool state that week' };
+      else { let tot = 0, priced = 0; for (const [d0, amt] of row.assets) { const d = d0 && d0.startsWith('terra1') && d0.length > 50 ? 'cw20:' + d0 : d0; const q = baseRaw(d, wi, day); if (q && q.p != null) { tot += Number(amt) * q.p; priced++; } }
+        const ts = Number(row.ts); r = priced && ts > 0 ? { p: (priced === row.assets.length ? tot : tot * row.assets.length / priced) / ts, s: priced === row.assets.length ? (row.monthly ? 'lp-monthly' : 'lp') : 'lp-one-side×2' } : { p: null, s: 'none', why: 'LP: neither side priced' }; } }
+    else if (ctx.isAmp(denom)) { const ar = ctx.ampRate(denom, wi); if (!ar) r = { p: null, s: 'none', why: 'amp: no measured amp→LP rate' }; else { const q = px(ar.lp, wi, day); r = q.p != null ? { p: ar.r * q.p, s: 'amp-' + ar.s } : { p: null, s: 'none', why: 'amp: ' + (q.why || 'LP unpriced') }; } }
+    else r = baseRaw(denom, wi, day) || { p: null, s: 'none', why: sym ? 'no price for ' + sym : 'token not in the catalog, no pool' };
+    if (r.p == null && !r.why) r.why = 'no market';
+    cache.set(key, r); return r; }
+  function baseRaw(denom, wi, day) { const { sym, dec } = meta(denom); const a = anchorWhole(denom, day || weeks[wi].d);
+    if (a) { const qs = poolQuotes(denom, wi, day).filter(q => q.depth >= 5000); const rec = !day || day === weeks[wi].d;   // the check counts boundary valuations only (not every flow day)
+      if (qs.length >= 2 && a.s !== 'lst' && a.s !== 'stable') { const [x, y] = qs; const agree = pct(x.p, y.p) <= 5; const off = pct(x.p, a.p) > 25 && pct(y.p, a.p) > 25;
+        const D = STATS.disputes[sym] || (STATS.disputes[sym] = { weeks: 0, diffs: [], replaced: 0 }); if (rec) { D.weeks++; D.diffs.push(pct(x.p, a.p)); }
+        if (agree && off) { if (rec) D.replaced++; return { p: (x.p + y.p) / 2 / 10 ** dec, s: 'pool(series-disputed)' }; } }
+      else if (qs.length === 1 && rec && a.s !== 'lst' && a.s !== 'stable') { const D = STATS.disputes[sym] || (STATS.disputes[sym] = { weeks: 0, diffs: [], replaced: 0 }); D.weeks++; D.diffs.push(pct(qs[0].p, a.p)); }
+      return { p: a.p / 10 ** dec, s: a.s }; }
+    if (sym && lstBySym.has(sym)) return null;   // LST with no measured rate that day → no price (never its base 1:1)
+    const qs = poolQuotes(denom, wi, day).filter(q => q.depth >= 500); if (qs.length) return { p: qs[0].p / 10 ** dec, s: qs[0].monthly ? 'pool-monthly' : 'pool' };
+    return null; }
+  return { px, meta, STATS, series, ratios, pools, lstRate };
+}
+
+// amp receipts: the compounder's factory denoms (+ old Eris amp cw20s, code 12, that are not LSTs)
+function ampKit(ctx) {
+  const { inv } = ctx; const lst = new Set(Object.values(LST_DEF).map(d => /^terra1/.test(d.lst) ? 'cw20:' + d.lst : d.lst));
+  const isAmp = (d) => !lst.has(d) && (String(d).startsWith(`factory/${TLA.compounder}/`) || (d.startsWith('cw20:') && inv[d.slice(5)] && String(inv[d.slice(5)].code_id) === '12'));
+  return { isAmp };
+}
+// layer 2b compounder state, read shape-tolerantly: any {…exchange_rate…} next to an asset reference → LP-denom → rate per week
+function parseCompounderRates(weeks) {
+  const rows = readJsonl('layer2b/tla/compounder_exchange_rates.jsonl.gz') || []; const wiByD = new Map(weeks.map((x, i) => [x.d, i])); const out = new Map();   // lpDenom → Map(wi → rate)
+  const refOf = (o) => { if (!o || typeof o !== 'object') return typeof o === 'string' && /^(terra1|factory\/|ibc\/|u[a-z]+$)/.test(o) ? (/^terra1[0-9a-z]{58}$/.test(o) ? 'cw20:' + o : o) : null; if (o.token && o.token.contract_addr) return 'cw20:' + o.token.contract_addr; if (o.native_token && o.native_token.denom) return o.native_token.denom; if (o.cw20) return 'cw20:' + o.cw20; if (o.native) return o.native; return null; };
+  const rateOf = (o) => { if (!o || typeof o !== 'object') return null; for (const k of ['exchange_rate', 'amplp_exchange_rate', 'rate']) if (o[k] != null && Number.isFinite(Number(o[k])) && Number(o[k]) > 0) return Number(o[k]); return null; };
+  const visit = (node, wi, ctxRef) => { if (Array.isArray(node)) { let ref = ctxRef; for (const x of node) { const r = refOf(x) || (x && typeof x === 'object' && (refOf(x.asset_info) || refOf(x.asset) || refOf(x.info))); if (r) ref = r; } for (const x of node) visit(x, wi, ref); return; }
+    if (!node || typeof node !== 'object') return; const ref = refOf(node.asset_info) || refOf(node.asset) || refOf(node.info) || ctxRef; const r = rateOf(node);
+    if (r != null && ref && !String(ref).startsWith(`factory/${TLA.compounder}/`)) { const M = out.get(ref) || out.set(ref, new Map()).get(ref); if (!M.has(wi)) M.set(wi, r); }
+    for (const v of Object.values(node)) if (v && typeof v === 'object') visit(v, wi, ref); };
+  for (const r of rows) { const wi = wiByD.get(r.d); if (wi != null && r.data) visit(r.data, wi, null); }
+  return out;
+}
+
+async function derive() {
+  const C = readJson('cohort/current.json', null); if (!C) throw new Error('no cohort');
+  const H = readJson('layer2/heights.json', null); if (!H) throw new Error('no layer2/heights.json');
+  const weeks = Object.entries(H.rows).map(([d, x]) => ({ d, h: x.h })).sort((a, b) => a.h - b.h); const tl = timeline(weeks);
+  const invF = fs.readdirSync(A('inventory')).filter(f => /^\d{4}-\d\d-\d\d\.json$/.test(f)).sort().pop(); const inv = (readJson('inventory/' + invF, { contracts: {} })).contracts || {};
+  let kc = {}; { const r = await getJson(`${RAW}/tla-core/main/docs/curated/known_contracts.json`, 2, 20000); if (r.ok && r.json && r.json.contracts) kc = r.json.contracts; }
+  const resolve = await loadResolver(); if (!resolve) console.log('derive: the token catalog / denom rule could not be loaded — only LUNA and pools will price (every other token is counted unpriced)');
+  const cohort = Object.keys(C.wallets).filter(shardOk).sort(); const cohortSet = new Set(Object.keys(C.wallets)); const todo = LIMIT_WALLETS ? cohort.slice(0, LIMIT_WALLETS) : cohort;
+  const contractFloor = (readJson('layer2/_manifest.json', {}).state_floor || {}).contract_reads_from || (readJson('ratios/_manifest.json', {}).contract_floor) || 0;
+  // LP token → its pair: cw20 LP tokens are instantiated by the pair (contract_info.creator); tokenfactory LP denoms carry the pair's address
+  const pairSet = new Set(Object.entries(inv).filter(([, x]) => PAIR_CODES.has(String(x.code_id || ''))).map(([a]) => a)); for (const a of Object.keys(readJson('layer2c/_manifest.json', { pairs: {} }).pairs || {})) pairSet.add(a);
+  const lpPair = new Map(); for (const [a, x] of Object.entries(inv)) if (x.creator && pairSet.has(x.creator) && !PAIR_CODES.has(String(x.code_id || ''))) lpPair.set('cw20:' + a, x.creator);
+  const ctx = { weeks, tl, inv, kc, resolve, cohortSet, lpPair, pairSet, contractFloor, ampSeen: new Set(), ampSamples: {}, cpStats: new Map() }; Object.assign(ctx, ampKit(ctx));
+  const tmp = path.join(process.env.RUNNER_TEMP || require('os').tmpdir(), 'derive-units'); fs.rmSync(tmp, { recursive: true, force: true }); fs.mkdirSync(tmp, { recursive: true });
+  console.log(`derive · ${todo.length} wallets · ${weeks.length} weekly boundaries (${weeks[0].d} → ${weeks[weeks.length - 1].d}) · ${lpPair.size} LP tokens mapped to their pair · contract floor ${contractFloor.toLocaleString('en-US')}`);
+  // pass 1 — units
+  const held = new Set(); let n1 = 0, txsN = 0;
+  const reviver = (k, v) => (typeof v === 'string' && /^-?\d+n$/.test(v) ? BigInt(v.slice(0, -1)) : v), replacer = (k, v) => (typeof v === 'bigint' ? v.toString() + 'n' : v);
+  for (const w of todo) { if (overBudget()) break; const r = deriveUnits(w, ctx); n1++; txsN += r.txs;
+    for (const f of r.flows) if (f.cp && f.d.startsWith('factory/') && pairSet.has(f.d.split('/')[1])) lpPair.set(f.d, f.d.split('/')[1]);   // tokenfactory LP denoms
+    for (const [d, T] of Object.entries(r.tokens)) if (T.bal.some(v => v !== 0n)) held.add(d); for (const p of Object.values(r.positions)) held.add(p.denom);
+    fs.writeFileSync(path.join(tmp, w + '.json'), JSON.stringify(r, replacer));
+    if (n1 % 200 === 0) console.log(`  … pass 1: ${n1}/${todo.length} wallets · ${txsN.toLocaleString('en-US')} txs · ${minutes().toFixed(0)} min`); }
+  // exchanges: the private curated list first, then the heuristic (an address ≥ EXCH_MIN cohort wallets both send to and receive from)
+  const curated = new Set(((readJson('config/exchanges.json', {}) || {}).addresses || []).filter(isAccount)); const exch = new Set(curated); let heur = 0;
+  for (const [a, s] of ctx.cpStats) if (!curated.has(a) && s.to.size >= EXCH_MIN && s.from.size >= EXCH_MIN) { exch.add(a); heur++; }
+  writeJson('derived/exchanges.json', { version: VERSION, built: new Date().toISOString(), rule: `curated (archive/config/exchanges.json) + any account ≥ ${EXCH_MIN} cohort wallets both sent to and received from (not a contract, module or cohort wallet)`, curated: [...curated], heuristic: [...exch].filter(a => !curated.has(a)).map(a => ({ address: a, wallets_sending: ctx.cpStats.get(a).to.size, wallets_receiving: ctx.cpStats.get(a).from.size, transfers: ctx.cpStats.get(a).n })) });
+  // amp → LP rates: deposit/withdraw txs per day (A) and the compounder's state (R), R used only where it agrees with A (≤ 2 % median)
+  const R2b = parseCompounderRates(weeks); const ampLP = {}; const ampDaily = {};
+  for (const [amp, ss] of Object.entries(ctx.ampSamples)) { const byLp = {}; for (const s of ss) byLp[s.lp] = (byLp[s.lp] || 0) + 1; ampLP[amp] = Object.entries(byLp).sort((a, b) => b[1] - a[1])[0][0];
+    const D = {}; for (const s of ss) if (s.lp === ampLP[amp]) (D[s.day] = D[s.day] || []).push(s.r); ampDaily[amp] = Object.fromEntries(Object.entries(D).map(([d, rs]) => [d, median(rs)]).sort()); }
+  const ampTrust = {}; for (const [amp, lp] of Object.entries(ampLP)) { const M = R2b.get(lp); if (!M) { ampTrust[amp] = { R: false, why: 'compounder state has no rate for its LP' }; continue; }
+    const diffs = []; for (const [day, a] of Object.entries(ampDaily[amp])) { let wi = -1; for (let k = 0; k < weeks.length && weeks[k].d <= day; k++) wi = k; if (wi >= 0 && M.has(wi)) diffs.push(pct(M.get(wi), a)); } const md = median(diffs); ampTrust[amp] = { R: diffs.length >= 3 && md <= 2, why: diffs.length >= 3 ? `median ${md.toFixed(2)} % vs deposit txs on ${diffs.length} days` : 'fewer than 3 days to compare with deposit txs' }; }
+  ctx.ampRate = (amp, wi) => { const lp = ampLP[amp]; if (!lp) return null; const M = R2b.get(lp); if (ampTrust[amp] && ampTrust[amp].R && M && M.has(wi)) return { lp, r: M.get(wi), s: 'state' };
+    const days = Object.keys(ampDaily[amp] || {}); const d = weeks[wi].d; let best = null; for (const x of days) { if (x > d) break; best = x; } if (!best) return null; const age = (Date.parse(d) - Date.parse(best)) / 864e5; return age <= 35 ? { lp, r: ampDaily[amp][best], s: age <= 7 ? 'txs' : 'txs≤35d' } : null; };
+  // prices for everything held, every LP's assets and every LST base
+  const syms = new Set(['LUNA']); const addSym = (d) => { const s = resolve ? (resolve(d) || {}).symbol : null; if (s) syms.add(s); };
+  for (const d of held) addSym(d);
+  for (const [s, def] of Object.entries(LST_DEF)) { syms.add(s); addSym(/^terra1/.test(def.base) ? 'cw20:' + def.base : def.base); } for (const [s, b] of Object.entries(XCHAIN_LST)) { syms.add(s); for (const x of b) syms.add(x); }
+  for (const f of ['layer2/_manifest.json']) { const M = readJson(f, { targets: {} }); for (const [key, m] of Object.entries(M.targets || {})) if (m.kind === 'pair') { const rows = readJsonl(`layer2/${key}.jsonl.gz`) || []; const r = rows.find(x => x.data && x.data.assets); if (r) for (const [d] of r.data.assets) addSym(d && d.length > 50 ? 'cw20:' + d : d); } }
+  for (const a of Object.keys(readJson('layer2c/_manifest.json', { pairs: {} }).pairs || {})) { const r = (readJsonl(`layer2c/${a}.jsonl.gz`) || []).find(x => x.data && x.data.assets); if (r) for (const [d] of r.data.assets) addSym(d && d.length > 50 ? 'cw20:' + d : d); }
+  const P = await priceKit(ctx, syms); console.log(`derive · prices: ${Object.keys(P.series).length} of ${syms.size} symbols have a series · ${Object.keys(P.ratios).length} measured LST rates · ${P.pools.size} pools · ${exch.size} exchange addresses (${curated.size} curated, ${heur} by the heuristic) · ${Object.keys(ampLP).length} amp receipts with a measured LP rate (${Object.values(ampTrust).filter(x => x.R).length} also from compounder state)`);
+  // pass 2 — value, classify, write
+  const AG = { wallets: 0, weeks: weeks.length, txs: txsN, bal_src: {}, px_src: {}, unpriced: {}, flows_by_class: {}, flows_usd_by_class: {}, checks: { bank: { compared: 0, exact: 0, close: 0, off: 0 }, delegations: { compared: 0, exact: 0, close: 0, off: 0 }, unbonding: { compared: 0, exact: 0, close: 0, off: 0 } }, flags: {}, wallet_weeks: 0, wallet_weeks_with_unpriced: 0, positions_by_kind: {}, value_now_usd: 0, other_protocols_now_usd: 0, net_deposits_usd: 0, exchange_rows: 0, unpriced_flows: 0 };
+  const key = process.env.FLOW_KEY || ''; if (!key) console.log('derive: FLOW_KEY not set — exchange rows are written without their keyed dedup id');
+  const hk = (s) => key ? crypto.createHmac('sha256', key).update(s).digest('hex').slice(0, 20) : null;
+  const classOf = (f) => { if (f.k === 'fee') return 'fee'; const cp = f.cp;
+    if (cp && MODULE_CLASS[cp]) return MODULE_CLASS[cp];
+    const inF = !String(f.v).startsWith('-');
+    if ((inF && (f.ib || f.ab)) || (!inF && f.ob && (!cp || isContract(cp) || MODULE_CLASS[cp] === 'bridge'))) return 'bridge';
+    if (f.sd) return 'debt'; if (!cp) return 'unknown';
+    if (isContract(cp)) { const code = (inv[cp] && String(inv[cp].code_id || '')) || ''; if (BRIDGE_CODES.has(code) || (kc[cp] && kc[cp].type === 'bridge')) return 'bridge'; if (kc[cp] && /^dao/.test(kc[cp].type || '')) return 'registry';
+      if (ESCROW_CODES.has(code) || CUSTODY_COLL[cp] || kcEscrow(kc[cp])) return 'escrow'; return 'protocol'; }
+    if (kc[cp] && /^dao/.test(kc[cp].type || '')) return 'registry'; if (cohortSet.has(cp)) return 'member'; if (exch.has(cp)) return 'exchange'; return 'external'; };
+  let n2 = 0;
+  for (const w of todo) { const f0 = path.join(tmp, w + '.json'); if (!fs.existsSync(f0)) continue; const U = JSON.parse(fs.readFileSync(f0, 'utf8'), reviver); n2++;
+    const W = weeks.length; const zero = () => new Array(W).fill(0); const parts = { wallet: zero(), staked: zero(), unbonding: zero(), positions: zero(), lst_unbonding: zero(), solid_debt: zero(), other_protocols: zero(), credia_estimate: zero() };
+    const unpricedW = zero(); const tok = {}; const bump = (o, k, n = 1) => { o[k] = (o[k] || 0) + n; };
+    const valueOf = (denom, raw, wi, sink) => { if (raw === 0n) return 0; const q = P.px(denom, wi); bump(AG.px_src, q.s); if (q.p == null) { unpricedW[wi]++; if (sink) bump(sink, q.why); const s = P.meta(denom).sym || denom.slice(0, 28); bump(AG.unpriced, s + ' — ' + q.why); return 0; } return Number(raw) * q.p; };
+    for (const [d, T] of Object.entries(U.tokens)) { const m = P.meta(d); const usd = zero(); const why = {};
+      T.bal.forEach((v, wi) => { bump(AG.bal_src, T.src[wi]); if (v <= 0n) return; usd[wi] = valueOf(d, v, wi, why); parts.wallet[wi] += usd[wi]; });
+      if (T.bal.some(v => v !== 0n)) tok[d] = { sym: m.sym, dec: m.dec, bal: T.bal.map(String), src: T.src.join(''), usd: usd.map(x => +x.toFixed(2)), unpriced: Object.keys(why).length ? why : undefined, drift: T.drift && T.drift.length ? T.drift : undefined, opening: T.opening && T.opening !== '0' ? T.opening : undefined }; }
+    const luna = (raw, wi) => raw > 0n ? valueOf('uluna', raw, wi) : 0;
+    U.staking.delegated.forEach((v, wi) => { parts.staked[wi] = luna(v, wi); }); U.staking.unbonding.forEach((v, wi) => { parts.unbonding[wi] = luna(v, wi); });
+    const pos = {}; let clamped = 0;
+    for (const [k, p] of Object.entries(U.positions)) { const usd = zero(); const lab = (P.meta(p.denom).sym || p.denom.slice(0, 24));
+      p.units.forEach((v, wi) => { if (v < 0n) { clamped++; return; } const x = valueOf(p.denom, v, wi); usd[wi] = x; (p.kind === 'escrow' ? parts.positions : p.kind === 'credia' ? parts.credia_estimate : parts.other_protocols)[wi] += x; });
+      bump(AG.positions_by_kind, p.kind); pos[k] = { kind: p.kind, code: p.code || undefined, token: lab, units: p.units.map(String), usd: usd.map(x => +x.toFixed(2)) }; }
+    // LST unbond queues: LST in at the day's measured rate → base owed; base paid out → owed less
+    const q = {}; for (const e of U.lstq) { const def = LST_DEF[e.sym]; const base = /^terra1/.test(def.base) ? 'cw20:' + def.base : def.base; const Q = q[e.sym] || (q[e.sym] = { base, d: [] });
+      if (e.lst != null) { const r = P.lstRate(e.sym, tl.dayOf(e.h)); if (r) Q.d.push([e.h, BigInt(Math.round(Number(e.lst) * r))]); else (U.checks.lst_queue_no_rate = (U.checks.lst_queue_no_rate || 0) + 1); }
+      else Q.d.push([e.h, -BigInt(e.base)]); }
+    for (const [s, Q] of Object.entries(q)) { const u = weeklyCum(Q.d, weeks); u.forEach((v, wi) => { if (v > 0n) parts.lst_unbonding[wi] += valueOf(Q.base, v, wi); else if (v < 0n) clamped++; }); }
+    U.solid.forEach((v, wi) => { if (v > 0n) parts.solid_debt[wi] = valueOf('cw20:' + SOLID_TOKEN, v, wi); else if (v < 0n) U.checks.solid_debt_negative = (U.checks.solid_debt_negative || 0) + 1; });
+    const value = weeks.map((_, wi) => parts.wallet[wi] + parts.staked[wi] + parts.unbonding[wi] + parts.positions[wi] + parts.lst_unbonding[wi] - parts.solid_debt[wi]);
+    // flows: class, value at the day's price, net deposits, exchange summaries
+    const fw = {}; const nd0 = zero(); const exchange = [], received = []; let unpricedFlows = 0;
+    const lastH = weeks[W - 1].h; for (const f of U.flows) { if (f.h > lastH) continue; const cls = classOf(f); const v = toBig(f.v); const wi = tl.wiOf(f.h); const day = tl.dayOf(f.h); const qq = P.px(f.d, wi, day); const m = P.meta(f.d);
+      const usd = qq.p == null ? null : Number(v) * qq.p; bump(AG.flows_by_class, cls); if (usd != null) AG.flows_usd_by_class[cls] = (AG.flows_usd_by_class[cls] || 0) + usd;
+      const F = fw[cls] || (fw[cls] = { in: zero(), out: zero() }); if (usd != null) (usd >= 0 ? F.in : F.out)[wi] += Math.abs(usd);
+      if (BOUNDARY.has(cls)) { if (usd == null) unpricedFlows++; else nd0[wi] += usd;
+        const amt = Number(v < 0n ? -v : v) / 10 ** m.dec; const row = { d: day, dir: v < 0n ? 'out' : 'in', token: m.sym || 'unlisted token', amount: +amt.toPrecision(8), usd: usd == null ? null : +Math.abs(usd).toFixed(2) };
+        if (cls === 'exchange') exchange.push({ ...row, k: hk(`${f.x}|${f.d}|${f.v}`) }); else if (v > 0n) received.push({ ...row, class: cls }); } }
+    let acc = 0; const netDep = nd0.map(x => +(acc += x).toFixed(2));
+    for (const k of Object.keys(U.checks)) if (U.checks[k] && typeof U.checks[k] === 'object') { const a = AG.checks[k] || (AG.checks[k] = {}); for (const [x, y] of Object.entries(U.checks[k])) a[x] = (a[x] || 0) + y; } else if (U.checks[k]) { bump(AG.flags, k, U.checks[k]); bump(AG.flags, 'wallets_with_' + k, 1); }
+    if (clamped) bump(AG.flags, 'positions_below_zero_weeks', clamped);
+    const first = value.findIndex((x, i) => x || unpricedW[i]); for (let wi = Math.max(0, first); first >= 0 && wi < W; wi++) { AG.wallet_weeks++; if (unpricedW[wi]) AG.wallet_weeks_with_unpriced++; }
+    AG.wallets++; AG.value_now_usd += value[W - 1]; AG.other_protocols_now_usd += parts.other_protocols[W - 1]; AG.net_deposits_usd += acc; AG.exchange_rows += exchange.length; AG.unpriced_flows += unpricedFlows;
+    const out = { wallet: w, version: VERSION, built: new Date().toISOString(), weeks: weeks.map(x => x.d),
+      legend: { balance_src: 'one letter per week — C the chain checkpoint that week · + the last checkpoint + events since · G events + the opening balance the first checkpoint shows (genesis / vesting) · E events only', value: 'value_usd = wallet + staked + unbonding + positions + lst_unbonding − solid_debt; other_protocols and credia_estimate are NOT in it (estimated from deposits — not modelled yet)' },
+      value_usd: value.map(x => +x.toFixed(2)), parts: Object.fromEntries(Object.entries(parts).map(([k, v]) => [k, v.map(x => +x.toFixed(2))])), unpriced_holdings: unpricedW,
+      net_deposits_usd: netDep, flows_usd: fw, exchange, received, tokens: tok,
+      staking: { delegated: U.staking.delegated.map(String), src: U.staking.src.join(''), unbonding: U.staking.unbonding.map(String) }, positions: pos, solid_debt: U.solid.map(String),
+      checks: { ...U.checks, positions_below_zero_weeks: clamped, unpriced_flows: unpricedFlows } };
+    const fo = `derived/history/${w.slice(-1)}/${w}.json.gz`; fs.mkdirSync(path.dirname(A(fo)), { recursive: true }); fs.writeFileSync(A(fo), zlib.gzipSync(JSON.stringify(out)));
+    if (n2 % 200 === 0) console.log(`  … pass 2: ${n2}/${n1} wallets · ${minutes().toFixed(0)} min`); }
+  fs.rmSync(tmp, { recursive: true, force: true });
+  // the public summary (counts and token facts only) + the standing price check
+  const pubDoc = { version: VERSION, built: new Date().toISOString(), wallets: AG.wallets, weeks: AG.weeks, from: weeks[0].d, to: weeks[weeks.length - 1].d, txs: AG.txs,
+    note: 'The deep-history derive: every cohort wallet rebuilt weekly from its own transactions, re-anchored on monthly chain checkpoints, valued with labelled prices. Counts only — no wallet appears here.',
+    balance_sources: AG.bal_src, price_sources: AG.px_src, checkpoint_checks: AG.checks, flags: AG.flags, flows_by_class: AG.flows_by_class, flows_usd_by_class: Object.fromEntries(Object.entries(AG.flows_usd_by_class).map(([k, v]) => [k, Math.round(v)])),
+    coverage: { wallet_weeks: AG.wallet_weeks, with_unpriced_holdings: AG.wallet_weeks_with_unpriced, pct_fully_priced: AG.wallet_weeks ? +(100 - 100 * AG.wallet_weeks_with_unpriced / AG.wallet_weeks).toFixed(1) : null, unpriced_top: topN(AG.unpriced, 25), unpriced_flows: AG.unpriced_flows },
+    positions_by_kind: AG.positions_by_kind, totals_now: { value_usd: Math.round(AG.value_now_usd), other_protocols_usd: Math.round(AG.other_protocols_now_usd), net_deposits_usd: Math.round(AG.net_deposits_usd) },
+    exchanges: { addresses: exch.size, curated: curated.size, heuristic: heur, rule_min_wallets: EXCH_MIN, summary_rows: AG.exchange_rows }, amp: { receipts: Object.keys(ampLP).length, compounder_state_trusted: Object.values(ampTrust).filter(x => x.R).length } };
+  const priceDoc = { version: VERSION, built: new Date().toISOString(), note: 'Standing check: each price-series token against the deep pools that priced it the same week (reserve ratio vs series). A pool overrules the series only when two pools ≥ $5K agree within 5 % and both sit > 25 % away.', symbols: Object.fromEntries(Object.entries(P.STATS.disputes).map(([s, D]) => [s, { weeks_compared: D.weeks, median_pct: +(median(D.diffs) || 0).toFixed(2), worst_pct: +Math.max(0, ...D.diffs).toFixed(1), weeks_replaced_by_pools: D.replaced }]).sort((a, b) => b[1].median_pct - a[1].median_pct)) };
+  writeJson(`derived/_report.json`, { ...pubDoc, price_check: priceDoc.symbols }); commitPush(`derive: ${AG.wallets} wallets`);
+  const outDir = process.env.CORE_OUT; if (outDir) { const txt = JSON.stringify(pubDoc) + JSON.stringify(priceDoc);
+    if (Object.keys(C.wallets).some(w => txt.includes(w)) || [...exch].some(a => txt.includes(a))) { console.log('derive: a cohort wallet or an exchange address would appear in the public summary — NOT written'); process.exitCode = 1; }
+    else { fs.mkdirSync(outDir, { recursive: true }); fs.writeFileSync(path.join(outDir, 'derive.json'), JSON.stringify(pubDoc, null, 1) + '\n'); fs.writeFileSync(path.join(outDir, 'price-check.json'), JSON.stringify(priceDoc, null, 1) + '\n'); } }
+  const pc = (c) => c.compared ? `${c.exact} exact + ${c.close} within 0.5 % of ${c.compared} (${(100 * (c.exact + c.close) / c.compared).toFixed(1)} %)` : 'none';
+  console.log(`derive · checkpoints after re-anchoring: bank ${pc(AG.checks.bank)} · delegations ${pc(AG.checks.delegations)} · unbonding ${pc(AG.checks.unbonding)}`);
+  console.log(`derive · balance sources: ${Object.entries(AG.bal_src).map(([k, v]) => k + ' ' + v).join(' · ')}`);
+  console.log(`derive · price sources: ${Object.entries(AG.px_src).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v).join(' · ')}`);
+  console.log(`derive · wallet-weeks fully priced: ${pubDoc.coverage.pct_fully_priced} % of ${AG.wallet_weeks} · top unpriced: ${Object.entries(topN(AG.unpriced, 5)).map(([k, v]) => `${k} (${v})`).join(' | ') || 'none'}`);
+  console.log(`derive · flows: ${Object.entries(AG.flows_by_class).sort((a, b) => b[1] - a[1]).map(([k, v]) => k + ' ' + v).join(' · ')} · flags: ${Object.entries(AG.flags).map(([k, v]) => k + ' ' + v).join(' · ') || 'none'}`);
+  console.log(`derive · price check: ${Object.keys(priceDoc.symbols).length} symbols compared with pools · ${Object.values(priceDoc.symbols).filter(x => x.weeks_replaced_by_pools).length} had weeks overruled by pools`);
+  try { fs.writeFileSync(`${MODE}_left.txt`, overBudget() ? '1' : '0'); } catch { }
+  console.log(`derive: ${n2 < todo.length ? `stopped at the time budget after ${n2} of ${todo.length} wallets — run again` : 'DONE'}`);
+}
+
+if (!RPCS.length && !['cohort', 'inventory', 'flows', 'audit', 'derive'].includes(MODE)) { console.error('ARCHIVE_RPC not set'); process.exit(1); }
 if (!T) console.log('note: cosmjs-types not installed — messages will not be decoded (events are still kept)');
-const run = { timing, cohort, layer1, inventory, layer2, layer3, flows: flowsMode, audit, gapfill: closeout, closeout, ratios }[MODE]; if (!run) { console.error('unknown MODE ' + MODE); process.exit(1); }
+const run = { timing, cohort, layer1, inventory, layer2, layer3, flows: flowsMode, audit, gapfill: closeout, closeout, ratios, derive }[MODE]; if (!run) { console.error('unknown MODE ' + MODE); process.exit(1); }
 await run();
