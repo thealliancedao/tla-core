@@ -83,6 +83,10 @@ for (const h of [1250000, 1450000, 1650000]) put(tx(h, [cw(LP, 'send', { from: W
 //    $0.01) and a deeper WHALE/bWHALE pool (1,000,000 WHALE + 100,000 bWHALE — an LST ↔ base pair, its reserve ratio is not a price)
 const WHALE = 'ibc/36A02FFC4E74DF4F64305130C3DFA1B06BEAC775648927AA44467C76A77AB8DB', BWHALE = 'ibc/' + 'B'.repeat(64), PW = addr(107, 58), PB = addr(108, 58);
 put(tx(1950000, [...send(EXT, W3, 1000000000, WHALE), ...send(EXT, W3, 100000000, BWHALE)]), W3);
+// ── 2.1.2 plant: before the node floor (no pool state) W5 holds 500 WHALE for a few weeks; two swaps it made (10 LUNA → 990 WHALE + 10 commission)
+//    price WHALE at 1,000 per 10 LUNA = $0.005 → 500 WHALE = $2.50 in week 1
+const swapEv = (h) => tx(h, [ev('wasm', { _contract_address: PW, action: 'swap', offer_asset: 'uluna', ask_asset: WHALE, offer_amount: '10000000', return_amount: '990000000', commission_amount: '10000000' })]);
+put(tx(150000, send(EXT, W5, 500000000, WHALE)), W5); put(swapEv(180000), W5); put(swapEv(190000), W5); put(tx(450000, send(W5, EXT, 500000000, WHALE)), W5);
 for (const w of wallets) gz(`${ARC}/layer1/${w.slice(-1)}/${w}/part-000.jsonl.gz`, L1[w]);
 wr(`${ARC}/layer1/_manifest.json`, { wallets: Object.fromEntries(wallets.map(w => [w, { done: true, txs: L1[w].length }])) });
 // inventory (code ids + creators) · known contracts · protocol labels
@@ -158,6 +162,8 @@ try {
     check(`D22 bWHALE with no WHALE series: 100 × measured 1.5 × WHALE from its LUNA pool ($0.01) = $${bw && bw.usd[last]}; WHALE itself $${wh && wh.usd[last]} — the deeper WHALE ↔ bWHALE pool is not a price (it would read $1.50)`, bw && near(bw.usd[last], 1.5) && wh && near(wh.usd[last], 10), { wh: wh && wh.usd.slice(-2), bw: bw && bw.usd.slice(-2) });
     const D3 = JSON.parse(fs.readFileSync(path.join(CORE, 'derive.json'), 'utf8'));
     check(`D23 the source is labelled (lst(base-pool) ${D3.price_sources['lst(base-pool)']}); an unpriced holding is null in the wallet file, never $0`, D3.price_sources['lst(base-pool)'] > 0 && b.tokens['cw20:' + TOKZ].usd.every(x => x === null || x === 0) && b.tokens['cw20:' + TOKZ].usd[last] === null, D3.price_sources); }
+  { const g = H(W5); const wh = g.tokens[WHALE]; const D4 = JSON.parse(fs.readFileSync(path.join(CORE, 'derive.json'), 'utf8'));
+    check(`D24 before the node floor (no pool state) WHALE is priced from the cohort's own swaps: 500 × $0.005 = $${wh && wh.usd[1]} (source swap-txs ${D4.price_sources['swap-txs']})`, wh && near(wh.usd[1], 2.5) && D4.price_sources['swap-txs'] > 0, { wh: wh && wh.usd.slice(0, 6), src: D4.price_sources }); }
   // the guard: plant a wallet in the price check (a token symbol) → nothing public is written
   fs.rmSync(path.join(CORE, 'derive.json')); fs.rmSync(path.join(CORE, 'price-check.json'));
   const cat = JSON.parse(fs.readFileSync(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, 'utf8')); cat.tokens[0].effective.symbol = W4; wr(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, cat); wr(`${PUB}/tla-core/main/price-history/series/${W4}.json`, series(0.01));
