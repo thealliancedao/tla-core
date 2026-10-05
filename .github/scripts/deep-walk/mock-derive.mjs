@@ -67,6 +67,11 @@ put(tx(1060000, [...send(W3, HUB, 30000000), cw(HUB, 'erishub/bond', {}), cw(AMP
 // ── W4: 3 from the exchange · 1 back
 put(tx(300000, send(EXCH, W4, 3000000)), W4);
 put(tx(1300000, send(W4, EXCH, 1000000)), W4);
+// ── 2.1.1 plants: W4 receives 1e9 ROAR (a real-looking chain amount worth $10M at the series price — 500× what the ROAR pool holds) →
+//    under review, never valued; W5 receives a reward stream from a contract (one-way IN only) → no 'other protocol' position
+const REWARDER = addr(106, 58);
+put(tx(1900000, [cw(ROAR, 'transfer', { from: EXT2, to: W4, amount: '1000000000000000' })]), W4);
+put(tx(1700000, [cw(ROAR, 'transfer', { from: REWARDER, to: W5, amount: '50000000' }), cw(REWARDER, 'claim', {})]), W5);
 // ── W5: 10 LUNA · 6,000 LP from outside · 3 compounder deposits (2,000 LP → 1,000 amp each)
 put(tx(150000, send(EXT, W5, 10000000)), W5);
 put(tx(1200000, [cw(LP, 'transfer', { from: EXT, to: W5, amount: '6000' })]), W5);
@@ -122,7 +127,7 @@ try {
   const lpT = b.tokens['cw20:' + LP], am = b.tokens['cw20:' + AMPL], pos = Object.values(b.positions).find(p => p.kind === 'escrow');
   check(`D7 W1 LP priced from the pool's reserves that week (4,000 LP = $${lpT && lpT.usd[last]}); 6,000 staked in the bucket is a position ($${pos && pos.usd[last]}); ampLUNA = 5 × measured 1.2 × $0.5 = $${am && am.usd[last]}`, lpT && near(lpT.usd[last], 5.6) && pos && near(pos.usd[last], 8.4) && am && near(am.usd[last], 3.0), { lpT: lpT && lpT.usd.slice(-3), pos, am: am && am.usd.slice(-2) });
   check(`D8 W1 the unbond queue holds 6 LUNA ($3) between the queue and the payout, then 0; the bond itself is not a position; value now $${b.value_usd[last]} (= 64 LUNA 32 + 900 ROAR 9 + LP 5.6 + ampLUNA 3 + staked LP 8.4)`, near(b.parts.lst_unbonding[wi(1500000)], 3) && b.parts.lst_unbonding[last] === 0 && near(b.value_usd[last], 58.0) && Object.values(b.positions).every(p => p.kind !== 'other'), { q: b.parts.lst_unbonding, v: b.value_usd[last], pos: Object.keys(b.positions) });
-  check(`D9 W1 the token nobody prices is counted unpriced (holdings + the flow), never guessed`, b.unpriced_holdings[last] === 1 && b.checks.unpriced_flows === 1 && b.tokens['cw20:' + TOKZ].usd[last] === 0, { u: b.unpriced_holdings.slice(-2), f: b.checks.unpriced_flows });
+  check(`D9 W1 a token with no catalog entry and no pool anywhere is "no market" — counted apart, never valued, never makes the week "not fully priced"`, b.no_market_holdings[last] === 1 && b.unpriced_holdings[last] === 0 && b.checks.unpriced_flows === 0 && b.tokens['cw20:' + TOKZ].usd[last] === 0, { u: b.unpriced_holdings.slice(-2), nm: b.no_market_holdings.slice(-2), f: b.checks.unpriced_flows });
   const cpos = Object.values(c.positions).find(p => p.kind === 'escrow');
   check(`D10 W2 Solid: collateral 20 → 12 ampLUNA after the liquidation ($${cpos && cpos.usd[last]}), debt 5 → 2 SOLID (−$${c.parts.solid_debt[last]}); value $${c.value_usd[last]} (= 40 LUNA 20 + 5 SOLID 5 + 7.2 − 2)`, cpos && cpos.units[last] === '12000000' && near(cpos.usd[last], 7.2) && c.solid_debt[last] === '2000000' && near(c.parts.solid_debt[last], 2) && near(c.value_usd[last], 30.2), { cpos, debt: c.solid_debt.slice(-3), v: c.value_usd[last] });
   check(`D11 W2 IBC in / out classed bridge (via the channel escrow), the member transfer member, the SOLID minted debt; net deposits = 25 + 12 − 5 = ${c.net_deposits_usd[last]}`, c.flows_usd.bridge && near(c.flows_usd.bridge.in[wi(150000)], 25) && near(c.flows_usd.bridge.out[wi(1700000)], 5) && c.flows_usd.member && c.flows_usd.debt && near(c.net_deposits_usd[last], 32) && c.received.some(r => r.class === 'member' && r.token === 'ampLUNA'), { cls: Object.keys(c.flows_usd), nd: c.net_deposits_usd[last] });
@@ -134,6 +139,9 @@ try {
   const PC = JSON.parse(fs.readFileSync(path.join(CORE, 'price-check.json'), 'utf8')); const D = JSON.parse(fs.readFileSync(path.join(CORE, 'derive.json'), 'utf8'));
   check(`D15 the price check compares ROAR's series with its pool (${PC.symbols.ROAR && PC.symbols.ROAR.median_pct} % apart) — one pool never overrules the series`, PC.symbols.ROAR && PC.symbols.ROAR.weeks_compared > 0 && PC.symbols.ROAR.weeks_replaced_by_pools === 0 && near(PC.symbols.ROAR.median_pct, 44.44, 0.1), PC.symbols);
   check(`D16 public summary: ${D.wallets} wallets, checkpoints counted, coverage and sources reported`, D.wallets === 6 && D.checkpoint_checks.bank.compared > 0 && D.coverage.wallet_weeks > 0 && D.price_sources.lst > 0 && D.exchanges.heuristic === 1, D);
+  { const e = H(W4), g = H(W5); const D2 = JSON.parse(fs.readFileSync(path.join(CORE, 'derive.json'), 'utf8'));
+    check(`D19 an implausible amount (1e9 ROAR = $10M vs a pool holding ~$28K) is UNDER REVIEW — not in the wallet value ($${e.value_usd[last]} = 2 LUNA), not in net deposits ($${e.net_deposits_usd[last]}), listed with why`, near(e.value_usd[last], 1.0) && near(e.net_deposits_usd[last], 1.0) && e.under_review && e.under_review.some(r => r.token === 'ROAR' && /under review/.test(r.why)) && D2.under_review.flows >= 1 && D2.under_review.holdings_weeks >= 1, { v: e.value_usd[last], nd: e.net_deposits_usd[last], ur: e.under_review, pub: D2.under_review });
+    check('D20 a reward stream out of a contract (in only, never deposited) is not an "other protocol" position', !Object.values(g.positions).some(p => p.kind === 'other'), Object.values(g.positions).map(p => p.kind)); }
   // the guard: plant a wallet in the price check (a token symbol) → nothing public is written
   fs.rmSync(path.join(CORE, 'derive.json')); fs.rmSync(path.join(CORE, 'price-check.json'));
   const cat = JSON.parse(fs.readFileSync(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, 'utf8')); cat.tokens[0].effective.symbol = W4; wr(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, cat); wr(`${PUB}/tla-core/main/price-history/series/${W4}.json`, series(0.01));
