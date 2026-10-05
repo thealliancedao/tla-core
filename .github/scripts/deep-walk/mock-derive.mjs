@@ -67,10 +67,10 @@ put(tx(1060000, [...send(W3, HUB, 30000000), cw(HUB, 'erishub/bond', {}), cw(AMP
 // ── W4: 3 from the exchange · 1 back
 put(tx(300000, send(EXCH, W4, 3000000)), W4);
 put(tx(1300000, send(W4, EXCH, 1000000)), W4);
-// ── 2.1.1 plants: W4 receives 1e9 ROAR (a real-looking chain amount worth $10M at the series price — 500× what the ROAR pool holds) →
+// ── 2.1.1 plants: W4 receives 1e10 ROAR (a real-looking chain amount worth $100M at the series price — above the $25M floor and 100× the pool) →
 //    under review, never valued; W5 receives a reward stream from a contract (one-way IN only) → no 'other protocol' position
 const REWARDER = addr(106, 58);
-put(tx(1900000, [cw(ROAR, 'transfer', { from: EXT2, to: W4, amount: '1000000000000000' })]), W4);
+put(tx(1900000, [cw(ROAR, 'transfer', { from: EXT2, to: W4, amount: '10000000000000000' })]), W4);
 put(tx(1700000, [cw(ROAR, 'transfer', { from: REWARDER, to: W5, amount: '50000000' }), cw(REWARDER, 'claim', {})]), W5);
 // ── W5: 10 LUNA · 6,000 LP from outside · 3 compounder deposits (2,000 LP → 1,000 amp each)
 put(tx(150000, send(EXT, W5, 10000000)), W5);
@@ -140,7 +140,7 @@ try {
   check(`D15 the price check compares ROAR's series with its pool (${PC.symbols.ROAR && PC.symbols.ROAR.median_pct} % apart) — one pool never overrules the series`, PC.symbols.ROAR && PC.symbols.ROAR.weeks_compared > 0 && PC.symbols.ROAR.weeks_replaced_by_pools === 0 && near(PC.symbols.ROAR.median_pct, 44.44, 0.1), PC.symbols);
   check(`D16 public summary: ${D.wallets} wallets, checkpoints counted, coverage and sources reported`, D.wallets === 6 && D.checkpoint_checks.bank.compared > 0 && D.coverage.wallet_weeks > 0 && D.price_sources.lst > 0 && D.exchanges.heuristic === 1, D);
   { const e = H(W4), g = H(W5); const D2 = JSON.parse(fs.readFileSync(path.join(CORE, 'derive.json'), 'utf8'));
-    check(`D19 an implausible amount (1e9 ROAR = $10M vs a pool holding ~$28K) is UNDER REVIEW — not in the wallet value ($${e.value_usd[last]} = 2 LUNA), not in net deposits ($${e.net_deposits_usd[last]}), listed with why`, near(e.value_usd[last], 1.0) && near(e.net_deposits_usd[last], 1.0) && e.under_review && e.under_review.some(r => r.token === 'ROAR' && /under review/.test(r.why)) && D2.under_review.flows >= 1 && D2.under_review.holdings_weeks >= 1, { v: e.value_usd[last], nd: e.net_deposits_usd[last], ur: e.under_review, pub: D2.under_review });
+    check(`D19 an implausible amount (1e10 ROAR = $100M vs a pool holding ~$28K) is UNDER REVIEW — not in the wallet value ($${e.value_usd[last]} = 2 LUNA), not in net deposits ($${e.net_deposits_usd[last]}), listed with why`, near(e.value_usd[last], 1.0) && near(e.net_deposits_usd[last], 1.0) && e.under_review && e.under_review.some(r => r.token === 'ROAR' && /under review/.test(r.why)) && D2.under_review.flows >= 1 && D2.under_review.holdings_weeks >= 1, { v: e.value_usd[last], nd: e.net_deposits_usd[last], ur: e.under_review, pub: D2.under_review });
     check('D20 a reward stream out of a contract (in only, never deposited) is not an "other protocol" position', !Object.values(g.positions).some(p => p.kind === 'other'), Object.values(g.positions).map(p => p.kind)); }
   // the guard: plant a wallet in the price check (a token symbol) → nothing public is written
   fs.rmSync(path.join(CORE, 'derive.json')); fs.rmSync(path.join(CORE, 'price-check.json'));
