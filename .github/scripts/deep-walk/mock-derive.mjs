@@ -87,11 +87,16 @@ put(tx(1950000, [...send(EXT, W3, 1000000000, WHALE), ...send(EXT, W3, 100000000
 //    price WHALE at 1,000 per 10 LUNA = $0.005 → 500 WHALE = $2.50 in week 1
 const swapEv = (h) => tx(h, [ev('wasm', { _contract_address: PW, action: 'swap', offer_asset: 'uluna', ask_asset: WHALE, offer_amount: '10000000', return_amount: '990000000', commission_amount: '10000000' })]);
 put(tx(150000, send(EXT, W5, 500000000, WHALE)), W5); put(swapEv(180000), W5); put(swapEv(190000), W5); put(tx(450000, send(W5, EXT, 500000000, WHALE)), W5);
+// ── 2.1.2 plant: an old-style Eris amp compounder (code-12 receipt): W3 pulls 1,000 LP out of a farm and bonds it in ONE tx — no net LP leg;
+//    the compounder's own 'bond' event says 1,000 LP → 800 amp (1.25 LP per amp) → 800 amp = 1,000 LP × $0.0014 = $1.40
+const CX = addr(109, 58), AMPX = addr(110, 58), FARM = addr(111, 58);
+put(tx(1100000, [cw(LP, 'transfer', { from: FARM, to: W3, amount: '1240' }), cw(LP, 'send', { from: W3, to: CX, amount: '1240' }), cw(CX, 'bond', { amount: '1240', bond_amount: '1240', bond_share: '1000' }), cw(AMPX, 'mint', { to: W3, amount: '1000' })]), W3);   // 1.24 LP per amp, 61 days before the next sample
+put(tx(1980000, [cw(LP, 'transfer', { from: FARM, to: W3, amount: '1000' }), cw(LP, 'send', { from: W3, to: CX, amount: '1000' }), cw(CX, 'bond', { amount: '1000', bond_amount: '1000', bond_share: '800' }), cw(AMPX, 'mint', { to: W3, amount: '800' })]), W3);
 for (const w of wallets) gz(`${ARC}/layer1/${w.slice(-1)}/${w}/part-000.jsonl.gz`, L1[w]);
 wr(`${ARC}/layer1/_manifest.json`, { wallets: Object.fromEntries(wallets.map(w => [w, { done: true, txs: L1[w].length }])) });
 // inventory (code ids + creators) · known contracts · protocol labels
 const ci = (code, extra = {}) => ({ code_id: code, txs: 5, wallets: 2, first_h: 100000, last_h: 1900000, ...extra });
-wr(`${ARC}/inventory/2024-05-13.json`, { contracts: { [PAIR]: ci('392', { creator: FACT }), [LP]: ci('69', { creator: PAIR }), [BUCKET]: ci('4033'), [ROAR]: ci('1317'), [TOKZ]: ci('1317'), [AMPL]: ci('12'), [HUB]: ci('1257'), [COMP]: ci('3778'), [CUST]: ci('1231'), [MARKET]: ci('2413'), [SOLIDT]: ci('1220') } });
+wr(`${ARC}/inventory/2024-05-13.json`, { contracts: { [PAIR]: ci('392', { creator: FACT }), [LP]: ci('69', { creator: PAIR }), [BUCKET]: ci('4033'), [ROAR]: ci('1317'), [TOKZ]: ci('1317'), [AMPL]: ci('12'), [HUB]: ci('1257'), [COMP]: ci('3778'), [CUST]: ci('1231'), [MARKET]: ci('2413'), [SOLIDT]: ci('1220'), [CX]: ci('999'), [AMPX]: ci('12', { creator: CX }), [FARM]: ci('998') } });
 wr(`${PUB}/tla-core/main/docs/curated/known_contracts.json`, { contracts: { [HUB]: { type: 'staking', protocol: 'Eris', name: 'Eris ampLUNA Hub' } } });
 wr(`${CORE}/protocol-labels.json`, { by_code_id: {} });
 // layer 2: the pair weekly from the contract floor (20,000 LUNA + 1.8M ROAR; 20M LP raw — $0.0014 per raw LP; ROAR implied $0.0056 vs the series' $0.01) · layer 2b: compounder rates (2 LP per amp)
@@ -164,6 +169,9 @@ try {
     check(`D23 the source is labelled (lst(base-pool) ${D3.price_sources['lst(base-pool)']}); an unpriced holding is null in the wallet file, never $0`, D3.price_sources['lst(base-pool)'] > 0 && b.tokens['cw20:' + TOKZ].usd.every(x => x === null || x === 0) && b.tokens['cw20:' + TOKZ].usd[last] === null, D3.price_sources); }
   { const g = H(W5); const wh = g.tokens[WHALE]; const D4 = JSON.parse(fs.readFileSync(path.join(CORE, 'derive.json'), 'utf8'));
     check(`D24 before the node floor (no pool state) WHALE is priced from the cohort's own swaps: 500 × $0.005 = $${wh && wh.usd[1]} (source swap-txs ${D4.price_sources['swap-txs']})`, wh && near(wh.usd[1], 2.5) && D4.price_sources['swap-txs'] > 0, { wh: wh && wh.usd.slice(0, 6), src: D4.price_sources }); }
+  { const k = H(W3); const ax = k.tokens['cw20:' + AMPX];
+    check(`D25 an amp receipt is priced from the compounder's own bond event: 1,800 × 1.25 LP × $0.0014 = $${ax && ax.usd[last]}`, ax && ax.bal[last] === '1800' && near(ax.usd[last], 3.15), ax);
+    check(`D26 a week > 35 days from any sample but between two measured rates 0.8 % apart takes the LOWER one: 1,000 × 1.24 × $0.0014 = $${ax && ax.usd[wi(1800000)]}`, ax && near(ax.usd[wi(1800000)], 1.736, 0.005), ax && ax.usd); }
   // the guard: plant a wallet in the price check (a token symbol) → nothing public is written
   fs.rmSync(path.join(CORE, 'derive.json')); fs.rmSync(path.join(CORE, 'price-check.json'));
   const cat = JSON.parse(fs.readFileSync(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, 'utf8')); cat.tokens[0].effective.symbol = W4; wr(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, cat); wr(`${PUB}/tla-core/main/price-history/series/${W4}.json`, series(0.01));
