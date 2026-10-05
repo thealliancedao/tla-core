@@ -64,6 +64,9 @@ put(tx(1700000, [ev('send_packet', { packet_src_channel: 'channel-1' }), ...send
 put(tx(900000, send(EXCH, W3, 40000000)), W3);
 put(tx(950000, send(W3, EXCH, 1000000)), W3);
 put(tx(1060000, [...send(W3, HUB, 30000000), cw(HUB, 'erishub/bond', {}), cw(AMPL, 'mint', { to: W3, amount: '25000000' })]), W3);
+// 2.1.1: a delegation as SDK 0.47 emits it — the fee is a transfer to the fee collector, the delegation itself only coin_spent (no transfer event)
+const FEEC = 'terra17xpfvakm2amg962yls6f84z3kell8c5lkaeqfa';
+put(tx(1500000, [ev('coin_spent', { spender: W3, amount: '1000uluna' }), ev('coin_received', { receiver: FEEC, amount: '1000uluna' }), ev('transfer', { recipient: FEEC, sender: W3, amount: '1000uluna' }), ev('coin_spent', { spender: W3, amount: '5000000uluna' }), ev('coin_received', { receiver: BONDED, amount: '5000000uluna' }), ev('delegate', { validator: V1, amount: '5000000uluna', delegator: W3 })], [{ type: '/cosmos.staking.v1beta1.MsgDelegate', value: { delegatorAddress: W3, validatorAddress: V1, amount: { denom: 'uluna', amount: '5000000' } } }], '1000uluna'), W3);
 // ── W4: 3 from the exchange · 1 back
 put(tx(300000, send(EXCH, W4, 3000000)), W4);
 put(tx(1300000, send(W4, EXCH, 1000000)), W4);
@@ -94,7 +97,7 @@ const step = (pts) => (h) => { let v = 0; for (const [hh, x] of pts) if (h >= hh
 cp(W0, (h) => [['uluna', String(step([[0, 20000000], [150000, 25000000], [250000, 14999000], [420000, 15298000], [720000, 19298000], [1150000, 17297000]])(h))]], () => [[V1, '6000000']], (h) => h >= 420000 && h < 720000 ? [[V1, [['4000000', new Date(blockTime(720000)).toISOString()]]]] : []);
 cp(W1, (h) => [['uluna', String(step([[150000, 100000000], [160000, 80000000], [1050000, 70000000], [1350000, 58000000], [1750000, 64000000]])(h))]]);
 cp(W2, (h) => [['uluna', String(h >= 1700000 ? 40000000 : 50000000)]]);
-cp(W3, (h) => [['uluna', String(step([[900000, 40000000], [950000, 39000000], [1060000, 9000000]])(h))]]);
+cp(W3, (h) => [['uluna', String(step([[900000, 40000000], [950000, 39000000], [1060000, 9000000], [1500000, 3999000]])(h))]], (h) => h >= 1500000 ? [[V1, '5000000']] : []);
 cp(W4, (h) => [['uluna', String(step([[300000, 3000000], [1300000, 2000000]])(h))]]);
 cp(W5, (h) => [['uluna', String(h >= 1300000 && h < 1500000 ? 9000000 : 10000000)]], () => null);   // the April checkpoint is 1 LUNA short (unexplained) — May is back to 10
 // measured LST rates (public) — ampLUNA 1.2 every day
@@ -111,7 +114,7 @@ await new Promise(r => server.listen(0, r)); const base = `http://127.0.0.1:${se
 const env = { ...process.env, ARCHIVE_DIR: ARC, CORE_OUT: CORE, NO_PUSH: '1', RAW_BASE: base, RUNNER_TEMP: root, FLOW_KEY: 'mock-secret', EXCH_MIN_WALLETS: '3', MODE: 'derive' }; delete env.ARCHIVE_RPC; delete env.RPC_URL;
 const run = () => new Promise((ok, bad) => execFile('node', [path.join(here, 'walk.mjs')], { env, cwd: root, maxBuffer: 1 << 24 }, (e, so, se) => e ? bad(new Error((se || '') + (so || ''))) : ok(so)));
 let fails = 0; const check = (name, cond, got) => { console.log(`${cond ? 'PASS' : 'FAIL'}  ${name}${cond ? '' : ' — got ' + JSON.stringify(got).slice(0, 400)}`); if (!cond) fails++; };
-const near = (a, b, tol = 0.011) => Math.abs(a - b) <= tol;
+const near = (a, b, tol = 0.011) => Math.abs(a - b) <= tol; const sum = (xs) => xs.reduce((a, b) => a + b, 0);
 const H = (w) => JSON.parse(zlib.gunzipSync(fs.readFileSync(path.join(ARC, 'derived/history', w.slice(-1), w + '.json.gz'))).toString());
 const wi = (h) => weeks.findIndex(x => x.h >= h); const last = weeks.length - 1;
 try {
@@ -142,6 +145,8 @@ try {
   { const e = H(W4), g = H(W5); const D2 = JSON.parse(fs.readFileSync(path.join(CORE, 'derive.json'), 'utf8'));
     check(`D19 an implausible amount (1e10 ROAR = $100M vs a pool holding ~$28K) is UNDER REVIEW — not in the wallet value ($${e.value_usd[last]} = 2 LUNA), not in net deposits ($${e.net_deposits_usd[last]}), listed with why`, near(e.value_usd[last], 1.0) && near(e.net_deposits_usd[last], 1.0) && e.under_review && e.under_review.some(r => r.token === 'ROAR' && /under review/.test(r.why)) && D2.under_review.flows >= 1 && D2.under_review.holdings_weeks >= 1, { v: e.value_usd[last], nd: e.net_deposits_usd[last], ur: e.under_review, pub: D2.under_review });
     check('D20 a reward stream out of a contract (in only, never deposited) is not an "other protocol" position', !Object.values(g.positions).some(p => p.kind === 'other'), Object.values(g.positions).map(p => p.kind)); }
+  { const k = H(W3); const fee = k.flows_usd.fee, stk = k.flows_usd.staking;
+    check(`D21 a delegation with no transfer event is STAKING, not a fee (fee $${fee && (sum(fee.out)).toFixed(4)}, staking out $${stk && sum(stk.out).toFixed(2)}); delegated 5 LUNA`, fee && near(sum(fee.out), 0.0005, 1e-6) && stk && near(sum(stk.out), 2.5) && k.staking.delegated[last] === '5000000' && k.checks.bank.off === 0, { fee, stk, del: k.staking.delegated.slice(-2), bank: k.checks.bank }); }
   // the guard: plant a wallet in the price check (a token symbol) → nothing public is written
   fs.rmSync(path.join(CORE, 'derive.json')); fs.rmSync(path.join(CORE, 'price-check.json'));
   const cat = JSON.parse(fs.readFileSync(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, 'utf8')); cat.tokens[0].effective.symbol = W4; wr(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, cat); wr(`${PUB}/tla-core/main/price-history/series/${W4}.json`, series(0.01));
