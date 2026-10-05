@@ -79,6 +79,10 @@ put(tx(1700000, [cw(ROAR, 'transfer', { from: REWARDER, to: W5, amount: '5000000
 put(tx(150000, send(EXT, W5, 10000000)), W5);
 put(tx(1200000, [cw(LP, 'transfer', { from: EXT, to: W5, amount: '6000' })]), W5);
 for (const h of [1250000, 1450000, 1650000]) put(tx(h, [cw(LP, 'send', { from: W5, to: COMP, amount: '2000' }), cw(COMP, 'deposit', {}), ev('tf_mint', { mint_to_address: W5, amount: '1000' + AMPD }), ev('coin_received', { receiver: W5, amount: '1000' + AMPD }), ev('transfer', { recipient: W5, sender: COMP, amount: '1000' + AMPD })]), W5);
+// ── 2.1.2 plant: W3 receives 1,000 WHALE + 100 bWHALE after the last checkpoint. WHALE has NO series; a WHALE/LUNA pool (2,000 LUNA + 100,000 WHALE →
+//    $0.01) and a deeper WHALE/bWHALE pool (1,000,000 WHALE + 100,000 bWHALE — an LST ↔ base pair, its reserve ratio is not a price)
+const WHALE = 'ibc/36A02FFC4E74DF4F64305130C3DFA1B06BEAC775648927AA44467C76A77AB8DB', BWHALE = 'ibc/' + 'B'.repeat(64), PW = addr(107, 58), PB = addr(108, 58);
+put(tx(1950000, [...send(EXT, W3, 1000000000, WHALE), ...send(EXT, W3, 100000000, BWHALE)]), W3);
 for (const w of wallets) gz(`${ARC}/layer1/${w.slice(-1)}/${w}/part-000.jsonl.gz`, L1[w]);
 wr(`${ARC}/layer1/_manifest.json`, { wallets: Object.fromEntries(wallets.map(w => [w, { done: true, txs: L1[w].length }])) });
 // inventory (code ids + creators) · known contracts · protocol labels
@@ -88,7 +92,10 @@ wr(`${PUB}/tla-core/main/docs/curated/known_contracts.json`, { contracts: { [HUB
 wr(`${CORE}/protocol-labels.json`, { by_code_id: {} });
 // layer 2: the pair weekly from the contract floor (20,000 LUNA + 1.8M ROAR; 20M LP raw — $0.0014 per raw LP; ROAR implied $0.0056 vs the series' $0.01) · layer 2b: compounder rates (2 LP per amp)
 const p2 = weeks.filter(w => w.h >= 1000000).map(w => ({ d: w.d, h: w.h, data: { assets: [['uluna', '20000000000'], [ROAR, '1800000000000']], total_share: '20000000' } }));
-gz(`${ARC}/layer2/392/${PAIR}.jsonl.gz`, p2); wr(`${ARC}/layer2/_manifest.json`, { targets: { [`392/${PAIR}`]: { kind: 'pair', done: Object.fromEntries(p2.map(r => [r.d, 1])) } }, state_floor: { contract_reads_from: 1000000 } });
+gz(`${ARC}/layer2/392/${PAIR}.jsonl.gz`, p2);
+const pw = p2.map(r => ({ ...r, data: { assets: [['uluna', '2000000000'], [WHALE, '100000000000']], total_share: '1' } })), pb = p2.map(r => ({ ...r, data: { assets: [[WHALE, '1000000000000'], [BWHALE, '100000000000']], total_share: '1' } }));
+gz(`${ARC}/layer2/392/${PW}.jsonl.gz`, pw); gz(`${ARC}/layer2/392/${PB}.jsonl.gz`, pb);
+wr(`${ARC}/layer2/_manifest.json`, { targets: Object.fromEntries([PAIR, PW, PB].map(a => [`392/${a}`, { kind: 'pair', done: Object.fromEntries(p2.map(r => [r.d, 1])) }])), state_floor: { contract_reads_from: 1000000 } });
 gz(`${ARC}/layer2b/tla/compounder_exchange_rates.jsonl.gz`, weeks.filter(w => w.h >= 1000000).map(w => ({ d: w.d, h: w.h, data: [['stable', { token: { contract_addr: LP } }, { exchange_rate: '2.0', apr: '0.1' }]] })));
 // layer 3: monthly checkpoints from February (the bank floor) — bank, delegations, unbonding
 const months = []; { const seen = new Set(); for (const w of weeks) { const m = w.d.slice(0, 7); if (!seen.has(m)) { seen.add(m); months.push(w); } } }
@@ -102,11 +109,11 @@ cp(W4, (h) => [['uluna', String(step([[300000, 3000000], [1300000, 2000000]])(h)
 cp(W5, (h) => [['uluna', String(h >= 1300000 && h < 1500000 ? 9000000 : 10000000)]], () => null);   // the April checkpoint is 1 LUNA short (unexplained) — May is back to 10
 // measured LST rates (public) — ampLUNA 1.2 every day
 const days = {}; for (let t = Date.parse('2023-12-01'); t <= Date.parse('2024-06-30'); t += 864e5) days[new Date(t).toISOString().slice(0, 10)] = [1.2, 'H'];
-wr(`${CORE}/chain-ratios/ampLUNA.json`, { symbol: 'ampLUNA', daily: days }); wr(`${CORE}/chain-ratios/index.json`, { series: {} });
+wr(`${CORE}/chain-ratios/ampLUNA.json`, { symbol: 'ampLUNA', daily: days }); wr(`${CORE}/chain-ratios/bWHALE.json`, { symbol: 'bWHALE', daily: Object.fromEntries(Object.keys(days).map(d => [d, [1.5, 'P']])) }); wr(`${CORE}/chain-ratios/index.json`, { series: {} });
 // public files: denom rule, token catalog, price series (LUNA $0.5, ROAR $0.01 every day)
 const dsSrc = process.env.DENOM_SYMBOL_JS ? fs.readFileSync(process.env.DENOM_SYMBOL_JS, 'utf8') : await (await fetch('https://raw.githubusercontent.com/thealliancedao/platform-crons/main/lib/denom-symbol.js')).text();
 wr(`${PUB}/platform-crons/main/lib/denom-symbol.js`, dsSrc);
-wr(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, { tokens: [{ denom: ROAR, effective: { symbol: 'ROAR', decimals: 6 } }, { denom: AMPL, effective: { symbol: 'ampLUNA', decimals: 6 } }, { denom: SOLIDT, effective: { symbol: 'SOLID', decimals: 6 } }] });
+wr(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, { tokens: [{ denom: ROAR, effective: { symbol: 'ROAR', decimals: 6 } }, { denom: AMPL, effective: { symbol: 'ampLUNA', decimals: 6 } }, { denom: SOLIDT, effective: { symbol: 'SOLID', decimals: 6 } }, { denom: WHALE, effective: { symbol: 'WHALE', decimals: 6 } }, { denom: BWHALE, effective: { symbol: 'bWHALE', decimals: 6 } }] });
 const series = (p) => ({ daily: Object.fromEntries(Object.keys(days).map(d => [d, p])) });
 wr(`${PUB}/tla-core/main/price-history/series/LUNA.json`, series(0.5)); wr(`${PUB}/tla-core/main/price-history/series/ROAR.json`, series(0.01));
 const server = http.createServer((req, res) => { const u = new URL(req.url, 'http://x'); const f = path.join(PUB, decodeURIComponent(u.pathname)); res.setHeader('content-type', 'application/json'); if (fs.existsSync(f) && fs.statSync(f).isFile()) return res.end(fs.readFileSync(f)); res.statusCode = 404; res.end('{}'); });
@@ -130,7 +137,7 @@ try {
   const lpT = b.tokens['cw20:' + LP], am = b.tokens['cw20:' + AMPL], pos = Object.values(b.positions).find(p => p.kind === 'escrow');
   check(`D7 W1 LP priced from the pool's reserves that week (4,000 LP = $${lpT && lpT.usd[last]}); 6,000 staked in the bucket is a position ($${pos && pos.usd[last]}); ampLUNA = 5 × measured 1.2 × $0.5 = $${am && am.usd[last]}`, lpT && near(lpT.usd[last], 5.6) && pos && near(pos.usd[last], 8.4) && am && near(am.usd[last], 3.0), { lpT: lpT && lpT.usd.slice(-3), pos, am: am && am.usd.slice(-2) });
   check(`D8 W1 the unbond queue holds 6 LUNA ($3) between the queue and the payout, then 0; the bond itself is not a position; value now $${b.value_usd[last]} (= 64 LUNA 32 + 900 ROAR 9 + LP 5.6 + ampLUNA 3 + staked LP 8.4)`, near(b.parts.lst_unbonding[wi(1500000)], 3) && b.parts.lst_unbonding[last] === 0 && near(b.value_usd[last], 58.0) && Object.values(b.positions).every(p => p.kind !== 'other'), { q: b.parts.lst_unbonding, v: b.value_usd[last], pos: Object.keys(b.positions) });
-  check(`D9 W1 a token with no catalog entry and no pool anywhere is "no market" — counted apart, never valued, never makes the week "not fully priced"`, b.no_market_holdings[last] === 1 && b.unpriced_holdings[last] === 0 && b.checks.unpriced_flows === 0 && b.tokens['cw20:' + TOKZ].usd[last] === 0, { u: b.unpriced_holdings.slice(-2), nm: b.no_market_holdings.slice(-2), f: b.checks.unpriced_flows });
+  check(`D9 W1 a token with no catalog entry and no pool anywhere is "no market" — counted apart, never valued, never makes the week "not fully priced"`, b.no_market_holdings[last] === 1 && b.unpriced_holdings[last] === 0 && b.checks.unpriced_flows === 0 && b.tokens['cw20:' + TOKZ].usd[last] === null, { u: b.unpriced_holdings.slice(-2), nm: b.no_market_holdings.slice(-2), f: b.checks.unpriced_flows });
   const cpos = Object.values(c.positions).find(p => p.kind === 'escrow');
   check(`D10 W2 Solid: collateral 20 → 12 ampLUNA after the liquidation ($${cpos && cpos.usd[last]}), debt 5 → 2 SOLID (−$${c.parts.solid_debt[last]}); value $${c.value_usd[last]} (= 40 LUNA 20 + 5 SOLID 5 + 7.2 − 2)`, cpos && cpos.units[last] === '12000000' && near(cpos.usd[last], 7.2) && c.solid_debt[last] === '2000000' && near(c.parts.solid_debt[last], 2) && near(c.value_usd[last], 30.2), { cpos, debt: c.solid_debt.slice(-3), v: c.value_usd[last] });
   check(`D11 W2 IBC in / out classed bridge (via the channel escrow), the member transfer member, the SOLID minted debt; net deposits = 25 + 12 − 5 = ${c.net_deposits_usd[last]}`, c.flows_usd.bridge && near(c.flows_usd.bridge.in[wi(150000)], 25) && near(c.flows_usd.bridge.out[wi(1700000)], 5) && c.flows_usd.member && c.flows_usd.debt && near(c.net_deposits_usd[last], 32) && c.received.some(r => r.class === 'member' && r.token === 'ampLUNA'), { cls: Object.keys(c.flows_usd), nd: c.net_deposits_usd[last] });
@@ -147,6 +154,10 @@ try {
     check('D20 a reward stream out of a contract (in only, never deposited) is not an "other protocol" position', !Object.values(g.positions).some(p => p.kind === 'other'), Object.values(g.positions).map(p => p.kind)); }
   { const k = H(W3); const fee = k.flows_usd.fee, stk = k.flows_usd.staking;
     check(`D21 a delegation with no transfer event is STAKING, not a fee (fee $${fee && (sum(fee.out)).toFixed(4)}, staking out $${stk && sum(stk.out).toFixed(2)}); delegated 5 LUNA`, fee && near(sum(fee.out), 0.0005, 1e-6) && stk && near(sum(stk.out), 2.5) && k.staking.delegated[last] === '5000000' && k.checks.bank.off === 0, { fee, stk, del: k.staking.delegated.slice(-2), bank: k.checks.bank }); }
+  { const k = H(W3); const wh = k.tokens[WHALE], bw = k.tokens[BWHALE];
+    check(`D22 bWHALE with no WHALE series: 100 × measured 1.5 × WHALE from its LUNA pool ($0.01) = $${bw && bw.usd[last]}; WHALE itself $${wh && wh.usd[last]} — the deeper WHALE ↔ bWHALE pool is not a price (it would read $1.50)`, bw && near(bw.usd[last], 1.5) && wh && near(wh.usd[last], 10), { wh: wh && wh.usd.slice(-2), bw: bw && bw.usd.slice(-2) });
+    const D3 = JSON.parse(fs.readFileSync(path.join(CORE, 'derive.json'), 'utf8'));
+    check(`D23 the source is labelled (lst(base-pool) ${D3.price_sources['lst(base-pool)']}); an unpriced holding is null in the wallet file, never $0`, D3.price_sources['lst(base-pool)'] > 0 && b.tokens['cw20:' + TOKZ].usd.every(x => x === null || x === 0) && b.tokens['cw20:' + TOKZ].usd[last] === null, D3.price_sources); }
   // the guard: plant a wallet in the price check (a token symbol) → nothing public is written
   fs.rmSync(path.join(CORE, 'derive.json')); fs.rmSync(path.join(CORE, 'price-check.json'));
   const cat = JSON.parse(fs.readFileSync(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, 'utf8')); cat.tokens[0].effective.symbol = W4; wr(`${PUB}/tla-core/main/token-catalog/snapshots/current.json`, cat); wr(`${PUB}/tla-core/main/price-history/series/${W4}.json`, series(0.01));
