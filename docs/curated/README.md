@@ -7,6 +7,8 @@ token-catalog viewer's override download → PR), not written by a cron.
   services, theme tokens, `default: true` for the site's default tenant. Read by `nfts/nft-inventory/run-ally.js` (which
   collections an ally's service runs) and by the site (header tenant dropdown, `/<slug>` default). Add an ally = a block;
   add a collection to an ally = a line. (2026-09-18)
+- `followed-wallets.json` — wallets member-data follows without a TLA lock (addresses only; tla-participants source 3). Each
+  gets the full hourly capture and a daily history. (2026-10-13)
 - `known_contracts.json` — labeled contract addresses (gauges, staking, vaults, etc.)
 - `protocols.json` — protocol directory (Eris, Solid, Astroport, Votion…)
 - `token_overrides.json` — token identity overrides (display name, subtype, coingecko_id,

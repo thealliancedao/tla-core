@@ -1331,6 +1331,7 @@ Q-Credia-Metrics      { "metrics": {} } → platform totals + every market (pric
   distribution (a `creda-portfolio/transfer` of wBTC.creda.a receipts to the take collector). Where Credia's own 2 % ampLP take goes is
   still unseen.
 
+
 ## 21. Reading PAST state (at height) — what the archive node answers (2026-09-30, Deep Walk 1.4–1.6)
 
 - Two routes reach the same state: RPC `abci_query?path="/cosmwasm.wasm.v1.Query/SmartContractState"&data=0x<protobuf>&height=H`
@@ -1344,10 +1345,32 @@ Q-Credia-Metrics      { "metrics": {} } → platform totals + every market (pric
 - Deterministic errors (pruned, unknown request, no such contract) are never retried; measure the floors BEFORE sizing a backfill.
 - Public LCDs are pruned — past state needs the archive; everything older than the floors is rebuilt from tx events.
 
+
+## 22. Holdings outside TLA — a wallet's tokens, validator stake, governance stakes (2026-10-13, member-data holdings.js 1.0.0)
+
+Proven by the Rallies read-only probes (stakes-probe / capagov-probe 1.0, fixtures in adao-apps/rally `docs/fixtures/2026-10-13/`, wallets
+masked). Read once a day per participant; contracts in `platform-crons/config/contracts.js` HOLDINGS.
+
+```
+Bank (all natives):  GET /cosmos/bank/v1beta1/balances/{addr}?pagination.limit=500  → { balances: [{denom, amount}], pagination: {next_key} }
+cw20 balance:        { "balance": { "address": "terra1…" } }                         → { balance: "<raw>" }
+Delegations:         GET /cosmos/staking/v1beta1/delegations/{addr}                  → { delegation_responses: [{ balance: {denom: "uluna", amount} }] }
+Unbonding:           GET /cosmos/staking/v1beta1/delegators/{addr}/unbonding_delegations → { unbonding_responses: [{ entries: [{ balance }] }] }
+CAPA governance      terra1sf66d5vap897xlvv2hlcp4l20y4pp42r6ala4snk8mgd246jvufqwe0cnm (capa_token::gov, code 1545)
+  { "staker": { "address": "terra1…" } }  → { balance, share, locked_balance, reward, … }   balance = CAPA (raw, 6 dp)
+ROAR staking (Lion DAO) terra1xuqh84yz35h70p3ppt76dz5kgwwtwmsv34pg0gw6ld4ntptgjcrqe2e70t (cw20_stake, code 3218)
+  { "staked_balance_at_height": { "address": "terra1…" } } → { balance, height }
+  { "claims": { "address": "terra1…" } }                   → { claims: [{ amount, release_at }] }   unstaking, still the wallet's
+```
+Gotchas: a wallet with no stake answers `balance: "0"` (not an error) — a FAILED read is recorded as null, never 0. aDAO NFT backing is not
+queried per wallet: the NFT inventory's `real_owner` + `broken` and `summary.backing.per_nft_ampluna` give it (the per-token `rewards`
+query answers non-zero for broken NFTs — §11).
+
 ---
 
 | Date | Change |
 |---|---|
+| 2026-10-13 | §22 holdings outside TLA: bank in full, cw20 balance, delegations + unbonding, CAPA governance `staker`, ROAR `staked_balance_at_height` + `claims` (member-data holdings.js). |
 | 2026-09-30 | §19 gotchas: oracle unit settled (USD = raw × price / 1e6), wrapper decimals, liquidation vocabulary proven + counts, debt with no collateral, census paging. §20 Credia `portfolios` census + event stream. §21 reading past state: the two routes, the archive node's state and contract floors, the error messages. |
 | 2026-09-28 | Section 19: Solid (Capapult CDP) — overseer / market / liquidation / collector / oracles / 8 custodies, query shapes and events from the solid-probe 1.3 fixture; open items (oracle unit, liquidation events). |
 | 2026-07-14 | Moved to `tla-core/docs/` (SPEC-docs-consolidation). Update pass from the 2026-07-13/14 probe sessions: VP definition law added to header; `distributions` block rewritten (time param, full per-period history to floor 96, epoch mechanics, 1-indexed period lock-in); `last_distribution_period` explanation corrected; `gauge_infos` (per-pool voting_power + fixed_amount + slope) added; gauge `user_info` verified block added; `lock_info` expanded to the full verified shape (coefficient/slope/fixed_amount/underlying_amount/time); `total_vamp` added (canonical Total TLA VP + `time:{period}` projection, `at_period` rejected); escrow `user_info` flagged unverified; §18 connector-alliance rescued from CRON-FIXES-BRIEF. |
