@@ -1,6 +1,6 @@
 # How we grade pools, and how the DAO decides where to vote
 
-> Plain-language guide to the LP Grades tab on thealliancedao.com/tla-stats.html.
+> Plain-language guide to the LP Grades tab on theadao.com/tla-stats.html.
 > Everything here is computed from on-chain data the platform captures; nothing is
 > an opinion typed in by hand except the one table we say is declared. Updated
 > 2026-08-25 (grading v2, Vote Advisor v2, PD Bribe Tracker v1).

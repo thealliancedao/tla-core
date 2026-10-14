@@ -34,7 +34,7 @@ card (yes %, date). Counter: **days backed** ticking from 0 to today's number.
 **Turn:** *"Nine hundred and something days later, it has never missed a morning."* Show the backing-history
 line rising.
 **Close:** *"It can be changed by a future vote — we say that on every page. But it hasn't been. Come see the
-numbers."* End card: thealliancedao.com/new-here.
+numbers."* End card: theadao.com/new-here.
 
 ### Ep. 2 — "One day in the life of the backing" (the mechanism)
 Animated four-step diagram from the page: Claim → Bond to ampLUNA → 90% holders → 10% DAO, with the real

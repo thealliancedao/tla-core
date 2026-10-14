@@ -6,7 +6,7 @@ moves (price, supply, holders) must be read from its product, not from this page
 
 ## What Lion DAO is
 
-Lion DAO is an ally of thealliancedao.com (tenant `liondao`, home page `/liondao/`). Its site is liondao.money.
+Lion DAO is an ally of theadao.com (tenant `liondao`, home page `/liondao/`). Its site is liondao.money.
 It governs on DAODAO: the core and treasury is `terra1tkersa2mqwy2h8exj799qx2xrhdu0dkymk9psp6v0k4kz4tkxucssgluec`
 ("LD DAODAO"). It also runs a validator, **🦁 The Lion DAO** (`terravaloper1pet430t7ykswxuyhh56d4gk6rt7qgu9as6a5r0`).
 Its community calls itself "the pride".

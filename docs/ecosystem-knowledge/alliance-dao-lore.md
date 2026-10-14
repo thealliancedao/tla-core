@@ -1,6 +1,6 @@
 # Alliance DAO lore — the galaxy behind the NFTs
 
-> Plain-language corpus for the help bot, extracted from thealliancedao.com/adao-lore.html on 2026-08-25
+> Plain-language corpus for the help bot, extracted from theadao.com/adao-lore.html on 2026-08-25
 > (the page is the source; this file mirrors its text so the bot answers from the same words). Proper nouns
 > follow the on-chain metadata (planets are "Cristall", not "Crystall"). Trait dictionary at the end.
 

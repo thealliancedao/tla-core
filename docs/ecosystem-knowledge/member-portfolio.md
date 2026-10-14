@@ -1,6 +1,6 @@
 # The Member Portfolio — what it shows, where every number comes from, and how to tell right from wrong
 
-Page: https://thealliancedao.com/member-portfolio.html?wallet=<terra1…> (member-portfolio 4.2.0, 2026-10-13). Open to anyone for any
+Page: https://theadao.com/member-portfolio.html?wallet=<terra1…> (member-portfolio 4.2.0, 2026-10-13). Open to anyone for any
 tracked wallet — there is no wallet connection; all data is public chain data captured by the org crons into the public tla-core repo.
 Tracked = the TLA electorate (every lock holder, ~205 wallets, hourly) plus aDAO members and ally rosters. Owner / maintainer:
 DeFi_Patriot (@DeFi_Patriot on X) — reports go through the Help page's "Report an issue" form (it pre-checks the claim and files it).

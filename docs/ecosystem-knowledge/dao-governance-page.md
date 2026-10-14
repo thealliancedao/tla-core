@@ -1,6 +1,6 @@
 # The DAO page — governance boards, grades, titles and the quick audit
 
-> Plain-language corpus for the help bot (2026-08-25). Describes thealliancedao.com/dao.html exactly as it
+> Plain-language corpus for the help bot (2026-08-25). Describes theadao.com/dao.html exactly as it
 > computes things; the data is the dao-governance product in the `thealliancedao/dao-originations` repo.
 
 ## What the page shows

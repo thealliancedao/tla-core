@@ -1,5 +1,15 @@
 # Index Page Changelog
 
+## Site address — 2026-10-14 — theadao.com is the official address
+
+- The aDAO site's primary domain is now **theadao.com**. `thealliancedao.com`, `www.thealliancedao.com` and `www.theadao.com`
+  redirect to it (308, permanent). Canonical links, og:url / og:image, sitemap.xml, robots.txt, page links, install steps and the
+  NFT image watermark use the new address (aDAO-links-site 23c7558). Help-bot knowledge files updated to the new address.
+- Email-spoofing protection on every live domain: `v=spf1 -all` and DMARC `p=reject` (the site sends no email); CAA limits
+  certificates to the host's issuer. thealliancedao.com's DNS is managed in Vercel (Vercel nameservers), not at the registrar.
+- Search Console: theadao.com is a Domain property; submit `https://theadao.com/sitemap.xml` and run *Change of address* from the
+  old property.
+
 ## index 4.43 → 4.47 · lib/alert-center.js 2.2.0 → 2.4.0 · lib/winddown.js 1.0.1 · lib/site-footer.js (chat) — 2026-10-04 / 05 — props on every visit, voting-power watch, readable charts
 
 - **4.43 / alert-center 2.2.0** (2026-10-04): a "DAOs we watch" directory — 10 governances (Terra, aDAO, Lion DAO, Pixellions, Pixellions
