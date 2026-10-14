@@ -1,6 +1,6 @@
 # The Member Portfolio — what it shows, where every number comes from, and how to tell right from wrong
 
-Page: https://thealliancedao.com/member-portfolio.html?wallet=<terra1…> (member-portfolio 4.1.2, 2026-09-29). Open to anyone for any
+Page: https://thealliancedao.com/member-portfolio.html?wallet=<terra1…> (member-portfolio 4.2.0, 2026-10-13). Open to anyone for any
 tracked wallet — there is no wallet connection; all data is public chain data captured by the org crons into the public tla-core repo.
 Tracked = the TLA electorate (every lock holder, ~205 wallets, hourly) plus aDAO members and ally rosters. Owner / maintainer:
 DeFi_Patriot (@DeFi_Patriot on X) — reports go through the Help page's "Report an issue" form (it pre-checks the claim and files it).
@@ -22,6 +22,26 @@ DeFi_Patriot (@DeFi_Patriot on X) — reports go through the Help page's "Report
 | Trend | Portfolio $, VP, LP, locked per archived day | member-data/positions/daily/<date>.json (org archive from 2026-08-11) | daily |
 | Value chart (4.0) | ONE ECharts chart over every source (each switchable); NFTs OFF by default; aDAO at the backing of unbroken NFTs — the floor toggle replaces it | member-data/history/<wallet> series (history-series 1.2.0) + the org daily archive | daily |
 | Solid (4.1) | Collateral LOCKED vs deposited-not-locked (idle warning), SOLID owed, health = the protocol's borrow limit ÷ loan, % of limit used, the liquidation line (a basket fall for a multi-collateral loan); "SOLID still owed · no collateral left" when liquidated to zero (4.1.1) | member-data participants `solid` (lib/solid-reader 1.0.1: overseer / market / custodies / oracle v2) | hourly |
+
+## LUNA first, and several wallets at once (4.2.0, 2026-10-13)
+
+- **The page opens in LUNA.** Most of what members hold is LUNA in some form (liquid LUNA, ampLUNA / bLUNA / arbLUNA, the LUNA inside TLA
+  locks and LPs, Votion vaults, the ampLUNA backing each unbroken aDAO NFT). In dollars the book mostly shows LUNA's price; in LUNA it
+  shows whether the holdings themselves grew. The banner, change chips, How you've done, LP positions and NFTs open in LUNA; USD is one
+  tap away (the toggle next to each).
+- **Chart view "LUNA held"** = LUNA by place per day from `member-data/history/tokens/<c>.json` (shard = the character after `terra1`),
+  each LST at that day's rate (never counted twice). Places: wallet (LUNA + LSTs), staked with validators, TLA locks, LPs in TLA, Votion,
+  aDAO NFT backing, rewards to claim. The last point is the page's live read. Validator staking and NFT backing are recorded only from
+  2026-10-13 (the daily holdings record, `member-data/holdings/daily/<date>.json`, 23:4x UTC) — earlier days draw them faded "(est.)" at
+  today's amount, so a jump on 10-13 is the record starting, not new LUNA. A place a day did not record is a gap, never 0.
+- **1d / 7d / 30d chips in LUNA** compare only the places recorded on both days (wallet, locks, LPs, rewards, Votion until staking and
+  NFT backing have two days).
+- **My wallets / All combined.** A visitor can save several addresses on their own device; "All N combined" adds up the DAILY records of
+  those wallets (LUNA held, TLA value, VP, a combined chart where a day counts only when every wallet with a record has it) with a row
+  per wallet. Live numbers stay per wallet — open one for today's detail. `?wallets=a,b,c` opens it. Nothing is stored on a server, and
+  the site never links wallets on its own: the list is what the visitor typed.
+- **Solid dust.** A loan under $1 is an info note, not a red "liquidatable" alert (the protocol still counts it). Collateral Solid's own
+  oracle has no price for (bLUNA, ampLUNA on some days) shows our LST price marked *, which is not what Solid liquidates on.
 
 ## The honesty rules the page follows (why a number is blank, moved or kept out)
 

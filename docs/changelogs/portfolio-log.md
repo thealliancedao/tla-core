@@ -2,6 +2,25 @@
 
 ---
 
+## Rev 4.1.2 → 4.2.0 — 2026-10-13 — LUNA first, My wallets (combined), quieter Solid dust
+
+Owner: "the USD by default is really alarming … in LUNA it shows things are growing, the market just sucks" · "allow adding multiple
+addresses … show all the data as combined".
+
+- **LUNA first.** The chart opens on a new view, **LUNA held** (`lib/portfolio-chart.js` 1.2.0): the LUNA the wallet holds, stacked by
+  where it sits — wallet (LUNA + LSTs), staked with validators, TLA locks, LPs in TLA, Votion, aDAO NFT backing, rewards to claim — in
+  LUNA amounts from `member-data/history/tokens/<c>.json` (tokens by place per day; ampLUNA / bLUNA / arbLUNA counted as the LUNA behind
+  them at that day's rate, never twice). Today's point is the page's live read. Validator staking and NFT backing are recorded from
+  2026-10-13 (the daily holdings record); before that they are drawn faded "(est.)" at today's amount. The banner's big number, the
+  1d / 7d / 30d chips (LUNA held, like-for-like places), How you've done, LP positions and the NFTs card open in LUNA; USD is one tap away.
+- **My wallets.** Several addresses saved on this device (`tla:my_wallets`, up to 12). "All N combined" adds up their DAILY records:
+  LUNA held, TLA value, voting power, a combined chart (a day is drawn only when every wallet with a record has it), and a row per wallet
+  with Open ›. `?wallets=a,b,c` opens the combined view (shareable). Live numbers stay per wallet.
+- **Solid:** a loan under $1 is an info note, not a red "liquidatable" alert; collateral Solid's oracle cannot price shows our LST price
+  (hub rate × LUNA) marked *; a loan already past its limit says so ("already past the liquidation line") instead of "falls −11 %".
+- Footer health: the daily holdings record and the P&L build (it stamps `builtAt`) are read at a daily cadence (they read "no heartbeat"
+  before).
+
 ## Rev 4.0 → 4.1.2 (+ 4.2 HELD) — 2026-09-28 / 29 — one chart, the Solid card, honest totals, the GMC fix
 
 Owner walked the 3.8 page (2026-09-28) and asked for: one chart instead of two partial ones, liquid tokens in value and trends, a "how

@@ -1,5 +1,30 @@
 # Index Page Changelog
 
+## index 4.43 → 4.47 · lib/alert-center.js 2.2.0 → 2.4.0 · lib/winddown.js 1.0.1 · lib/site-footer.js (chat) — 2026-10-04 / 05 — props on every visit, voting-power watch, readable charts
+
+- **4.43 / alert-center 2.2.0** (2026-10-04): a "DAOs we watch" directory — 10 governances (Terra, aDAO, Lion DAO, Pixellions, Pixellions
+  Council, CAPA Governance, ampCAPA, Astroport Assembly, aDAO Council, Phoenix Directive); "All DAOs & history ›" opens a table (type,
+  props on record, passed / not passed, open now, last prop, turnout) and each DAO's full prop list; DAOs without a captured history read
+  their latest 25 props from the chain when opened.
+- **4.44 / alert-center 2.3.0** (2026-10-05, owner: the popup is "pretty annoying"; the panel "very ununiform"): the load popup is OFF on
+  the home page; the panel is one row of four equal tiles (Live · Executed early · Veto lock · Recently executed, past 7 days + 30-day
+  count) and a uniform grid of DAO cells. The USDC.n notice says "by Oct 31" with no day count (winddown 1.0.1).
+- **4.45 / alert-center 2.4.0** (2026-10-05): **Voting power · aDAO** strip — biggest wallet's share, top-3 share, staked total and its
+  week change, stake surges (one wallet staking ≥ 10 in a day or ≥ 25 in a week), wallets crossing 5 % / 10 % of aDAO voting power (only
+  when the wallet itself grew — a shrinking total is not a crossing), "could stake" (wallets with ≥ 50 unstaked aDAO NFTs), and any open
+  aDAO prop with its proposer's voting power. Now = the NFT inventory; 1 / 7 / 30 days ago = `catalog/snapshots/daily/<date>.json`.
+- **4.46** (2026-10-05): the strip never appeared — it needs the NFT inventory (7 MB), which lands after the panel's first draw; the
+  inventory loader now redraws the panel.
+- **4.47** (2026-10-05, owner: "the scale doesn't let you see if it's changing"): the DAODAO-staked chart's left axis fits its data
+  (at least ±10 NFTs) instead of 0 → 2,000; the unstake-window bars moved to their own scale along the bottom; straight lines between
+  points (no smoothing overshoot); two-decimal % axis.
+- **Chat (site-footer + help-agent 1.18.0 / 1.19.0)**: follow-up questions work (the chat sends the last 6 turns; "New chat" resets) — a
+  bug had silently dropped every question after the first answer; unresolved problems end with a **ticket** card (Copy → send to
+  @DeFi_Patriot).
+- nft-inventory Rev D.4 (2026-10-04): a first-time DAODAO staker is attributed to the wallet the NFTs left (verified on chain) instead of
+  being credited to the voting contract or dropped from the staked count — 2026-10-04: 15 NFTs by one new staker (1,650 → 1,665 staked,
+  152 → 153 members).
+
 ## index 4.41 → 4.42 — 2026-09-29 — a refused CoinGecko call no longer blanks the dashboard
 
 - Symptom (owner, 2026-09-29): the home page "full of errors" — tiles stuck on spinners or "Error" (DAO Treasury, DAO TLA VP, backing in

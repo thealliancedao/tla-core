@@ -1,6 +1,17 @@
 # Help Page Changelog
 
 
+## v1.18.0 → v1.19.0 — 2026-10-05 / 13 — follow-ups, tickets, up to date for going live
+
+- **1.18.0** (2026-10-05): follow-up questions — the chat sends the last 6 turns and the bot answers in context ("what about last epoch?");
+  a wallet named earlier stays the subject. Site bug fixed: the chat ignored every question after its first answer. "New chat" resets.
+- **1.19.0** (2026-10-13): **tickets** — when the bot cannot resolve a reported problem it ends with a ticket (page, wallet, what was seen,
+  what it checked with the products' times, its read); the service stamps an ID + time and logs it; the chat shows it as a card with
+  Copy and "send it to @DeFi_Patriot". Rule 17 knows the portfolio's LUNA-first view and My wallets (4.2.0).
+- Grounding brought up to date through its existing sources: index-log (4.43 → 4.47: DAOs we watch, the voting-power strip, chart
+  scales), portfolio-log (4.2.0), member-portfolio.md, DATA-MAP (wallet holdings + tokens by place, the derive's public counts, the
+  voting-power strip's sources).
+
 ## v1.17.1 — 2026-09-30 — the bot knows what went live and what the backfill captured
 
 - The portfolio rule no longer calls the Solid card "planned": it is live (member-portfolio 4.1 → 4.1.2) — health, % of limit, liquidation

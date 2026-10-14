@@ -170,8 +170,10 @@ is $0 unless the wallet votes that pool; the 1% line is per bucket.
 - **Status:** the one-time backfill RAN (SPEC-deep-history §0): 1,159 cohort wallets; every tx since 2022; weekly protocol state
   2023-10-23 → now; monthly balances + staking 2023-04 → now; 1.57M rebuilt balance changes (94.9 % exact vs the chain's checkpoints).
 - **The RAW data is PRIVATE** (repo thealliancedao/tla-archive) — the bot cannot read it and must not describe any individual's raw history
-  from it. Public derived products (weekly points, net deposits, P&L per cohort wallet) are NOT built yet — say "coming with the next
-  portfolio update", never estimate.
+  from it. Per-wallet derived history (weekly points, net deposits, P&L) is built but PRIVATE and not on the page — say "coming with a
+  later portfolio update", never estimate. Public now (counts only, no wallet): `docs/deep-history/derive.json` (coverage, price sources,
+  flow classes, cohort totals incl. `start_value_usd` — the 2022 genesis airdrop value — and net deposits) and `price-check.json`
+  (each price series vs the pools; `swap_check` before the node floor).
 - **Public now:** `docs/deep-history/contracts-seen.json` (every contract the cohort touched: txs, wallets, top actions, first/last height,
   code id, label — an aggregate, no wallets) and `docs/deep-history/protocol-labels.json` (code id → protocol for 108 codes = 95.6 % of
   activity; e.g. 2961 URA DEX (dead), 136 Knowhere (old marketplace), 1723 the 2022 Terraswap-era pairs, 3995 Credia portfolio).
@@ -180,6 +182,24 @@ is $0 unless the wallet votes that pool; the 1% line is per bucket.
   from liquidation/borrow/repay events (queries.md §19–§21).
 - **Privacy rules (owner):** no memos, exchange flows only as {day, direction, token, amount, value, "exchange"} (no hash, no counterparty,
   no exchange name), no identity guessing, no linking wallets unless the wallet's owner linked them.
+
+## Wallet holdings and tokens by place — "how much LUNA does X hold", "what is staked", the portfolio's LUNA chart (2026-10-13)
+- `member-data/holdings/daily/<date>.json` (+ `current.json`, `heartbeat.json`) — once a day ~23:45 UTC, every participant (TLA lock
+  holders, bribe providers, aDAO members, followed wallets): liquid tokens in the wallet, LUNA delegated + unbonding, CAPA gov / ROAR
+  stakes, aDAO NFTs held / staked / listed with the ampLUNA backing. A failed read is null + a reason, never 0. First file 2026-10-13.
+- `member-data/history/tokens/<c>.json` + `index.json` — per wallet per day `[day, cov, {SYM: {place: amount}}]` in the BASE token
+  (ampLUNA / bLUNA / arbLUNA → LUNA at that day's rate; ampCAPA → CAPA; ampROAR → ROAR). Places: w wallet · ls wallet liquid-staked ·
+  st with validators · lk TLA locks · lp TLA LPs · dao held by a custodian (ampCAPA DAO) · gov governance stakes · nft aDAO backing ·
+  rw pending rewards · vt Votion · cs CAPA elsewhere. `cov` says which records covered the day (p capture, h holdings, v Votion, c CAPA
+  census) — a place the day did not cover is ABSENT, never 0. From 2026-08-11; st / nft only from 2026-10-13.
+- `member-data/participants/debt.json` — Credia + Solid loans only, hourly: collateral, debt, health, band, liquidation distance.
+- `nft-collections/adao/snapshots/earn.json` — one unbroken aDAO NFT's value (average of the last 3 unbroken sales) and the backing APR.
+
+## Voting power on the home panel (2026-10-05)
+- The home "Voting power · aDAO" strip: staked per wallet NOW from `nft-collections/adao/snapshots/nfts.json` (records with
+  `daodao_staked`, `real_owner`); 1 / 7 / 30 days ago from `catalog/snapshots/daily/<date>.json` (slug `adao`, `stake_raw`; the DAODAO
+  voting module address excluded). Rules: a surge = one wallet +10 in a day or +25 in a week; a crossing = 5 % / 10 % of staked, only when
+  the wallet's own stake grew; "could stake" = ≥ 50 unstaked NFTs in one wallet. Names only from catalog handles — never guess identities.
 
 ## When the map has no route
 Say plainly what was checked and what does not exist yet (e.g. per-pool APR
