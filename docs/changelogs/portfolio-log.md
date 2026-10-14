@@ -2,6 +2,16 @@
 
 ---
 
+## Rev 4.3.0 → 4.4.0 — 2026-10-14 — Your DAOs
+
+- **Your DAOs** card: every Terra DAO the wallet follows on DAO DAO (its saved follows) or is a member of — what it has staked there
+  (the DAO's own voting power: NFTs, tokens or membership weight), its share of the vote, and the rewards waiting in each of the DAO's
+  reward distributors (ROAR, CAPA, LUNA … priced where the catalog knows the token, else the amount alone), with a link to claim on DAO
+  DAO. Read live and read-only from DAO DAO's public APIs (profile → follow list, the indexer's memberOf) and the chain. Followed DAOs on
+  other chains are counted, not shown. These DAO rewards join **Claimable now** (they replace the single aDAO NFT DAO line).
+- **Mix APRs** use the org's 30-day yields (votion/yields): TLA locks = the LST's own yield + this round's vote rewards × 52; Votion = the
+  vault LST's yield + the vault's boost; LUNA with validators ≈ the inflation share before commission (alliance rewards not counted).
+
 ## Rev 4.2.0 → 4.3.0 — 2026-10-14 — five chart views, claim everywhere, a clearer DAO-staked LP
 
 - **Chart (portfolio-chart 2.0.0):** LUNA · Tokens · Mix · NFTs · Debt, then More (Net worth, Locks, LPs, Votion, Voting power), with a

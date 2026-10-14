@@ -195,6 +195,13 @@ is $0 unless the wallet votes that pool; the 1% line is per bucket.
 - `member-data/participants/debt.json` — Credia + Solid loans only, hourly: collateral, debt, health, band, liquidation distance.
 - `nft-collections/adao/snapshots/earn.json` — one unbroken aDAO NFT's value (average of the last 3 unbroken sales) and the backing APR.
 
+## A wallet's DAOs (member-portfolio 4.4.0, 2026-10-14) — "which DAOs am I in", "what rewards are waiting in my DAOs"
+- Not captured by a cron: the page reads it live from DAO DAO — `https://pfpk.daodao.zone/address/<addr>` (profile uuid) →
+  `https://kvpk.daodao.zone/list/<uuid>/following:` (followed DAOs, keys `following:<chain>:<core>`), and
+  `https://indexer.daodao.zone/phoenix-1/account/<addr>/daos/memberOf`; per DAO on chain `voting_power_at_height {address}`,
+  `total_power_at_height {}`, the voting module's hooks → `dao-rewards-distributor` contracts → `pending_rewards {address}`.
+  The bot cannot read these live — tell the visitor to open their portfolio's "Your DAOs" card, or DAO DAO itself.
+
 ## Voting power on the home panel (2026-10-05)
 - The home "Voting power · aDAO" strip: staked per wallet NOW from `nft-collections/adao/snapshots/nfts.json` (records with
   `daodao_staked`, `real_owner`); 1 / 7 / 30 days ago from `catalog/snapshots/daily/<date>.json` (slug `adao`, `stake_raw`; the DAODAO
