@@ -1348,7 +1348,7 @@ Q-Credia-Metrics      { "metrics": {} } → platform totals + every market (pric
 
 ## 22. Holdings outside TLA — a wallet's tokens, validator stake, governance stakes (2026-10-13, member-data holdings.js 1.0.0)
 
-Proven by the Rallies read-only probes (stakes-probe / capagov-probe 1.0, fixtures in adao-apps/rally `docs/fixtures/2026-10-13/`, wallets
+Proven by read-only chain probes (stakes-probe / capagov-probe 1.0, fixtures dated 2026-10-13, wallets
 masked). Read once a day per participant; contracts in `platform-crons/config/contracts.js` HOLDINGS.
 
 ```
