@@ -2,6 +2,22 @@
 
 ---
 
+## Rev 4.2.0 → 4.3.0 — 2026-10-14 — five chart views, claim everywhere, a clearer DAO-staked LP
+
+- **Chart (portfolio-chart 2.0.0):** LUNA · Tokens · Mix · NFTs · Debt, then More (Net worth, Locks, LPs, Votion, Voting power), with a
+  details panel beside the chart on desktop. Tokens: up to 5 picked tokens + Others as % change from the range start (Amount or $ value;
+  days before the record covered every place: no point in Amount, today's amount priced in $ value). Mix: where the value sits now with
+  each part's APR and ≈ $ a week (LPs: this round's TLA reward APR, amplified compounded weekly; locks: this round's vote rewards × 52;
+  Votion: measured since entry; aDAO NFTs: 30-day backing growth; staking and liquid tokens show no rate). NFTs: the NFTs held today at
+  each day's floor vs their backing. Debt: collateral above zero, debt below, net dotted.
+- **Claimable now = every place, live:** TLA LP rewards (zLUNA → LUNA = share_exchange_rate × last_exchange_rate — it was divided before,
+  understating the rewards), the ampLUNA rebase at the live rate (was a fixed 1.1), vote rewards from the last flip, LUNA staking, CAPA
+  governance (CAPA + SOLID), the aDAO NFT DAO (LUNA), other chains. A source the chain did not answer is listed "not read", never 0.
+  "where to claim ›" opens a sheet with each place and the app to claim it in. The home page's DAO unclaimed-rewards tile and the
+  dao-dashboard cron use the same zLUNA rule now (all four buckets).
+- "Staked in a DAO" now reads "LP staked in the ampCAPA DAO" — it is the ampCAPA LP receipt, not NFTs. NFTs are counted once: at their
+  backing, or at the floor when that toggle is on.
+
 ## Rev 4.1.2 → 4.2.0 — 2026-10-13 — LUNA first, My wallets (combined), quieter Solid dust
 
 Owner: "the USD by default is really alarming … in LUNA it shows things are growing, the market just sucks" · "allow adding multiple
