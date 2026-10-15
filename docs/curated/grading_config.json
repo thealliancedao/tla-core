@@ -287,7 +287,7 @@
  },
  "scorecard": {
   "_note": "The LP Scorecard (tla-stats \u2192 LP Grades, 2026-10-15). One rubric, read by BOTH the lp-grades cron and the page (lib/lp-scorecard.js \u2014 identical copy in platform-crons/lp-grades). It grades from lp-grades/series/pools.json, which keeps the raw facts for every day and epoch \u2014 so editing this block re-grades the PAST views on the page and every FUTURE run of the cron, with no code change and no re-capture. Every metric is scored as a percentile among the pools in view (100 = best of the field). Weights inside each preset must sum to 1.0 (the cron halts otherwise).",
-  "config_version": "3.0.0",
+  "config_version": "3.1.0",
   "windows": {
    "24h": 1,
    "7d": 7,
@@ -295,6 +295,14 @@
    "90d": 90
   },
   "default_window": "30d",
+  "rank_within": "bucket",
+  "_rank_within": "'bucket': every pool is graded and ranked against the other pools in its own bucket (stable, project, bluechip, single) \u2014 emissions are split per bucket, so that is the field a vote there competes in. 'all': one field across every bucket.",
+  "bucket_order": [
+   "stable",
+   "project",
+   "bluechip",
+   "single"
+  ],
   "min_coverage": 0.6,
   "_min_coverage": "share of the window's days a pool must have been captured on to be ranked in that window; below it the pool shows 'not enough days' instead of a number",
   "depth_floor_usd": 10000,

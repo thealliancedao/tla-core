@@ -24,8 +24,11 @@ council proposal, separately.
 ## What a grade means
 
 Pick a **window** (24h, 7d, 30d, 90d — averages of the days before the as-of date) and
-a **lens**. Each measured number is turned into a **percentile among the pools in
-view** (100 = best of the field), and the lens mixes them with published weights:
+a **lens**. Pools are shown **bucket by bucket** (stable, project, bluechip, single), and
+each measured number is turned into a **percentile among the pools in the same bucket**
+(100 = best in the bucket) — emissions are split per bucket, so a stable pool competes
+with stable pools, not project pools. The lens mixes the percentiles with published
+weights (config `rank_within: "bucket"`; `"all"` would grade one field):
 
 | Metric | What it is |
 |---|---|
@@ -48,7 +51,7 @@ Letters on the lens composite: **A ≥ 75 · B ≥ 60 · C ≥ 45 · D ≥ 30 ·
 number with no source is left out and its weight shared by the rest — never counted as
 zero. A pool missing more than half of a lens is listed under "not graded — why".
 
-**Stability chips:** every row shows the pool's rank on the same lens in all four
+**Stability chips:** every row shows the pool's rank in its bucket on the same lens in all four
 windows at the same date — a grade that holds in every window is not a lucky week.
 
 **As of:** any past epoch end can be chosen, and the whole table re-grades as it would
@@ -60,13 +63,13 @@ For any bribe placement the facts can check (currently the Phoenix Directive's
 proposals, decoded from the proposals themselves and verified against chain events):
 
 1. **Closest match.** On the day before the proposal executed, each candidate ranking
-   (Vol ÷ Liq, Volume, Liquidity, Fees, All-round) × each window (24h…90d) is compared
-   with where the LUNA went — a rank correlation (1.00 = the allocation followed that
+   (Vol ÷ Liq, Volume, Liquidity, Fees, All-round — each pool's standing within its
+   bucket) × each window (24h…90d) is compared with where the LUNA went — a rank correlation (1.00 = the allocation followed that
    ranking exactly, 0 = no relation). The criterion named in the proposal title is
    marked "stated". The closest match is shown beside it.
 2. **Where the LUNA went** — each bribed pool's LUNA per epoch beside its rank, and the
    whole field on the chosen ranking, with pools that ranked above a bribed pool and
-   received nothing marked.
+   received nothing marked (within the same bucket).
 3. **Through the window** — each bribed pool's rank at the end of every epoch, from the
    one before the window through 1–4 epochs after it.
 4. **What changed** — liquidity, volume, vol ÷ liq and votes share before the

@@ -2,6 +2,15 @@
 
 
 
+
+## T7.1 · lib/lp-scorecard.js 1.1.0 — 2026-10-15 — graded within buckets
+
+- Owner: "they need to be separated in the buckets they belong to … rank them against LPs in their buckets not overall."
+- The table is one section per bucket (stable → project → bluechip → single) with its own rank, grade counts and emission share;
+  a Bucket filter joins DEX. Every percentile, letter, stability chip and the Bribe Scorecard's ranks, "ranked above a bribed pool"
+  and rank-through-window are now within the pool's bucket; the closest-match correlation uses each pool's standing in its bucket.
+- Config `scorecard.rank_within: "bucket"` (3.1.0) drives it — set `"all"` to go back to one field.
+
 ## T7.0 · lib/lp-scorecard.js 1.0.0 — 2026-10-15 — LP Grades becomes the LP Scorecard
 
 - Owner: turn the LP Grades tab into a dashboard everyone can use (community, projects, DAOs, bribers) to see which LPs earned votes and

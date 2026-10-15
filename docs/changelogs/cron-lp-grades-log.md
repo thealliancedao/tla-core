@@ -1,6 +1,9 @@
 # Changelog — lp-grades cron
 
 
+
+## 2.2.1 — 2026-10-15 — scorecard lib 1.1.0 (grade within bucket, config rank_within)
+
 ## 2.2.0 — 2026-10-15 — LP Scorecard step + one config
 
 - New `pool-series.js` → `lp-grades/series/pools.json`: facts only, keyed by POOL ADDRESS (names merged across renames: LUNA-USDC →
