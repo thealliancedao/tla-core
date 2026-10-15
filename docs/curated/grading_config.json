@@ -284,5 +284,279 @@
    "max_splits": 4,
    "_note": "Budget allocates in unit_usd chunks, greedily by need_score with diminishing returns as a pool's planned pot grows; a placement below min_effective_pot_usd is merged upward rather than dust-split. Candidates: graded pools flagged bribe_target or underpaid."
   }
+ },
+ "scorecard": {
+  "_note": "The LP Scorecard (tla-stats \u2192 LP Grades, 2026-10-15). One rubric, read by BOTH the lp-grades cron and the page (lib/lp-scorecard.js \u2014 identical copy in platform-crons/lp-grades). It grades from lp-grades/series/pools.json, which keeps the raw facts for every day and epoch \u2014 so editing this block re-grades the PAST views on the page and every FUTURE run of the cron, with no code change and no re-capture. Every metric is scored as a percentile among the pools in view (100 = best of the field). Weights inside each preset must sum to 1.0 (the cron halts otherwise).",
+  "config_version": "3.0.0",
+  "windows": {
+   "24h": 1,
+   "7d": 7,
+   "30d": 30,
+   "90d": 90
+  },
+  "default_window": "30d",
+  "min_coverage": 0.6,
+  "_min_coverage": "share of the window's days a pool must have been captured on to be ranked in that window; below it the pool shows 'not enough days' instead of a number",
+  "depth_floor_usd": 10000,
+  "_depth_floor_usd": "pools with less average liquidity than this are not ranked on efficiency (volume \u00f7 liquidity): a $4K pool turning over $500/day looks 'efficient' but cannot carry a real trade",
+  "new_pool_days": 28,
+  "bucket_share_of_tla": {
+   "stable": 0.4,
+   "project": 0.2,
+   "bluechip": 0.2,
+   "single": 0.2
+  },
+  "_bucket_share_of_tla": "calibrated 2026-05-13 from the Alliance Assets page (tla-snapshot calibration). Used to estimate LUNA emissions per pool per epoch = annual TLA LUNA \u00f7 52 \u00d7 bucket share \u00d7 the pool's share of its bucket's active votes. Labeled 'est.' on the page.",
+  "purpose_weights": {
+   "native_stable": 1,
+   "lst_correlated": 0.9,
+   "bluechip_bridge": 0.7,
+   "stable_stable": 0.6,
+   "project": 0.5,
+   "single_asset": 0.5
+  },
+  "_purpose_weights": "the only declared (not measured) input: what the chain needs each kind of pool for. Changeable by DAO proposal.",
+  "symbols": {
+   "lst": [
+    "ampLUNA",
+    "arbLUNA",
+    "bLUNA",
+    "stLUNA",
+    "boneLUNA",
+    "ampROAR",
+    "ampCAPA"
+   ],
+   "stable": [
+    "USDC",
+    "USDC.n",
+    "USDC.nbl",
+    "USDC.inj",
+    "USDT",
+    "USDt",
+    "EURe",
+    "axlUSDC",
+    "axlUSDT",
+    "SOLID"
+   ],
+   "bluechip": [
+    "wBTC",
+    "WBTC",
+    "wBTC.osmo",
+    "wBTC.axl",
+    "WBTC.axl",
+    "wBTC.creda.a",
+    "ATOM",
+    "INJ",
+    "PAXG",
+    "wstETH",
+    "ETH",
+    "dATOM"
+   ]
+  },
+  "metrics": {
+   "efficiency": {
+    "label": "Vol \u00f7 Liq",
+    "dir": 1,
+    "desc": "average daily volume \u00f7 average liquidity over the window \u2014 how hard each dollar of liquidity works. Not ranked below the depth floor."
+   },
+   "volume": {
+    "label": "Volume",
+    "dir": 1,
+    "desc": "average daily volume (USD) over the window \u2014 real trading the pool carries."
+   },
+   "liquidity": {
+    "label": "Liquidity",
+    "dir": 1,
+    "desc": "average liquidity (USD) over the window \u2014 the size of trade the pool can take."
+   },
+   "fees": {
+    "label": "Fees",
+    "dir": 1,
+    "desc": "average daily swap fees (USD) \u2014 what LPs actually earn from trading."
+   },
+   "stickiness": {
+    "label": "Sticky liquidity",
+    "dir": 1,
+    "desc": "price-neutral retention: the pool's token amounts at the start of the window valued at end prices vs the end amounts \u2014 so price moves do not fake growth or flight. Minimum one epoch."
+   },
+   "cost": {
+    "label": "Cost per $ traded",
+    "dir": -1,
+    "desc": "estimated LUNA emissions + bribes (USD) the pool drew per epoch \u00f7 its weekly volume. Lower = votes buy more trading here."
+   },
+   "support": {
+    "label": "Votes share",
+    "dir": -1,
+    "desc": "the pool's share of its bucket's votes. Lower ranks higher only in presets that look for under-supported pools."
+   },
+   "purpose": {
+    "label": "Purpose",
+    "dir": 1,
+    "desc": "declared, from purpose_weights."
+   }
+  },
+  "presets": [
+   {
+    "id": "allround",
+    "label": "All-round",
+    "default": true,
+    "desc": "A balanced read: real use, efficiency, depth, sticky liquidity, cost and purpose.",
+    "weights": {
+     "efficiency": 0.2,
+     "volume": 0.2,
+     "liquidity": 0.15,
+     "stickiness": 0.15,
+     "cost": 0.15,
+     "purpose": 0.15
+    }
+   },
+   {
+    "id": "workhorses",
+    "label": "Workhorses",
+    "desc": "The pools carrying the most trading.",
+    "weights": {
+     "volume": 0.5,
+     "fees": 0.2,
+     "efficiency": 0.3
+    }
+   },
+   {
+    "id": "efficient",
+    "label": "Efficient",
+    "desc": "Most trading per dollar of liquidity and per dollar of incentives \u2014 above the depth floor.",
+    "weights": {
+     "efficiency": 0.6,
+     "cost": 0.4
+    },
+    "filter": {
+     "min_liquidity_usd": 10000
+    }
+   },
+   {
+    "id": "quality",
+    "label": "Quality assets",
+    "desc": "Pairs the chain needs, with deep and sticky liquidity.",
+    "weights": {
+     "purpose": 0.4,
+     "stickiness": 0.3,
+     "liquidity": 0.3
+    }
+   },
+   {
+    "id": "underdogs",
+    "label": "Underdogs",
+    "desc": "Doing real work while holding a small share of their bucket's votes.",
+    "weights": {
+     "efficiency": 0.35,
+     "volume": 0.2,
+     "stickiness": 0.15,
+     "support": 0.3
+    },
+    "filter": {
+     "max_bucket_pct": 5,
+     "min_liquidity_usd": 10000
+    }
+   },
+   {
+    "id": "new",
+    "label": "New pools",
+    "desc": "Captured for fewer than new_pool_days days \u2014 early data, read with care.",
+    "weights": {
+     "efficiency": 0.3,
+     "volume": 0.3,
+     "liquidity": 0.2,
+     "purpose": 0.2
+    },
+    "filter": {
+     "max_age_days": 28
+    }
+   }
+  ],
+  "letter_bands": {
+   "A": 75,
+   "B": 60,
+   "C": 45,
+   "D": 30
+  },
+  "bribe_check": {
+   "_note": "Bribe Scorecard: for a placement, every candidate criterion \u00d7 window is measured on the day before it executed; the closest match is the one whose ranking best explains where the LUNA went.",
+   "criteria": [
+    "efficiency",
+    "volume",
+    "liquidity",
+    "fees",
+    "allround"
+   ],
+   "windows": [
+    "24h",
+    "7d",
+    "30d",
+    "90d"
+   ],
+   "match": "spearman",
+   "_match": "rank correlation between each pool's bribe (0 if none) and its value on the criterion, across every active pool on the bribed gauges' DEXes. 1 = the bribe followed the ranking exactly; 0 = no relation.",
+   "after_epochs": 3,
+   "_after_epochs": "how many epochs after the window ends the 'what changed' view reads by default"
+  }
+ },
+ "five_lens_v2": {
+  "_note": "The five-lens v2 grade (lp-grades cron v2.js, SPEC-lp-grades-v2 \u00a72). Moved here from code 2026-10-15 so every grading number lives in this one file; the cron merges this block over its built-in defaults.",
+  "config_version": "2.0.0",
+  "lens_weights": {
+   "purpose": 0.2,
+   "work": 0.25,
+   "efficiency": 0.15,
+   "durability": 0.25,
+   "governance": 0.15
+  },
+  "purpose_weights": {
+   "native_stable": 1,
+   "lst_correlated": 0.9,
+   "bluechip_bridge": 0.7,
+   "stable_stable": 0.6,
+   "project": 0.5,
+   "single_asset": 0.5
+  },
+  "letter_bands": {
+   "A": 75,
+   "B": 60,
+   "C": 45,
+   "D": 30
+  },
+  "streak_min_letter": "C",
+  "cushion_full_pct": 3,
+  "symbols": {
+   "lst": [
+    "ampLUNA",
+    "arbLUNA",
+    "bLUNA",
+    "stLUNA",
+    "boneLUNA",
+    "ampROAR",
+    "ampCAPA"
+   ],
+   "stable": [
+    "USDC",
+    "USDT",
+    "USDt",
+    "EURe",
+    "axlUSDC",
+    "axlUSDT",
+    "SOLID"
+   ],
+   "bluechip": [
+    "wBTC",
+    "WBTC",
+    "wBTC.osmo",
+    "wBTC.axl",
+    "wBTC.creda.a",
+    "ATOM",
+    "INJ",
+    "PAXG",
+    "wstETH",
+    "ETH",
+    "dATOM"
+   ]
+  }
  }
 }

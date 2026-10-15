@@ -1,6 +1,26 @@
 # TLA Stats Changelog
 
 
+
+## T7.0 · lib/lp-scorecard.js 1.0.0 — 2026-10-15 — LP Grades becomes the LP Scorecard
+
+- Owner: turn the LP Grades tab into a dashboard everyone can use (community, projects, DAOs, bribers) to see which LPs earned votes and
+  bribes; filters by 24h / 7d / 30d / 90d; lenses for quality assets, underdogs, new pools, heavily used pools; reverse-engineer a bribe
+  placement against the field and see what changed 1–4 epochs after; one config file that re-grades past AND future; remove the aDAO
+  tool from the top.
+- **Removed:** the aDAO Vote Advisor, the PD Bribe Tracker (it ranked only the weekly Astroport series — new and renamed pools showed
+  "no series", 37–52% of recent placements' LUNA), the v1/v2 grade rows and the bribe planner code behind them. `poolDisplayName` /
+  `alertPills` kept (the Pools tab uses them); `openGradeFor` deep links now open scorecard rows.
+- **Scorecard table:** every TLA pool graded live in the browser from `lp-grades/series/pools.json` under `grading_config.json →
+  scorecard` — window 24h/7d/30d/90d, As of (any past epoch end), DEX, above-1%-only, six lenses (All-round, Workhorses, Efficient,
+  Quality assets, Underdogs, New pools). Columns: Vol÷Liq, volume, liquidity, fees, sticky (price-neutral), $ incentives per $1K traded,
+  votes share, bribes/epoch (PD's share of the pot), and the lens's rank in all four windows. Rows open to lens bars + why line.
+  "Not graded — why" lists the rest with the reason.
+- **Bribe Scorecard:** per PD placement the facts can check — closest-match matrix (rank correlation of LUNA vs each criterion × window
+  on the day before execution; the title's stated criterion marked), where the LUNA went, the whole field, rank through the window
+  (before → paid → after), what changed vs the unbribed median. Descriptive only.
+- The same `lib/lp-scorecard.js` runs in the lp-grades cron (identical copy).
+
 ## T6.11 → T6.13.3 · vote-market VM1.0 → VM1.7 · lib/vote-market.js 1.0 → 1.3 · lib/vote-market-tile.js 1.0 → 1.1.1 — 2026-09-26 / 27 — the Vote Market becomes a simulator
 
 - Owner: "I don't like what it does when you select bribes … build a powerful simulation tool so you can plan how to participate in

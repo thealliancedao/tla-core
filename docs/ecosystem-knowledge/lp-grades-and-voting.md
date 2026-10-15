@@ -1,105 +1,115 @@
-# How we grade pools, and how the DAO decides where to vote
+# How the LP Scorecard grades pools, and how to read a bribe against the field
 
-> Plain-language guide to the LP Grades tab on theadao.com/tla-stats.html.
-> Everything here is computed from on-chain data the platform captures; nothing is
-> an opinion typed in by hand except the one table we say is declared. Updated
-> 2026-08-25 (grading v2, Vote Advisor v2, PD Bribe Tracker v1).
+> Plain-language guide to the LP Grades tab on theadao.com/tla-stats.html — now the
+> **LP Scorecard**. Everything here is computed from on-chain and DEX data the platform
+> captures; the only hand-set inputs are in one public config file. Updated 2026-10-15
+> (LP Scorecard 1.0 — replaces grading v2's tab view, the aDAO Vote Advisor and the PD
+> Bribe Tracker).
 
 ## The one-sentence version
 
-A vote in the Terra Liquidity Alliance steers LUNA emissions to a pool. We grade
-every pool on **what a vote there is worth to Terra**, and the DAO only moves its
-votes to pools that have **earned** it — four straight epochs of solid grades — or
-that the council names for a stated reason. Bribes never enter the decision.
+A vote in the Terra Liquidity Alliance steers LUNA emissions to a pool, and a bribe
+steers votes. The scorecard grades **every TLA pool on facts anyone can check** —
+real trading, depth, sticky liquidity, what incentives cost per dollar traded — so
+voters, projects, DAOs and bribers can all see which pools earned support, over any
+time window, and check any bribe placement against the whole field.
+
+## Who it is for
+
+Everyone who decides where votes or bribes go: individual voters, projects defending
+their pools, DAOs (aDAO included), and bribers such as the Phoenix Directive. It is a
+shared yardstick, not anyone's voting instructions. aDAO's own votes are decided by
+council proposal, separately.
 
 ## What a grade means
 
-Each active pool gets a letter, A to F, made of five lenses. Every measured lens
-scores a pool **against the other active pools that epoch** (100 = best of the
-field, 0 = worst), so the letters spread across the field instead of everyone
-landing on C. The mix of five lenses is fixed and published:
+Pick a **window** (24h, 7d, 30d, 90d — averages of the days before the as-of date) and
+a **lens**. Each measured number is turned into a **percentile among the pools in
+view** (100 = best of the field), and the lens mixes them with published weights:
 
-| Lens | Weight | The question | What is inside it |
-|---|---|---|---|
-| **Purpose** | 20% | What does the chain need this kind of pool for? | A declared table by pair type: LUNA–stablecoin 1.0 · LUNA–LST (ampLUNA, arbLUNA, bLUNA…) 0.9 · bluechip bridges (wBTC, ATOM, INJ, PAXG) 0.7 · stable–stable 0.6 · project tokens and single assets 0.5. The only hand-set input; changeable by DAO proposal. |
-| **Work** | 25% | Does it facilitate trades? | Utilization (weekly volume ÷ liquidity), depth, exit slippage. |
-| **Efficiency** | 15% | What do emissions buy here? | Emissions per dollar traded and per dollar staked — cheaper ranks higher. |
-| **Durability** | 25% | Does liquidity stay? | Price-neutral retention over four epochs (the pool's tokens counted at today's prices, so price moves don't fake growth), amplified/compounded share, impermanent-loss exposure by pair type, asset durability. |
-| **Governance** | 15% | Who holds the votes, and why? | Votion's share of the pool's votes (votes that move for money), the pool's bribe rate vs Votion's going rate, cushion above the 1% line, share of its bribe pot that comes from PD. Less dependence ranks higher. |
+| Metric | What it is |
+|---|---|
+| **Vol ÷ Liq** | average daily volume ÷ average liquidity — how hard each dollar works. Pools under the depth floor ($10K) are not ranked on it: a tiny pool can look "efficient" without carrying a real trade. |
+| **Volume** | average daily volume (USD). |
+| **Liquidity** | average liquidity (USD). |
+| **Fees** | average daily swap fees — what LPs earn from trading. |
+| **Sticky liquidity** | price-neutral retention: the window's starting token amounts valued at end prices vs the end amounts, so price moves do not fake growth or flight. |
+| **Cost per $ traded** | estimated LUNA emissions + bribes per epoch ÷ weekly volume. Lower = votes buy more trading. |
+| **Votes share** | share of the bucket's votes — used (lower ranks higher) only by lenses looking for under-supported pools. |
+| **Purpose** | declared, by pair type: LUNA–stable 1.0 · LUNA–LST 0.9 · bluechip bridge 0.7 · stable–stable 0.6 · project 0.5 · single 0.5. |
 
-Letter bands on the weighted composite: **A ≥ 75 · B ≥ 60 · C ≥ 45 · D ≥ 30 · F below.**
-A number with no trustworthy source is **null**, never zero — it is left out of its
-lens and the pool's confidence drops (firm → provisional → thin). Skeleton Swap
-volume and the Credia market are not captured yet, so those pools carry blanks
-where the data would be, and say so.
+**Lenses** (each a weight set, some with a filter): **All-round** (default) ·
+**Workhorses** (most trading) · **Efficient** (trading per $ of liquidity and per $ of
+incentives, above the depth floor) · **Quality assets** (purpose, depth, stickiness) ·
+**Underdogs** (real work, ≤5% of their bucket's votes) · **New pools** (captured for
+under 28 days — early data).
 
-**Streak** = consecutive epochs at C or better. It is the "earned" counter.
+Letters on the lens composite: **A ≥ 75 · B ≥ 60 · C ≥ 45 · D ≥ 30 · F below.** A
+number with no source is left out and its weight shared by the rest — never counted as
+zero. A pool missing more than half of a lens is listed under "not graded — why".
 
-## How the DAO decides where to vote (the Vote Advisor)
+**Stability chips:** every row shows the pool's rank on the same lens in all four
+windows at the same date — a grade that holds in every window is not a lucky week.
 
-aDAO votes rarely — every change is a proposal and a discussion — so its votes have
-to be earned. The Advisor's rule, in order:
+**As of:** any past epoch end can be chosen, and the whole table re-grades as it would
+have looked then.
 
-1. **An existing pool earns aDAO votes with four consecutive epochs at C or better.**
-   One good week is not a case; the streak is shown beside every pool.
-2. **A new, inactive or unsupported pool** (no bribe pot, nobody backing it, a project
-   that cannot afford to) can earn votes only through **a reason the council declares**
-   — printed on the recommendation. Supporting a struggling ally is that mechanism.
-3. **Bribes are never a factor.** Not an objective, not a tiebreak. What aDAO's votes
-   happen to earn is reported afterwards as a bonus, outside the math.
-4. **Recommend seldom.** A change becomes a proposal only when it is at least 10%
-   more system value than what we vote today **and** every pool it points at has
-   earned it. Otherwise the verdict is "hold" and it says why.
+## The Bribe Scorecard — a placement against the field
 
-How "system value" is scored, chunk by chunk (TLA votes move in 10% chunks per
-bucket): the pool's five-lens composite × 1.5 if the pool is a good one sliding
-toward the 1% line (rescue first) × (1 − 0.7 × the share Votion already plans to
-bring — don't duplicate the mercenary layer) × diminishing returns as our own share
-of the pool grows; no pool takes more than 50% of a bucket's votes. Every bucket
-card shows **NOW** (how the treasury votes today) and **THE LENSES SAY** (what the
-rule recommends), the shifts with their reasons, and the LUNA emissions the change
-would redirect. When a bucket is proposable, the exact on-chain vote message for
-the gauge controller is generated for the council.
+For any bribe placement the facts can check (currently the Phoenix Directive's
+proposals, decoded from the proposals themselves and verified against chain events):
+
+1. **Closest match.** On the day before the proposal executed, each candidate ranking
+   (Vol ÷ Liq, Volume, Liquidity, Fees, All-round) × each window (24h…90d) is compared
+   with where the LUNA went — a rank correlation (1.00 = the allocation followed that
+   ranking exactly, 0 = no relation). The criterion named in the proposal title is
+   marked "stated". The closest match is shown beside it.
+2. **Where the LUNA went** — each bribed pool's LUNA per epoch beside its rank, and the
+   whole field on the chosen ranking, with pools that ranked above a bribed pool and
+   received nothing marked.
+3. **Through the window** — each bribed pool's rank at the end of every epoch, from the
+   one before the window through 1–4 epochs after it.
+4. **What changed** — liquidity, volume, vol ÷ liq and votes share before the
+   placement vs the last week of the window vs N epochs after, each compared with the
+   unbribed pools' median move over the same dates (so market-wide swings are netted
+   out).
+
+Pools that had no trading history when a placement was made (brand-new pools,
+single-asset gauges) are listed and left out of the correlation — not counted against
+it. The scorecard measures; it does not judge, and reasons it cannot see (a launch, a
+migration, an ally) are not visible in it.
+
+## One config file — change it, and past and future re-grade
+
+Every weight, lens, band, window, floor and the emissions calibration live in
+`tla-core/docs/curated/grading_config.json` → `scorecard`. The page and the lp-grades
+cron run the **same code** (`lib/lp-scorecard.js`) on the **same raw facts**
+(`lp-grades/series/pools.json`), so editing the config re-grades every view on the page
+— past dates included — on the next load, and the cron's next run re-grades its
+history file. No re-capture is needed: the facts are kept, the grades are derived.
+
+- **Declared (argue with these):** purpose table, lens weights, letter bands, depth
+  floor ($10K), new-pool age (28 days), bucket emission shares. Changeable by DAO
+  proposal.
+- **Estimated, and labeled:** emissions per pool (annual TLA LUNA ÷ 52 × bucket share ×
+  the pool's share of its bucket's active votes); non-LUNA bribe tokens at today's price.
+- **Measured:** everything else.
+- **Not captured, and labeled:** SkeletonSwap volume (its API mostly does not provide
+  it — SkeletonSwap pools show liquidity and stickiness but are usually not graded),
+  trading on single-asset gauges, the Credia market.
 
 ## Who else votes, and why it matters
 
-About 28% of all TLA voting power sits in **Votion** vaults, which move mechanically
-to wherever bribes pay best per vote. The platform reproduces Votion's optimizer
-from its own published worksheet (reward = bribe × your votes ÷ (gauge votes +
-your votes); maximize the sum), so the Overview's Vote Market can show what a
-bribe would move. Two facts follow: a bribe only exists for Votion if its pot is
-funded for the period being voted, and Votion re-optimizes about every 15 minutes
-until it casts. LP-voted pools (holders protecting their own emissions) sit below
-Votion's rate by design — they are not for sale.
-
-## The PD Bribe Tracker — what they said, what they did, what changed
-
-The Phoenix Directive is the largest briber on the rails it stewards. Its own
-proposal titles state the criterion — *"vote incentives based on trading efficiency
-+ volume"*. The tracker takes that criterion literally and applies it to **every**
-active Astroport TLA pool at the epoch before each placement: each bribed pool's
-share of PD's LUNA beside its rank by trading efficiency (weekly volume ÷ average
-liquidity), the whole field with the pools that outranked a bribed pool and got
-nothing, and a rank heatmap through the paid window (placements are fixed for four
-epochs; pools drift inside them). Placement-time numbers are the record as captured
-then — never rebuilt. The page draws no conclusion; it shows the arithmetic beside
-the stated rule. Pools outside the Astroport series (Skeleton, single-asset, Credia)
-are shown with their LUNA and no rank.
-
-## What is declared vs measured (so you know what to argue with)
-
-- **Declared:** the Purpose table; the lens weights; the letter bands; the 4-epoch
-  streak; the 10% material threshold; council reasons. All published, all
-  changeable by DAO proposal.
-- **Measured:** everything else — from the TLA snapshot, dex-data, the Votion
-  product, bribe-state, distributions, tla-flows. Each row can be opened to its
-  numbers.
-- **Not captured yet (and labeled):** Skeleton Swap volume, the Credia market,
-  per-pool LP-holder concentration, a daily Votion per-pool history.
+About 28% of TLA voting power sits in **Votion** vaults, which move mechanically to
+wherever bribes pay best per vote (the Overview's Vote Market reproduces its
+optimizer). A bribe only exists for Votion if its pot is funded for the period being
+voted, which is why a large briber's placements shape a large share of the vote.
 
 ## Where the numbers live
 
-`lp-grades/snapshots/current.json` (v2 per pool: lenses, composite, letter, streak,
-confidence, raw inputs) · `lp-grades/epochs/<E>.json` (write-once history) ·
-`tla-voting/pd-bribes/fit/current.json` (the tracker) · `votion/optimization` (the
-optimizer's worksheet) · `tla-voting/bribe-state/runway.json` (pots per period).
+`lp-grades/series/pools.json` (facts: daily per pool by address, per-epoch votes,
+amounts, bribes, PD legs) · `lp-grades/scorecard/current.json` (every lens, default
+window, latest day) · `lp-grades/scorecard/history.json` (default lens re-graded at
+every completed epoch under the current config) · `docs/curated/grading_config.json`
+(the rubric) · `lp-grades/snapshots/current.json` (the older five-lens grade, still
+published for the Pools tab).

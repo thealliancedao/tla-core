@@ -1,5 +1,17 @@
 # Changelog — lp-grades cron
 
+
+## 2.2.0 — 2026-10-15 — LP Scorecard step + one config
+
+- New `pool-series.js` → `lp-grades/series/pools.json`: facts only, keyed by POOL ADDRESS (names merged across renames: LUNA-USDC →
+  LUNA-USDC.n → LUNA-USDC.nbl), daily tvl/volume/fees from both DEXes from first capture, per-epoch votes/amounts/prices, every bribe pot
+  from bribe-state (token decimals from the catalog — unknown decimals = unpriced, never guessed), PD legs mapped to pools.
+- New `lp-scorecard.js` (identical to the site's `/lib/lp-scorecard.js`) grades from the facts + `grading_config.json → scorecard`;
+  publishes `lp-grades/scorecard/current.json` (every lens, default window) and `history.json` (default lens re-graded at every completed
+  epoch under the CURRENT config). Halts the scorecard step (not the grades) on a non-normalized preset.
+- five-lens v2 settings now read from `grading_config.json → five_lens_v2` (code defaults kept as fallback).
+- Gated on production data: 86 pools, 230 days, epochs 96–207, 1,999 bribe rows, 23 PD placements; 37 history epochs.
+
 ## lp-grades-2.0.0 — 2026-08-25 — five-lens v2 grade per pool (v2.js), alongside v1
 
 Per pool `v2`: lenses {purpose (declared, D1 table), work, efficiency,
