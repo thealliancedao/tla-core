@@ -3,6 +3,16 @@
 
 
 
+
+## T7.2 — 2026-10-15 — Epoch Bribes Breakdown: PD's share and the votes it steers
+
+- Owner: show what % of bribes PD placed vs everyone else, to see PD's influence on Votion's voting power.
+- Tiles: PD and Other each show their % of all bribes; each bucket header shows PD % / Other % of that bucket's pot.
+- New "Phoenix Directive's share" panel: PD vs everyone-else bar; Votion's share of all TLA votes (live, in snapshot units via
+  lib/vote-market.js — Votion's own end-of-round units read ~12% higher); Votion's votes on PD-funded pots (each pool's Votion votes
+  credited to funders by their share of that pool's pot); ≈ share of ALL TLA votes PD's pots steer; per-bucket table. First read:
+  PD 36.6% of pots · Votion 29.1% of TLA votes · 69.6% of Votion's votes on PD-funded pots · ≈20.2% of all TLA votes.
+
 ## T7.1 · lib/lp-scorecard.js 1.1.0 — 2026-10-15 — graded within buckets
 
 - Owner: "they need to be separated in the buckets they belong to … rank them against LPs in their buckets not overall."
