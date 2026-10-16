@@ -99,6 +99,19 @@ single-asset gauges) are listed and left out of the correlation — not counted 
 it. The scorecard measures; it does not judge, and reasons it cannot see (a launch, a
 migration, an ally) are not visible in it.
 
+## Sharing and tracking
+
+- **Links:** `tla-stats.html?prop=262#grades` opens that placement's scorecard; add `&sec=sizing` (or `record`,
+  `summary`, `formula`, `steer`) to land on a panel; `?win=30d&lens=workhorses&asof=2026-09-20&bucket=stable#grades`
+  reopens a table view. Every panel has a "copy link" button.
+- **In brief:** each placement opens with a generated, numbers-only paragraph — selection match, sizing vs volume,
+  bucket split, most over-weighted pick, and the PD-steered share of votes during its paid window.
+- **Track record:** one table of every placement the data can check; it grows each epoch.
+- **Votes steered per epoch:** measured from the vote harvest — Votion's votes on each pool credited to funders by
+  pot share, as a share of all TLA votes — beside the PD charter's 20% line.
+- **The numbers as data:** `lp-grades/scorecard/bribes.json` (placement summaries + steered history); the help bot
+  reads it.
+
 ## One config file — change it, and past and future re-grade
 
 Every weight, lens, band, window, floor and the emissions calibration live in

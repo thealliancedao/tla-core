@@ -10,6 +10,19 @@
 
 
 
+
+## T7.9 · lib/lp-scorecard.js 1.7.0 — 2026-10-16 — shareable, summarized, tracked
+
+- Owner: help community members reach their own conclusions — links to exact numbers, a plain summary, the bot briefed, tracking.
+- Links: `tla-stats.html?prop=262#grades` opens a placement; `&sec=sizing|record|summary|formula|steer` scrolls to a panel;
+  `?win=30d&lens=workhorses&asof=2026-09-20&bucket=stable#grades` reopens a table view. "copy link" buttons on the table, the
+  summary and the track record.
+- "Prop N in brief": a generated, numbers-only paragraph per placement (selection match, the title's Vol ÷ Liq match, reported formula,
+  sizing vs volume, bucket split, most over-weighted pick, unrankable LUNA, PD-steered share in the paid window vs the 20% line).
+- Track record: every checkable placement in one table (closest match, formula ρ, sized ≠ volume, single and stable LUNA/volume,
+  PD-steered avg); click to open. Jump-to links at the top of the scorecard.
+- lp-grades 2.2.8 publishes lp-grades/scorecard/bribes.json (same arithmetic); help-agent 1.20.0 rule 19 walks it neutrally.
+
 ## T7.8 · lib/lp-scorecard.js 1.6.0 — 2026-10-16 — USDC.n pools leave the grading field
 
 - Owner: USDC.n is being wound down — it should sit at the bottom, not be supported.

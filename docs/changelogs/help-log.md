@@ -1,6 +1,12 @@
 # Help Page Changelog
 
 
+
+## 1.20.0 — 2026-10-16 — rule 19: PD bribes & the LP Scorecard
+
+- Reads lp-grades/scorecard/bribes.json; walks selection → sizing → influence with numbers; credits what fits; names what the data
+  cannot see; never characterizes people or motives; links the placement's page.
+
 ## v1.18.0 → v1.19.0 — 2026-10-05 / 13 — follow-ups, tickets, up to date for going live
 
 - **1.18.0** (2026-10-05): follow-up questions — the chat sends the last 6 turns and the bot answers in context ("what about last epoch?");
