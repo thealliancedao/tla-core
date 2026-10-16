@@ -13,6 +13,20 @@
 
 
 
+
+## T8.2 — 2026-10-16 — backfilling the pool history behind the older PD placements
+
+- Owner: backfill pool volume + liquidity before 2026-05-12 from the archive node so the 17 earlier PD placements can be checked; run tonight.
+- New Action tla-core `dex-history` (.github/scripts/dex-history/backfill.mjs 1.0.0): for every TLA pair in dex-data/state-history and
+  every epoch E120–E186, every swap on the pair in [height(E), height(E+1)) from the archive node (ARCHIVE_RPC, tx_search paged),
+  offer side summed per denom → dex-data/history/weekly.json: per pair per epoch [tvl_usd, vol_usd, swaps, complete, unpriced,
+  reserve_implied]. Liquidity = the state-history reserves (already chain-read weekly since E97) × that day's price. Prices: the
+  price-history series (week average), dollar stables $1 before their series, gaps → nearest day within 14, else the token is priced
+  from the pool's own reserves against the other side (labeled). Pool aggregates only; counts-only log. Resumable, commits every ~8
+  min, chains itself while pool-weeks are left; runs on push, nightly 03:17 UTC, or by hand.
+- pool-series 1.3.0 attaches w[E] per pool (and adds pairs retired before the daily capture); lp-scorecard 1.9.0 uses the weekly rows
+  when a window has no daily data (source 'weekly'); a pool is "new" only if neither record knew it.
+
 ## T8.1 · lib/lp-scorecard.js 1.8.0 — 2026-10-16 — PD placements, reverse-engineered
 
 - Owner: we pulled too much out — reverse-engineer every past PD placement from the pre-placement data, the proposal descriptions

@@ -1,0 +1,62 @@
+name: dex-history — weekly swap volume per TLA pool (archive node)
+
+# 2026-10-16: fills what the daily DEX capture (from 2026-05-12) lacks so past PD placements can be checked against the pool data from
+# before they were made. Liquidity comes from dex-data/state-history (already chain-read weekly since E97); this reads each pool's swaps
+# per week from the archive node (ARCHIVE_RPC) and writes dex-data/history/weekly.json (pool aggregates only). Resumable; starts its own
+# next run while pool-weeks are left (bounded by chain). Runs on push of this file / the script, nightly, or by hand.
+on:
+  workflow_dispatch:
+    inputs:
+      from_epoch: { description: 'first epoch (E120 = 2025-02-10)', required: false, default: '120' }
+      to_epoch:   { description: 'last epoch (E186 = 2026-05-18, overlaps the daily capture for a cross-check)', required: false, default: '186' }
+      concurrency: { description: 'pool-weeks read at once', required: false, default: '4' }
+      max_minutes: { description: 'stop cleanly after (job limit 6 h)', required: false, default: '320' }
+      chain:      { description: 'how many more runs may start themselves while cells are left', required: false, default: '6' }
+  push:
+    branches: [main]
+    paths: ['.github/workflows/dex-history.yml', '.github/scripts/dex-history/**']
+  schedule:
+    - cron: '17 3 * * *'   # nightly: a no-op once every cell is read
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: dex-history
+  cancel-in-progress: false
+jobs:
+  walk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/dex-history
+            dex-data/history
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: walk
+        id: walk
+        env:
+          ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
+          FROM_EPOCH: ${{ github.event.inputs.from_epoch || '120' }}
+          TO_EPOCH: ${{ github.event.inputs.to_epoch || '186' }}
+          CONCURRENCY: ${{ github.event.inputs.concurrency || '4' }}
+          MAX_MINUTES: ${{ github.event.inputs.max_minutes || '320' }}
+        run: |
+          git config user.name "dex-history" && git config user.email "bot@thealliancedao.com"
+          node .github/scripts/dex-history/backfill.mjs
+      - name: start the next run while pool-weeks are left
+        if: always() && steps.walk.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHAIN: ${{ github.event.inputs.chain || '6' }}
+        run: |
+          if [ -f dex-history_stop.txt ]; then echo "stopped itself (reads failing) — no next run"; exit 0; fi
+          LEFT=$(cat dex-history_left.txt 2>/dev/null || echo 0)
+          echo "pool-weeks left: $LEFT · chain: $CHAIN"
+          if [ "$LEFT" != "0" ] && [ "${CHAIN:-0}" -gt 0 ]; then
+            gh workflow run dex-history.yml --ref main -f chain=$((CHAIN - 1)) -f from_epoch="${{ github.event.inputs.from_epoch || '120' }}" -f to_epoch="${{ github.event.inputs.to_epoch || '186' }}"
+            echo "started the next run (chain $((CHAIN - 1)) left)"
+          fi
