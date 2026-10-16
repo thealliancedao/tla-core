@@ -9,6 +9,17 @@
 
 
 
+
+## T7.8 · lib/lp-scorecard.js 1.6.0 — 2026-10-16 — USDC.n pools leave the grading field
+
+- Owner: USDC.n is being wound down — it should sit at the bottom, not be supported.
+- Config `scorecard.winding_down` (3.3.0): USDC.n / USDC.nbl from 2026-09-11 (Circle's migration opening, alerts.json
+  usdc-noble-winddown). From that date such pools are out of the field — no percentile influence, never flagged as an alternative pick,
+  out of the bribe-check and formula rankings — and listed at the bottom of their bucket with a red W "winding down · not supportable".
+  Views dated before 2026-09-11 grade them normally.
+- Effect on the record: prop 268's closest match becomes the reported PD formula at 0.81 (24h) — its earlier poor fit came from the
+  USDC.n pools the formula ranked first and PD did not fund.
+
 ## T7.7 · lib/lp-scorecard.js 1.5.0 — 2026-10-16 — votes steered by PD's pots, measured per epoch, beside the 20% charter line
 
 - Series 1.2.0 reads tla-voting/vote-state (per period, per wallet: VP + split per gauge) → each pool's votes and Votion's votes per

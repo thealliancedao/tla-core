@@ -287,7 +287,7 @@
  },
  "scorecard": {
   "_note": "The LP Scorecard (tla-stats \u2192 LP Grades, 2026-10-15). One rubric, read by BOTH the lp-grades cron and the page (lib/lp-scorecard.js \u2014 identical copy in platform-crons/lp-grades). It grades from lp-grades/series/pools.json, which keeps the raw facts for every day and epoch \u2014 so editing this block re-grades the PAST views on the page and every FUTURE run of the cron, with no code change and no re-capture. Every metric is scored as a percentile among the pools in view (100 = best of the field). Weights inside each preset must sum to 1.0 (the cron halts otherwise).",
-  "config_version": "3.2.0",
+  "config_version": "3.3.0",
   "windows": {
    "24h": 1,
    "7d": 7,
@@ -303,6 +303,19 @@
    "bluechip",
    "single"
   ],
+  "winding_down": [
+   {
+    "symbols": [
+     "USDC.n",
+     "USDC.nbl"
+    ],
+    "since": "2026-09-11",
+    "label": "USDC.n is being wound down by Circle \u2014 migrate to USDC.inj",
+    "alert": "usdc-noble-winddown",
+    "source": "docs/curated/alerts.json"
+   }
+  ],
+  "_winding_down": "pools holding a listed asset, from `since` on, are taken out of the grading field (they do not set anyone's percentile, cannot be flagged as an alternative pick, and are listed at the bottom of their bucket as winding down). Views dated before `since` grade them normally.",
   "min_coverage": 0.6,
   "_min_coverage": "share of the window's days a pool must have been captured on to be ranked in that window; below it the pool shows 'not enough days' instead of a number",
   "depth_floor_usd": 10000,
