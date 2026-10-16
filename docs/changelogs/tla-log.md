@@ -7,6 +7,17 @@
 
 
 
+
+## T7.6 · lib/lp-scorecard.js 1.4.0 — 2026-10-16 — sizing: does the amount follow the work?
+
+- Owner: PD picked these pools — but do the amounts fit the same metrics, and is it fair? How can the page verify it?
+- Bribe Scorecard → new Sizing panel, among the pools a placement picked: compare to Volume / Fees / Liquidity / All-round grade / any
+  declared formula, window 24h–90d. Tiles: % of LUNA sized differently than the metric (½ Σ|LUNA share − metric share|), LUNA per $1K of
+  daily volume (cheapest → dearest pick), PD LUNA vs volume vs emission share by bucket. Table per pick: grade, LUNA, share, metric share,
+  weight (share of LUNA ÷ share of metric; red ≥2×, blue ≤½×), LUNA per $1K vol/day.
+- First read (7d vs volume): props 244–268 sized 30–62% differently; Single bucket 30–49% of PD LUNA on 2–19% of volume; Stable 2–5% on
+  ~50%; cost per $1K daily volume spans up to ~700×; amounts are tiers of 90 LUNA.
+
 ## T7.5 — 2026-10-16 — missing wBTC.atom bribes; hidden names
 
 - Owner: LUNA-SOLID's "other" read ~$114 while ~$100 more had been bribed. Cause: the bribe was wBTC.atom, whose catalog entry has no

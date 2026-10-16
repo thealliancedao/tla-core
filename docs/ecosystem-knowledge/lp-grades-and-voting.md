@@ -89,6 +89,11 @@ proposals, decoded from the proposals themselves and verified against chain even
    is a formula reported for the Phoenix Directive (0.75 × volume + 0.25 × volume ÷ TVL, min-max
    normalized within each gauge) — not published by PD and labeled unverified.
 
+6. **Sizing — does the amount follow the work?** Among the pools a placement picked, each pool's share
+   of the LUNA beside its share of a metric (volume, fees, liquidity, grade, or a declared formula):
+   the weight (share of LUNA ÷ share of the metric, 1× = sized to it), LUNA per $1K of daily volume,
+   and the bucket split (PD LUNA vs the bucket's volume and emission shares).
+
 Pools that had no trading history when a placement was made (brand-new pools,
 single-asset gauges) are listed and left out of the correlation — not counted against
 it. The scorecard measures; it does not judge, and reasons it cannot see (a launch, a
