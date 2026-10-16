@@ -4,6 +4,16 @@
 
 
 
+
+## T7.3 · lib/lp-scorecard.js 1.2.0 — 2026-10-16 — the epoch's bribes beside the grades
+
+- Owner: "where does it show the bribes applied for the epoch … PD bribes these pools but not these ones, alongside how they ranked?"
+- Bribes column = the as-of epoch's pots, split PD (purple) / everyone else (amber); "none" when unbribed. It was a window average and
+  read "—" on 7d because the running epoch's pots were not in the harvest yet (series 1.1.0 now reads them from the runway product).
+- Rows: purple edge + "PD bribed" pill; amber edge + "ranks above a PD pick · no PD bribe" when the pool out-ranks the lowest-ranked
+  PD-bribed pool in its bucket on the current lens and has ≥ the $10K depth floor. Bucket headers: PD bribed N · M ranked above a PD
+  pick without one · K with no bribe at all. Changing lens / window / as-of re-tests the picks.
+
 ## T7.2 — 2026-10-15 — Epoch Bribes Breakdown: PD's share and the votes it steers
 
 - Owner: show what % of bribes PD placed vs everyone else, to see PD's influence on Votion's voting power.

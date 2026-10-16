@@ -54,6 +54,12 @@ zero. A pool missing more than half of a lens is listed under "not graded — wh
 **Stability chips:** every row shows the pool's rank in its bucket on the same lens in all four
 windows at the same date — a grade that holds in every window is not a lucky week.
 
+**This epoch's bribes:** the Bribes column shows the pots placed for the as-of epoch,
+split Phoenix Directive / everyone else. PD-bribed pools carry a purple "PD bribed" mark;
+a pool (over the $10K depth floor) that ranks above a PD-bribed pool in its bucket on the
+current lens, with no PD bribe, carries an amber "ranks above a PD pick" mark. Each bucket
+header counts both.
+
 **As of:** any past epoch end can be chosen, and the whole table re-grades as it would
 have looked then.
 

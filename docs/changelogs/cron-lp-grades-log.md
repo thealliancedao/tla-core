@@ -2,6 +2,9 @@
 
 
 
+
+## 2.2.2 — 2026-10-16 — series 1.1.0: pots for periods not yet harvested come from tla-voting/bribe-state/runway.json (bribe_src 'runway'); lib 1.2.0
+
 ## 2.2.1 — 2026-10-15 — scorecard lib 1.1.0 (grade within bucket, config rank_within)
 
 ## 2.2.0 — 2026-10-15 — LP Scorecard step + one config
