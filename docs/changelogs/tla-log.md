@@ -6,6 +6,16 @@
 
 
 
+
+## T7.5 — 2026-10-16 — missing wBTC.atom bribes; hidden names
+
+- Owner: LUNA-SOLID's "other" read ~$114 while ~$100 more had been bribed. Cause: the bribe was wBTC.atom, whose catalog entry has no
+  discovered decimals (they live in effective/override), so pool-series priced it as unpriced and dropped it. Series 1.1.1 reads
+  effective → override → discovered decimals: LUNA-SOLID other now $215.73 (matches the Epoch Bribes popup); rows with an unpriced
+  token fell from 490 to 34.
+- New tla-core docs/curated/name-overrides.json (address stays, name hidden or replaced) — applied by the page's identity registry,
+  tla-participants and address-catalog. First entry: a profile name disputed by the project it names.
+
 ## T7.4 · lib/lp-scorecard.js 1.3.0 — 2026-10-16 — the reported PD formula, checked against placements
 
 - Owner relayed PD's formula (unpublished): score = 0.75 × volume + 0.25 × volume÷TVL, min-max normalized within each gauge.
