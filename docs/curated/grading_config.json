@@ -287,7 +287,7 @@
  },
  "scorecard": {
   "_note": "The LP Scorecard (tla-stats \u2192 LP Grades, 2026-10-15). One rubric, read by BOTH the lp-grades cron and the page (lib/lp-scorecard.js \u2014 identical copy in platform-crons/lp-grades). It grades from lp-grades/series/pools.json, which keeps the raw facts for every day and epoch \u2014 so editing this block re-grades the PAST views on the page and every FUTURE run of the cron, with no code change and no re-capture. Every metric is scored as a percentile among the pools in view (100 = best of the field). Weights inside each preset must sum to 1.0 (the cron halts otherwise).",
-  "config_version": "3.1.0",
+  "config_version": "3.2.0",
   "windows": {
    "24h": 1,
    "7d": 7,
@@ -489,6 +489,7 @@
   "bribe_check": {
    "_note": "Bribe Scorecard: for a placement, every candidate criterion \u00d7 window is measured on the day before it executed; the closest match is the one whose ranking best explains where the LUNA went.",
    "criteria": [
+    "pd_reported",
     "efficiency",
     "volume",
     "liquidity",
@@ -504,7 +505,20 @@
    "match": "spearman",
    "_match": "rank correlation between each pool's bribe (0 if none) and its value on the criterion, across every active pool on the bribed gauges' DEXes. 1 = the bribe followed the ranking exactly; 0 = no relation.",
    "after_epochs": 3,
-   "_after_epochs": "how many epochs after the window ends the 'what changed' view reads by default"
+   "_after_epochs": "how many epochs after the window ends the 'what changed' view reads by default",
+   "formulas": {
+    "pd_reported": {
+     "label": "Reported PD formula",
+     "desc": "score = 0.75 \u00d7 volume + 0.25 \u00d7 (volume \u00f7 TVL), each min-max normalized within the gauge. As relayed to the owner 2026-10-16 \u2014 not published by the Phoenix Directive, data source unknown; shown so it can be checked against what was placed.",
+     "terms": {
+      "volume": 0.75,
+      "efficiency_raw": 0.25
+     },
+     "normalize": "minmax",
+     "within": "bucket",
+     "verified": false
+    }
+   }
   }
  },
  "five_lens_v2": {

@@ -5,6 +5,16 @@
 
 
 
+
+## T7.4 · lib/lp-scorecard.js 1.3.0 — 2026-10-16 — the reported PD formula, checked against placements
+
+- Owner relayed PD's formula (unpublished): score = 0.75 × volume + 0.25 × volume÷TVL, min-max normalized within each gauge.
+- Config `scorecard.bribe_check.formulas.pd_reported` (3.2.0) — declared formulas are criteria in the closest-match matrix
+  (marked "reported") and get a "formula vs what was placed" panel: rank correlation, % of LUNA placed differently than a
+  score-proportional split of each gauge's LUNA, LUNA on pools the formula cannot score, per-pool formula vs placed LUNA, window chips.
+- First read (7d): props 244–268 correlate 0.44–0.67; 17–42% of LUNA placed differently than the formula; prop 268 has 5,850 LUNA/ep
+  on pools with no trading history at placement.
+
 ## T7.3 · lib/lp-scorecard.js 1.2.0 — 2026-10-16 — the epoch's bribes beside the grades
 
 - Owner: "where does it show the bribes applied for the epoch … PD bribes these pools but not these ones, alongside how they ranked?"

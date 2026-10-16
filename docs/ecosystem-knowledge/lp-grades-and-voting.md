@@ -83,6 +83,12 @@ proposals, decoded from the proposals themselves and verified against chain even
    unbribed pools' median move over the same dates (so market-wide swings are netted
    out).
 
+5. **A declared formula, checked.** Any formula put in the config (`bribe_check.formulas`) becomes a
+   criterion and gets its own panel: each gauge's placed LUNA re-split in proportion to the formula's
+   score, beside what was actually placed, with the share of LUNA placed differently. The current entry
+   is a formula reported for the Phoenix Directive (0.75 × volume + 0.25 × volume ÷ TVL, min-max
+   normalized within each gauge) — not published by PD and labeled unverified.
+
 Pools that had no trading history when a placement was made (brand-new pools,
 single-asset gauges) are listed and left out of the correlation — not counted against
 it. The scorecard measures; it does not judge, and reasons it cannot see (a launch, a
