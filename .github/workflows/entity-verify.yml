@@ -1,0 +1,32 @@
+name: entity-verify — who controls a contract (archive node)
+
+# 2026-10-16: before a contract is named for an organisation on a public page, read its on-chain admin and label. Contracts only.
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths: ['.github/workflows/entity-verify.yml', '.github/scripts/entity-verify/**']
+permissions:
+  contents: write
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/entity-verify
+            docs/curated/entity-verify
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: verify
+        env:
+          ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
+          CHECKS: '[{"org":"Phoenix Directive","address":"terra1l0ny38guhwrzczesgvk2zwj7xcen63jzmpusjv9hemvua9vptcyqwqy7pl","expect_admin":"terra1k8ug6dkzntczfzn76wsh24tdjmx944yj6mk063wum7n20cwd7lxq4lppjg"}]'
+        run: |
+          node .github/scripts/entity-verify/verify.mjs
+          git config user.name "entity-verify" && git config user.email "bot@thealliancedao.com"
+          git add docs/curated/entity-verify/latest.json
+          git diff --cached --quiet || (git commit -m "entity-verify: contract admin check" && for i in 1 2 3; do git pull --rebase origin main && git push origin HEAD:main && break; sleep 5; done)
