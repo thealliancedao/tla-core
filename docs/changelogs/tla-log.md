@@ -11,6 +11,20 @@
 
 
 
+
+## T8.0 — 2026-10-16 — one view: what each pool earns, what it receives, who pays
+
+- Owner: "really hard to understand … all over the place … put it all in one place … not to single out PD … the entire system …
+  easy to make decisions."
+- The tab is now one table per bucket. Each pool: EARNS (share of the bucket's volume — or fees / grade score) beside RECEIVES (share
+  of the bucket's votes, which sets emissions), a verdict (under / in line / over at 1.5×; not measurable; winding down), this epoch's
+  bribes PD vs others, volume, liquidity. Row click = grade parts, ranks across windows, the numbers behind both bars.
+- Above it: four system numbers (bribes for the epoch and who pays · votes steered by PD-funded pots vs 20% · votes on over-supported
+  pools · under-supported good pools) and "where the bribes went" by verdict, for everyone / PD / others.
+- Controls: window, earns-by, bribes-from, bucket; as-of, grade lens (dropdown), DEX. Tiny no-data and winding pools fold into one line.
+- Every placement tool (steered votes per epoch, track record, per-proposal summary, selection, sizing, formula, field, what changed)
+  moves into one collapsible "Bribe placements" section; links with ?prop= open it. Links gain &earn= and &funder=.
+
 ## T7.9 · lib/lp-scorecard.js 1.7.0 — 2026-10-16 — shareable, summarized, tracked
 
 - Owner: help community members reach their own conclusions — links to exact numbers, a plain summary, the bot briefed, tracking.

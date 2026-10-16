@@ -21,6 +21,18 @@ their pools, DAOs (aDAO included), and bribers such as the Phoenix Directive. It
 shared yardstick, not anyone's voting instructions. aDAO's own votes are decided by
 council proposal, separately.
 
+## The main view: what each pool earns vs what it receives
+
+One table per bucket. **Earns** = the pool's share of the bucket's trading volume over the window (switchable
+to fees or grade score). **Receives** = its share of the bucket's votes — which is what sets its emissions —
+with this epoch's bribes beside it, Phoenix Directive vs everyone else. The verdict compares the two:
+**under-supported** (earns ≥ 1.5× what it receives), **in line**, **over-supported** (receives ≥ 1.5× what it
+earns), **not measurable** (no trading data — single-asset gauges, SkeletonSwap without volume) or **winding
+down** (holds an asset being retired, e.g. USDC.n). Above the table: bribes for the epoch and who pays, votes
+steered by PD-funded pots against the 20% charter line, the share of votes on over-supported pools, and the
+under-supported good pools; plus "where the bribes went" by verdict for everyone, PD or everyone else. A verdict
+measures a gap, not a reason — a new pool, a migration or a chosen ally can explain one.
+
 ## What a grade means
 
 Pick a **window** (24h, 7d, 30d, 90d — averages of the days before the as-of date) and
