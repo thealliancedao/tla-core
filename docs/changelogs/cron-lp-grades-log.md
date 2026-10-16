@@ -1,5 +1,14 @@
 # Changelog — lp-grades cron
 
+## 2.3.1 — 2026-10-16 — series 1.4.0: steered votes measurable back to E120
+- Periods before the per-wallet vote harvest (E120–E192): votes per pool from the finalized distributions ledger
+  (tla-voting/distributions/history.json), Votion's per-pool votes from an archive-node read of its vaults at each period's first
+  block (tla-voting/vote-history/votion.json, new vote-history workflow). Overlap check E193–E206: ledger totals 3–10% below the
+  harvest, Votion within 1–6%. Votion's vaults first vote in E148 — earlier placements show "no Votion yet".
+- LUNA price for epochs before epoch-history from price-history/series/LUNA.json (week average) — older bribe pots now priced.
+
+## 2.3.0 — 2026-10-16 — series 1.3.0: archive weekly pool history (dex-data/history, E120–E186); 21 PD placements checkable (was 6)
+
 
 
 
