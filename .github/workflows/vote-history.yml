@@ -1,0 +1,40 @@
+name: vote-history — Votion's votes per pool per period (archive node)
+
+# 2026-10-16: the per-wallet vote harvest (tla-voting/vote-state) starts at E193, so "votes steered by bribes" could not be measured
+# for older bribe placements. This reads Votion's vault votes at each past period's first block from the archive node (ARCHIVE_RPC)
+# and writes tla-voting/vote-history/votion.json (aggregates over Votion's public vault contracts only). E193–E206 overlap the
+# harvest as a cross-check. Resumable; runs on push of this file / the script, or by hand.
+on:
+  workflow_dispatch:
+    inputs:
+      from_epoch: { description: 'first period', required: false, default: '120' }
+      to_epoch:   { description: 'last period (E193–206 overlap the vote harvest)', required: false, default: '206' }
+  push:
+    branches: [main]
+    paths: ['.github/workflows/vote-history.yml', '.github/scripts/vote-history/**']
+permissions:
+  contents: write
+concurrency:
+  group: vote-history
+  cancel-in-progress: false
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/vote-history
+            tla-voting/vote-history
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: read
+        env:
+          ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
+          FROM_EPOCH: ${{ github.event.inputs.from_epoch || '120' }}
+          TO_EPOCH: ${{ github.event.inputs.to_epoch || '206' }}
+        run: |
+          git config user.name "vote-history" && git config user.email "bot@thealliancedao.com"
+          node .github/scripts/vote-history/votion.mjs
