@@ -14,6 +14,14 @@
 
 
 
+
+## T8.3–T8.4 — 2026-10-16 — who trades, who holds the vote
+- Pools table: "who trades" column + detail line (distinct wallets, largest / top-3 share, two-way share, weekly from every swap on
+  chain — dex-history 1.1.0). Track record: "LUNA to new pools" and "picks' top-3 traders" columns; summary sentence. lib 1.10.0.
+- Overview: "Who holds the vote" card (lp-grades/scorecard/holders.json — vp-holders.js 1.0): electorate by group × voting activity,
+  by organisation, concentration, who holds Votion's vaults. Organisations by name, individuals as totals only.
+- Track record PD-steered back to E120 ("no Votion yet" before E148); "none" where PD placed no LUNA in a bucket; dates no-wrap.
+
 ## T8.2 — 2026-10-16 — backfilling the pool history behind the older PD placements
 
 - Owner: backfill pool volume + liquidity before 2026-05-12 from the archive node so the 17 earlier PD placements can be checked; run tonight.

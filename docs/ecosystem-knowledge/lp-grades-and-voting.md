@@ -111,6 +111,35 @@ single-asset gauges) are listed and left out of the correlation — not counted 
 it. The scorecard measures; it does not judge, and reasons it cannot see (a launch, a
 migration, an ally) are not visible in it.
 
+## Who trades each pool
+
+Volume alone does not say how many hands made it. From every swap on chain (archive node, weekly since E120), each pool-week also
+carries: **distinct wallets** that swapped, the **largest wallet's** and **largest 3 wallets'** share of the volume, and the
+**two-way share** — volume from wallets that traded both directions in the same week. Shown as the "who trades" column in the pools
+table, in each pool's detail, as "picks' top-3 traders" in the placement track record and in each placement's summary. Measured,
+not judged: market makers and arbitrage bots concentrate volume and trade both ways by nature. No trader address is stored — only the
+four numbers per pool-week (`dex-data/history/weekly.json`).
+
+The track record also shows **LUNA to new pools**: the share of a placement's LUNA on pools younger than `new_pool_days` (28) — or with
+no trading history — when it executed; those pools cannot be checked against their own record.
+
+## Who holds the vote (Overview)
+
+Every lock owner (the complete electorate), grouped: Votion's vaults, named DAOs and protocols (the address catalog's entities),
+individual wallets that provide TLA liquidity, individual wallets that do not — each split by how it votes: **active** (votes changed
+in the last 4 epochs), **set-and-forget** (votes allocated earlier; they still count every epoch), **not voting**. Plus concentration
+(how many wallets hold half / 80% of the vote, the largest individual wallet) and **who holds Votion's vaults** — and so whose deposits
+supply the votes Votion casts toward the best-paying bribes. Organisations appear by name; individual wallets only as totals and
+counts. Votion holders come from every deposit since launch (archive node) plus daily discovery, verified by live balance.
+Data: `lp-grades/scorecard/holders.json`.
+
+## Steered votes before the vote harvest
+
+The per-wallet vote harvest starts at E193. For E120–E192 the steered share uses the finalized distributions ledger (votes per pool,
+every period) and an archive-node read of Votion's vaults at each period's first block (`tla-voting/vote-history/votion.json`).
+Overlap check E193–E206: Votion within 1–6% of the harvest, totals 3–10% below it. Votion's vaults first voted in E148 — earlier
+placements show "no Votion yet".
+
 ## Sharing and tracking
 
 - **Links:** `tla-stats.html?prop=262#grades` opens that placement's scorecard; add `&sec=sizing` (or `record`,
