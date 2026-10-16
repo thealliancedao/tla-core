@@ -12,6 +12,24 @@
 
 
 
+
+## T8.1 · lib/lp-scorecard.js 1.8.0 — 2026-10-16 — PD placements, reverse-engineered
+
+- Owner: we pulled too much out — reverse-engineer every past PD placement from the pre-placement data, the proposal descriptions
+  and the formula, so PD and the community can verify it.
+- Two views at the top of the tab: "Pools — earns vs receives" and "PD placements — audit" (open, not collapsed; ?view=pd or ?prop=).
+- The audit, per placement and per gauge: the formula score and rank (0.75 × volume + 0.25 × volume÷TVL, min-max within the gauge,
+  data from the chosen window before the placement), PD's WEIGHT (amounts are whole multiples of one unit — 90 LUNA in prop 268,
+  106 in 262), PD LUNA vs the formula's LUNA (gauge budget split by score), and flags: biggest weight = formula #1, more weight than a
+  higher-scored pick, scored above a bribed pool and got nothing (never for tiny or winding pools), no history (new pool).
+  Window chips (24h/7d/30d/90d) show how the fit moves.
+- Track record gains "top pick = #1" and "≠ score split"; the 17 earlier placements are listed (decoded, verified) as not yet
+  checkable — no pool trading data before 2026-05-12; an archive-node backfill would open them.
+- The proposal description is shown verbatim per placement (pd-bribes 1.3.0 captures it; best-effort weights read from it shown
+  beside the decoded legs). Selection matrix, sizing, field, rank path and what-changed fold under "More checks".
+- First read (7d): biggest weight = formula #1 in 17 of 20 gauge-placements; 17–38% of scored LUNA placed differently than the
+  score split; prop 268 put 52% of its LUNA on new pools with no history to score.
+
 ## T8.0 — 2026-10-16 — one view: what each pool earns, what it receives, who pays
 
 - Owner: "really hard to understand … all over the place … put it all in one place … not to single out PD … the entire system …

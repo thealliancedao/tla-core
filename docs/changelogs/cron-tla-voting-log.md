@@ -1,5 +1,11 @@
 # cron-tla-voting — changelog
 
+
+## pd-bribes 1.3.0 — 2026-10-16 — proposal descriptions
+
+- Each placement keeps its proposal's description verbatim (capped 12k chars) and a best-effort weights_parsed read of "pool … number"
+  lines. The decoded, event-verified legs stay the record; the description is shown beside them for comparison.
+
 ## org-tla-voting-2.5.0 — 2026-08-25 — pd-bribe-fit duty
 
 `lib/pd-bribe-fit.js`: for every verified PD batch, allocation per gauge vs
