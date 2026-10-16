@@ -13,7 +13,7 @@
 //             review. Never published. The Action log prints counts only.
 import fs from 'fs'; import path from 'path'; import { execSync } from 'child_process'; import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const VERSION = 'placement-leadup-1.0.0';
+const VERSION = 'placement-leadup-1.0.1';   // 1.0.1: hidden organisations (config) counted, not named
 const RPCS = [process.env.ARCHIVE_RPC, process.env.RPC_URL].map(s => String(s || '').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '')).filter(Boolean);
 const RAW = process.env.RAW_BASE || 'https://raw.githubusercontent.com/thealliancedao';
 const LEAD_DAYS = Number(process.env.LEAD_DAYS || 14), BASE_DAYS = Number(process.env.BASE_DAYS || 28), TOPN = 5;
@@ -56,7 +56,10 @@ async function main() {
   const J = async (rel) => { const r = await getJson(`${RAW}/tla-core/main/${rel}`, 3, 60000); return r.ok ? r.json : null; };
   const pd = await J('tla-voting/pd-bribes/current.json'); const series = await J('lp-grades/series/pools.json'); const cat = await J('catalog/snapshots/current.json');
   if (!pd || !series) throw new Error('inputs unavailable');
-  const ent = (cat && cat.entities) || {};
+  const ent = Object.assign({}, (cat && cat.entities) || {});
+  // organisations the owner chose not to name publicly (grading_config scorecard.holders.hide_entities) are counted, not named
+  { const gc = await J('docs/curated/grading_config.json'); const hide = new Set(((gc && gc.scorecard && gc.scorecard.holders) || {}).hide_entities || ['Fuel', 'Galactic Mining Club']);
+    for (const [a, x] of Object.entries(ent)) if (x && (hide.has(x.protocol) || hide.has(x.label) || [...hide].some(h => String(x.label || '').startsWith(h)))) delete ent[a]; }
   const byGauge = new Map(); for (const p of series.pools) for (const g of p.gauge_pool_ids || []) { byGauge.set(g, p); byGauge.set(bare(g), p); }
   // height ↔ time from the public epoch boundaries (linear between boundaries)
   const bounds = []; for (let e = 96; e <= 400; e++) { const r = await getJson(`${RAW}/tla-core/main/dex-data/state-history/epochs/${e}.json`, 2, 20000); if (!r.ok || !r.json.height) { if (e > 150) break; continue; } bounds.push({ h: r.json.height, t: Date.parse(r.json.height_time || r.json.start_time) }); }
