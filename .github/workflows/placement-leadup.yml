@@ -1,0 +1,49 @@
+name: placement-leadup — the picked pools before each PD proposal opened (archive node)
+
+# 2026-10-16: for every PD bribe placement, each bribed pool's swaps and liquidity adds / withdrawals in the 14 days before the
+# proposal opened vs the 28 days before that, and whether the same wallets lead that activity across placements. Public file:
+# lp-grades/leadup/placements.json (aggregates; organisations named, individuals only counted). Wallet-level detail goes ONLY to the
+# private tla-archive repo (ARCHIVE_REPO_TOKEN). Log prints counts only. Runs on push of this file / the script, weekly, or by hand.
+on:
+  workflow_dispatch:
+    inputs:
+      lead_days: { description: 'days before the proposal opened', required: false, default: '14' }
+      base_days: { description: 'baseline days before the lead window', required: false, default: '28' }
+  push:
+    branches: [main]
+    paths: ['.github/workflows/placement-leadup.yml', '.github/scripts/placement-leadup/**']
+  schedule:
+    - cron: '23 5 * * 1'
+permissions:
+  contents: write
+concurrency:
+  group: placement-leadup
+  cancel-in-progress: false
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/placement-leadup
+            lp-grades/leadup
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: the private archive
+        env:
+          TOKEN: ${{ secrets.ARCHIVE_REPO_TOKEN }}
+        run: |
+          git clone -q --depth 1 "https://x-access-token:${TOKEN}@github.com/thealliancedao/tla-archive.git" archive
+          cd archive && git config user.name "placement-leadup" && git config user.email "bot@thealliancedao.com"
+      - name: scan
+        env:
+          ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
+          LEAD_DAYS: ${{ github.event.inputs.lead_days || '14' }}
+          BASE_DAYS: ${{ github.event.inputs.base_days || '28' }}
+          ARCHIVE_DIR: archive
+        run: |
+          git config user.name "placement-leadup" && git config user.email "bot@thealliancedao.com"
+          node .github/scripts/placement-leadup/leadup.mjs
