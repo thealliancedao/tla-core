@@ -8,6 +8,15 @@
 
 
 
+
+## T7.7 · lib/lp-scorecard.js 1.5.0 — 2026-10-16 — votes steered by PD's pots, measured per epoch, beside the 20% charter line
+
+- Series 1.2.0 reads tla-voting/vote-state (per period, per wallet: VP + split per gauge) → each pool's votes and Votion's votes per
+  period. steerHistory credits Votion's actual votes on each pool to funders by their share of that pool's pot.
+- Bribe Scorecard opens with a per-epoch bar chart: PD-steered (purple) and other-funder-steered (amber) share of ALL TLA votes, dashed 20%
+  line quoting PD's founding document verbatim; notes PD's DAO holds no TLA VP and that the charter does not define whether bribe-steered
+  votes count. First read: E193–E206 PD-steered 10.9–18.8% of all votes (18.6% at E206); PD share of Votion's votes 42–69%.
+
 ## T7.6 · lib/lp-scorecard.js 1.4.0 — 2026-10-16 — sizing: does the amount follow the work?
 
 - Owner: PD picked these pools — but do the amounts fit the same metrics, and is it fair? How can the page verify it?
