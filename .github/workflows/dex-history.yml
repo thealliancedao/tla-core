@@ -4,11 +4,13 @@ name: dex-history — weekly swap volume per TLA pool (archive node)
 # before they were made. Liquidity comes from dex-data/state-history (already chain-read weekly since E97); this reads each pool's swaps
 # per week from the archive node (ARCHIVE_RPC) and writes dex-data/history/weekly.json (pool aggregates only). Resumable; starts its own
 # next run while pool-weeks are left (bounded by chain). Runs on push of this file / the script, nightly, or by hand.
+# 1.1.0 (2026-10-16): also who trades each pool each week (distinct traders, top-1/top-3 share, two-way share — aggregates only),
+# through the last completed epoch; the nightly run adds each new week.
 on:
   workflow_dispatch:
     inputs:
       from_epoch: { description: 'first epoch (E120 = 2025-02-10)', required: false, default: '120' }
-      to_epoch:   { description: 'last epoch (E186 = 2026-05-18, overlaps the daily capture for a cross-check)', required: false, default: '186' }
+      to_epoch:   { description: 'last epoch, or auto = the last completed epoch (1.1.0: trader stats need every week, incl. the daily-capture era)', required: false, default: 'auto' }
       concurrency: { description: 'pool-weeks read at once', required: false, default: '4' }
       max_minutes: { description: 'stop cleanly after (job limit 6 h)', required: false, default: '320' }
       chain:      { description: 'how many more runs may start themselves while cells are left', required: false, default: '6' }
@@ -41,8 +43,8 @@ jobs:
         env:
           ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
           FROM_EPOCH: ${{ github.event.inputs.from_epoch || '120' }}
-          TO_EPOCH: ${{ github.event.inputs.to_epoch || '186' }}
-          CONCURRENCY: ${{ github.event.inputs.concurrency || '4' }}
+          TO_EPOCH: ${{ github.event.inputs.to_epoch || 'auto' }}
+          CONCURRENCY: ${{ github.event.inputs.concurrency || '6' }}
           MAX_MINUTES: ${{ github.event.inputs.max_minutes || '320' }}
         run: |
           git config user.name "dex-history" && git config user.email "bot@thealliancedao.com"
@@ -57,6 +59,6 @@ jobs:
           LEFT=$(cat dex-history_left.txt 2>/dev/null || echo 0)
           echo "pool-weeks left: $LEFT · chain: $CHAIN"
           if [ "$LEFT" != "0" ] && [ "${CHAIN:-0}" -gt 0 ]; then
-            gh workflow run dex-history.yml --ref main -f chain=$((CHAIN - 1)) -f from_epoch="${{ github.event.inputs.from_epoch || '120' }}" -f to_epoch="${{ github.event.inputs.to_epoch || '186' }}"
+            gh workflow run dex-history.yml --ref main -f chain=$((CHAIN - 1)) -f from_epoch="${{ github.event.inputs.from_epoch || '120' }}" -f to_epoch="${{ github.event.inputs.to_epoch || 'auto' }}"
             echo "started the next run (chain $((CHAIN - 1)) left)"
           fi

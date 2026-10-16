@@ -12,10 +12,11 @@
 // PUBLIC: pool aggregates only — no wallet, no tx hash, no memo is written or logged (the Action log is public; it prints counts).
 import fs from 'fs'; import path from 'path'; import { execSync } from 'child_process'; import { createRequire } from 'module';
 const require = createRequire(import.meta.url);
-const VERSION = 'dex-history-1.0.0';
+const VERSION = 'dex-history-1.1.0';   // 1.1.0 (2026-10-16): who trades — per pool-week distinct traders (tx signers), the top-1 / top-3 traders' share of the volume and the two-way share (traders who both bought and sold that week); TO_EPOCH=auto walks to the last completed epoch
+// 1.0.0 (2026-10-16): weekly swap volume per pool
 const RPCS = [process.env.ARCHIVE_RPC, process.env.RPC_URL].map(s => String(s || '').trim().replace(/^['"]+|['"]+$/g, '').replace(/\/$/, '')).filter(Boolean);
 const RAW = process.env.RAW_BASE || 'https://raw.githubusercontent.com/thealliancedao';
-const FROM = Number(process.env.FROM_EPOCH || 120), TO = Number(process.env.TO_EPOCH || 186);
+const FROM = Number(process.env.FROM_EPOCH || 120); let TO = /^\d+$/.test(String(process.env.TO_EPOCH || '')) ? Number(process.env.TO_EPOCH) : null;   // null = auto
 const CONC = Math.max(1, Number(process.env.CONCURRENCY || 4)); const MAX_MIN = Number(process.env.MAX_MINUTES || 320);
 const OUT = process.env.OUT || 'dex-data/history/weekly.json'; const NO_PUSH = !!process.env.NO_PUSH;
 const T0 = Date.now(); const minutes = () => (Date.now() - T0) / 60000; const over = () => minutes() > MAX_MIN;
@@ -43,20 +44,25 @@ function attrsOf(e) {   // plain or base64 attributes (older CometBFT encodes ke
 const bare = (d) => String(d || '').replace(/^(native|cw20):/, '');
 // one (pair, epoch) cell: every swap on the pair in [h0, h1)
 async function cell(pair, h0, h1) {
-  const byDenom = {}; let swaps = 0, page = 1, seen = 0, total = null;
+  const byDenom = {}; const byTrader = {}; let swaps = 0, page = 1, seen = 0, total = null;
   while (true) {
     if (over()) return { partial: true };
     const r = await txSearch(`wasm._contract_address='${pair}' AND wasm.action='swap' AND tx.height>=${h0} AND tx.height<${h1}`, page);
     if (r.error) return { error: r.error };
     stats.pages++; total = r.total;
     for (const t of r.txs) { seen++; if (t.tx_result && t.tx_result.code) continue;
-      for (const e of (t.tx_result && t.tx_result.events) || []) { if (!/^wasm/.test(e.type)) continue; const a = attrsOf(e);
+      const evs = (t.tx_result && t.tx_result.events) || [];
+      // the trader = the tx signer (ante 'tx' event acc_seq "addr/seq"), else the first message sender — held in memory only, never written
+      let who = null; for (const e of evs) { if (e.type === 'tx') { const a = attrsOf(e); if (a.acc_seq) { who = String(a.acc_seq).split('/')[0]; break; } } }
+      if (!who) for (const e of evs) { if (e.type === 'message') { const a = attrsOf(e); if (a.sender) { who = a.sender; break; } } }
+      who = who || 'unknown:' + (t.hash || seen);
+      for (const e of evs) { if (!/^wasm/.test(e.type)) continue; const a = attrsOf(e);
         if (a._contract_address !== pair || a.action !== 'swap') continue; const d = bare(a.offer_asset); const amt = /^\d+$/.test(a.offer_amount || '') ? BigInt(a.offer_amount) : 0n;
-        if (!d || !(amt > 0n)) continue; byDenom[d] = (byDenom[d] || 0n) + amt; swaps++; } }
+        if (!d || !(amt > 0n)) continue; byDenom[d] = (byDenom[d] || 0n) + amt; swaps++; const T = byTrader[who] = byTrader[who] || {}; T[d] = (T[d] || 0n) + amt; } }
     if (seen >= total || !r.txs.length) break; page++;
   }
   stats.swaps += swaps;
-  return { swaps, byDenom: Object.fromEntries(Object.entries(byDenom).map(([k, v]) => [k, v.toString()])) };
+  return { swaps, byDenom: Object.fromEntries(Object.entries(byDenom).map(([k, v]) => [k, v.toString()])), byTrader };
 }
 async function pool(items, n, fn) { let i = 0; await Promise.all(Array.from({ length: n }, async () => { while (i < items.length && !over()) { const k = i++; await fn(items[k], k); } })); }
 function commitPush(msg) {
@@ -72,7 +78,8 @@ async function main() {
   const idx = await getJson(`${RAW}/tla-core/main/dex-data/state-history/index.json`, 3, 30000); if (!idx.ok) throw new Error('state-history index unavailable');
   const pairs = (idx.json.pairs || []).filter(p => p.kind === 'pair' && p.pair);
   // epoch heights + reserves from the public state history
-  const ep = {}; for (let e = FROM; e <= TO + 1; e++) { const r = await getJson(`${RAW}/tla-core/main/dex-data/state-history/epochs/${e}.json`, 3, 30000); if (r.ok && r.json.height) ep[e] = r.json; }
+  const ep = {}; for (let e = FROM; TO == null ? e <= FROM + 400 : e <= TO + 1; e++) { const r = await getJson(`${RAW}/tla-core/main/dex-data/state-history/epochs/${e}.json`, 3, 30000); if (r.ok && r.json.height) ep[e] = r.json; else if (TO == null && e > FROM) break; }
+  if (TO == null) TO = Math.max(...Object.keys(ep).map(Number)) - 1; console.log(`epochs ${FROM}–${TO}`);
   const epochs = Object.keys(ep).map(Number).sort((a, b) => a - b);
   // prices + decimals
   const cat = await getJson(`${RAW}/tla-core/main/token-catalog/snapshots/current.json`, 3, 30000);
@@ -93,7 +100,7 @@ async function main() {
   const work = [];
   for (const p of pairs) { doc.pairs[p.pair] = doc.pairs[p.pair] || { key: p.key, lp: p.lp || null, name: p.name, dex: p.dex, bucket: p.bucket, weeks: {} }; Object.assign(doc.pairs[p.pair], { key: p.key, name: p.name, dex: p.dex, bucket: p.bucket });
     for (const e of Object.keys(doc.epochs).map(Number)) { const st = ep[e] && ep[e].pairs && ep[e].pairs[p.key]; if (!st || !st.ok) continue;   // not instantiated / no state that week → nothing traded on it
-      if (doc.raw[p.pair + '|' + e] && doc.raw[p.pair + '|' + e].complete) continue; work.push({ p, e, st }); } }
+      const c0 = doc.raw[p.pair + '|' + e]; if (c0 && c0.complete && c0.tr) continue; work.push({ p, e, st }); } }   // 1.1.0: cells read before trader stats are read again
   console.log(`pairs ${pairs.length} · epochs ${Object.keys(doc.epochs).length} · cells to read ${work.length}`);
   let lastCommit = Date.now(), done = 0;
   const price = async (e, rawByDenom, avgWeek) => { let usd = 0, unpriced = []; for (const [d, amt] of Object.entries(rawByDenom)) { const q = await px(d, doc.epochs[e].start, avgWeek); if (q.p == null || q.dec == null) { unpriced.push(d); continue; } usd += Number(BigInt(amt)) / Math.pow(10, q.dec) * q.p; } return { usd, unpriced }; };
@@ -111,12 +118,27 @@ async function main() {
       const val = (map) => { let usd = 0, un = []; for (const [d, amt] of Object.entries(map || {})) { const z = q[d]; if (!z || z.p == null || z.dec == null) { un.push(d); continue; } usd += Number(BigInt(amt)) / Math.pow(10, z.dec) * z.p; } return { usd, unpriced: un }; };
       const tv = val(res), vv = c.byDenom ? val(c.byDenom) : { usd: null, unpriced: [] };
       for (const d of tv.unpriced.concat(vv.unpriced)) doc.unpriced[d] = (doc.unpriced[d] || 0) + 1;
-      P.weeks[e] = [Math.round(tv.usd * 100) / 100, vv.usd == null ? null : Math.round(vv.usd * 100) / 100, c.swaps ?? null, c.complete ? 1 : 0, (tv.unpriced.length || vv.unpriced.length) ? 1 : 0, implied]; }
+      P.weeks[e] = [Math.round(tv.usd * 100) / 100, vv.usd == null ? null : Math.round(vv.usd * 100) / 100, c.swaps ?? null, c.complete ? 1 : 0, (tv.unpriced.length || vv.unpriced.length) ? 1 : 0, implied].concat(c.tr || [null, null, null, null]); }
     doc.version = VERSION; doc.generatedAt = new Date().toISOString();
-    doc.method = 'weeks[E] = [tvl_usd at height(E) (reserves from dex-data/state-history × that day’s price), vol_usd (Σ swap offer amounts in [height(E), height(E+1)) from the archive node × the week’s average price), swaps, complete (1 = every page read), unpriced (1 = a token had no price — that side is undercounted), reserve_implied (1 = one token priced from the pool’s own reserves against the other)]. Pool aggregates only.';
-    doc.columns = ['tvl_usd', 'vol_usd', 'swaps', 'complete', 'unpriced', 'reserve_implied'];
+    doc.method = 'weeks[E] = [tvl_usd at height(E) (reserves from dex-data/state-history × that day’s price), vol_usd (Σ swap offer amounts in [height(E), height(E+1)) from the archive node × the week’s average price), swaps, complete (1 = every page read), unpriced (1 = a token had no price — that side is undercounted), reserve_implied (1 = one token priced from the pool’s own reserves against the other), traders (distinct tx signers that swapped on the pool that week), top1_pct / top3_pct (share of the week’s volume from the largest 1 / 3 traders), twoway_pct (share of the volume from traders who swapped both directions that week: Σ 2 × min(bought, sold) ÷ total)]. Pool aggregates only — no trader address is stored.';
+    doc.columns = ['tvl_usd', 'vol_usd', 'swaps', 'complete', 'unpriced', 'reserve_implied', 'traders', 'top1_pct', 'top3_pct', 'twoway_pct'];
     const cells = Object.values(doc.raw); doc.coverage = { cells: cells.length, complete: cells.filter(c => c.complete).length, epochs: [Math.min(...Object.keys(doc.epochs).map(Number)), Math.max(...Object.keys(doc.epochs).map(Number))] };
     fs.mkdirSync(path.dirname(OUT), { recursive: true }); fs.writeFileSync(OUT, JSON.stringify(doc) + '\n');
+  }
+  // who trades: value each trader's offers in USD (same prices as the volume, reserve-implied where a series is missing), then
+  // distinct traders, top-1 / top-3 share and the two-way share. Only these four numbers leave this function.
+  async function traderStats(w, byTrader) {
+    const ids = Object.keys(byTrader || {}); if (!ids.length) return [0, null, null, null];
+    const res = {}; for (const a of (w.st && w.st.assets) || []) res[bare(a.denom)] = a.amount;
+    const ds = [...new Set(Object.keys(res).concat(...ids.map(i => Object.keys(byTrader[i]))))]; const q = {}; for (const d of ds) q[d] = await px(d, doc.epochs[w.e].start, true);
+    const rk = Object.keys(res); if (rk.length === 2) { const [a, b] = rk; const va = (x) => Number(BigInt(res[x])) / Math.pow(10, q[x].dec);
+      if (q[a].p == null && q[b].p != null && q[a].dec != null && q[b].dec != null && va(a) > 0) q[a] = { ...q[a], p: va(b) * q[b].p / va(a) };
+      else if (q[b].p == null && q[a].p != null && q[a].dec != null && q[b].dec != null && va(b) > 0) q[b] = { ...q[b], p: va(a) * q[a].p / va(b) }; }
+    const usdOf = (d, amt) => { const z = q[d]; return z && z.p != null && z.dec != null ? Number(amt) / Math.pow(10, z.dec) * z.p : 0; };
+    const per = ids.map(i => { const sides = Object.entries(byTrader[i]).map(([d, amt]) => usdOf(d, amt)); const tot = sides.reduce((x, y) => x + y, 0); const two = sides.length >= 2 ? 2 * Math.min(...sides) : 0; return { tot, two }; });
+    const T = per.reduce((x, y) => x + y.tot, 0); if (!(T > 0)) return [ids.length, null, null, null];
+    per.sort((x, y) => y.tot - x.tot); const r1 = (v) => Math.round(v * 1000) / 10;
+    return [ids.length, r1(per[0].tot / T), r1(per.slice(0, 3).reduce((x, y) => x + y.tot, 0) / T), r1(per.reduce((x, y) => x + y.two, 0) / T)];
   }
   // biggest weeks last isn't knowable up front; walk newest → oldest so the placements nearest the capture fill first
   work.sort((a, b) => b.e - a.e);
@@ -124,7 +146,7 @@ async function main() {
     const E = doc.epochs[w.e]; const r = await cell(w.p.pair, E.h0, E.h1);
     if (r.error) { stats.cells_failed = (stats.cells_failed || 0) + 1; if (stats.cells_failed <= 5) console.log(`  ✗ a cell failed: ${r.error}`); return; }
     if (r.partial) return;
-    doc.raw[w.p.pair + '|' + w.e] = { swaps: r.swaps, byDenom: r.byDenom, complete: true }; done++; stats.cells++;
+    doc.raw[w.p.pair + '|' + w.e] = { swaps: r.swaps, byDenom: r.byDenom, complete: true, tr: await traderStats(w, r.byTrader) }; done++; stats.cells++;
     if (Date.now() - lastCommit > 8 * 60000) { lastCommit = Date.now(); await writeOut(); commitPush(`dex-history: +${done} pool-weeks (${VERSION})`); console.log(`  … ${done}/${work.length} cells · ${stats.swaps} swaps · ${minutes().toFixed(0)} min`); }
   });
   await writeOut(); commitPush(`dex-history: +${done} pool-weeks (${VERSION})`);
