@@ -3,7 +3,7 @@
  "cron": "member-data",
  "module": "tla-alerts",
  "version": "1.0.0",
- "generated_at": "2026-10-25T23:50:32.139Z",
+ "generated_at": "2026-10-26T23:50:40.554Z",
  "config": {
   "path": "docs/curated/alert-thresholds.json",
   "sha": "12e0eabccb6a",
@@ -82,9 +82,9 @@
  },
  "history": {
   "days": 90,
-  "from": "2026-07-27",
+  "from": "2026-07-28",
   "snapshots": 91,
-  "apr_days": 85,
+  "apr_days": 86,
   "volume_days": 120
  },
  "multipliers": [
@@ -99,7 +99,7 @@
     "min_vp": 200000
    },
    "description": "A gauge joins or leaves the TLA list, or crosses the vote threshold (starts / stops earning TLA emissions). Only gauges carrying at least min_vp votes — dust gauges flip daily and mean nothing.",
-   "fired_30d": 7,
+   "fired_30d": 6,
    "fired_90d": 19,
    "per_month_at": {
     "1": 6.4,
@@ -111,12 +111,12 @@
    "enabled": true,
    "params": {},
    "description": "One card per epoch rollover (Monday 00:00 UTC): total VP locked, and each bucket's VP against the day before — the moment votes settle and rewards distribute.",
-   "fired_30d": 4,
-   "fired_90d": 12,
+   "fired_30d": 5,
+   "fired_90d": 13,
    "per_month_at": {
-    "1": 4.1,
-    "2": 4.1,
-    "0.5": 4.1
+    "1": 4.4,
+    "2": 4.4,
+    "0.5": 4.4
    }
   },
   "bucket_vp_move": {
@@ -157,11 +157,11 @@
    },
    "description": "Staked liquidity in a TLA pool changed in a day (both directions).",
    "fired_30d": 2,
-   "fired_90d": 8,
+   "fired_90d": 7,
    "per_month_at": {
-    "1": 2.7,
+    "1": 2.4,
     "2": 0.3,
-    "0.5": 13.5
+    "0.5": 13.2
    }
   },
   "pool_volume_spike": {
@@ -177,7 +177,7 @@
    "per_month_at": {
     "1": 9.1,
     "2": 3.4,
-    "0.5": 28
+    "0.5": 27.7
    }
   },
   "pool_apr_move": {
@@ -187,7 +187,7 @@
     "min_rel_pct": 40
    },
    "description": "A gauge's Eris APR moved in a day (points AND relative). Epoch-boundary days are skipped — APR resets with the pots every Monday; the epoch_flip card carries that.",
-   "fired_30d": 9,
+   "fired_30d": 8,
    "fired_90d": 38,
    "per_month_at": {
     "1": 12.8,
@@ -197,6 +197,44 @@
   }
  },
  "rows": [
+  {
+   "ts": "2026-10-26T00:00:00Z",
+   "date": "2026-10-26",
+   "rule": "epoch_flip",
+   "kind": "epoch",
+   "epoch": 209,
+   "label": "Epoch 209 started — votes settled, rewards distributed · 124.8M VP locked across 4 buckets",
+   "value": "bucket VP at the flip vs the day before: stable +0.4% · project +0.4% · bluechip +0.4% · single +0.4%",
+   "raw": {
+    "buckets": [
+     {
+      "bucket": "stable",
+      "from": 31864637.970195998,
+      "to": 31997694.521633003,
+      "pct": 0.41756806263249374
+     },
+     {
+      "bucket": "project",
+      "from": 30742390.370392002,
+      "to": 30873438.604328994,
+      "pct": 0.42627860865108297
+     },
+     {
+      "bucket": "bluechip",
+      "from": 30720545.524167,
+      "to": 30846484.860491004,
+      "pct": 0.4099514971989336
+     },
+     {
+      "bucket": "single",
+      "from": 30936181.042474,
+      "to": 31060233.221787,
+      "pct": 0.40099383677215505
+     }
+    ],
+    "total_vp": 124777851.20824
+   }
+  },
   {
    "ts": "2026-10-25T00:00:00Z",
    "date": "2026-10-25",
@@ -698,40 +736,6 @@
     "to": -9.999987675946738,
     "pts": -65.92181963901506,
     "rel": 117.88208169315857
-   }
-  },
-  {
-   "ts": "2026-09-25T00:00:00Z",
-   "date": "2026-09-25",
-   "rule": "gauge_set_change",
-   "kind": "status",
-   "gauge_pool_id": "cw20:terra1ts8k6smknzzdwwd9gnjf2cdr5slxdax2dml0pfmhkcla82hn7ygsne3av3",
-   "name": "cw20:terra1ts8k6smknzzdwwd9gnjf2cdr5slxdax2dml0pfm",
-   "bucket": "project",
-   "label": "an unnamed project gauge (terra1ts8k6s…) is back above the vote threshold — it earns TLA emissions again this epoch (VP 0.04M → 1.08M, +2884%)",
-   "value": "status voted_but_below_threshold → active · 1.08M VP now",
-   "raw": {
-    "from": "voted_but_below_threshold",
-    "to": "active",
-    "vp_from": 36201.85475,
-    "vp_to": 1080323.902824,
-    "vp_pct": 2884.1672761918367
-   }
-  },
-  {
-   "ts": "2026-09-25T00:00:00Z",
-   "date": "2026-09-25",
-   "rule": "pool_apr_move",
-   "gauge_pool_id": "native:factory/terra178ca7z2w6346wlkmxwpw80s2a5fmas9q28xlzegkt4c4rdam67aql5fgxj/uLP",
-   "name": "USDC-USDt",
-   "bucket": "single",
-   "label": "USDC-USDt APR down 43.8 pts (52%)",
-   "value": "83.6% → 39.9%",
-   "raw": {
-    "from": 83.6319808007597,
-    "to": 39.87250349137049,
-    "pts": -43.75947730938922,
-    "rel": 52.32385612585146
    }
   }
  ]
