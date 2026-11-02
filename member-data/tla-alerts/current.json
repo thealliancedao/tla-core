@@ -3,7 +3,7 @@
  "cron": "member-data",
  "module": "tla-alerts",
  "version": "1.0.0",
- "generated_at": "2026-11-01T23:50:19.681Z",
+ "generated_at": "2026-11-02T23:50:40.111Z",
  "config": {
   "path": "docs/curated/alert-thresholds.json",
   "sha": "12e0eabccb6a",
@@ -82,7 +82,7 @@
  },
  "history": {
   "days": 90,
-  "from": "2026-08-03",
+  "from": "2026-08-04",
   "snapshots": 91,
   "apr_days": 91,
   "volume_days": 120
@@ -99,7 +99,7 @@
     "min_vp": 200000
    },
    "description": "A gauge joins or leaves the TLA list, or crosses the vote threshold (starts / stops earning TLA emissions). Only gauges carrying at least min_vp votes — dust gauges flip daily and mean nothing.",
-   "fired_30d": 4,
+   "fired_30d": 5,
    "fired_90d": 19,
    "per_month_at": {
     "1": 6.4,
@@ -111,12 +111,12 @@
    "enabled": true,
    "params": {},
    "description": "One card per epoch rollover (Monday 00:00 UTC): total VP locked, and each bucket's VP against the day before — the moment votes settle and rewards distribute.",
-   "fired_30d": 4,
-   "fired_90d": 12,
+   "fired_30d": 5,
+   "fired_90d": 13,
    "per_month_at": {
-    "1": 4.1,
-    "2": 4.1,
-    "0.5": 4.1
+    "1": 4.4,
+    "2": 4.4,
+    "0.5": 4.4
    }
   },
   "bucket_vp_move": {
@@ -127,11 +127,11 @@
    },
    "description": "A bucket's total VP moved inside an epoch (boundary days excluded).",
    "fired_30d": 0,
-   "fired_90d": 9,
+   "fired_90d": 6,
    "per_month_at": {
-    "1": 3,
-    "2": 2.4,
-    "0.5": 3.7
+    "1": 2,
+    "2": 1.4,
+    "0.5": 2.7
    }
   },
   "pool_vp_move": {
@@ -172,12 +172,12 @@
     "median_days": 28
    },
    "description": "A pool's 24h DEX volume against its own trailing median.",
-   "fired_30d": 2,
+   "fired_30d": 1,
    "fired_90d": 27,
    "per_month_at": {
     "1": 9.1,
     "2": 3.4,
-    "0.5": 27
+    "0.5": 26.7
    }
   },
   "pool_apr_move": {
@@ -197,6 +197,62 @@
   }
  },
  "rows": [
+  {
+   "ts": "2026-11-02T00:00:00Z",
+   "date": "2026-11-02",
+   "rule": "gauge_set_change",
+   "kind": "status",
+   "gauge_pool_id": "cw20:terra1h3z2zv6aw94fx5263dy6tgz6699kxmewlx3vrcu4jjrudg6xmtyqk6vt0u",
+   "name": "LUNA-bLUNA",
+   "bucket": "project",
+   "label": "LUNA-bLUNA dropped below the vote threshold — it stops earning TLA emissions until votes return",
+   "value": "status active → voted_but_below_threshold · 0.31M VP now",
+   "raw": {
+    "from": "active",
+    "to": "voted_but_below_threshold",
+    "vp_from": 310653.676222,
+    "vp_to": 307322.113174,
+    "vp_pct": -1.072436382700063
+   }
+  },
+  {
+   "ts": "2026-11-02T00:00:00Z",
+   "date": "2026-11-02",
+   "rule": "epoch_flip",
+   "kind": "epoch",
+   "epoch": 210,
+   "label": "Epoch 210 started — votes settled, rewards distributed · 126.1M VP locked across 4 buckets",
+   "value": "bucket VP at the flip vs the day before: stable +0.5% · project +0.5% · bluechip +0.5% · single +0.4%",
+   "raw": {
+    "buckets": [
+     {
+      "bucket": "stable",
+      "from": 32183661.085686006,
+      "to": 32330909.988359995,
+      "pct": 0.4575268869565617
+     },
+     {
+      "bucket": "project",
+      "from": 31059405.169102997,
+      "to": 31204616.848775,
+      "pct": 0.4675288495751851
+     },
+     {
+      "bucket": "bluechip",
+      "from": 31032449.115582004,
+      "to": 31172512.854143996,
+      "pct": 0.4513460669517793
+     },
+     {
+      "bucket": "single",
+      "from": 31246174.059603997,
+      "to": 31384332.135491993,
+      "pct": 0.4421599765284917
+     }
+    ],
+    "total_vp": 126092371.82677099
+   }
+  },
   {
    "ts": "2026-10-30T00:00:00Z",
    "date": "2026-10-30",
@@ -665,21 +721,6 @@
     "to": 53.363269352311804,
     "pts": 26.75314205267732,
     "rel": 100.53744482855143
-   }
-  },
-  {
-   "ts": "2026-10-02T00:00:00Z",
-   "date": "2026-10-02",
-   "rule": "pool_volume_spike",
-   "pool_address": "terra1heml6j6ewfmjj845vmhm27a4xt9hfgs67uv8qfsjkyza0auelyksmm6cxv",
-   "name": "LUNA-USDC.inj",
-   "bucket": "stable",
-   "label": "LUNA-USDC.inj volume 54.9× its 28d median",
-   "value": "$22,088 vs median $402",
-   "raw": {
-    "vol": 22088.1,
-    "median": 402.285,
-    "multiple": 54.9065960699504
    }
   }
  ]
