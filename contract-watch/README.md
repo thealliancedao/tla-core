@@ -50,8 +50,8 @@ User actions and callbacks are not changes and are not kept.
 |---|---|---|
 | 2023-12-11 → 2025-01-07 | the FCD archive (`archive/fcd`) | the contracts that archive was taken for; upgrades and admin changes rebuilt from the messages (no code id kept there) |
 | 2025-01-07 → 2026-06-16 | the archive walk (`tla-flows/raw`) | the contracts of the capture registry |
-| 2026-06-16 → about 2026-09-10 | — | **not captured** — the walk kept flows only then, and the public nodes no longer hold those blocks |
-| about 2026-09-10 → 2026-11-25 | the catch-up walk (`rewalk.json`), in progress | as the forward walk; `rewalk.json` shows how far it is |
+| 2026-06-16 → 2026-09-01 | — | **not captured** — the walk kept flows only then, and the public nodes no longer hold those blocks (the first block they hold is 22,638,832, 2026-09-01 10:50 UTC) |
+| 2026-09-01 → 2026-11-25 | the catch-up walk (`rewalk.json`), in progress | as the forward walk; `rewalk.json` shows how far it is. Order: the first days of September (to stay ahead of the oldest block the nodes hold), then November, then the rest of September–October |
 | 2026-11-25 → | the forward walk, every 15 minutes | every contract for upgrades / admin changes / stored code; the watched contracts for the rest |
 
 Not seen by any of these: a change made by chain governance at the end of a block (it is not in a transaction's events),
