@@ -8,6 +8,8 @@ For every kind of change the contract-watch record holds (a contract and the nam
 message of that kind — the message as sent on a record, or a DAO proposal's own message — and asks a public node to
 **simulate** it from an address that holds no role and no admin key. Nothing is signed and nothing is broadcast.
 
+- For a call the record holds no message of, `docs/curated/contract-watch.json` may list a test message with empty values
+  (`guard_probes`); its answer is marked `from: probe`.
 - **Public nodes only.** No secret; the script refuses to run when an archive setting is present.
 - One request at a time, at most 2 a second, at most `max` simulations a run.
 - A kind already answered for the code its contract runs now is not asked again; after an upgrade it is.
@@ -17,4 +19,4 @@ message of that kind — the message as sent on a record, or a DAO proposal's ow
 
 Run: Actions → *contract-watch-guards* → Run workflow. It also runs when this script or its workflow changes.
 
-Gate: `CW_DIR=<tla-core checkout> TLA_CORE_DIR=<checkout with the registries> DAOO_DIR=<dao-originations checkout> PLATFORM_CRONS_DIR=<platform-crons> node .github/scripts/contract-watch-guards/mock-run.mjs` — 18 checks.
+Gate: `CW_DIR=<tla-core checkout> TLA_CORE_DIR=<checkout with the registries> DAOO_DIR=<dao-originations checkout> PLATFORM_CRONS_DIR=<platform-crons> node .github/scripts/contract-watch-guards/mock-run.mjs` — 19 checks.

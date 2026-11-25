@@ -10,12 +10,14 @@
 // and asks a public node to SIMULATE it from an address that holds no role and no admin key. Nothing is signed, nothing is
 // broadcast, nothing changes on the chain: the node runs the transaction in simulate mode and throws the result away. The
 // contract's answer is filed: the role it named, the address it named, a refusal without a name, or that it went through.
+// For a call the record holds no message of, the groups file may list a test message with empty values (guard_probes);
+// its answer is marked as coming from a probe.
 //
 // Public nodes only — this never touches the archive node and has no secret. One request at a time, at most 2 a second,
 // at most MAX simulations a run. Output: contract-watch/guards.json (tla-core). The log prints counts only.
 import fs from 'fs'; import path from 'path'; import { execSync } from 'child_process'; import { createRequire } from 'module'; import { fileURLToPath } from 'url';
 const require = createRequire(import.meta.url);
-export const VERSION = 'contract-watch-guards-1.0.0';
+export const VERSION = 'contract-watch-guards-1.1.0';   // 1.1.0: test messages from the groups file (guard_probes) for a call the record holds no real message of; a kind is asked again when its sample changes
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ACCT = /^terra1[0-9a-z]{38}$/, CONTRACT = /^terra1[0-9a-z]{58}$/;
 const readJsonAt = (p, d) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return d; } };
@@ -105,10 +107,12 @@ export async function run(opts = {}) {
     captures++;
     for (const p of Object.values(cap.proposals)) for (const m of p.rawMsgs || []) { const e = m && m.wasm && m.wasm.execute; if (!e || (e.funds && e.funds.length)) continue; let msg = null; try { msg = JSON.parse(Buffer.from(String(e.msg), 'base64').toString('utf8')); } catch { } take(e.contract_addr, msg, 'proposal', String(p.id), Number(p.startHeight) || 0); }
   }
+  // test messages from the groups file, only where the record has no real message of that kind
+  for (const pr of curated.guard_probes || []) { if (!pr || !pr.contract || !pr.msg) continue; const k = `${pr.contract}|${Object.keys(pr.msg)[0]}`; if (!samples.has(k)) take(pr.contract, pr.msg, 'probe', 'docs/curated/contract-watch.json', 0); }
   const prev = readJsonAt(P('contract-watch/guards.json'), null), prevBy = new Map(((prev && prev.guards) || []).map((g) => [`${g.contract}|${g.action}`, g]));
   const codeOf = (c) => (st.contracts && st.contracts[c] && st.contracts[c].code_id) || null;
   // newest code first is not the point — a pair already answered on the code the contract runs now is not asked again
-  const todo = [...samples.values()].filter((s) => { const g = prevBy.get(`${s.contract}|${s.action}`); return !(g && g.code_id && g.code_id === codeOf(s.contract) && g.guard && g.guard.kind !== 'failed'); }).sort((a, b) => (a.contract + a.action).localeCompare(b.contract + b.action));
+  const todo = [...samples.values()].filter((s) => { const g = prevBy.get(`${s.contract}|${s.action}`); return !(g && g.code_id && g.code_id === codeOf(s.contract) && g.guard && g.guard.kind !== 'failed' && g.sample && g.sample.from === s.from && g.sample.ref === s.ref); }).sort((a, b) => (a.contract + a.action).localeCompare(b.contract + b.action));
   log(`${VERSION} · ${samples.size} kinds of change with a real message (${captures} governance capture(s), ${recs.filter((r) => r.sent && r.sent.msg).length} record(s) with their message) · ${todo.length} to ask · at most ${MAX} this run · public nodes only`);
 
   const out = new Map(prevBy); let asked = 0;

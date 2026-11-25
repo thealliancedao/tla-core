@@ -29,7 +29,10 @@ is all that is needed, and it does not use the archive. No schedule may use the 
 - **contract-watch-guards 1.0.0** (`.github/workflows/contract-watch-guards.yml`, public nodes, no secret): for every kind
   of change on record, a real message of that kind is simulated from an address without any role, and the contract's own
   answer is filed (`contract-watch/guards.json`) — the role it names, the address it names, or that it went through.
-  Nothing is signed or broadcast. Gate 18/18.
+  Nothing is signed or broadcast. Gate 18/18. First run on the chain (08:00 UTC): 36 kinds asked, 26 answered with a role
+  — the reward-list calls of the four staking contracts name ASSET_WHITELIST_CONTROLLER, the stake calls of the four
+  connectors and the PDT treasury contract name DELEGATION_CONTROLLER. 1.1.0: test messages from the groups file
+  (`guard_probes`) for calls the record holds no message of (the lock's blacklist, the bribe manager's token list).
 - The groups gain four contracts the 2026-09-29 inventory holds: the "Liquidity Alliance" DAO core (its admin is the
   Stewardship DAO), its proposal and pre-propose modules, and the contract the chain labels "Prop Gauge".
 

@@ -4,7 +4,8 @@
     "lastUpdated": "2026-11-25",
     "seeded_from": "the TLA address book as read on 2026-08-11 (roles → group and name), docs/curated/known_contracts.json (protocol / type), tla-voting/capture-registry.json (pool labels), platform-crons config/contracts.js, and the contracts the Stewardship's executed proposals changed",
     "naming": "Role names in capitals (ASSET_STAKING__stable …) are the address book's own.",
-    "archive_read": "Per group, for the one-time archive backfill (.github/scripts/contract-watch-archive): archive_read = targeted marks contracts with heavy user traffic (staking, pools, vaults, tokens) — read by change action, by DAO and by key-holding account, never asked for all their transactions; absent = counted first and read in full when the contract has few transactions. archive_senders = true (and every core group) = also asked for what the accounts that hold a role or an admin key sent to these contracts."
+    "archive_read": "Per group, for the one-time archive backfill (.github/scripts/contract-watch-archive): archive_read = targeted marks contracts with heavy user traffic (staking, pools, vaults, tokens) — read by change action, by DAO and by key-holding account, never asked for all their transactions; absent = counted first and read in full when the contract has few transactions. archive_senders = true (and every core group) = also asked for what the accounts that hold a role or an admin key sent to these contracts.",
+    "guard_probes": "Test messages for contract-watch-guards (.github/scripts/contract-watch-guards): a call the record holds no real message of, sent in simulation with empty values from an address without any role, so the contract names what it requires. Used only where the record has no real message of that kind. Nothing is signed or broadcast."
   },
   "schemaVersion": 1,
   "buckets": [
@@ -999,6 +1000,50 @@
       "bucket": "liquid-staking",
       "name": "Prop Gauge",
       "why": "chain label \"Prop Gauge\" (it reports prop/vote and prop/update_vote); its admin and creator is the account that is admin of the Alliance's contracts (inventory of 2026-09-29)"
+    }
+  ],
+  "guard_probes": [
+    {
+      "contract": "terra1uqhj8agyeaz8fu6mdggfuwr3lp32jlrx5hqag4jxexde92rzkamq3l62zg",
+      "msg": {
+        "update_blacklist": {}
+      },
+      "why": "the lock contract's blacklist call — the record holds no message of it"
+    },
+    {
+      "contract": "terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh",
+      "msg": {
+        "whitelist_assets": []
+      },
+      "why": "the bribe manager's list of allowed incentive tokens — the record holds no message of it"
+    },
+    {
+      "contract": "terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh",
+      "msg": {
+        "remove_assets": []
+      },
+      "why": "the bribe manager's list of allowed incentive tokens — the record holds no message of it"
+    },
+    {
+      "contract": "terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh",
+      "msg": {
+        "update_config": {}
+      },
+      "why": "the bribe manager's settings"
+    },
+    {
+      "contract": "terra1hfksrhchkmsj4qdq33wkksrslnfles6y2l77fmmzeep0xmq24l2smsd3lj",
+      "msg": {
+        "update_config": {}
+      },
+      "why": "the weekly vote's settings"
+    },
+    {
+      "contract": "terra1uqhj8agyeaz8fu6mdggfuwr3lp32jlrx5hqag4jxexde92rzkamq3l62zg",
+      "msg": {
+        "update_config": {}
+      },
+      "why": "the lock contract's settings"
     }
   ]
 }
