@@ -1,5 +1,19 @@
 # Contract Watch Changelog
 
+## Rev 1.1.1 → 1.2 — 2026-11-25 — which change set a role; the catch-up in dates
+
+- **Who holds the keys**, role by role: where a change on record carries its own message and that message names the role
+  and its holder, the role reads "Set to this holder on <date> — <how>" and links to the change. An address-book change
+  that carries its message is titled by what it set ("set 4 roles").
+- The message as sent is folded where the plain words already list what changed (reward lists), open where the events
+  said little (the address book, settings).
+- **What this record covers**: the catch-up shown as stretches of the chain, oldest first, each in dates (the exact times
+  of its first and last block once the job has them; the catch-up file's own label, marked "about", until then), with one
+  overall percentage under the tiles. November is read before September–October.
+- "Latest" treats one state read's address-book differences as one item.
+- Gate 65/65. On the real record: the message of the 2026-11-24 address-book change names four roles, each set to the
+  sender — exactly the roles the state read saw move to that address.
+
 ## Rev 1.1 — 2026-11-25 — the message as sent
 
 - A change that was sent directly now shows **the message as sent** when the record carries it (org-tla-flows 3.8.0 reads it
