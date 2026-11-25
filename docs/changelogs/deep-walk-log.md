@@ -7,6 +7,15 @@ ARCHIVE_LCD, ARCHIVE_REPO_TOKEN — fine-grained, tla-archive only — and FLOW_
 
 ---
 
+## deep-walk 2.2.2 — 2026-11-25 — a search the node cannot answer no longer holds layer 1 open
+- The wider walk read 609 new wallets (501,326 transactions, 44 minutes). One wallet failed the same search on two runs and layer 1
+  stayed at 1,767 of 1,768, with nothing in the log to say which search or why.
+- **A failed search is named in the log**: the key, the page, the count if the node gave one, and the node's answer. Never the wallet.
+- **Read in part.** A wallet whose search fails again on a second run is closed (`partial`, `failed_keys`): what the other searches
+  returned is kept, the missing search is on record, and the walk can finish. The log ends with how many wallets were read in part.
+  A top-up that fails is still simply done again.
+- Gate `mock-layer1.mjs` 22/22.
+
 ## deep-walk 2.2.1 — 2026-11-25 — two things the first real re-cut and top-up showed
 - **"Never dropped" reads every cohort ever cut** (the dated files, not only the current one) and keeps every address in them. The
   first re-cut kept 1,155 of the 1,159 September addresses: four are not plain wallets and were filtered out. Run `cohort` once more
