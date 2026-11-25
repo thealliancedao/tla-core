@@ -7,6 +7,19 @@ ARCHIVE_LCD, ARCHIVE_REPO_TOKEN — fine-grained, tla-archive only — and FLOW_
 
 ---
 
+## 2026-11-25 — the Actions are named by group
+
+Owner: "the names are really messy in GitHub right now."
+
+- All 34 Actions are renamed to one scheme. A name begins with its group, so the Actions tab reads in three blocks:
+  **Archive ·** (12 — reads the archive node: by hand, one at a time), **One-time ·** (18 — jobs and probes that have run; nothing to
+  press) and **Public ·** (4 — tools on public nodes and APIs). Names are short enough to sit on one line of the list.
+- Only each workflow's `name:` line changed (checked: every file parses to the same workflow apart from its name). File names,
+  triggers, inputs and run history are as they were; the Actions that restart themselves do so by file name.
+- **Archive · Contract Watch backfill** (`contract-watch-archive.yml`): every box of its form now begins with what to leave it at
+  ("LEAVE ON all", "LEAVE AT 2", "LEAVE EMPTY" …). Its inputs and defaults are unchanged; its gate still passes 57/57.
+- `.github/workflows/README.md` (new): every Action — its name, its file, what it does, when it last ran.
+
 ## 2026-11-25 — contract-watch-archive 1.0.0 (new) · the archive timers are off
 
 **Owner, 2026-11-25:** the archive node is for backfill, started by a person; once a backfill is done the forward capture

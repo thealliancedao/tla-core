@@ -1,4 +1,4 @@
-name: contract-watch-archive — the one-time backfill of contract changes (archive node)
+name: "Archive · Contract Watch backfill"
 
 # 2026-11-25: the contract-watch record is complete from the day it shipped. This fills what came before — every change of every
 # watched contract since the chain began, the message as sent, and what each contract WAS in the block before and the block of a
@@ -17,37 +17,37 @@ on:
   workflow_dispatch:
     inputs:
       phase:
-        description: 'all = changes, then state at past heights, then the proofs · changes · state · census (counts only, a few hundred requests) · verify (no node reads)'
+        description: 'LEAVE ON "all". What to read: all = everything, in order. The other choices repeat one part.'
         required: true
         type: choice
         options: ['all', 'changes', 'state', 'census', 'verify']
         default: 'all'
       rps:
-        description: 'requests a second, at most (ceiling 4)'
+        description: 'LEAVE AT 2. Speed: requests a second (gentle on the node; never above 4).'
         required: false
         default: '2'
       max_requests:
-        description: 'stop after this many requests (ceiling 20000) — run again to carry on'
+        description: 'LEAVE AT 8000. It stops after this many requests. Run it again and it carries on.'
         required: false
         default: '8000'
       max_minutes:
-        description: 'stop after this many minutes (ceiling 300)'
+        description: 'LEAVE AT 180. It stops after this many minutes. Run it again and it carries on.'
         required: false
         default: '180'
       from_height:
-        description: 'first block (empty = 1). Read once, on the first run'
+        description: 'LEAVE EMPTY. First block to read (empty = the start of the chain).'
         required: false
         default: ''
       to_height:
-        description: 'last block (empty = the node''s latest). Read once, on the first run'
+        description: 'LEAVE EMPTY. Last block to read (empty = up to now).'
         required: false
         default: ''
       chain_cap:
-        description: 'read every migration and admin change of ANY contract on the chain when there are at most this many (else only counted; raise it later to read them)'
+        description: 'LEAVE AT 3000. Upgrades of contracts outside the watch list are read too when there are at most this many.'
         required: false
         default: '3000'
       fresh:
-        description: '1 = forget what earlier runs read and start again (leave empty)'
+        description: 'LEAVE EMPTY. Typing 1 throws away what earlier runs read and starts over.'
         required: false
         default: ''
 permissions:

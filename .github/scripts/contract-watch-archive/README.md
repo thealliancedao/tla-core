@@ -21,7 +21,8 @@ that does not use the archive.
 
 ## What to run
 
-1. Actions → *contract-watch-archive* → Run workflow, everything as it is (`phase: all`).
+1. Actions → **Archive · Contract Watch backfill** → Run workflow, everything as it is (every box of the form begins with what to
+   leave it at; `phase: all`).
 2. When it ends, read the last three lines of the log. "Done: nothing left to read" — finished. "Run the workflow again"
    — press it again; nothing is read twice.
 3. The result is in `contract-watch/archive/report.json`; the proofs are under `verify`.

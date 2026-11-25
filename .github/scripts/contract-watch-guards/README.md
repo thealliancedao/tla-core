@@ -20,6 +20,6 @@ message of that kind — the message as sent on a record, or a DAO proposal's ow
 It also reads, for each account that holds a role or an admin key, how many keys the chain's own account record shows
 it needs to sign (`contract-watch/accounts.json`: one key, or a threshold of several). The keys are not kept.
 
-Run: Actions → *contract-watch-guards* → Run workflow. It also runs when this script or its workflow changes.
+Run: Actions → **Public · Contract Watch role answers** → Run workflow. It also runs when this script or its workflow changes.
 
 Gate: `CW_DIR=<tla-core checkout> TLA_CORE_DIR=<checkout with the registries> DAOO_DIR=<dao-originations checkout> PLATFORM_CRONS_DIR=<platform-crons> node .github/scripts/contract-watch-guards/mock-run.mjs` — 21 checks.
