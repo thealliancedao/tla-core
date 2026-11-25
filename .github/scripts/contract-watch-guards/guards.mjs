@@ -13,11 +13,14 @@
 // For a call the record holds no message of, the groups file may list a test message with empty values (guard_probes);
 // its answer is marked as coming from a probe.
 //
+// Also read here, from the chain's own account record: how many keys an account that holds a role or an admin key needs —
+// one, or a threshold of several (contract-watch/accounts.json). The public keys themselves are not kept.
+//
 // Public nodes only — this never touches the archive node and has no secret. One request at a time, at most 2 a second,
 // at most MAX simulations a run. Output: contract-watch/guards.json (tla-core). The log prints counts only.
 import fs from 'fs'; import path from 'path'; import { execSync } from 'child_process'; import { createRequire } from 'module'; import { fileURLToPath } from 'url';
 const require = createRequire(import.meta.url);
-export const VERSION = 'contract-watch-guards-1.1.0';   // 1.1.0: test messages from the groups file (guard_probes) for a call the record holds no real message of; a kind is asked again when its sample changes
+export const VERSION = 'contract-watch-guards-1.2.0';   // 1.2.0: how many keys an account that holds a role or an admin key needs (contract-watch/accounts.json) · 1.1.0: test messages from the groups file (guard_probes) for a call the record holds no real message of; a kind is asked again when its sample changes
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ACCT = /^terra1[0-9a-z]{38}$/, CONTRACT = /^terra1[0-9a-z]{58}$/;
 const readJsonAt = (p, d) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return d; } };
@@ -46,6 +49,17 @@ export function classify(res, sender) {
   if (/Error parsing into type|unknown variant|missing field|invalid type|unknown field|Invalid type/.test(t)) return { kind: 'shape', text: t };
   if (/unauthori[sz]ed|not authori[sz]ed|only .* can|permission|not owner|caller is not|not the owner|not allowed/i.test(t)) return { kind: 'unnamed', text: t };
   return { kind: 'other', text: t };
+}
+
+// the chain's account record → how many keys it takes to sign for the account (the keys themselves are not kept)
+export function keysOf(resp) {
+  const a = resp && resp.account; if (!a || typeof a !== 'object') return null;
+  const base = a.base_account || (a.base_vesting_account && a.base_vesting_account.base_account) || a, pk = base.pub_key, kind = String(a['@type'] || '').split('.').pop() || null;
+  if (pk == null) return { keys: 0, type: kind };
+  const t = String(pk['@type'] || '');
+  if (/multisig/i.test(t) && Array.isArray(pk.public_keys)) return { keys: pk.public_keys.length, threshold: Number(pk.threshold) || null, type: kind };
+  if (/PubKey$/.test(t)) return { keys: 1, type: kind };
+  return null;
 }
 
 export async function run(opts = {}) {
@@ -126,16 +140,25 @@ export async function run(opts = {}) {
   const doc = { schemaVersion: 1, product: 'contract-watch/guards', builder: VERSION, read_at: new Date().toISOString(),
     note: 'For each kind of change the record holds (a contract and the name of the call): what the contract answered when a real message of that kind was SIMULATED from an address that holds no role and no admin key. kind: role = it named the role the sender lacks; address = it named the one contract it expects; account = it named one account it expects (the address is not kept here); unnamed = refused without a name; open = it went through; shape = the contract no longer accepts a message of that form; other = another answer (text kept); failed = no node answered. code_id is the code the contract ran when it was asked — an answer is about that code. Nothing was signed or broadcast.',
     simulated_as: { address: sender, why: 'a pool contract of the groups file (or the address given): it holds no role in the address book and is not the admin of a watched contract' }, counts, left: Math.max(0, todo.length - asked), guards };
+  // how many keys each account that holds a role or an admin key needs
+  const keyHolders = [...holders].filter((a) => ACCT.test(a || '')).sort(), accPrev = readJsonAt(P('contract-watch/accounts.json'), null), accounts = {};
+  let accRead = 0;
+  for (const a of keyHolders) { const r = await ask(`/cosmos/auth/v1beta1/accounts/${a}`); const k = r.ok ? keysOf(r.json) : null; if (k) { accounts[a] = k; accRead++; } else if (accPrev && accPrev.accounts && accPrev.accounts[a]) accounts[a] = accPrev.accounts[a]; }
+  const accDoc = { schemaVersion: 1, product: 'contract-watch/accounts', builder: VERSION, read_at: new Date().toISOString(),
+    note: 'For each account that holds a role in the address book or is the admin of a watched contract: how many keys the chain\'s own account record shows it needs to sign — keys 1 = one key; keys n with threshold m = any m of n keys; keys 0 = the account has not signed a transaction yet, so the chain holds no key for it. The keys themselves are not kept. An account that could not be read keeps its entry from the read before.', accounts };
+  const sameAcc = accPrev && JSON.stringify(accPrev.accounts) === JSON.stringify(accounts);
   fs.mkdirSync(path.dirname(P('contract-watch/guards.json')), { recursive: true });
   const write = () => fs.writeFileSync(P('contract-watch/guards.json'), JSON.stringify(doc, null, 1));
-  if (noPush) write();
+  const writeAcc = () => { if (!sameAcc && Object.keys(accounts).length) fs.writeFileSync(P('contract-watch/accounts.json'), JSON.stringify(accDoc, null, 1)); };
+  if (noPush) { write(); writeAcc(); }
   else {
     const sh = (c) => execSync(c, { cwd: core, stdio: 'pipe' }).toString(); let done = false;
-    for (let i = 0; i < 5 && !done; i++) { try { sh('git fetch -q origin main && git reset -q --hard origin/main'); write(); sh('git add contract-watch/guards.json'); try { sh('git diff --cached --quiet'); done = true; break; } catch { } sh(`git commit -q -m ${JSON.stringify(`contract-watch guards: ${guards.length} kinds of change asked of their contracts (${VERSION})`)}`); sh('git push -q origin HEAD:main'); done = true; } catch (e) { execSync(`sleep ${3 * (i + 1)}`); } }
+    for (let i = 0; i < 5 && !done; i++) { try { sh('git fetch -q origin main && git reset -q --hard origin/main'); write(); writeAcc(); sh('git add contract-watch/guards.json contract-watch/accounts.json 2>/dev/null || git add contract-watch/guards.json'); try { sh('git diff --cached --quiet'); done = true; break; } catch { } sh(`git commit -q -m ${JSON.stringify(`contract-watch guards: ${guards.length} kinds of change asked of their contracts (${VERSION})`)}`); sh('git push -q origin HEAD:main'); done = true; } catch (e) { execSync(`sleep ${3 * (i + 1)}`); } }
     if (!done) throw new Error('could not publish contract-watch/guards.json');
   }
   log(`asked ${asked} · answers on file ${guards.length}: ${Object.entries(counts).map(([k, n]) => `${k} ${n}`).join(' · ')} · left ${doc.left} · requests ${stats.requests} (failed ${stats.failed})`);
-  return { doc, stats, asked };
+  log(`accounts that hold a role or an admin key: ${keyHolders.length} · read ${accRead} · one key ${Object.values(accounts).filter((x) => x.keys === 1).length} · several keys ${Object.values(accounts).filter((x) => x.keys > 1).length} · no key on the chain yet ${Object.values(accounts).filter((x) => x.keys === 0).length}`);
+  return { doc, stats, asked, accDoc };
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) run().catch((e) => { console.error('FATAL: ' + String(e && e.message || e)); process.exit(1); });

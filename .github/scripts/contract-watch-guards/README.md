@@ -17,6 +17,9 @@ message of that kind — the message as sent on a record, or a DAO proposal's ow
   expects), `account` (it expects one account — not kept), `unnamed`, `open` (it went through), `shape` (the contract no
   longer accepts that form), `other`, `failed` (no node answered).
 
+It also reads, for each account that holds a role or an admin key, how many keys the chain's own account record shows
+it needs to sign (`contract-watch/accounts.json`: one key, or a threshold of several). The keys are not kept.
+
 Run: Actions → *contract-watch-guards* → Run workflow. It also runs when this script or its workflow changes.
 
-Gate: `CW_DIR=<tla-core checkout> TLA_CORE_DIR=<checkout with the registries> DAOO_DIR=<dao-originations checkout> PLATFORM_CRONS_DIR=<platform-crons> node .github/scripts/contract-watch-guards/mock-run.mjs` — 19 checks.
+Gate: `CW_DIR=<tla-core checkout> TLA_CORE_DIR=<checkout with the registries> DAOO_DIR=<dao-originations checkout> PLATFORM_CRONS_DIR=<platform-crons> node .github/scripts/contract-watch-guards/mock-run.mjs` — 21 checks.

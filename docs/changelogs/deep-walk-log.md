@@ -33,6 +33,9 @@ is all that is needed, and it does not use the archive. No schedule may use the 
   — the reward-list calls of the four staking contracts name ASSET_WHITELIST_CONTROLLER, the stake calls of the four
   connectors and the PDT treasury contract name DELEGATION_CONTROLLER. 1.1.0: test messages from the groups file
   (`guard_probes`) for calls the record holds no message of (the lock's blacklist, the bribe manager's token list).
+  The second run named the last two: BRIBE_WHITELIST_CONTROLLER (the bribe manager's token list) and VE_GUARDIAN (the
+  lock's blacklist). 1.2.0: for each account that holds a role or an admin key, how many keys the chain's account record
+  shows it needs (`contract-watch/accounts.json`); the keys themselves are not kept. Gate 21/21.
 - The groups gain four contracts the 2026-09-29 inventory holds: the "Liquidity Alliance" DAO core (its admin is the
   Stewardship DAO), its proposal and pre-propose modules, and the contract the chain labels "Prop Gauge".
 

@@ -3,7 +3,7 @@
 // contracts answer (the refusal texts are the chain's own, taken from a probe of 2026-10-01), on the real record and the
 // real governance captures. Usage: CW_DIR=<tla-core checkout> TLA_CORE_DIR=<older checkout for the registries> DAOO_DIR=<dao-originations checkout> PLATFORM_CRONS_DIR=<platform-crons> node mock-run.mjs
 import fs from 'fs'; import os from 'os'; import path from 'path'; import http from 'http'; import { createRequire } from 'module'; import { fileURLToPath } from 'url';
-import { run, txBytes, classify, VERSION } from './guards.mjs';
+import { run, txBytes, classify, keysOf, VERSION } from './guards.mjs';
 const require = createRequire(import.meta.url), HERE = path.dirname(fileURLToPath(import.meta.url));
 const CW = process.env.CW_DIR, SRC = process.env.TLA_CORE_DIR || CW, DAOO = process.env.DAOO_DIR, PC = process.env.PLATFORM_CRONS_DIR;
 if (!CW || !PC || !DAOO) { console.error('usage: CW_DIR=… DAOO_DIR=… PLATFORM_CRONS_DIR=… node mock-run.mjs'); process.exit(2); }
@@ -18,7 +18,7 @@ const coreDir = () => { const d = fs.mkdtempSync(path.join(os.tmpdir(), 'cwg-'))
 const TAIL = ': execute wasm contract failed [CosmWasm/wasmd@v0.54.9/x/wasm/keeper/keeper.go:453] with gas used: \'105039\': unknown request';
 function node(rule) { const seen = []; const srv = http.createServer((req, res) => { let b = ''; req.on('data', (c) => b += c); req.on('end', () => {
     const send = (code, o) => { res.writeHead(code, { 'content-type': 'application/json' }); res.end(JSON.stringify(o)); };
-    if (req.url.startsWith('/cosmos/auth/v1beta1/accounts/')) return send(200, { account: { '@type': '/cosmos.auth.v1beta1.BaseAccount', address: req.url.split('/').pop(), pub_key: null, account_number: '77', sequence: '3' } });
+    if (req.url.startsWith('/cosmos/auth/v1beta1/accounts/')) { const a = req.url.split('/').pop(); return send(200, { account: { '@type': '/cosmos.auth.v1beta1.BaseAccount', address: a, pub_key: a.length > 50 ? null : { '@type': '/cosmos.crypto.secp256k1.PubKey', key: 'A-PUBLIC-KEY-THAT-IS-NOT-KEPT' }, account_number: '77', sequence: '3' } }); }
     if (req.url === '/cosmos/tx/v1beta1/simulate' && req.method === 'POST') { const tx = JSON.parse(b).tx_bytes, m = TM.messagesOf(tx)[0], raw = Buffer.from(tx, 'base64'); seen.push({ m, raw });
       const r = rule(m); if (r === 'down') { res.writeHead(503); return res.end('upstream'); } if (r === null) return send(200, { gas_info: { gas_wanted: '100000000', gas_used: '243041' }, result: {} });
       return send(400, { code: 2, message: `failed to execute message; message index: 0: ${r}${TAIL}`, details: [] }); }
@@ -60,6 +60,12 @@ console.log('— C a run on the real record and the real proposals —');
   const n3 = await node(rule); const r3 = await go({ lcds: n3.url, core });
   check('…until a contract runs new code: then its kinds are asked again, and only its', r3.asked === g.filter((x) => x.contract === up).length && n3.seen.every((x) => x.m.contract === up) && J(path.join(core, 'contract-watch/guards.json')).guards.filter((x) => x.contract === up).every((x) => x.code_id === '99999'));
   await n.close(); await n2.close(); await n3.close(); }
+console.log('— C2 how many keys an account needs —');
+{ check('the chain\'s account record → keys: one key · a threshold of several · none yet (never signed) · a vesting account\'s inner account · anything else is not guessed', keysOf({ account: { '@type': '/cosmos.auth.v1beta1.BaseAccount', pub_key: { '@type': '/cosmos.crypto.secp256k1.PubKey', key: 'x' } } }).keys === 1 && JSON.stringify(keysOf({ account: { '@type': '/cosmos.auth.v1beta1.BaseAccount', pub_key: { '@type': '/cosmos.crypto.multisig.LegacyAminoPubKey', threshold: 2, public_keys: [{}, {}, {}] } } })) === '{"keys":3,"threshold":2,"type":"BaseAccount"}' && keysOf({ account: { '@type': '/cosmos.auth.v1beta1.BaseAccount', pub_key: null } }).keys === 0 && keysOf({ account: { '@type': '/cosmos.vesting.v1beta1.ContinuousVestingAccount', base_vesting_account: { base_account: { pub_key: { '@type': '/cosmos.crypto.secp256k1.PubKey', key: 'x' } } } } }).keys === 1 && keysOf({ account: { pub_key: { '@type': '/something/else' } } }) === null && keysOf({}) === null);
+  const n = await node(rule), core = coreDir(); fs.rmSync(path.join(core, 'contract-watch/accounts.json'), { force: true }); const r = await go({ lcds: n.url, core, max: 2 }); const acc = J(path.join(core, 'contract-watch/accounts.json'));
+  const want = [...new Set([...Object.values(st.address_book.entries), ...Object.values(st.contracts).map((c) => c.admin)])].filter((a) => /^terra1[0-9a-z]{38}$/.test(a || '')).sort();
+  check(`every account that holds a role or an admin key (${want.length}) is read, and the file keeps the count of keys — never a key`, acc && JSON.stringify(Object.keys(acc.accounts).sort()) === JSON.stringify(want) && Object.values(acc.accounts).every((x) => x.keys === 1) && !JSON.stringify(acc).includes('A-PUBLIC-KEY') && r.logs.some((l) => new RegExp(`accounts that hold a role or an admin key: ${want.length} · read ${want.length} · one key ${want.length}`).test(l)), acc && Object.keys(acc.accounts).length);
+  await n.close(); }
 console.log('— D limits and refusals to run —');
 { const n = await node(rule), core = coreDir(); const r = await go({ lcds: n.url, core, max: 5 });
   check('a run asks at most its limit and says how many are left', r.asked === 5 && n.seen.length === 5 && r.doc.left > 0 && r.doc.guards.length === 5);
