@@ -110,20 +110,23 @@ that is a DAO (its members vote) or another contract is shown as that.
 
 | Span | Source |
 |---|---|
-| 2023-12-11 → 2026-06-16 | history derived from the chain walks already stored in tla-core |
-| 2026-06-16 → 2026-09-01 | **not captured** — public nodes no longer hold those blocks |
-| 2026-09-01 → 2026-11-25 | a catch-up walk through public nodes, in progress (`contract-watch/rewalk.json`) |
+| 2022-05-30 → 2026-11-25 | **the whole history, read once from an archive node** (finished 2026-11-25): every watched contract since the chain began — upgrades, admin changes and the changes the contracts report, each with the message as sent |
 | 2026-11-25 → | the live walk, every 15 minutes (org-tla-flows) |
+
+The archive read was checked against the chain: every upgrade in the code history of 165 of 165 contracts is on record, the admin
+of 138 of 138 contracts is what the record gives, and the address book's changes form an unbroken chain. One contract (a token) is
+too busy for the node to count its executes; like every busy contract it was read by action name, by the DAO that sent a change and
+by key-holding account, so an unusual setting change there sent by an ordinary account could be missing. A catch-up through public
+nodes (2026-09-01 → 2026-11-25, `contract-watch/rewalk.json`) is still listed on the page; it is a cross-check now.
 
 A daily read of each contract's state (code id, admin, the address book) catches a difference even where the walk has a
 hole — that is the "seen in a state read" record. Not seen by any of it: a change made by chain governance at the end
 of a block, and a setting whose contract reports no action. **A blank is not "nothing happened"; it is "not read".**
 
-**The one-time archive read.** A script is ready that reads every change since the chain began from an archive node —
-plus the message as sent and each contract's state in the block before and the block of a change — and fills the hole
-above (`contract-watch/archive/`, `contract-watch/state/history/`). The archive node is a courtesy to the project, so the
-read is started by a person, one run at a time, paced, and is never scheduled. Until `contract-watch/index.json` carries
-an `archive` block it has not run; the page's coverage lines say which.
+**The one-time archive read** ran on 2026-11-25 (`contract-watch/archive/`, `contract-watch/state/history/`): besides the changes
+it kept the message as sent and each contract's state in the block before and the block of a change — that is where "before" in a
+role table comes from. The archive node is a courtesy to the project: the read was started by a person, paced, and is not scheduled.
+`contract-watch/index.json` → `archive.complete: true` says it reached the end.
 
 ## The files (tla-core)
 
