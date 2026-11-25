@@ -3,7 +3,8 @@
     "description": "The contract watcher's groups. buckets = the groups, in display order (core: true = a group of the alliance itself); daos = the DAOs whose executed proposals appear in the record, where their votes are stored and how DAO DAO numbers them; contracts = which group each contract is in and the name the watcher shows. EDIT THIS FILE to regroup or rename — the page and the cron read it on their next load / run. Every contract listed here is also WATCHED by org-tla-flows (in addition to config/contracts.js, docs/curated/known_contracts.json and tla-voting/capture-registry.json). A watched contract that is not listed shows under \"Not grouped yet\" with the label the chain gives it.",
     "lastUpdated": "2026-11-25",
     "seeded_from": "the TLA address book as read on 2026-08-11 (roles → group and name), docs/curated/known_contracts.json (protocol / type), tla-voting/capture-registry.json (pool labels), platform-crons config/contracts.js, and the contracts the Stewardship's executed proposals changed",
-    "naming": "Role names in capitals (ASSET_STAKING__stable …) are the address book's own."
+    "naming": "Role names in capitals (ASSET_STAKING__stable …) are the address book's own.",
+    "archive_read": "Per group, for the one-time archive backfill (.github/scripts/contract-watch-archive): archive_read = targeted marks contracts with heavy user traffic (staking, pools, vaults, tokens) — read by change action, by DAO and by key-holding account, never asked for all their transactions; absent = counted first and read in full when the contract has few transactions. archive_senders = true (and every core group) = also asked for what the accounts that hold a role or an admin key sent to these contracts."
   },
   "schemaVersion": 1,
   "buckets": [
@@ -17,25 +18,29 @@
       "id": "gauge-stable",
       "label": "Stable bucket",
       "blurb": "The staking contract of the Stable bucket (its reward list decides which pools earn) and its Alliance connector.",
-      "core": true
+      "core": true,
+      "archive_read": "targeted"
     },
     {
       "id": "gauge-bluechip",
       "label": "Bluechip bucket",
       "blurb": "The staking contract of the Bluechip bucket and its Alliance connector.",
-      "core": true
+      "core": true,
+      "archive_read": "targeted"
     },
     {
       "id": "gauge-project",
       "label": "Project bucket",
       "blurb": "The staking contract of the Project bucket and its Alliance connector.",
-      "core": true
+      "core": true,
+      "archive_read": "targeted"
     },
     {
       "id": "gauge-single",
       "label": "Single bucket",
       "blurb": "The staking contract of the Single bucket and its Alliance connector.",
-      "core": true
+      "core": true,
+      "archive_read": "targeted"
     },
     {
       "id": "rewards",
@@ -47,7 +52,8 @@
       "id": "lp-tools",
       "label": "LP tools",
       "blurb": "The zapper and the compounder: the contracts that move LP in and out and hold the auto-compounding vaults.",
-      "core": true
+      "core": true,
+      "archive_read": "targeted"
     },
     {
       "id": "stewardship",
@@ -57,12 +63,16 @@
     {
       "id": "votion",
       "label": "Votion vaults",
-      "blurb": "The vaults that hold locked voting power and vote with it."
+      "blurb": "The vaults that hold locked voting power and vote with it.",
+      "archive_read": "targeted",
+      "archive_senders": true
     },
     {
       "id": "liquid-staking",
       "label": "Liquid staking",
-      "blurb": "The staking hubs and their tokens (ampLUNA, arbLUNA, bLUNA, ampCAPA, ampROAR)."
+      "blurb": "The staking hubs and their tokens (ampLUNA, arbLUNA, bLUNA, ampCAPA, ampROAR).",
+      "archive_read": "targeted",
+      "archive_senders": true
     },
     {
       "id": "adao",
@@ -72,22 +82,26 @@
     {
       "id": "pools-astroport",
       "label": "Pools · Astroport",
-      "blurb": "The pool contracts on Astroport that the capture follows."
+      "blurb": "The pool contracts on Astroport that the capture follows.",
+      "archive_read": "targeted"
     },
     {
       "id": "pools-skeletonswap",
       "label": "Pools · SkeletonSwap",
-      "blurb": "The pool contracts on SkeletonSwap that the capture follows."
+      "blurb": "The pool contracts on SkeletonSwap that the capture follows.",
+      "archive_read": "targeted"
     },
     {
       "id": "solid",
       "label": "Solid",
-      "blurb": "The Solid stablecoin system: market, custody, oracle, liquidation, and the tokens it wraps."
+      "blurb": "The Solid stablecoin system: market, custody, oracle, liquidation, and the tokens it wraps.",
+      "archive_read": "targeted"
     },
     {
       "id": "lending",
       "label": "Lending",
-      "blurb": "Credia's portfolio contract and its receipt tokens."
+      "blurb": "Credia's portfolio contract and its receipt tokens.",
+      "archive_read": "targeted"
     },
     {
       "id": "other-daos",
@@ -97,17 +111,20 @@
     {
       "id": "nft",
       "label": "NFT",
-      "blurb": "Collections and marketplaces."
+      "blurb": "Collections and marketplaces.",
+      "archive_read": "targeted"
     },
     {
       "id": "bridges",
       "label": "Bridges",
-      "blurb": "Cross-chain message contracts."
+      "blurb": "Cross-chain message contracts.",
+      "archive_read": "targeted"
     },
     {
       "id": "tokens",
       "label": "Tokens",
-      "blurb": "Token contracts the crons read that belong to no group above."
+      "blurb": "Token contracts the crons read that belong to no group above.",
+      "archive_read": "targeted"
     }
   ],
   "daos": [

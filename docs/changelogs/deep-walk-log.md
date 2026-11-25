@@ -7,6 +7,26 @@ ARCHIVE_LCD, ARCHIVE_REPO_TOKEN — fine-grained, tla-archive only — and FLOW_
 
 ---
 
+## 2026-11-25 — contract-watch-archive 1.0.0 (new) · the archive timers are off
+
+**Owner, 2026-11-25:** the archive node is for backfill, started by a person; once a backfill is done the forward capture
+is all that is needed, and it does not use the archive. No schedule may use the archive.
+
+- **Timers removed.** `dex-history.yml` (nightly), `placement-leadup.yml` (weekly) and `votion-holders.yml` (weekly) read
+  the archive on a timer and started themselves when their files changed. All three now have one trigger: Run workflow.
+  What each added week by week stops until the forward capture provides it: weekly swap volume and trader counts per
+  pool (`dex-data/history/weekly.json`), the lead-up of new PD placements (`lp-grades/leadup/placements.json`), early
+  Votion depositors (`votion/archive-holders.json` — a finished list; the votion cron finds new depositors itself, within
+  what public nodes hold).
+- **contract-watch-archive 1.0.0** (`.github/workflows/contract-watch-archive.yml`, `.github/scripts/contract-watch-archive/`):
+  the one-time backfill of the contract-watch record. Every change of every watched contract since the chain began, the
+  message as sent, the address book and each contract's config before and after a change, each contract's code history —
+  and four proofs that the record is whole. Manual only; one request at a time, at most 4 a second; request and time
+  budgets; resumes at the page it stopped at; never asks for an account's whole history; never reads a memo. Raw
+  transactions go only to the private archive. Gate 57/57 against a stand-in node built from the stored walks
+  (`mock-run.mjs`). README in the script folder.
+- `docs/curated/contract-watch.json`: each group says how the backfill reads it (`archive_read`, `archive_senders`).
+
 ## CLOSED — 2026-10-01 — the backfill is complete; nothing left that only the node can give
 
 The audit after walk 1.9 (docs/deep-history/audit.json) has one gap left — **[medium] prices**, computed from saved pools in the derive, not

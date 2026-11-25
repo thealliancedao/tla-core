@@ -1,0 +1,105 @@
+name: contract-watch-archive — the one-time backfill of contract changes (archive node)
+
+# 2026-11-25: the contract-watch record is complete from the day it shipped. This fills what came before — every change of every
+# watched contract since the chain began, the message as sent, and what each contract WAS in the block before and the block of a
+# change — from an archive node, once. After it, the forward capture is all that is needed; it does not use the archive.
+#
+# THE ARCHIVE NODE IS A COURTESY (owner): this job runs ONLY when a person presses "Run workflow" — no timer, no start on push,
+# ever. One archive job at a time (it waits behind another, never beside it). The script asks one request at a time, at most `rps`
+# a second (ceiling 4), stops at `max_requests` (ceiling 20,000) and `max_minutes` (ceiling 300), backs off when the node is busy,
+# stops by itself when the node stops answering, and never asks twice for something the node refused. Everything read is filed
+# before it stops: press Run workflow again and it carries on where it stopped.
+#
+# Writes: contract-watch/events (merged), contract-watch/index.json, contract-watch/archive/*, contract-watch/state/history/*.
+# Every transaction read (events + messages, never the memo) goes ONLY to the private tla-archive repo, when its token is set.
+# The log prints counts only.
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: 'all = changes, then state at past heights, then the proofs · changes · state · census (counts only, a few hundred requests) · verify (no node reads)'
+        required: true
+        type: choice
+        options: ['all', 'changes', 'state', 'census', 'verify']
+        default: 'all'
+      rps:
+        description: 'requests a second, at most (ceiling 4)'
+        required: false
+        default: '2'
+      max_requests:
+        description: 'stop after this many requests (ceiling 20000) — run again to carry on'
+        required: false
+        default: '8000'
+      max_minutes:
+        description: 'stop after this many minutes (ceiling 300)'
+        required: false
+        default: '180'
+      from_height:
+        description: 'first block (empty = 1). Read once, on the first run'
+        required: false
+        default: ''
+      to_height:
+        description: 'last block (empty = the node''s latest). Read once, on the first run'
+        required: false
+        default: ''
+      chain_cap:
+        description: 'read every migration and admin change of ANY contract on the chain when there are at most this many (else only counted; raise it later to read them)'
+        required: false
+        default: '3000'
+      fresh:
+        description: '1 = forget what earlier runs read and start again (leave empty)'
+        required: false
+        default: ''
+permissions:
+  contents: write
+concurrency:
+  group: archive-node
+  cancel-in-progress: false
+jobs:
+  backfill:
+    if: github.event_name == 'workflow_dispatch'   # belt and braces: nothing but a person's click runs this
+    runs-on: ubuntu-latest
+    timeout-minutes: 320
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/contract-watch-archive
+            contract-watch
+            docs/curated
+            tla-voting/capture-registry.json
+          sparse-checkout-cone-mode: false
+      - name: the classifier the forward walk uses (platform-crons, public)
+        uses: actions/checkout@v4
+        with:
+          repository: thealliancedao/platform-crons
+          path: platform-crons
+          sparse-checkout: |
+            tla-flows/lib
+            config
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: the private archive (raw transactions go only there)
+        env:
+          TOKEN: ${{ secrets.ARCHIVE_REPO_TOKEN }}
+        run: |
+          if [ -z "$TOKEN" ]; then echo "no private archive token — raw transactions are not kept this run (the public record is unaffected)"; exit 0; fi
+          git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${TOKEN}@github.com/thealliancedao/tla-archive.git" archive
+          cd archive && git sparse-checkout set contract-watch && git config user.name "contract-watch-archive" && git config user.email "bot@thealliancedao.com"
+      - name: backfill (manual, one request at a time, capped)
+        env:
+          ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
+          PHASE: ${{ github.event.inputs.phase }}
+          RPS: ${{ github.event.inputs.rps }}
+          MAX_REQUESTS: ${{ github.event.inputs.max_requests }}
+          MAX_MINUTES: ${{ github.event.inputs.max_minutes }}
+          FROM_HEIGHT: ${{ github.event.inputs.from_height }}
+          TO_HEIGHT: ${{ github.event.inputs.to_height }}
+          FRESH: ${{ github.event.inputs.fresh }}
+          CHAIN_CAP: ${{ github.event.inputs.chain_cap }}
+          PC_DIR: platform-crons
+        run: |
+          git config user.name "contract-watch-archive" && git config user.email "bot@thealliancedao.com"
+          if [ -d archive ]; then export ARCHIVE_DIR=archive; fi
+          node .github/scripts/contract-watch-archive/walk.mjs

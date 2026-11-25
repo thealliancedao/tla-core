@@ -14,6 +14,14 @@ Written by `org-tla-flows` (platform-crons `tla-flows/lib/admin-classifier.js`);
   that files a change. Each entry carries the time of its own read. Until the first live read it holds two stored reads:
   the address book of 2026-08-11 (the legacy registry) and the contract inventory of 2026-09-29 (`docs/deep-history`).
 - `rewalk.json` — block spans being walked again for contract changes (the months before the live stream), with progress.
+- `archive/` — the one-time backfill from an archive node (`.github/scripts/contract-watch-archive`, started by hand):
+  `report.json` (what was read, what it added, the proofs), `census.json` (per contract: how many transactions of each
+  kind the node holds, how the contract was read, the actions it reported), `manifest.json` (every search and how far it
+  is), `block-times.json`.
+- `state/history/` — what a contract WAS, read from the archive node: `address-book.json` (the address book in the block
+  before and the block of each change), `contracts.json` (each contract's code history, its admin at creation, what it is
+  at the end of the range), `config-changes.json` (a contract's `{"config":{}}` before and after a change, as the paths
+  that differ).
 - `backfill-report.json` — what the history derive read and found.
 - `../docs/curated/contract-watch.json` — the watcher's groups: which group each contract is in and the name shown.
   Edit it to regroup or rename. Every contract listed there is watched.
