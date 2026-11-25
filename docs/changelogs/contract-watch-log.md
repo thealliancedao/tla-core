@@ -1,5 +1,24 @@
 # Contract Watch Changelog
 
+## Rev 1.3 → 1.4 — 2026-11-25 — what a role is for, in the contracts' own words
+
+Owner: for a change that was forced through, show what was and what the change makes possible.
+
+- **The contracts were asked.** `contract-watch/guards.json` (tla-core Action *contract-watch-guards*, public nodes,
+  simulation only, nothing signed): a message of each kind of change, sent from an address without any role, and the
+  contract's own answer. 42 kinds asked; 29 answered with a role. The four roles that moved on 2026-11-24:
+  `ASSET_WHITELIST_CONTROLLER` — the reward lists of the four staking contracts; `DELEGATION_CONTROLLER` — the Alliance's
+  stake in the four connectors and the PDT treasury contract; `BRIBE_WHITELIST_CONTROLLER` — the bribe manager's list of
+  tokens allowed as vote incentives; `VE_GUARDIAN` — the blacklist of the lock that gives voting power.
+- **On the page:** beside a marked change, what each moved role is required for; on a change that was sent directly,
+  which role its contract requires of a sender and — when the record shows it — that the sender was given that role one
+  message earlier in the same transaction; in "Who holds the keys", role by role and per holder. An answer counts only
+  for the code the contract ran when it was asked: after an upgrade the line is gone until the contract is asked again.
+- **How an account signs.** `contract-watch/accounts.json` (the chain's own account record, same Action): where control
+  moves to an account the page says "an account with one key" (or "needs m of its n keys"). Also in the look-up and
+  beside an admin in "Who can upgrade the Alliance's contracts". The keys themselves are not kept.
+- Gate 100/100 on the real record and the real answers.
+
 ## Rev 1.2 → 1.3 — 2026-11-25 — needs a look
 
 Owner: the page has to be quiet when there is nothing to worry about and draw attention when something is a big deal;
