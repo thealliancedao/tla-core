@@ -1,5 +1,21 @@
 # Cron Changelog — tla-flows (org-tla-flows, Render)
 
+## tla-flows 3.5.15 → 3.7.0 (pnl 1.8.0) — 2026-11-25 — P&L files written when a wallet did something; contract changes
+
+Full text: platform-crons `tla-flows/CHANGELOG.md`.
+
+- **pnl 1.8.0 (3.5.15)** — a wallet's P&L file is written when the wallet did something; everyone is re-priced once a day.
+  The ledger folder was 78% of this repo's growth (39 of 50 MB a day) because every build re-priced every open wallet.
+- **3.6.0 contract changes** — the walk keeps what it used to drop: upgrades, admin changes and stored code for every
+  contract; list / setting / role / governance / delegation / reserve changes for the watched contracts; each with its
+  signer and the DAO proposal it executes, if any → `contract-watch/events/`. History 2023-12 → 2026-06 derived from the
+  stored walks (`backfill-contract-watch.js`).
+- **3.6.1 / 3.6.2** — the catch-up walk (`contract-watch/rewalk.json`): the months before the live stream, read again for
+  contract changes while public nodes still hold them.
+- **3.7.0** — the state read (`contract-watch/state/current.json`): each watched contract's code id and admin and the
+  TLA address book, once a day and when a change is recorded; every difference from the read before is filed as
+  `observed: "state-read"`. `contract-watch/index.json` lists the stream's months.
+
 ## pnl 1.4.0 (tla-flows 3.5.7) — 2026-09-30 — one event per stake; integrity report
 
 - Every stake / unstake in a tx booked with its own pool's legs (1,044 member stakes in 247 wallets were never booked; the aDAO treasury's

@@ -9,6 +9,7 @@ The old-repo copies are ABANDONED as of this date — append only here.
 | index-log.md | index.html (dashboard) |
 | tla-log.md | tla-stats.html |
 | portfolio-log.md | member-portfolio.html |
+| contract-watch-log.md | contract-watch.html — added 2026-11-25 |
 | dao-log.md | dao.html |
 | explorer-log.md | nft-explorer pages |
 | lore-log.md | adao-lore.html |

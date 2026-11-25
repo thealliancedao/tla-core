@@ -1,5 +1,11 @@
 # Index Page Changelog
 
+## 2026-11-25 — Contract Watch: tools 1.9 · header · footer · sitemap
+
+- tools.html **1.9**: a Contract Watch tile under LIVE TOOLS.
+- lib/site-header.js: contract-watch lights the TLA Stats tab. lib/site-footer.js: its Changelog link opens
+  contract-watch-log.md. sitemap.xml lists the page.
+
 ## Site address — 2026-10-14 — theadao.com is the official address
 
 - The aDAO site's primary domain is now **theadao.com**. `thealliancedao.com`, `www.thealliancedao.com` and `www.theadao.com`

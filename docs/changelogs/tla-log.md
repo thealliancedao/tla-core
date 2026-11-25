@@ -1,19 +1,8 @@
 # TLA Stats Changelog
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+## T8.15 — 2026-11-25 — a Contract Watch tab
+- The tab bar gains **Contract Watch** (contract-watch.html): who changed an Alliance contract, what, when, and whether it came
+  through a passed proposal or was sent directly. Its own changelog: contract-watch-log.md. Nothing else on this page changed.
 
 ## T8.3–T8.4 — 2026-10-16 — who trades, who holds the vote
 - Pools table: "who trades" column + detail line (distinct wallets, largest / top-3 share, two-way share, weekly from every swap on

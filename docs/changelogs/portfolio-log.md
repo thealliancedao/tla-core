@@ -2,6 +2,12 @@
 
 ---
 
+## Rev 4.4.6 → 4.4.7 — 2026-11-25 — a Contract Watch tab
+
+- The tab bar gains **Contract Watch** (contract-watch.html). Nothing else on this page changed.
+
+---
+
 ## Rev 4.3.0 → 4.4.0 — 2026-10-14 — Your DAOs
 
 - **Your DAOs** card: every Terra DAO the wallet follows on DAO DAO (its saved follows) or is a member of — what it has staked there
