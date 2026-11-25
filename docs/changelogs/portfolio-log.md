@@ -2,6 +2,14 @@
 
 ---
 
+## Rev 4.4.7 → 4.4.8 — 2026-11-25 — the tab bar is the site's one list
+
+- Overview · Member Portfolio · Slippage Simulator · Vote Simulator · LP Grades · Contract Watch · PD Watch, drawn from
+  lib/site-header.js (1.14.0). This page's own copy had drifted: it still showed LP Stats, TLA Stats and Docs, and neither simulator.
+  The hidden copy of the old tab strip is removed. Nothing else on this page changed. See tla-log.md T8.16.
+
+---
+
 ## Rev 4.4.6 → 4.4.7 — 2026-11-25 — a Contract Watch tab
 
 - The tab bar gains **Contract Watch** (contract-watch.html). Nothing else on this page changed.

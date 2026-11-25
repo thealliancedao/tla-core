@@ -1,5 +1,13 @@
 # Index Page Changelog
 
+## 2026-11-25 — lib/site-header.js 1.14.0: one TLA tab bar
+
+- `SiteHeader.TLA_TABS` / `SiteHeader.tlaTabs('<tab>')`: the TLA tab bar is one list — Overview · Member Portfolio · Slippage
+  Simulator · Vote Simulator · LP Grades · Contract Watch · PD Watch — and every TLA page draws it from there (tla-log.md T8.16).
+  A bar of seven tabs or more sits closer and, on a desktop, wraps before it would hide a tab; on a phone the row still scrolls
+  sideways and the lit tab is brought into view (on load, and whenever a page lights another tab). Other pages' shorter bars are
+  unchanged. `gate-header.mjs` hands a gate the real list; `gate-tla-nav.mjs` 42/42.
+
 ## 2026-11-25 — Contract Watch: tools 1.9 · header · footer · sitemap
 
 - tools.html **1.9**: a Contract Watch tile under LIVE TOOLS.

@@ -1,5 +1,13 @@
 # Contract Watch Changelog
 
+## Rev 1.4 → 1.4.1 — 2026-11-25 — the tab bar
+
+- The tab bar is the site's one list (lib/site-header.js 1.14.0): Overview · Member Portfolio · Slippage Simulator · Vote Simulator ·
+  LP Grades · Contract Watch · PD Watch. Pools and Docs are off the bar. The tabs wear the site's tab colours here too (the page's
+  link colour had been painting every tab cyan), and on a phone the lit tab is brought into view by the lib. Nothing else on the page
+  changed. Gate 100/100.
+- The help bot can now answer from this record: see help-log.md v1.24.0 and `docs/ecosystem-knowledge/contract-watch.md`.
+
 ## Rev 1.3 → 1.4 — 2026-11-25 — what a role is for, in the contracts' own words
 
 Owner: for a change that was forced through, show what was and what the change makes possible.

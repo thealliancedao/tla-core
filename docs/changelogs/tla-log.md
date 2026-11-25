@@ -1,5 +1,28 @@
 # TLA Stats Changelog
 
+## T8.16 — 2026-11-25 — the tab bar; PD Watch is its own tab
+Owner: "PD placement tab from LP grades moved to the main tab alongside contract watch … hide Pools and remove docs from the bar …
+add in vote simulator — Overview, member portfolio, slippage simulator, vote simulator, LP grades, contract watch, PD watch."
+- **The bar** — Overview · Member Portfolio · Slippage Simulator · Vote Simulator · LP Grades · Contract Watch · PD Watch — is one
+  list in lib/site-header.js (1.14.0, `SiteHeader.tlaTabs`) and every TLA page draws it from there: tla-stats, member-portfolio
+  (4.4.8), slippage (3.0.1), vote-market (VM1.10.4) and contract-watch (1.4.1). Each page had carried its own copy and the copies had
+  drifted (Member Portfolio still showed LP Stats · TLA Stats · Docs; the two simulators showed no bar at all).
+- **PD Watch** (`tla-stats.html#pdwatch`) is the PD placements audit — votes steered, the track record, each placement checked against
+  the formula — as its own main tab. It was a view inside LP Grades. Same renderer, same data, nothing recomputed differently.
+  **LP Grades** (`#grades`) keeps the pools view (earns vs receives) and says where the audit went. A link handed out before the move
+  (`tla-stats.html?prop=262#grades`, with or without `&sec=…`) opens the same placement on PD Watch; "copy link" on a placement now
+  writes `#pdwatch`. lp-grades 2.4.5 writes the new link into `scorecard/bribes.json`.
+- **Vote Simulator** opens the Vote Market planner (vote-market.html); that page now shows the bar too, and its "← TLA Stats" button
+  is gone.
+- **Pools** is off the bar for now; its section still opens at `tla-stats.html#pools` (the phone app's "All pools" button and older
+  links keep working). **Docs** is off the bar; the docs hub stays in every page's footer and on Tools.
+- With seven tabs the row sits a little closer and, on a desktop, wraps before it would hide a tab (it used to scroll sideways with
+  no scrollbar — the last tab simply was not there); on a phone it scrolls and the lit tab is brought into view.
+- Gate `gate-tla-nav.mjs` 42/42 (the real lib and the real page in jsdom on the committed series: the bar on every page, PD Watch and
+  LP Grades each in their own section with no element id twice, old placement links, Pools and Docs by link). The page gates run as
+  before: contract-watch 100/100, vote-market 154/154, slippage 21/21, entity 9/9; alerts 5/6 and reward-list 12/13 fail the same one
+  check each as they did before this change.
+
 ## T8.15 — 2026-11-25 — a Contract Watch tab
 - The tab bar gains **Contract Watch** (contract-watch.html): who changed an Alliance contract, what, when, and whether it came
   through a passed proposal or was sent directly. Its own changelog: contract-watch-log.md. Nothing else on this page changed.

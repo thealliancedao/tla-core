@@ -1,6 +1,39 @@
 # Help Page Changelog
 
+## v1.24.0 — 2026-11-25 — Contract Watch, where things are, and a budget for what the bot reads
 
+Owner: "get the help bot brought up to speed … so it can answer questions on what we have added in here."
+
+- **Contract Watch.** New tool `contract_watch` (`help-agent/lib/contract-watch-tool.js` 1.0.0) on the same record the page renders
+  (`contract-watch/**`, `docs/curated/contract-watch.json`): `overview` (counts by route and kind, the latest changes, what the record
+  covers), `changes` (by contract name or address, kind, route, dates, sender, a search word / proposal number / tx hash), `contract`
+  (group, code id, admin and how it signs, what each kind of change on it requires, its changes), `roles` (the address book: who holds
+  each role, what it is required for in the contracts' own words, how the holder signs; one role in full with the change that set it),
+  `address` (roles held, contracts it can upgrade, changes it sent). Assets of a reward list are named by the token catalog, by the
+  page's own rule. **Facts only:** the tool does not carry the page's "needs a look" mark — the bot explains the four rules and links
+  `contract-watch.html#att=look`.
+- **Rule 20** — when to use the tool and how to say it: what changed, on which contract, when, by which route; no verdict, no motive,
+  no person; an address is named only as the groups file or the DAO list names it; "one key" says how many keys sign, not who holds
+  it; a span the record does not cover is "not read", never "nothing changed".
+- **Rule 21 — where things are.** The TLA tab bar since 2026-11-25: Overview · Member Portfolio · Slippage Simulator · Vote Simulator
+  · LP Grades · Contract Watch · PD Watch. The PD placements audit is the PD Watch tab (`tla-stats.html#pdwatch`); Pools and Docs are
+  off the bar (`tla-stats.html#pools` still opens; the docs hub is `tla-docs.html`, in every footer). Rule 19 points there too.
+- **Knowledge:** new chapter `docs/ecosystem-knowledge/contract-watch.md` and the head of `contract-watch-log.md` in the corpus;
+  `DATA-MAP.md` gained a Contract Watch route and is read whole again (its last two sections had fallen past the 20,000-character cap —
+  a source can now carry its own cap). `lp-grades-and-voting.md` says where the placements audit lives now.
+- **A budget for the corpus** (`CORPUS_BUDGET_CHARS`, default 460,000). Each source had a cap; their sum had none, and the prompt had
+  crept close to the model's window, where a question that needs several tool results fails instead of being answered. Above the
+  budget the changelogs, specs, build queue and cron table are shortened in proportion (never below 6,000 characters each); knowledge
+  chapters, the data map and the live heads are never shortened. With today's sources that takes about 55,000 characters off those
+  files — a changelog is read to roughly its newest 14,000 characters instead of 20,000.
+- `GET /health` returns `version` and `corpus` (size, budget, what was shortened, any source that could not be read).
+  `read_product` may read `contract-watch/**`.
+- Gate `gate-contract-watch-tool.mjs` — 72/72 on the real record (755 records, 288 changes): every count against a recount of the
+  files, no address typed, the tool's words and route equal to the page's for every record (the page in jsdom), no verdict word in
+  85 answers, every answer under the server's 12,000-character cut, and the server end to end with the model replaced by a script
+  (the corpus it builds, the tools it offers, the tool result it hands over). Battery +T17–T22.
+- Not checked from the build session: the live service's answers (it could not be reached from there). After the redeploy,
+  `ONLY=T17,T18,T19,T20,T21,T22 HELP_AGENT_URL=… node test-battery.js` asks the six new questions.
 
 ## 1.20.0 — 2026-10-16 — rule 19: PD bribes & the LP Scorecard
 

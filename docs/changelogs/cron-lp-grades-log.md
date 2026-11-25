@@ -1,5 +1,10 @@
 # Changelog — lp-grades cron
 
+## 2.4.5 — 2026-11-25 — a placement's link opens PD Watch
+- `lp-grades/scorecard/bribes.json`: `page` and each placement's `link` are now `https://theadao.com/tla-stats.html?prop=<id>#pdwatch`
+  (were `…thealliancedao.com/tla-stats.html?prop=<id>#grades`). The PD placements audit is its own main tab since tla-stats T8.16; an
+  older link still opens the same placement. Nothing else in the product changed.
+
 ## 2.3.1 — 2026-10-16 — series 1.4.0: steered votes measurable back to E120
 - Periods before the per-wallet vote harvest (E120–E192): votes per pool from the finalized distributions ledger
   (tla-voting/distributions/history.json), Votion's per-pool votes from an archive-node read of its vaults at each period's first

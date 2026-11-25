@@ -166,6 +166,27 @@ move-rule.json`; grades + wind-down alerts = `lp-grades/snapshots/current.json` 
 Wrong-object guards: Votion's raw VP ≠ real VP (÷ k ≈ 1.11–1.12); a round's pots ≠ `active_now` (that is the PRIOR round); "comes back"
 is $0 unless the wallet votes that pool; the 1% line is per bucket.
 
+## Contract Watch — who changed a contract, who can change it (2026-11-25)
+Use the `contract_watch` tool (the same record contract-watch.html renders); the chapter `ecosystem-knowledge/contract-watch.md`
+is the guide. Facts only — no verdict, no motive, no person.
+- "What changed lately / since <date> / on <contract>?" → `changes` (contract, kind, how, since, until) or `overview`.
+- "Who can upgrade <contract>? What code does it run?" → `contract` (admin = the address that can replace its code).
+- "Who holds <role>? Who can edit the reward list / move the delegation / change the blacklist?" → `roles` (role=NAME): the holder,
+  what the role is required for (the contracts' own answers in simulation, `contract-watch/guards.json`), how the holder signs
+  (`contract-watch/accounts.json`: one key, m of n, a DAO).
+- "What is this address to the alliance?" → `address`. A tx hash or a proposal number (A236) → `changes` with q.
+- "Needs a look" is the page's mark (four rules, in the chapter); the tool does not carry it — link `contract-watch.html#att=look`.
+- Coverage: 2026-06-16 → 2026-09-01 is not on record and 2026-09-01 → 2026-11-25 is still being read again; say "not read", never
+  "nothing changed". The one-time archive read that fills it is started by a person and has not run until `index.json` has `archive`.
+- Raw files (read_product): `contract-watch/index.json` · `contract-watch/events/<YYYY>/<MM>.json` · `contract-watch/state/current.json`
+  · `contract-watch/guards.json` · `contract-watch/accounts.json` · `docs/curated/contract-watch.json` (groups and names).
+
+## Where things are — the TLA tab bar (2026-11-25)
+Overview (`tla-stats.html#overview`) · Member Portfolio (`member-portfolio.html`) · Slippage Simulator (`slippage.html`) · Vote
+Simulator (`vote-market.html`) · LP Grades (`tla-stats.html#grades`, the LP Scorecard's pools view) · Contract Watch
+(`contract-watch.html`) · PD Watch (`tla-stats.html#pdwatch`, the PD placements audit — a view inside LP Grades before). Pools is off
+the bar (`tla-stats.html#pools` still opens); Docs is off the bar (`tla-docs.html`, in every footer).
+
 ## Deep history — past positions, balances, flows for the cohort (2026-09-30)
 - **Status:** the one-time backfill RAN (SPEC-deep-history §0): 1,159 cohort wallets; every tx since 2022; weekly protocol state
   2023-10-23 → now; monthly balances + staking 2023-04 → now; 1.57M rebuilt balance changes (94.9 % exact vs the chain's checkpoints).

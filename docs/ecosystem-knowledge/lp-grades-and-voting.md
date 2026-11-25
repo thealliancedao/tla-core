@@ -5,6 +5,11 @@
 > captures; the only hand-set inputs are in one public config file. Updated 2026-10-15
 > (LP Scorecard 1.0 — replaces grading v2's tab view, the aDAO Vote Advisor and the PD
 > Bribe Tracker).
+>
+> **Where it is, since 2026-11-25:** the pools view (what each pool earns vs what it receives) is the **LP Grades** tab,
+> `tla-stats.html#grades`. The placements audit described under "The Bribe Scorecard" below — votes steered, the track
+> record, each placement against the field — is its own tab, **PD Watch**, `tla-stats.html#pdwatch`. It was a second view
+> inside LP Grades before; nothing in it was recomputed differently.
 
 ## The one-sentence version
 
@@ -75,7 +80,7 @@ header counts both.
 **As of:** any past epoch end can be chosen, and the whole table re-grades as it would
 have looked then.
 
-## The Bribe Scorecard — a placement against the field
+## The Bribe Scorecard — a placement against the field (the PD Watch tab)
 
 For any bribe placement the facts can check (currently the Phoenix Directive's
 proposals, decoded from the proposals themselves and verified against chain events):
@@ -142,9 +147,10 @@ placements show "no Votion yet".
 
 ## Sharing and tracking
 
-- **Links:** `tla-stats.html?prop=262#grades` opens that placement's scorecard; add `&sec=sizing` (or `record`,
-  `summary`, `formula`, `steer`) to land on a panel; `?win=30d&lens=workhorses&asof=2026-09-20&bucket=stable#grades`
-  reopens a table view. Every panel has a "copy link" button.
+- **Links:** `tla-stats.html?prop=262#pdwatch` opens that placement on PD Watch; add `&sec=sizing` (or `record`,
+  `summary`, `formula`, `steer`) to land on a panel. A link written before 2026-11-25 (`…?prop=262#grades`) still opens the
+  same placement. `?win=30d&lens=workhorses&asof=2026-09-20&bucket=stable#grades` reopens a pools-table view on LP Grades.
+  Every panel has a "copy link" button.
 - **In brief:** each placement opens with a generated, numbers-only paragraph — selection match, sizing vs volume,
   bucket split, most over-weighted pick, and the PD-steered share of votes during its paid window.
 - **Track record:** one table of every placement the data can check; it grows each epoch.
@@ -186,4 +192,4 @@ amounts, bribes, PD legs) · `lp-grades/scorecard/current.json` (every lens, def
 window, latest day) · `lp-grades/scorecard/history.json` (default lens re-graded at
 every completed epoch under the current config) · `docs/curated/grading_config.json`
 (the rubric) · `lp-grades/snapshots/current.json` (the older five-lens grade, still
-published for the Pools tab).
+published for the Pools section — off the tab bar since 2026-11-25, still at `tla-stats.html#pools`).

@@ -1,5 +1,11 @@
 # Trade Cost Simulator Changelog
 
+## Rev 3.0 → 3.0.1 — 2026-11-25 — the TLA tab bar
+
+- The page shows the TLA tab bar under the header, its own tab (Slippage Simulator) lit: Overview · Member Portfolio · Slippage
+  Simulator · Vote Simulator · LP Grades · Contract Watch · PD Watch. Before, the tab led to a page with no bar. Nothing else on
+  this page changed. Gate gate-slippage-planner.mjs 21/21. See tla-log.md T8.16.
+
 ## Rev 3.0 — 2026-08-24 — Trade Planner: from → to routes, split, size ladder, limit solve, wallet balances, context, warnings, recipe
 
 Owner walk: "it doesn't pick up liquid tokens in my wallet and doesn't help me
