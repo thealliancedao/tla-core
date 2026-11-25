@@ -231,6 +231,15 @@ console.log('— D a node in trouble —');
   const r2 = await go({ rpc: node.url, core, phase: 'changes', maxRequests: 20000 });
   check('…and a second run does not ask it again', asked === 1 && r2.stats.pages === 0, { asked, pages: r2.stats.pages });
   await node.close(); }
+{ const node = await buildNode(real), core = coreDir(); const target = curated.contracts.find((c) => c.address !== BOOK && WATCH.has(c.address) && expected.some((r) => r.contract === c.address && !r.routine)).address; let asked = 0;
+  node.st.behave = ({ q, url }) => { const parts = String(q || '').replace(/^"|"$/g, '').split(' AND '); if (parts[0] === `execute._contract_address='${target}'` && parts.slice(1).every((x) => /^tx\.height/.test(x)) && /per_page=1(&|$)/.test(url)) { asked++; return 'drop'; } return null; };   // the node never answers "how many executes has this contract"
+  const r = await go({ rpc: node.url, core, phase: 'changes', maxRequests: 20000 });
+  const u = readJson(path.join(core, 'contract-watch/archive/manifest.json')).units[`execute|${target}`]; const want = expected.filter((x) => x.contract === target && !x.routine).map((x) => x.k); const have = new Set(monthsOf(core).map((x) => x.k));
+  check('1.0.1 a contract whose executes the node cannot count is asked twice, then closed as too busy to read in full and listed — the run does not end with a search left open', !!u && u.done === true && u.counted_only === true && u.uncounted === true && r.left === 0 && r.report.searches.uncounted === 1 && r.stop !== 'the node stopped answering' && asked >= 2 && asked <= 6, { asked, u, left: r.left, stop: r.stop });
+  check('…its changes are still found, by action name and by who sent them', want.length > 0 && want.every((k) => have.has(k)), { want: want.length, missing: want.filter((k) => !have.has(k)).slice(0, 3) });
+  const asked1 = asked; const r2 = await go({ rpc: node.url, core, phase: 'changes', maxRequests: 20000 });
+  check('…and a second run does not ask it again', asked === asked1 && r2.left === 0, { asked, asked1 });
+  await node.close(); }
 { const node = await buildNode(real), core = coreDir(); let n = 0; node.st.behave = () => (++n > 400 ? 'drop' : null);
   const r = await go({ rpc: node.url, core, phase: 'changes', maxRequests: 20000 });
   check('a node that stops answering ends the run after a few tries — what was read before is filed, and the run says why', r.stop === 'the node stopped answering' && n - 400 <= 16 && r.more === true && monthsOf(core).length >= onFile0.length && fs.existsSync(path.join(core, 'contract-watch/archive/report.json')), { stop: r.stop, extra: n - 400 });
@@ -251,7 +260,7 @@ console.log('— D a node in trouble —');
   node.st.behave = ({ path: p, url }) => (blocked && p === '/block' && url.includes(`height=${victim.height}`) ? { status: 500, json: { jsonrpc: '2.0', id: -1, error: { code: -32603, message: 'Internal error', data: 'could not find block' } } } : null);
   const r1 = await go({ rpc: node.url, core, phase: 'changes', maxRequests: 20000 });
   const got1 = monthsOf(core).find((r) => r.txhash === victim.txhash);
-  check('a change whose block time cannot be read is not filed with a made-up time: it stays as it was, the search that found it is left open, and the run says there is more to read', r1.more === true && readJson(path.join(core, 'contract-watch/index.json')).archive.complete === false && got1 && !got1.sent && JSON.stringify(got1) === JSON.stringify(onFile0.find((r) => r.k === got1.k && r.txhash === victim.txhash)), { more: r1.more, got1: !!got1 });
+  check('a change whose block time cannot be read is not filed with a made-up time: it stays as it was, the search that found it is left open, and the run says there is more to read', r1.more === true && readJson(path.join(core, 'contract-watch/index.json')).archive.complete === false && got1 && JSON.stringify(got1) === JSON.stringify(onFile0.find((r) => r.k === got1.k && r.txhash === victim.txhash)), { more: r1.more, got1: !!got1 });
   blocked = false; const r2 = await go({ rpc: node.url, core, phase: 'changes', maxRequests: 20000 });
   check('…and the next run reads it and ends with the same record as a clean run', r2.more === false && JSON.stringify(monthsOf(core)) === JSON.stringify(afterB), { more: r2.more });
   await node.close(); }

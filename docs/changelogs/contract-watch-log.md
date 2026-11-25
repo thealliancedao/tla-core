@@ -1,5 +1,17 @@
 # Contract Watch Changelog
 
+## contract-watch-archive 1.0.1 — 2026-11-25 — a contract too busy to count no longer leaves the backfill open
+- **What happened:** the first two real runs (09:55 and 11:39 UTC) each ended with one search left — the count of executes on a
+  token contract. The node gives no answer to that count, so the search stayed open and the record stayed "not complete" although
+  9,442 of 9,443 searches were read and every check agreed.
+- **Now:** when the node cannot count a contract's executes (no answer; asked once more, lightly), the contract is closed as too
+  busy to read in full — it is read by action name, by the DAO that sent a change and by key-holding account, like every busy
+  contract — and listed: `report.searches.uncounted`, `census … executes_not_counted`. Migrations and admin changes are found for
+  every contract regardless. The limits line of the report says so.
+- Gate `mock-run.mjs` 60/60 (three new checks: closed and listed after two asks, its changes still found, not asked again; one
+  expectation that was tied to the record before the backfill now follows the record).
+- The page gate's seven record-tied expectations follow the record too (site `7f68f87`, 99/99).
+
 ## Rev 1.4 → 1.4.1 — 2026-11-25 — the tab bar
 
 - The tab bar is the site's one list (lib/site-header.js 1.14.0): Overview · Member Portfolio · Slippage Simulator · Vote Simulator ·

@@ -39,7 +39,7 @@
 // The log prints counts only; the node's address is never printed.
 import fs from 'fs'; import path from 'path'; import zlib from 'zlib'; import { execSync } from 'child_process'; import { createRequire } from 'module'; import { fileURLToPath } from 'url';
 const require = createRequire(import.meta.url);
-export const VERSION = 'contract-watch-archive-1.0.0';
+export const VERSION = 'contract-watch-archive-1.0.1';   // 1.0.1 (2026-11-25): a contract whose executes the node cannot even count (no answer, twice) is closed as too busy to read in full — it is read by action name, by DAO and by key-holding account like every busy contract — and listed (searches.uncounted). The first two real runs each ended with that one search left open (a token contract)
 const UA = 'contract-watch-archive/1.0';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -238,7 +238,10 @@ export async function run(opts = {}) {
     if (u.done || over()) return u;
     const q = Q(cond);
     if (u.per == null) {   // not begun: how many are there?
-      const c = await txSearch(q, 1, 1);
+      let c = await txSearch(q, 1, 1);
+      if (!c.ok && !c.refused && !c.halted && o.count === 'cap') {   // 1.0.1: the node gave no answer to "how many executes has this contract". Asked once more, lightly; still nothing → too busy to count, so too busy to read in full
+        const c2 = await txSearch(q, 1, 1, { tries: 2, soft: true });
+        if (c2.ok || c2.refused) c = c2; else if (!c2.halted) { u.done = true; u.counted_only = true; u.uncounted = true; return u; } }
       if (!c.ok) { if (c.refused) { u.done = true; u.refused = c.why; } return u; }
       u.total = c.total;
       if (o.count === true || (o.count === 'cap' && c.total > o.cap)) { u.done = true; u.counted_only = true; return u; }
@@ -303,12 +306,12 @@ export async function run(opts = {}) {
     const report = { schemaVersion: 1, product: 'contract-watch/archive-report', builder: VERSION, classifier: AD.VERSION, updated_at: new Date().toISOString(),
       blocks: { from: LO, to: HI }, watched_contracts: contracts.length, key_accounts: accounts.length, dao_cores: daoCores.length, change_actions_known: vocabulary.length,
       more_to_read: !!stop || left > 0,
-      searches: { total: leaf.length, done: leaf.length - left, left, refused: leaf.filter((u) => u.refused).length, short: leaf.filter((u) => u.short).length, over_cap: leaf.filter((u) => u.over_cap).length, untimed: leaf.filter((u) => u.untimed).length },
+      searches: { total: leaf.length, done: leaf.length - left, left, refused: leaf.filter((u) => u.refused).length, short: leaf.filter((u) => u.short).length, over_cap: leaf.filter((u) => u.over_cap).length, untimed: leaf.filter((u) => u.untimed).length, uncounted: leaf.filter((u) => u.uncounted).length },
       complete: idx.archive.complete, stopped: stop,
       this_run: { ...runInfo, requests: stats.requests, retries: stats.retries, pages: stats.pages, transactions_read: stats.txs, block_reads: stats.block_reads, state_reads: stats.state_reads, minutes: +((Date.now() - t0) / 60000).toFixed(1), raw_transactions_kept: rawDir ? rawTxs + rawBuf.length : 'no private archive in this run' },
       runs: [...((prev && prev.runs) || []), { at: runInfo.at, phase: cfg.phase, requests: stats.requests, transactions_read: stats.txs, added: runInfo.added, confirmed: runInfo.confirmed, minutes: +((Date.now() - t0) / 60000).toFixed(1), stopped: stop }].filter((r, i, a) => a.findIndex((x) => x.at === r.at) === i || i === a.length - 1).slice(-40),
       verify: verify || (prev && prev.verify) || null,
-      limits: 'On a busy contract (one with more executes than the cap, or in a group marked targeted) a change is found by its action name, by the DAO that sent it or by the key-holding account that sent it. A change with an action name never seen before, sent by an account that holds no role or admin key, would not be found there. Migrations and admin changes are found for every contract regardless.' };
+      limits: 'On a busy contract (one with more executes than the cap, one whose executes the node could not count, or in a group marked targeted) a change is found by its action name, by the DAO that sent it or by the key-holding account that sent it. A change with an action name never seen before, sent by an account that holds no role or admin key, would not be found there. Migrations and admin changes are found for every contract regardless.' };
     // one line per run in `runs`: the entry of this run replaces its own earlier publish
     report.runs = report.runs.filter((r, i, a) => i === a.map((x) => x.at).lastIndexOf(r.at));
     writeAt(P('contract-watch/archive/report.json'), JSON.stringify(report, null, 1));
@@ -352,6 +355,7 @@ export async function run(opts = {}) {
       const u = await unit(`execute|${a}`, `execute._contract_address='${a}'`, planned.changes ? { count: 'cap', cap: cfg.allCap, tally: a } : { count: true });
       if (u.total != null) C(a).executes = u.total;
       if (u.done) C(a).read = u.counted_only || u.refused ? 'targeted' : 'all';
+      if (u.uncounted) C(a).executes_not_counted = true;
       if (C(a).read === 'all' && man.actions[a]) C(a).actions = Object.fromEntries(Object.entries(man.actions[a]).sort((x, y) => y[1] - x[1]));
       await tick('quiet contracts');
     }
@@ -485,7 +489,7 @@ export async function run(opts = {}) {
   const out = publish(`contract-watch archive backfill: ${stats.records} record(s) read · ${stop ? 'stopped — ' + stop : 'this pass is done'}`);
   publishPrivate(`contract-watch raw: ${rawTxs} transaction(s)`);
   log(`requests ${stats.requests} (retries ${stats.retries}, failed ${stats.failed}) · pages ${stats.pages} · transactions read ${stats.txs} · records ${stats.records} (new ${runInfo.added}, already on file ${runInfo.confirmed}) · block reads ${stats.block_reads} · state reads ${stats.state_reads} · ${((Date.now() - t0) / 60000).toFixed(1)} min`);
-  log(`searches: ${out.report.searches.done} of ${out.report.searches.total} done · left ${out.left} · refused ${out.report.searches.refused} · over cap ${out.report.searches.over_cap}`);
+  log(`searches: ${out.report.searches.done} of ${out.report.searches.total} done · left ${out.left} · refused ${out.report.searches.refused} · over cap ${out.report.searches.over_cap} · too busy to count ${out.report.searches.uncounted}`);
   if (verify) log(`verify: code history ${verify.summary.code_history} contracts agree · admin ${verify.summary.admin} agree · address book unbroken: ${verify.summary.address_book_unbroken} · earlier records not found again: ${verify.summary.earlier_records_not_found}`);
   log(stop ? `STOPPED: ${stop}. Everything read is filed. Run the workflow again to carry on.` : (out.left ? `${out.left} search(es) left — run the workflow again.` : 'Done: nothing left to read.'));
   return { stats, stop, left: out.left, more: out.more, report: out.report, verify, man };
