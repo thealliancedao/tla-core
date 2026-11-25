@@ -32,6 +32,11 @@ on:
         required: false
         type: string
         default: '0'
+      topup:
+        description: 'layer1 only. LEAVE EMPTY to walk new wallets only. To also bring already-walked wallets up to today, type a label (the date you start, e.g. 2026-11-25) and use the SAME label on every run until it says complete.'
+        required: false
+        type: string
+        default: ''
       audit_sample:
         description: 'audit: wallets in the chain samples (cw20 check, missed search keys) — 80 takes ~20–40 min of node time'
         required: false
@@ -76,6 +81,7 @@ jobs:
           MAX_MINUTES: ${{ github.event.inputs.max_minutes }}
           SHARDS: ${{ github.event.inputs.shards }}
           LIMIT_WALLETS: ${{ github.event.inputs.limit_wallets }}
+          TOPUP: ${{ github.event.inputs.topup }}
           ARCHIVE_RPC: ${{ secrets.ARCHIVE_RPC }}
           ARCHIVE_LCD: ${{ secrets.ARCHIVE_LCD }}
           FLOW_KEY: ${{ secrets.FLOW_KEY }}

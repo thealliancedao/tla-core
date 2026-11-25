@@ -7,6 +7,25 @@ ARCHIVE_LCD, ARCHIVE_REPO_TOKEN — fine-grained, tla-archive only — and FLOW_
 
 ---
 
+## deep-walk 2.2.0 — 2026-11-25 — everyone who has used the Liquidity Alliance; a top-up for the wallets already walked
+Owner: "let's get the full wallet done so we can open it up to ALL … as far back as we can get."
+- **The cohort is wider.** A fifth rule: any wallet in the P&L record (`tla-flows/pnl/rollup.json` — everyone who ever deposited,
+  withdrew, claimed or was paid a bribe) or holding a lock or an LP position now (`member-data/participants`). The September cohort
+  was aDAO / Lion holders and big locks: about 600 people who used the Alliance were outside it.
+- **A walked wallet is never dropped.** Re-cutting the cohort keeps every wallet of the earlier one (`earlier_cohort`), so a holder
+  who sold since September keeps the history already read.
+- **Layer 1 top-up** (`topup` on the Action, `TOPUP=<label>`): a wallet already walked is searched again only above the height it
+  was walked to (`<key>='<wallet>' AND tx.height>N`) and the new transactions are appended as further parts — the months since
+  the first walk without re-reading four years. A wallet topped under a label is not topped again under it; a top-up with a failed
+  search records nothing and is done again from the same height; parts left by a stopped top-up are removed first. New wallets
+  are walked before top-ups. The log ends with how many wallets are left and whether layer 1 is complete. Layer 1 never starts a
+  further run by itself.
+- Gate `mock-layer1.mjs` 17/17 (a made-up node and made-up public files on localhost: the wider rule, the kept wallets, searches
+  cut at each wallet's own height, parts appended byte-safe, the manifest's sums, a failed search, the second run, nothing twice).
+- **Not changed yet:** inventory, layer 2, layer 3, flows and derive run as before on the wider cohort; whether layer 2 / layer 3
+  read only what is new for the added wallets and months is to be confirmed before they are run. Publishing a wallet's weekly
+  history for the page is a separate step (today the Member Portfolio chart reads the daily series, which begins 2026-08-11).
+
 ## 2026-11-25 — the Actions are named by group
 
 Owner: "the names are really messy in GitHub right now."
