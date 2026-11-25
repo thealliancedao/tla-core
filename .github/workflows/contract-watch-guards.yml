@@ -1,0 +1,56 @@
+name: contract-watch-guards — who may send a change, asked of the contracts (public nodes, simulation only)
+
+# 2026-11-25: for every kind of change the contract-watch record holds, a real message of that kind is SIMULATED from an address
+# that holds no role and no admin key, and the contract's answer is filed: the role it names, the address it names, or that it
+# went through. Nothing is signed, nothing is broadcast. Output: contract-watch/guards.json.
+#
+# PUBLIC NODES ONLY. This workflow has no secret and never reads the archive node (the script refuses to run if an archive
+# setting is present). One request at a time, at most 2 a second, at most `max` simulations a run; a kind of change already
+# answered for the code its contract runs now is not asked again.
+# Runs by hand, or when this workflow or its script changes.
+on:
+  workflow_dispatch:
+    inputs:
+      max:
+        description: 'simulations this run, at most (ceiling 300)'
+        required: false
+        default: '150'
+  push:
+    branches: [main]
+    paths: ['.github/workflows/contract-watch-guards.yml', '.github/scripts/contract-watch-guards/guards.mjs']
+permissions:
+  contents: write
+concurrency:
+  group: contract-watch-guards
+  cancel-in-progress: false
+jobs:
+  ask:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/contract-watch-guards
+            contract-watch
+            docs/curated
+            tla-voting/capture-registry.json
+          sparse-checkout-cone-mode: false
+      - name: the classifier's vocabulary (platform-crons, public)
+        uses: actions/checkout@v4
+        with:
+          repository: thealliancedao/platform-crons
+          path: platform-crons
+          sparse-checkout: |
+            tla-flows/lib
+            config
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: ask the contracts (simulation only)
+        env:
+          MAX_SIMULATIONS: ${{ github.event.inputs.max || '150' }}
+          PC_DIR: platform-crons
+        run: |
+          git config user.name "contract-watch-guards" && git config user.email "bot@thealliancedao.com"
+          node .github/scripts/contract-watch-guards/guards.mjs

@@ -18,6 +18,8 @@ Written by `org-tla-flows` (platform-crons `tla-flows/lib/admin-classifier.js`);
   `report.json` (what was read, what it added, the proofs), `census.json` (per contract: how many transactions of each
   kind the node holds, how the contract was read, the actions it reported), `manifest.json` (every search and how far it
   is), `block-times.json`.
+- `guards.json` — who may send a change: each contract's own answer when a real message of that kind was simulated from an
+  address without any role (`.github/scripts/contract-watch-guards`, public nodes, nothing signed).
 - `state/history/` — what a contract WAS, read from the archive node: `address-book.json` (the address book in the block
   before and the block of each change), `contracts.json` (each contract's code history, its admin at creation, what it is
   at the end of the range), `config-changes.json` (a contract's `{"config":{}}` before and after a change, as the paths

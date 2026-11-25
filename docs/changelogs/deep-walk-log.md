@@ -26,6 +26,12 @@ is all that is needed, and it does not use the archive. No schedule may use the 
   transactions go only to the private archive. Gate 57/57 against a stand-in node built from the stored walks
   (`mock-run.mjs`). README in the script folder.
 - `docs/curated/contract-watch.json`: each group says how the backfill reads it (`archive_read`, `archive_senders`).
+- **contract-watch-guards 1.0.0** (`.github/workflows/contract-watch-guards.yml`, public nodes, no secret): for every kind
+  of change on record, a real message of that kind is simulated from an address without any role, and the contract's own
+  answer is filed (`contract-watch/guards.json`) — the role it names, the address it names, or that it went through.
+  Nothing is signed or broadcast. Gate 18/18.
+- The groups gain four contracts the 2026-09-29 inventory holds: the "Liquidity Alliance" DAO core (its admin is the
+  Stewardship DAO), its proposal and pre-propose modules, and the contract the chain labels "Prop Gauge".
 
 ## CLOSED — 2026-10-01 — the backfill is complete; nothing left that only the node can give
 
