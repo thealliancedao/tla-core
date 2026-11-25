@@ -18,6 +18,8 @@ is all that is needed, and it does not use the archive. No schedule may use the 
   pool (`dex-data/history/weekly.json`), the lead-up of new PD placements (`lp-grades/leadup/placements.json`), early
   Votion depositors (`votion/archive-holders.json` — a finished list; the votion cron finds new depositors itself, within
   what public nodes hold).
+  `entity-verify.yml` and `vote-history.yml` also read the archive and started themselves when their files changed: that
+  start is removed too. Every workflow that reads the archive node now has one trigger, Run workflow.
 - **contract-watch-archive 1.0.0** (`.github/workflows/contract-watch-archive.yml`, `.github/scripts/contract-watch-archive/`):
   the one-time backfill of the contract-watch record. Every change of every watched contract since the chain began, the
   message as sent, the address book and each contract's config before and after a change, each contract's code history —
