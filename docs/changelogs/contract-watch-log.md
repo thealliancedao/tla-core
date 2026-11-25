@@ -1,5 +1,31 @@
 # Contract Watch Changelog
 
+## Rev 1.2 → 1.3 — 2026-11-25 — needs a look
+
+Owner: the page has to be quiet when there is nothing to worry about and draw attention when something is a big deal;
+for a change that was forced through, show what was and what the change makes possible.
+
+- **A banner over the page.** "Nothing out of the ordinary in the last 30 days" with the plain count, or each change
+  that needs a look with its reason in one line. On the real record 2 of 287 changes are marked, both of 24 Nov 2026.
+- **A change is marked only for what the record itself shows**, each reason a sentence that can be checked:
+  control moved from a DAO to an account (a role in the address book, or an admin key) · sent directly where every
+  earlier change of that kind to that contract came by proposal · sent directly while a vote on the same kind of change
+  was open, or after one did not pass · a difference a state read found that no transaction explains, where the record
+  is complete for the time between the reads. A passed proposal and the weekly routine are never marked. The mark is not
+  a verdict; "How to read a change" says what it means.
+- **What was, what is.** A change of the address book that carries its message shows a table: each role, who held it
+  before, who holds it now — and says where "before" comes from (the state read before the change; the block before the
+  change once the one-time archive read has it). The reason also lists what that account has sent directly since.
+- **Filter and link.** "Needs a look" beside the How filters; `#att=look` opens that view.
+- **Beside an address:** "admin of N" when the chain names it as the admin of watched contracts. Look-up: the proposals
+  an address voted on, from the DAOs' own vote records (the address and its weight, never a name).
+- **Ready for the one-time archive read** (`contract-watch/archive`, `contract-watch/state/history`): coverage shows it
+  under way and, when complete, the four checks against the chain; a contract's settings before and after a change; what
+  the contracts themselves require a role for, once that has been read.
+- The catch-up now reads the first days of September before November (it was four hours ahead of the oldest block the
+  public nodes hold); `contract-watch/rewalk.json`.
+- Gate 88/88 on the real record.
+
 ## Rev 1.1.1 → 1.2 — 2026-11-25 — which change set a role; the catch-up in dates
 
 - **Who holds the keys**, role by role: where a change on record carries its own message and that message names the role
