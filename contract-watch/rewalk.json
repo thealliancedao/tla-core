@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "note": "Block spans org-tla-flows walks again for contract changes only (platform-crons tla-flows 3.6.1). Each run takes the first unfinished job and writes next / walked / found / pruned_to / done back. Add a job to have a span walked; set done:true on a job, or delete this file, to stop.",
+  "note": "Block spans org-tla-flows walks again for contract changes only. Each run takes the FIRST unfinished job in this list and writes next / walked / found / pruned_to / first_walked / last_walked / done back. Add a job to have a span walked; set done:true on a job, or delete this file, to stop. Edit only between the cron's write (about :57, :12, :27, :42) and its next run.",
   "jobs": [
     {
       "id": "2026-11-24-single-list",
@@ -37,10 +37,22 @@
       "finished_at": "2026-11-25T05:24:34.635Z"
     },
     {
+      "id": "2026-11-24-messages",
+      "from": 23900625,
+      "to": 23900625,
+      "why": "the block of the 2026-11-24 change, read again so its two records carry the message as sent (org-tla-flows 3.8.0)"
+    },
+    {
+      "id": "nov-2026",
+      "from": 23544000,
+      "to": 23900399,
+      "why": "November 2026 first \u2014 the most recent weeks before the live stream (about 31 Oct 23:45 UTC to the block before the 2026-11-24 window)"
+    },
+    {
       "id": "since-the-stored-walks",
       "from": 21481531,
-      "to": 23905364,
-      "why": "from the end of the stored archive walk (2026-06-16) to the block before the forward stream's first; the public nodes hold only the last ~2.5 months of it",
+      "to": 23543999,
+      "why": "from the end of the stored archive walk (2026-06-16) to the start of November; public nodes hold it from block 22,638,832 (2026-09-01). November is read first by the job before this one.",
       "pruned_to": 22638831,
       "first_walked": {
         "height": 22638832,
