@@ -4,6 +4,22 @@ Owner: `platform-crons/votion/` (Render job `org-votion`, hourly at :20).
 Writes `tla-core/votion/`. Spec: SPEC-votion-capture.md (G2 from
 UI-DATA-READINESS — the data-loss-clock gap).
 
+# votion-chain-read 1.0.0 — 2026-11-25 — what the chain itself says about the vaults (an Action, not the cron)
+
+- **New file `votion/chain/vaults.json`**, written by the Action *Public · Votion vaults — what the chain says*
+  (`.github/workflows/votion-chain-read.yml`, script `.github/scripts/votion-chain-read/read.mjs`). For each of the eight vaults
+  on votion.money: the contract record (code id, the address that can upgrade it, creator, label), the contract's own code
+  history (every code it has run, the block and the message of each change), and its settings as the contract reports them —
+  `config` and the other queries it lists that take no argument. The same for a settings contract a vault points to (one
+  step) and for the gauge and the bribe manager; for an account named in a vault's settings or as its admin, how many keys
+  it needs (never the keys).
+- **Why:** the hourly capture holds what Votion's server *plans*; nothing here held what the chain says about the vault
+  contracts themselves — whether their code changed, who can change it, and what their settings are. The two Claim vaults run
+  other code than the six lock vaults and were in no file at all.
+- **Rules:** GET requests to public nodes only; nothing simulated, signed or sent; no archive node, no secret; one request at
+  a time, 2 a second at most. A query that would list depositors or positions is never sent.
+- Check: `mock-run.mjs` 19/19 (a made-up node, no network); the Action runs it before every read.
+
 # org-votion 1.5.0 → 1.5.1 — 2026-09-28 — the holder P&L (every position's story)
 
 - **1.5.1** — the daily positions gate at 19.5 h (20 h was missed by 0.6 s by the hourly job — 19 h 59 m 59.4 s — and waited an extra

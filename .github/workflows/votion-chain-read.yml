@@ -1,0 +1,48 @@
+name: "Public · Votion vaults — what the chain says"
+
+# 2026-11-25: for each Votion vault, the chain's own record — the code it runs, the address that can upgrade it, the
+# contract's code history (every code it has run, with the block and the message of each change) and its settings as the
+# contract reports them. The same for a settings contract a vault points to, and the settings of the gauge and the bribe
+# manager. Output: votion/chain/vaults.json.
+#
+# PUBLIC NODES ONLY, READ-ONLY. GET requests; nothing is simulated, signed or sent. This workflow has no secret and never
+# reads the archive node (the script refuses to run if an archive setting is present). One request at a time, at most
+# 2 a second, at most `max` requests a run. A query that would list depositors or positions is never sent.
+# Runs by hand, or when this workflow or its script changes.
+on:
+  workflow_dispatch:
+    inputs:
+      max:
+        description: 'LEAVE AT 400. The most requests this run may send (ceiling 500).'
+        required: false
+        default: '400'
+  push:
+    branches: [main]
+    paths: ['.github/workflows/votion-chain-read.yml', '.github/scripts/votion-chain-read/read.mjs']
+permissions:
+  contents: write
+concurrency:
+  group: votion-chain-read
+  cancel-in-progress: false
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/votion-chain-read
+            votion/chain
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: the script's own check (no network)
+        run: node .github/scripts/votion-chain-read/mock-run.mjs
+      - name: read the vaults (GET requests to public nodes)
+        env:
+          MAX_REQUESTS: ${{ github.event.inputs.max || '400' }}
+        run: |
+          git config user.name "votion-chain-read" && git config user.email "bot@thealliancedao.com"
+          node .github/scripts/votion-chain-read/read.mjs
