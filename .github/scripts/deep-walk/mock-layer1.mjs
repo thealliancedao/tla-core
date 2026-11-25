@@ -27,6 +27,8 @@ const partOf = (w, n) => `layer1/${w.slice(-1)}/${w}/part-${String(n).padStart(3
 const gz = (list) => zlib.gzipSync(list.map(x => JSON.stringify(x)).join('\n') + '\n');
 // the archive as the September walk left it: OLD and QUIET were in the cohort (they are in no public product today), ADAO too — all three walked
 wr('cohort/current.json', { cut_day: '2026-09-29', wallets: { [OLD]: ['adao'], [QUIET]: ['adao'], [ADAO]: ['adao'] } });
+const VAULT = 'terra1' + 'v'.repeat(58), GONE = addr('g');   // an address that is not a plain wallet, and a wallet that is only in an older dated cohort file
+wr('cohort/2026-09-29.json', { cut_day: '2026-09-29', wallets: { [OLD]: ['adao'], [QUIET]: ['adao'], [ADAO]: ['adao'], [VAULT]: ['automax_vp100k'] } }); wr('cohort/2026-09-01.json', { cut_day: '2026-09-01', wallets: { [GONE]: ['adao'] } });
 wr(partOf(OLD, 0), gz([{ h: 20, x: 'OLD20' }, { h: 100, x: 'OLD100' }])); wr(partOf(QUIET, 0), gz([{ h: 40, x: 'Q40' }])); wr(partOf(ADAO, 0), gz([{ h: 10, x: 'A10' }, { h: 50, x: 'A50' }]));
 wr('layer1/_manifest.json', { wallets: { [OLD]: { done: true, txs: 2, parts: 1, to_height: 100 }, [QUIET]: { done: true, txs: 1, parts: 1, to_height: 40 }, [ADAO]: { done: true, txs: 2, parts: 1, to_height: 50 } } });
 const oldPart0 = fs.readFileSync(A(partOf(OLD, 0)));
@@ -34,17 +36,18 @@ const run = (env) => new Promise((res) => { seen.length = 0; execFile('node', [p
 
 console.log('A. cohort — everyone who has used the Liquidity Alliance; a walked wallet is never dropped');
 { const r = await run({ MODE: 'cohort' }); const C = J('cohort/current.json'); const w = C.wallets;
-  ok(r.code === 0 && [ADAO, BIG, SMALL, PNL, OLD, QUIET].every(a => w[a]) && Object.keys(w).length === 6, 'the cohort is the union: NFT holders, big locks, everyone in the P&L record, everyone with a lock or position now, and the wallets of the earlier cohort', [r.code, Object.keys(w).length, r.out.slice(-200)]);
+  ok(r.code === 0 && [ADAO, BIG, SMALL, PNL, OLD, QUIET, VAULT, GONE].every(a => w[a]) && Object.keys(w).length === 8, 'the cohort is the union: NFT holders, big locks, everyone in the P&L record, everyone with a lock or position now, and the wallets of the earlier cohort', [r.code, Object.keys(w).length, r.out.slice(-200)]);
   ok(w[PNL].includes('tla_participant') && w[SMALL].includes('tla_participant') && w[BIG].includes('tla_participant') && w[BIG].includes('automax_vp100k') && !w[OLD].includes('tla_participant'), 'each wallet carries why it is in: the P&L record or a position → tla_participant; the big lock keeps its own rule too');
   ok(w[OLD].join() === 'earlier_cohort' && w[QUIET].join() === 'earlier_cohort' && w[ADAO].includes('adao') && w[ADAO].includes('earlier_cohort'), 'a wallet that is in no public product today stays in because it was walked before');
-  ok(!Object.keys(w).some(a => !/^terra1[02-9ac-hj-np-z]{38}$/.test(a)) && C.rules.length === 6 && C.counts.union === 6 && C.counts.tla_participant === 3, 'a malformed address in a source is left out; the rules and the counts are on the file', C.counts); }
+  ok(w[VAULT].join() === 'earlier_cohort' && w[GONE].join() === 'earlier_cohort', '2.2.1 an address of any earlier cohort file is kept — also one that is not a plain wallet, and one that is only in an older dated file');
+  ok(!w['not-an-address'] && C.rules.length === 6 && C.counts.union === 8 && C.counts.tla_participant === 3, 'a malformed address in a source is left out; the rules and the counts are on the file', C.counts); }
 
 console.log('B. layer1 without a top-up — only the new wallets are walked, from the start');
 { const r = await run({ MODE: 'layer1' }); const M = J('layer1/_manifest.json').wallets;
   ok(r.code === 0 && [BIG, SMALL, PNL].every(a => M[a] && M[a].done) && M[PNL].txs === 3 && M[PNL].to_height === 300 && rows(partOf(PNL, 0)).map(x => x.h).join() === '8,9,300', 'the three new wallets are walked in full', [r.code, r.out.slice(-300)]);
   ok(!seen.some(q => / AND tx\.height>/.test(q)) && !seen.some(q => q.includes(OLD) || q.includes(QUIET) || q.includes(ADAO)), 'no walked wallet is searched again, and no search is cut at a height');
   ok(fs.readFileSync(A(partOf(OLD, 0))).equals(oldPart0) && M[OLD].txs === 2 && M[OLD].topped === undefined, 'what the first walk stored is untouched');
-  ok(/3 new, 0 to top up \(no top-up asked for\)/.test(r.out) && /0 wallet\(s\) still to walk or top up — layer1 is complete/.test(r.out), 'the log says how many are new, how many are topped up, and whether layer1 is complete'); }
+  ok(/5 new, 0 to top up \(no top-up asked for\)/.test(r.out) && /0 wallet\(s\) still to walk or top up — layer1 is complete/.test(r.out), 'the log says how many are new, how many are topped up, and whether layer1 is complete'); }
 
 console.log('C. layer1 with a top-up — a walked wallet is searched only above the height it was walked to, and the new transactions are appended');
 { fs.mkdirSync(path.dirname(A(partOf(OLD, 7))), { recursive: true }); wr(partOf(OLD, 7), gz([{ h: 999, x: 'STRAY' }]));   // a part left by a top-up that stopped half-way
@@ -57,6 +60,9 @@ console.log('C. layer1 with a top-up — a walked wallet is searched only above 
   ok(/wallet\(s\) still to walk or top up — run layer1 again with the same settings/.test(r.out) && /1 wallet\(s\) still/.test(r.out), 'the log says one wallet is left and to run again');
   failFor = null; const r2 = await run({ MODE: 'layer1', TOPUP: '2026-11-25' }); const M2 = J('layer1/_manifest.json').wallets;
   ok(r2.code === 0 && seen.every(q => q.includes(ADAO)) && M2[ADAO].topped === '2026-11-25' && M2[ADAO].txs === 4 && M2[ADAO].to_height === 130 && rows(partOf(ADAO, 1)).map(x => x.h).join() === '120,130' && /layer1 is complete/.test(r2.out), 'the next run with the same label does only what was left, from the same height, and then says complete', [M2[ADAO], seen.length]);
+  ok(J('layer1/_manifest.json').wallets[GONE].topped === '2026-11-25' && J('layer1/_manifest.json').wallets[GONE].txs === 0, '2.2.1 a wallet with no transaction at all is topped like any other — it does not stay "left" for ever');
+  { const NEWB = addr('n'); TXS[NEWB] = [400, 401]; const C = J('cohort/current.json'); C.wallets[NEWB] = ['tla_participant']; wr('cohort/current.json', C); const rn = await run({ MODE: 'layer1', TOPUP: '2026-11-25' }); const x = J('layer1/_manifest.json').wallets[NEWB];
+    ok(rn.code === 0 && x.done && x.txs === 2 && x.topped === '2026-11-25' && !seen.some(q => / AND tx\.height>/.test(q)) && /1 new, 0 to top up/.test(rn.out) && /layer1 is complete/.test(rn.out), '2.2.1 a wallet walked in full during a labelled pass counts as up to date: the log says complete and no second pass is asked for', [x, rn.out.slice(-200)]); }
   const r3 = await run({ MODE: 'layer1', TOPUP: '2026-11-25' });
   ok(r3.code === 0 && seen.length === 0 && /0 wallets to walk/.test(r3.out), 'run again with the same label: nothing is searched');
   const hashes = [0, 1].flatMap(n => rows(partOf(OLD, n)).map(x => x.x)); ok(new Set(hashes).size === hashes.length, 'no transaction is stored twice across the parts'); }

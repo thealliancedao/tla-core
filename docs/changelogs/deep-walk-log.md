@@ -7,6 +7,15 @@ ARCHIVE_LCD, ARCHIVE_REPO_TOKEN — fine-grained, tla-archive only — and FLOW_
 
 ---
 
+## deep-walk 2.2.1 — 2026-11-25 — two things the first real re-cut and top-up showed
+- **"Never dropped" reads every cohort ever cut** (the dated files, not only the current one) and keeps every address in them. The
+  first re-cut kept 1,155 of the 1,159 September addresses: four are not plain wallets and were filtered out. Run `cohort` once more
+  to bring them back (they are in `cohort/2026-09-29.json`).
+- **The count of what is left is true.** A wallet walked in full during a labelled pass is marked up to date under that label (it
+  was counted as "still to top up" and would have been searched a second time); a wallet with no transaction at all is topped
+  like any other (it could never be, and would have kept the log at "run layer1 again").
+- Gate `mock-layer1.mjs` 20/20.
+
 ## deep-walk 2.2.0 — 2026-11-25 — everyone who has used the Liquidity Alliance; a top-up for the wallets already walked
 Owner: "let's get the full wallet done so we can open it up to ALL … as far back as we can get."
 - **The cohort is wider.** A fifth rule: any wallet in the P&L record (`tla-flows/pnl/rollup.json` — everyone who ever deposited,
