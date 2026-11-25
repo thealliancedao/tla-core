@@ -1,0 +1,934 @@
+{
+  "_meta": {
+    "description": "The contract watcher's groups. buckets = the groups, in display order; contracts = which group each contract is in and the name the watcher shows. EDIT THIS FILE to regroup or rename — the page and the cron read it on their next load / run. Every contract listed here is also WATCHED by org-tla-flows (in addition to config/contracts.js, docs/curated/known_contracts.json and tla-voting/capture-registry.json). A watched contract that is not listed shows under \"Not grouped yet\" with the label the chain gives it.",
+    "lastUpdated": "2026-11-25",
+    "seeded_from": "the TLA address book as read on 2026-08-11 (roles → group and name), docs/curated/known_contracts.json (protocol / type), tla-voting/capture-registry.json (pool labels), platform-crons config/contracts.js, and the contracts the Stewardship's executed proposals changed",
+    "naming": "Role names in capitals (ASSET_STAKING__stable …) are the address book's own."
+  },
+  "schemaVersion": 1,
+  "buckets": [
+    {
+      "id": "tla-control",
+      "label": "TLA control",
+      "blurb": "The contracts that run the Liquidity Alliance itself: the address book that says who holds each role, the weekly vote, and the lock that gives voting power."
+    },
+    {
+      "id": "gauge-stable",
+      "label": "Stable bucket",
+      "blurb": "The staking contract of the Stable bucket (its reward list decides which pools earn) and its Alliance connector."
+    },
+    {
+      "id": "gauge-bluechip",
+      "label": "Bluechip bucket",
+      "blurb": "The staking contract of the Bluechip bucket and its Alliance connector."
+    },
+    {
+      "id": "gauge-project",
+      "label": "Project bucket",
+      "blurb": "The staking contract of the Project bucket and its Alliance connector."
+    },
+    {
+      "id": "gauge-single",
+      "label": "Single bucket",
+      "blurb": "The staking contract of the Single bucket and its Alliance connector."
+    },
+    {
+      "id": "rewards",
+      "label": "Rewards",
+      "blurb": "Where vote incentives (bribes) are posted and claimed."
+    },
+    {
+      "id": "lp-tools",
+      "label": "LP tools",
+      "blurb": "The zapper and the compounder: the contracts that move LP in and out and hold the auto-compounding vaults."
+    },
+    {
+      "id": "stewardship",
+      "label": "PD Stewardship DAO",
+      "blurb": "Phoenix Directive Stewardship: the DAO that held the controller roles in the address book on 11 Aug 2026, its proposal module and the contracts its proposals manage."
+    },
+    {
+      "id": "votion",
+      "label": "Votion vaults",
+      "blurb": "The vaults that hold locked voting power and vote with it."
+    },
+    {
+      "id": "liquid-staking",
+      "label": "Liquid staking",
+      "blurb": "The staking hubs and their tokens (ampLUNA, arbLUNA, bLUNA, ampCAPA, ampROAR)."
+    },
+    {
+      "id": "adao",
+      "label": "Alliance DAO",
+      "blurb": "Alliance DAO's own contracts: the DAO, its treasury, its voting module and the NFT collection."
+    },
+    {
+      "id": "pools-astroport",
+      "label": "Pools · Astroport",
+      "blurb": "The pool contracts on Astroport that the capture follows."
+    },
+    {
+      "id": "pools-skeletonswap",
+      "label": "Pools · SkeletonSwap",
+      "blurb": "The pool contracts on SkeletonSwap that the capture follows."
+    },
+    {
+      "id": "solid",
+      "label": "Solid",
+      "blurb": "The Solid stablecoin system: market, custody, oracle, liquidation, and the tokens it wraps."
+    },
+    {
+      "id": "lending",
+      "label": "Lending",
+      "blurb": "Credia's portfolio contract and its receipt tokens."
+    },
+    {
+      "id": "other-daos",
+      "label": "Other DAOs",
+      "blurb": "DAOs and their tools that Alliance DAO members also use."
+    },
+    {
+      "id": "nft",
+      "label": "NFT",
+      "blurb": "Collections and marketplaces."
+    },
+    {
+      "id": "bridges",
+      "label": "Bridges",
+      "blurb": "Cross-chain message contracts."
+    },
+    {
+      "id": "tokens",
+      "label": "Tokens",
+      "blurb": "Token contracts the crons read that belong to no group above."
+    }
+  ],
+  "contracts": [
+    {
+      "address": "terra1hwxg6s732eparz3ys7sa4t5f64ngpd2w8syrca6z7ckv3fs9uqnsvrpcqa",
+      "bucket": "tla-control",
+      "name": "Address book (global config)"
+    },
+    {
+      "address": "terra1hfksrhchkmsj4qdq33wkksrslnfles6y2l77fmmzeep0xmq24l2smsd3lj",
+      "bucket": "tla-control",
+      "name": "Gauge — the weekly vote",
+      "role": "ASSET_GAUGE"
+    },
+    {
+      "address": "terra1uqhj8agyeaz8fu6mdggfuwr3lp32jlrx5hqag4jxexde92rzkamq3l62zg",
+      "bucket": "tla-control",
+      "name": "VP lock (voting escrow)",
+      "role": "VOTING_ESCROW"
+    },
+    {
+      "address": "terra1ym2495f63mdx63tu96085x2vf3xpy9z9k5urxwhvmf9jldm99q5qr4q6n8",
+      "bucket": "gauge-stable",
+      "name": "Stable bucket — Alliance connector",
+      "role": "CONNECTOR__stable"
+    },
+    {
+      "address": "terra1v399cx9drllm70wxfsgvfe694tdsd9x96p9ha36w7muffe4znlusqswspq",
+      "bucket": "gauge-stable",
+      "name": "Stable bucket — staking contract",
+      "role": "ASSET_STAKING__stable"
+    },
+    {
+      "address": "terra16l43xt2uq09yvz4axg73n8rtm0qte9lremdwm6ph0e35r2jnm43qnl8h53",
+      "bucket": "gauge-bluechip",
+      "name": "Bluechip bucket — Alliance connector",
+      "role": "CONNECTOR__bluechip"
+    },
+    {
+      "address": "terra14mmvqn0kthw6sre75vku263lafn5655mkjdejqjedjga4cw0qx2qlf4arv",
+      "bucket": "gauge-bluechip",
+      "name": "Bluechip bucket — staking contract",
+      "role": "ASSET_STAKING__bluechip"
+    },
+    {
+      "address": "terra1x8v9fujf3c78q2we23x0vgzmxgtt0hgvuvfsxy4w3ar9kcua4c6qqcnhyh",
+      "bucket": "gauge-project",
+      "name": "Project bucket — Alliance connector",
+      "role": "CONNECTOR__project"
+    },
+    {
+      "address": "terra1awq6t7jfakg9wfjn40fk3wzwmd57mvrqtt3a39z9rmet7wdjj3ysgw3lpa",
+      "bucket": "gauge-project",
+      "name": "Project bucket — staking contract",
+      "role": "ASSET_STAKING__project"
+    },
+    {
+      "address": "terra1u72y7gppxrsncctvgfyqduv3md6pgq77pqhz9rxgwl3dqgye00cq7vmf8u",
+      "bucket": "gauge-single",
+      "name": "Single bucket — Alliance connector",
+      "role": "CONNECTOR__single"
+    },
+    {
+      "address": "terra1qdz5qgafx88kp5mf6m2tah8742g4u5g2cek0m3jrgssexexk7g4qw6e23k",
+      "bucket": "gauge-single",
+      "name": "Single bucket — staking contract",
+      "role": "ASSET_STAKING__single"
+    },
+    {
+      "address": "terra1tuuwm8yrj54qeg0c8xu00aha9ryatyhtczq8qq2q8tntuw0auzas9037wh",
+      "bucket": "rewards",
+      "name": "Bribe manager (vote incentives)",
+      "role": "BRIBE_MANAGER"
+    },
+    {
+      "address": "terra1zly98gvcec54m3caxlqexce7rus6rzgplz7eketsdz7nh750h2rqvu8uzx",
+      "bucket": "lp-tools",
+      "name": "LP compounder (auto-compounding vaults)"
+    },
+    {
+      "address": "terra1qdjsxsv96aagrdxz83gwtjk8qvf2mrg4y8y3dqjxg556lm79pg5qdgmaxl",
+      "bucket": "lp-tools",
+      "name": "Zapper",
+      "role": "ZAPPER"
+    },
+    {
+      "address": "terra1k8ug6dkzntczfzn76wsh24tdjmx944yj6mk063wum7n20cwd7lxq4lppjg",
+      "bucket": "stewardship",
+      "name": "PD Stewardship — DAO core and treasury"
+    },
+    {
+      "address": "terra1pq9f4a8cn4cdvvm9j7v0mu8n5elf44tgtre8mzrfz3j4x6yyl2yq4hnkuk",
+      "bucket": "stewardship",
+      "name": "PD Stewardship — member group",
+      "why": "changed by Stewardship proposal A125 (update_members)"
+    },
+    {
+      "address": "terra1660g9mle5kfsq8c0p4k4hgr9ujdyr3m48c22cawy0akr98rmwksqehqnup",
+      "bucket": "stewardship",
+      "name": "PD Stewardship — proposal module",
+      "why": "the contract that holds and executes the Stewardship's proposals (dao-originations phoenix-directive/governance/proposals.json: proposalModule)"
+    },
+    {
+      "address": "terra16st8yfprkdl06kccktshd3p2vccq93xcn9mkhjl8s4jumyjtd4kqye0me5",
+      "bucket": "stewardship",
+      "name": "PD Stewardship — treasury tool (PDT)",
+      "why": "changed by Stewardship proposal A114 (pdt/alliance_redelegate)"
+    },
+    {
+      "address": "terra1zfd09ncxfusp0eh3wg3w8kvyaserf8gng8tzq42mv778elgqxzqq2r6ndt",
+      "bucket": "stewardship",
+      "name": "Sub-DAO adopted by proposal A182",
+      "why": "changed by Stewardship proposal A182 (execute_accept_admin_nomination)"
+    },
+    {
+      "address": "terra1mzelg87h36y6wvtgj6fh9s4crgx9acw63l3zc6f9px6pc5f8h8lqs0sux0",
+      "bucket": "votion",
+      "name": "Votion ampLUNA-1wk"
+    },
+    {
+      "address": "terra1dr7mv4w6chznedhp7uw6ntz9zjj4hxcdga2lmenlfuj35vmwpf0qhnzm5p",
+      "bucket": "votion",
+      "name": "Votion ampLUNA-3mo"
+    },
+    {
+      "address": "terra1v7aw9eartqrjrhwd6c7hkmlkspcy5q4tvc07gjmvzqezk3fttr4s3mffyz",
+      "bucket": "votion",
+      "name": "Votion ampLUNA-MAX"
+    },
+    {
+      "address": "terra16xzky47caqc3krsxpla58m36ttxcjty3zpp92344m2tere5t26ysuxkjuj",
+      "bucket": "votion",
+      "name": "Votion arbLUNA-1wk"
+    },
+    {
+      "address": "terra163jnveun52hxv2kg4ys9a28h20trmccr98tnrvr92snn6yzdeg7qd9zj9l",
+      "bucket": "votion",
+      "name": "Votion arbLUNA-3mo"
+    },
+    {
+      "address": "terra13aae4futz6jk7hmdv0gwm2xs6p4nxv4xwz5tc0c2vt4960u4j6jqpqmye9",
+      "bucket": "votion",
+      "name": "Votion arbLUNA-MAX"
+    },
+    {
+      "address": "terra1ecgazyd0waaj3g7l9cmy5gulhxkps2gmxu9ghducvuypjq68mq2s5lvsct",
+      "bucket": "liquid-staking",
+      "name": "ampLUNA token"
+    },
+    {
+      "address": "terra1vklefn7n6cchn0u962w3gaszr4vf52wjvd4y95t2sydwpmpdtszsqvk9wy",
+      "bucket": "liquid-staking",
+      "name": "ampROAR hub"
+    },
+    {
+      "address": "terra1se7rvuerys4kd2snt6vqswh9wugu49vhyzls8ymc02wl37g2p2ms5yz490",
+      "bucket": "liquid-staking",
+      "name": "arbLUNA token"
+    },
+    {
+      "address": "terra1l2nd99yze5fszmhl5svyh5fky9wm4nz4etlgnztfu4e8809gd52q04n3ea",
+      "bucket": "liquid-staking",
+      "name": "bLUNA hub"
+    },
+    {
+      "address": "terra17aj4ty4sz4yhgm08na8drc0v03v2jwr3waxcqrwhajj729zhl7zqnpc0ml",
+      "bucket": "liquid-staking",
+      "name": "bLUNA token"
+    },
+    {
+      "address": "terra186rpfczl7l2kugdsqqedegl4es4hp624phfc7ddy8my02a4e8lgq5rlx7y",
+      "bucket": "liquid-staking",
+      "name": "Eris ampCAPA Vault"
+    },
+    {
+      "address": "terra10788fkzah89xrdm27zkj5yvhj9x3494lxawzm5qq3vvxcqz2yzaqyd3enk",
+      "bucket": "liquid-staking",
+      "name": "Eris ampLUNA Hub"
+    },
+    {
+      "address": "terra1kye343r8hl7wm6f3uzynyyzl2zmcm2sqmvvzwzj7et2j5jj7rjkqa2ue88",
+      "bucket": "liquid-staking",
+      "name": "Eris ampLUNA Hub"
+    },
+    {
+      "address": "terra1r9gls56glvuc4jedsvc3uwh6vj95mqm9efc7hnweqxa2nlme5cyqxygy5m",
+      "bucket": "liquid-staking",
+      "name": "Eris Arbitrage Vault (arbLUNA Hub)"
+    },
+    {
+      "address": "terra1phr9fngjv7a8an4dhmhd0u0f98wazxfnzccqtyheq4zqrrp4fpuqw3apw9",
+      "bucket": "adao",
+      "name": "aDAO NFT Collection"
+    },
+    {
+      "address": "terra1m3ye6dl6s25el4xd8adg9lnquz88az9lur2ujztj9pfmzdyfz3xsm699r3",
+      "bucket": "adao",
+      "name": "aDAO NFT Minter (GoA claims)"
+    },
+    {
+      "address": "terra1csp8gsjk2yyxzqewza6lkjvwkspn7zs2jvamk9uf05crtcakf6gszk2g8y",
+      "bucket": "adao",
+      "name": "AllianceDAO"
+    },
+    {
+      "address": "terra1yqv0af22675wlcmgflxk4ve07vt8qlm999gk0cuw5l64r5xxgadsyg8ywv",
+      "bucket": "adao",
+      "name": "AllianceDAO Council Multi-Sig"
+    },
+    {
+      "address": "terra1va3tny5252fca04wqzf7gqh5naa8599nzxqq2vptycgv077zhmjqetanj2",
+      "bucket": "adao",
+      "name": "AllianceDAO Proposal Module"
+    },
+    {
+      "address": "terra1sffd4efk2jpdt894r04qwmtjqrrjfc52tmj6vkzjxqhd8qqu2drs3m5vzm",
+      "bucket": "adao",
+      "name": "AllianceDAO Treasury"
+    },
+    {
+      "address": "terra1h8psjgcsg9fef7w2yv0j6262sfcaszj8vs4tsy3uwla6zwtaspvqrp4l7v",
+      "bucket": "adao",
+      "name": "AllianceDAO Treasury (NFT holder)"
+    },
+    {
+      "address": "terra1c57ur376szdv8rtes6sa9nst4k536dynunksu8tx5zu4z5u3am6qmvqx47",
+      "bucket": "adao",
+      "name": "AllianceDAO Voting Module"
+    },
+    {
+      "address": "terra1a0h6vrzkztjystg8sd949qyrc6mw9gzxk2870cr2mukg53uzgvqs46qul9",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair ATOM-dATOM (single)"
+    },
+    {
+      "address": "terra1f9vmtntpjmkyhkxtlc49jcq6cv8rfz0kr06zv6efdtdgae4m9y9qlzm36t",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair ATOM-stATOM (single)"
+    },
+    {
+      "address": "terra1cupwgntu082ypw2ztgtxfzcenexcu6ggp5zzunn3yzfwgrvdcclqgjrjqg",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-ampLUNA (project)"
+    },
+    {
+      "address": "terra16nfwldn9j5xhry2y78gvm3x4vte8vu77zr3ctlan79w5f5aheawqnz7a4f",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-arbLUNA (single)"
+    },
+    {
+      "address": "terra1p9lcjw8knxhtv2pyr9wa8e2ushjnjllljvsuu9cugv7trqynjzasz4x52j",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-arbLUNA (single)"
+    },
+    {
+      "address": "terra1nwepezm3mghyxm7fjfhfr2d4jwqzndtncf9tclgunqfcwhe52mpq4sxaqr",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-ASTRO (project)"
+    },
+    {
+      "address": "terra1j3d29y506cvtavdpakdzl6e0g2xcskvmmulsetcd0jfwrpr8eu9qfe0dmf",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-ATOM (bluechip)"
+    },
+    {
+      "address": "terra1h32epkd72x7st0wk49z35qlpsxf26pw4ydacs8acq6uka7hgshmq7z7vl9",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-bLUNA (project)"
+    },
+    {
+      "address": "terra183wqgrwa2k0uvlz99j57c496gfuwgtaccrhv4stcjzv3ydacl9zq0hmf25",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-CAPA (project)"
+    },
+    {
+      "address": "terra1vhxl8ggscmhae3muvwvs2vs8ppprzqf07xngcdp798fwnrcksjxszqfa8n",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-EURe (stable)"
+    },
+    {
+      "address": "terra10yfnsqn20rzlnlzkeva5255q27zp6ws9te9uuql9e0lacfcze7zsffjct5",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-FUEL (project)"
+    },
+    {
+      "address": "terra10m23jmgtx0lvc6v5gffdmcutlmrgy9pnf8wun4mxft2xd3dnqdvsv392j5",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-INJ (bluechip)"
+    },
+    {
+      "address": "terra1xgdyzzhs2v2ne3us2kyj5ry47fwc7uk44k035dyyygq42xechwwqlddmcr",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-PAXG (bluechip)"
+    },
+    {
+      "address": "terra189v2ewgfx5wdhje6geefdtxefeemujplk8qw2wx3x5hdswn95l8qf4n2r0",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-ROAR (project)"
+    },
+    {
+      "address": "terra1e45ctmel6t5m9vdgxv3zxh3ecflkfcd6mr42sluzrqnhveqmy3fss338s7",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-SOLID (project)"
+    },
+    {
+      "address": "terra1re0yj0j6e9v2szg7kp02ut6u8jjea586t6pnpq6628wl36fphtpqwt6l7p",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-stLUNA (project)"
+    },
+    {
+      "address": "terra1crlsemxx6yjpeq3am9dzccln0dykusm685ecxscuyny7u596elqqj6xd9z",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-SWTH (project)"
+    },
+    {
+      "address": "terra1v3lqxl0eyte9x3nhdgcj8hwvjq76aupnnzz0yll8mxs5cckc29pqvg2scu",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-USDC (stable)"
+    },
+    {
+      "address": "terra1aategw0787y4fyunmwdvdqraxfc8jtxykyed2skx3p5fd3lkgkmsqry7pz",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-USDT (stable)"
+    },
+    {
+      "address": "terra10clh64cpvjjen8f24qz2046d24s79w2ev2dyd9ke29wmqdqp4yjs3cyk0y",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-wBNB.axl (bluechip)"
+    },
+    {
+      "address": "terra1v3xmc8nn8h8e7z55d80a72g4rgz6mrxyasxq089k8n6m40xldlksf2w5x8",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-wBNB.wh (bluechip)"
+    },
+    {
+      "address": "terra1mea829xtsnxwv4l9lhzs0tzpnyamjpz5y45a9tpp06jgdhjd48yqc4ales",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-WBTC (bluechip)"
+    },
+    {
+      "address": "terra1p996av7ftzj973swd4yt2er2sn3v9y5j9qfxz67gatnrpf8lfgwsel8hcg",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-WBTC (bluechip)"
+    },
+    {
+      "address": "terra1afkvgc0mxfqakqlaqpxdgy58n79x4r239q3tucxmrsqvqk7ce3ksnctxfu",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-WBTC.axl (bluechip)"
+    },
+    {
+      "address": "terra1a6d0lcvfzyllulaaazzg5j70yn4m3e2t90shtlxsr3fwhcg34g2sgwfr75",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-WHALE (project)"
+    },
+    {
+      "address": "terra1z8q0mwfgsxk25wv7egj5adanztvz9kv26t58hgavw9g5d7km9qqs72k22h",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-WHALE (project)"
+    },
+    {
+      "address": "terra16zzqwekwsqn4zlsyu4vhjr52ee2hdvppjcr8h22qznjadaazzdgsvd905d",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-wSOL.wh (bluechip)"
+    },
+    {
+      "address": "terra1u0sp5gaw9amfa8vsaaqvvjpqqdyz4eeslzdjsgaq40afctpx7f6s6augj2",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair LUNA-wstETH (bluechip)"
+    },
+    {
+      "address": "terra1g55qjcptzqgdyqfgzu5mj8x82955rvlxy4c37z5t6ldgz7cz033q0xr2lx",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair PAXG-WBTC (single)"
+    },
+    {
+      "address": "terra1rzw2egugtjhxz2x58z55kwldm96fzck8qsf9srf5v0uehf64a2asjsak68",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair SWTH-rSWTH (single)"
+    },
+    {
+      "address": "terra1ys7edvw89krf47n4zsz4c4m9das7ppltjtfv2epw85thqpvl6hhqn55m6y",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair USDC-EURe (bluechip)"
+    },
+    {
+      "address": "terra1fwjxdjpl98shj20l4swlen9hyu4lhvekrvqkqn393lzzghmsn2wqjdnvpu",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair USDC-SOLID (project)"
+    },
+    {
+      "address": "terra1dnssvse0fqw4d4gqc8kvchfud5r6e8cr7w9cdpervhl2pgr2eecquujpg6",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair USDC-USDT (single)"
+    },
+    {
+      "address": "terra1mps5z5gt2c2akwcp86mq0zhw66kdugtc3selcyradtje0vp0z49sfrk8jx",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair WBTC.axl-WBTC.osmo (single)"
+    },
+    {
+      "address": "terra129hvq9mgqtye4kg0cfmv9z6sq5f7sgpmrspr72968xx20gx4t2rqvpue0z",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair WHALE-ampWHALE (single)"
+    },
+    {
+      "address": "terra18hhsyrjac6hud4tc9q05s8em35utm6jndswhw5v56lh5ld37ml6secl2rd",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair WHALE-bWHALE (single)"
+    },
+    {
+      "address": "terra1yga5eepqnpg77gaj59uqfkm2qtllvpq642cmx5gj5lzjf5v88wzs2srzp7",
+      "bucket": "pools-astroport",
+      "name": "Astroport pair wstETH-WETH.axl (single)"
+    },
+    {
+      "address": "terra1hqq6pnx74q0wae7eqqu2wgddzr2xn8l9gvd33sfwqfew50qawj0sfn69fh",
+      "bucket": "pools-astroport",
+      "name": "ROAR-ampROAR LP (Astroport)"
+    },
+    {
+      "address": "terra1tkj3j48d0xrh932szzsap3w8htfv3gmj2zld06an2kp90xzq5kzqvtjwfl",
+      "bucket": "pools-astroport",
+      "name": "ROAR-ampROAR pair (Astroport)"
+    },
+    {
+      "address": "terra1tsx0dmasjvd45k6tdywzv77d5t9k3lpzyuleavuah77pg3lwm9cq4469pm",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair ampLUNA-LUNA (project)"
+    },
+    {
+      "address": "terra1d8ap3zyd6tfnruuuwvs0t927lr4zwptruhulfwnxjpqzudvyn8usfgl8ze",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair ampROAR-ROAR (single)"
+    },
+    {
+      "address": "terra1aa8nurhuk7rwedhjyzptggypuxd3y66qp4nsx6ph240g37esdm7qyheqkd",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair ATOM-dATOM (single)"
+    },
+    {
+      "address": "terra1frfcj4xhvx0emkup4vel5jun9zun0797j5yhn7ant3r4jzy9mkxqzcwev6",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair ATOM-LUNA (bluechip)"
+    },
+    {
+      "address": "terra1c439uc3qdlfuqncxae7l07nsdgjtu45g98yhn5ydjn2866nsw3ws0e0vte",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair ATOM-stATOM (single)"
+    },
+    {
+      "address": "terra1j5znhs9jeyty9u9jcagl3vefkvzwqp6u9tq9a3e5qrz4gmj2udyqp0z0xc",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair bLUNA-LUNA (project)"
+    },
+    {
+      "address": "terra15rzp38yq2cqy2jnewc9vgzqguf3t2q0gqpv9evg8tckrtqp8x44qezhthc",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair CAPA-LUNA (project)"
+    },
+    {
+      "address": "terra1wttdzwa6pdegtrdjdw49y0pd3dd8qd3cqn89j6t9v978lx05rr8sew5jyq",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-arbLUNA (single)"
+    },
+    {
+      "address": "terra1hvntefafgn05llkqyl6uxx6j0jjwmqjtxqdrwdm43s9tkzx7xkfqkcl7h6",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-ASTRO (project)"
+    },
+    {
+      "address": "terra1gny66hmejvrkra39cn7r8f7y7yg06hy3cv2xehpxraqfgjtdtpnqjtmu53",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-EURe (stable)"
+    },
+    {
+      "address": "terra1q2gd6kc7nt8xct94chrlsqtpxfs9rve0j76lquce624y5zp85cdseshh85",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-INJ (bluechip)"
+    },
+    {
+      "address": "terra126w5m24usxydxn0tjqd73k8uw06r42wttahf9t0cjyhmljlqhrdsjucx45",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-ROAR (project)"
+    },
+    {
+      "address": "terra18fved7svlqq9q9h23cg4uw97lllmg7fa03psevczy20ayhdwrm3sznjeh5",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-SOLID (project)"
+    },
+    {
+      "address": "terra12exvyhctk6ggqvzj2tlhsv769llctntf5zdj9erz6q2uq4h8hn8q5k5xpg",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-stLUNA (project)"
+    },
+    {
+      "address": "terra1nll8xy7m2dyac3sww2tg7dqj8s0mlak68drgtzd9gh4yvnvpplhsn3sxnv",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-SWTH (project)"
+    },
+    {
+      "address": "terra16a45v4k74w3yy30utfxdsekdlnks27sv48sn2suaf4wt7u6meq8scz75mx",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-USDC (stable)"
+    },
+    {
+      "address": "terra1wymgwg90ry2w04avy899ucmuuak7w8n3xw2msmw2jf9rfugre0ssenx4hn",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-USDt (stable)"
+    },
+    {
+      "address": "terra1m5juz238n27dd24d9e3kacmqax8gu7j5ee9hhfczpl52f3n7adaqudk2c9",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-wBNB (bluechip)"
+    },
+    {
+      "address": "terra12u7a9wkjqrkhxjcxx70uhfx8y49j4lclfnet2smw9agpnrv9chps27n9mh",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-wSOL (bluechip)"
+    },
+    {
+      "address": "terra12hs75vlyd38zjvhegsqzr8uvz2r764fdy8mhqw0qg0s2mv858yvstwmsf8",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair LUNA-wstETH (bluechip)"
+    },
+    {
+      "address": "terra1nezkc3lxdxv26hqwy44jr7j9typtk39pns254ev52s9guqc2zsyqx7hvc9",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair SWTH-rSWTH (single)"
+    },
+    {
+      "address": "terra1t9uvn05g0hdlx2nnqug3lt3pkla4sfdj0n0xnd66kmwvyt25y65sk37cej",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair USDC-EURe (bluechip)"
+    },
+    {
+      "address": "terra1wje8lj3372njwuw8t4scmyp94t5pyxxh89tsnkrfyxghqh6aunzqz4a9k3",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair USDC-SOLID (project)"
+    },
+    {
+      "address": "terra178ca7z2w6346wlkmxwpw80s2a5fmas9q28xlzegkt4c4rdam67aql5fgxj",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair USDC-USDt (single)"
+    },
+    {
+      "address": "terra1aysexulsnuxna62m5rlnuzfcvct3df93gd4q0kkjtjcqsvv93s5sd0fyd2",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair wBTC.osmo-LUNA (bluechip)"
+    },
+    {
+      "address": "terra13ywdferm4jtcperal9png3cvhtmar5se9nu4r49k7vujrakwy9zqa3rhwe",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair wBTC.osmo-wBTC.axl (single)"
+    },
+    {
+      "address": "terra12252e02w0k5yv9mryctth4j3y2sdas0xremw0jznzwal5v3xeqjst7q537",
+      "bucket": "pools-skeletonswap",
+      "name": "SkeletonSwap pair wETH-wstETH (single)"
+    },
+    {
+      "address": "terra1sf66d5vap897xlvv2hlcp4l20y4pp42r6ala4snk8mgd246jvufqwe0cnm",
+      "bucket": "solid",
+      "name": "CAPA governance"
+    },
+    {
+      "address": "terra1rga2lt3tymfcnq4zq0ju8j9rjku8nqf6qyz4tgudv4kmdt749l3qjs2vqa",
+      "bucket": "solid",
+      "name": "CAPA staking (Solid fee recipient)"
+    },
+    {
+      "address": "terra1t4p3u8khpd7f8qzurwyafxt648dya6mp6vur3vaapswt6m24gkuqrfdhar",
+      "bucket": "solid",
+      "name": "CAPA token"
+    },
+    {
+      "address": "terra14xsm2wzvu7xaf567r693vgfkhmvfs08l68h4tjj5wjgyn5ky8e2qvzyanh",
+      "bucket": "solid",
+      "name": "LunaX (Stader)"
+    },
+    {
+      "address": "terra10aa3zdkrc7jwuf8ekl3zq7e7m42vmzqehcmu74e4egc7xkm5kr2s0muyst",
+      "bucket": "solid",
+      "name": "SOLID (Solid stablecoin)"
+    },
+    {
+      "address": "terra1uz33y5dfazxspyfdvw30dwmpa5hhm4908tetpq5t0sm0z0c63rlspfkaau",
+      "bucket": "solid",
+      "name": "Solid Collector"
+    },
+    {
+      "address": "terra18uxq2k6wpsqythpakz5n6ljnuzyehrt775zkdclrtdtv6da63gmskqn7dq",
+      "bucket": "solid",
+      "name": "Solid Custody ampLUNA"
+    },
+    {
+      "address": "terra1fyfrqdf58nf4fev2amrdrytq5d63njulfa7sm75c0zu4pnr693dsqlr7p9",
+      "bucket": "solid",
+      "name": "Solid Custody bLUNA"
+    },
+    {
+      "address": "terra18l7vt34kfy2ycv3aej4fgq286s060n55f7uz0qyw9jpzn5gszkxsy3r7nw",
+      "bucket": "solid",
+      "name": "Solid Custody LunaX"
+    },
+    {
+      "address": "terra1shc5n0sqg30fzvg0e2j826j0g73ypmjw9vkf592ghdph5dhau25qha2rks",
+      "bucket": "solid",
+      "name": "Solid Custody USDC"
+    },
+    {
+      "address": "terra1fluajm00hwu9wyy8yuyf4zag7x5pw95vdlgkhh8w03pfzqj6hapsx4673t",
+      "bucket": "solid",
+      "name": "Solid Custody wBNB"
+    },
+    {
+      "address": "terra1jksfmpavp09wwla8xffera3q7z49ef6r2jx9lu29mwvl64g34ljs7u2hln",
+      "bucket": "solid",
+      "name": "Solid Custody wBTC"
+    },
+    {
+      "address": "terra1xyxxg9z8eep6xkfts4sp7gper677glz0md4wd9krj4d8dllmut8q8tjjrl",
+      "bucket": "solid",
+      "name": "Solid Custody wETH"
+    },
+    {
+      "address": "terra1e32q545j90agakl32mtkacq05990cnr54czj8wp0wv3nttkrhwlqr9spf5",
+      "bucket": "solid",
+      "name": "Solid Custody wSOL"
+    },
+    {
+      "address": "terra18mnmjp6jwg3q06r7nmhq2spcn5kdfpp3g7lhvgynucsmv4xqhllsdytcat",
+      "bucket": "solid",
+      "name": "Solid fee address"
+    },
+    {
+      "address": "terra188d4q69nen6vmwt7vcvz8lf54mc80cfvqtrznpmsrawftm86jkmsh4grzp",
+      "bucket": "solid",
+      "name": "Solid Liquidation Queue"
+    },
+    {
+      "address": "terra1h4cknjl5k0aysdhv0h4eqcaka620g8h69k8h0pjjccxvf9esfhws3cyqnc",
+      "bucket": "solid",
+      "name": "Solid Market"
+    },
+    {
+      "address": "terra19z3qj8lwrhla6x58jt5338e3hktfrn6x63ua4226wk2c7psh62psfghzu7",
+      "bucket": "solid",
+      "name": "Solid Oracle v1 (legacy)"
+    },
+    {
+      "address": "terra199pgv9dymcg9q8xtwsxk7yakazmvlf5ptkqh4zadcv7k0yqsal2q6tq7mv",
+      "bucket": "solid",
+      "name": "Solid Oracle v2"
+    },
+    {
+      "address": "terra10qnsw3wn4uaxs7en2kynhet2dsyy76lmprh2ptcz85d8hu59gkuqcpndnv",
+      "bucket": "solid",
+      "name": "Solid Overseer"
+    },
+    {
+      "address": "terra1qv3gtys4u8hacv9mdzk3gmc88z6gv5w2c9ksmcf868pl8q3er42snwgdn2",
+      "bucket": "solid",
+      "name": "USDC (Solid cw20 of USDC.n)"
+    },
+    {
+      "address": "terra1xc7ynquupyfcn43sye5pfmnlzjcw2ck9keh0l2w2a4rhjnkp64uq4pr388",
+      "bucket": "solid",
+      "name": "wBNB.wh (Wormhole)"
+    },
+    {
+      "address": "terra1r6ju9f643v353n88dxaqdvkthdnclycgds2qc6kyddqpmcr9dj5sdkvu37",
+      "bucket": "solid",
+      "name": "wBTC (Solid cw20 of WBTC.axl)"
+    },
+    {
+      "address": "terra164ye3v3pksjzl8nan9z3jd8xyhwpee7ws82l5y2gfcwqnekz9ujqts7v58",
+      "bucket": "solid",
+      "name": "wETH (Solid cw20 of WETH.axl)"
+    },
+    {
+      "address": "terra1ctelwayk6t2zu30a8v9kdg3u2gr0slpjdfny5pjp7m3tuquk32ysugyjdg",
+      "bucket": "solid",
+      "name": "wSOL.wh (Wormhole)"
+    },
+    {
+      "address": "terra1y6hfmr3lxxj6srduhlfz96x7sga2984pr757a0nrfuqxa9rqxapqcjv4zz",
+      "bucket": "lending",
+      "name": "Credia portfolio"
+    },
+    {
+      "address": "terra1jjvy4s4tyw3ym6s3wk896up6jthvha9vtwaetah3z33sd788lttswhrcpc",
+      "bucket": "lending",
+      "name": "wBTC.creda.a"
+    },
+    {
+      "address": "terra1juj3ymejnug9p92upphcq0prq4e0hpw6rcu20njf8tk7n9sl2wxqldr0mt",
+      "bucket": "other-daos",
+      "name": "ampCAPA DAO voting module"
+    },
+    {
+      "address": "terra14gv57x9lmuc04jzsmsz5f2heyfxfndey2v8hkkjt7z9p6d7xw35stx69j2",
+      "bucket": "other-daos",
+      "name": "DAODAO Rewards Distributor"
+    },
+    {
+      "address": "terra1e54tcdyulrtslvf79htx4zntqntd4r550cg22sj24r6gfm0anrvq0y8tdv",
+      "bucket": "other-daos",
+      "name": "Enterprise NFT Staking (legacy, abandoned)"
+    },
+    {
+      "address": "terra1rgnew3frtwkqnt7eypac25e0gyj2qa68lgfq0j2ch8c900wgdm9s0u559r",
+      "bucket": "other-daos",
+      "name": "Galactic Mining Club Council"
+    },
+    {
+      "address": "terra1mn4vhsg6p3hvry34c8fx67z56lqtugpkuxuu2sgfdfc7x037q9ds9jlxkv",
+      "bucket": "other-daos",
+      "name": "Galactic Mining Club DAO"
+    },
+    {
+      "address": "terra1yglrzqw4rvpqt7fj0fes92rl3np8rvnkd6pu84fdatmycs5pvkhqdgjrm7",
+      "bucket": "other-daos",
+      "name": "Galactic Mining Club DAO (old)"
+    },
+    {
+      "address": "terra1wyng69gnvvgmpnhew5yjdycz2jnvac6dpedmgk6p637xzc53phksa8mat6",
+      "bucket": "other-daos",
+      "name": "Galactic Punks DAO"
+    },
+    {
+      "address": "terra1jd2tam4svukk7pg8fv0dkj7zgwes9yw5c2h3wm0gkjcwdth2mpfsxxw6zd",
+      "bucket": "other-daos",
+      "name": "GMC Backing Wallet"
+    },
+    {
+      "address": "terra1zug2ur6d5ls7vgzwkh0m2002jrallfehpsadpltjqr3vhgvp6lnq90rj3w",
+      "bucket": "other-daos",
+      "name": "Lion DAO Rewards Distributor"
+    },
+    {
+      "address": "terra1xuqh84yz35h70p3ppt76dz5kgwwtwmsv34pg0gw6ld4ntptgjcrqe2e70t",
+      "bucket": "other-daos",
+      "name": "Lion DAO ROAR Staking"
+    },
+    {
+      "address": "terra1tkersa2mqwy2h8exj799qx2xrhdu0dkymk9psp6v0k4kz4tkxucssgluec",
+      "bucket": "other-daos",
+      "name": "Lion DAO Treasury"
+    },
+    {
+      "address": "terra127dehd2d6t7ynnezkxkre2w83ze0t7lmghpu6vn4y5mfmwfj5x9qqdh4sz",
+      "bucket": "other-daos",
+      "name": "Pixel Lions Voting Module"
+    },
+    {
+      "address": "terra1lxx40s29qvkrcj8fsa3yzyehy7w50umdvvnls2r830rys6lu2zns63eelv",
+      "bucket": "other-daos",
+      "name": "ROAR token"
+    },
+    {
+      "address": "terra1hzh32nfvzffzapa3xk7y0uqdaxfldjhw5nzthevsef2xwn28jn9qclac98",
+      "bucket": "other-daos",
+      "name": "ROAR/LUNA OTC Escrow"
+    },
+    {
+      "address": "terra15du229lqcxkn939pmjgklqunftf604q4wz87kt5awj6reghec5jqs0w0kj",
+      "bucket": "nft",
+      "name": "Atrium Marketplace"
+    },
+    {
+      "address": "terra1ej4cv98e9g2zjefr5auf2nwtq4xl3dm7x0qml58yna2ml2hk595s7gccs9",
+      "bucket": "nft",
+      "name": "BBL Necropolis Marketplace"
+    },
+    {
+      "address": "terra1kj7pasyahtugajx9qud02r5jqaf60mtm7g5v9utr94rmdfftx0vqspf4at",
+      "bucket": "nft",
+      "name": "Boost Marketplace (launch-nft)"
+    },
+    {
+      "address": "terra1c690mdrwdetnr09zfk3tf9xz9jhrgd9wpjyf3tuccj74ql09eqmq6sh7en",
+      "bucket": "nft",
+      "name": "pixeLions (role unconfirmed — NOT the collection)"
+    },
+    {
+      "address": "terra17z7fpaa8kah698xn5tarrcucvualdy4wsztkfc404g3garucpu6qmxp50g",
+      "bucket": "nft",
+      "name": "pixeLions NFT Collection"
+    },
+    {
+      "address": "terra13ynfm5p6k3yaavm9rfyffsa4e5rtxsgl9mmtxnqtnwpcy5t5t75ql66wr8",
+      "bucket": "bridges",
+      "name": "Polytone Listener (DAO Callback - Cosmos Hub)"
+    },
+    {
+      "address": "terra1hu8esz9yhfrhj2eyq70refpmmdem95my2rpc2d896nt2a3p34s0qf5chle",
+      "bucket": "bridges",
+      "name": "Polytone Listener (DAO Callback - Neutron)"
+    },
+    {
+      "address": "terra1r7fej5936y57hzhavw6wt6lld5vq27av3ftl7jjvlgcc4lh0ehrs2n9cvy",
+      "bucket": "bridges",
+      "name": "Polytone Note (→ Cosmos Hub)"
+    },
+    {
+      "address": "terra1eumwktcszm8p5p3apuxq4mrk008rx8sakntq68a5x6l6my33jl2qfvsfge",
+      "bucket": "bridges",
+      "name": "Polytone Note (→ Neutron)"
+    },
+    {
+      "address": "terra1nmnrcrvsxkrcylzmkn55ghjr3xe8z58x3ntcl97kgm4r7tq9wukslh68dg",
+      "bucket": "bridges",
+      "name": "Polytone Proxy (ROAR/WHALE IBC bridge)"
+    },
+    {
+      "address": "terra1nsuqsk6kh58ulczatwev87ttq2z6r3pusulg9r24mfj2fvtzd4uq3exn26",
+      "bucket": "tokens",
+      "name": "ASTRO token"
+    },
+    {
+      "address": "terra1gy73st560m2j0esw5c5rjmr899hvtv4rhh4seeajt3clfhr4aupszjss4j",
+      "bucket": "tokens",
+      "name": "VKR token"
+    },
+    {
+      "address": "terra15hhqg8gyz04zapynqtk7uvlsp7lzay7etrt9ann0276v94yae63sxygeat",
+      "bucket": "tokens",
+      "name": "wETH token"
+    }
+  ]
+}
