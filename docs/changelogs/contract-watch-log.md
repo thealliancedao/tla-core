@@ -1,5 +1,14 @@
 # Contract Watch Changelog
 
+## Rev 1.1 — 2026-11-25 — the message as sent
+
+- A change that was sent directly now shows **the message as sent** when the record carries it (org-tla-flows 3.8.0 reads it
+  from the transaction's own bytes): the call's own name and its values as short lines; a list of role–address pairs reads
+  "ROLE → holder". Nothing is interpreted beyond that. Where the message went to another contract than the one that
+  changed, the row says so.
+- A listed address the last state read got no answer for as a contract says that, instead of "not read yet".
+- Gate 61/61 (+ the naming rule: a contract carries a DAO's name only where that DAO is its admin in the state read).
+
 ## Rev 1.0 — 2026-11-25 — the page
 
 Owner request: a place where anyone can keep tabs on the Alliance's contracts — who changed one, what they changed and

@@ -1,6 +1,6 @@
 # Cron Changelog — tla-flows (org-tla-flows, Render)
 
-## tla-flows 3.5.15 → 3.7.0 (pnl 1.8.0) — 2026-11-25 — P&L files written when a wallet did something; contract changes
+## tla-flows 3.5.15 → 3.8.0 (pnl 1.8.0) — 2026-11-25 — P&L files written when a wallet did something; contract changes
 
 Full text: platform-crons `tla-flows/CHANGELOG.md`.
 
@@ -15,6 +15,9 @@ Full text: platform-crons `tla-flows/CHANGELOG.md`.
 - **3.7.0** — the state read (`contract-watch/state/current.json`): each watched contract's code id and admin and the
   TLA address book, once a day and when a change is recorded; every difference from the read before is filed as
   `observed: "state-read"`. `contract-watch/index.json` lists the stream's months.
+- **3.7.1** — the catch-up walk and a node's empty answer for a block it no longer holds (the long span stopped on it).
+- **3.8.0** — what was sent: a change that was sent directly carries the message as the transaction's own bytes hold it
+  (`sent`; the body's messages only — no memo, no signatures), attached only when the bytes agree with the events.
 
 ## pnl 1.4.0 (tla-flows 3.5.7) — 2026-09-30 — one event per stake; integrity report
 
