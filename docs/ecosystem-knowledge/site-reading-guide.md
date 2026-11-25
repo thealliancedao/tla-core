@@ -101,15 +101,25 @@ gauges; it is no longer mixed in.
 - **The Vote Market (T6.13 / VM1.7, 2026-09-27).** Three surfaces, ONE engine (`lib/vote-market.js`): TLA Stats' Vote Market tile (the
   overview), `/vote-market.html` (the simulator) and the app's Vote Market tab — the help bot's `vote_market` tool runs the same file.
   Every number is an **estimate on this round's pots and today's votes, if everything else stays the same**.
-  - **Where $ does the most**: "$50 buys +$918/wk" = the extra emissions a week the pool's LPs get next epoch if $50 is added and Votion
+  - **The tile (T8.17, 2026-11-25) is one screen.** At the top a question — *I add $X to a pool* — and its answer: "Votion adds N
+    votes", "Not enough for Votion" (with what the pool needs) or "Nothing moves", plus three figures: Votion's votes on the pool,
+    its LPs' APR next epoch, what its LPs earn a week. Under it one table of the round's bribes by bucket (pot · Votion's votes now →
+    after it casts · APR now → next epoch). The rest is in folds: *Why is Votion not including these pools?*, *Where would $X do the
+    most?*, *How Votion decides*, *Check against Votion's and Eris's own pages*. There are no tabs on the tile any more.
+  - **"Not included by Votion's optimizer right now"**: the pool has a pot, but Votion's server is not offering it to its optimizer,
+    so no bribe of any size moves Votion's votes until it does; the bribe is shared by the votes already on the pool. What is known:
+    Votion's vaults vote whatever one wallet casts, and that wallet follows Votion's server; nothing on chain keeps such a pool out
+    (it is on its reward list, the bribe contract takes any token, the vaults hold no list of pools — `votion/chain/vaults.json`);
+    Votion's output gives no reason. Say exactly that and no more — no motive, no person, no guess at a cause.
+  - **Where $X does the most** (a fold on the tile): "$50 buys +$918/wk" = the extra emissions a week the pool's LPs get next epoch if $50 is added and Votion
     re-solves; APR next epoch now → with it; "Votion if +$50" = Votion's votes moving in. Pools holding a winding-down asset (USDC.nbl /
     Noble USDC → USDC.inj) are never recommended; pools Votion has not been offered this round are left out of Best impact unless asked.
   - **A bribe's breakdown**: You pay − **Comes back to your votes** (your share of that pool's pot — only if your votes are on it) ±
     **elsewhere** (Votion's new votes diluting you, the pool you moved votes off; or a GAIN when Votion leaves pools you vote) = **Real cost
     this round**. Its LPs get the emissions bought per week.
   - **Votion's rule** (fitted on its own history, `votion/backtest/move-rule.json`): a vault re-votes a bucket only when it gains more than
-    $0.05 AND its split shifts more than 5% — otherwise it holds. It casts ~2.6 h before the Sunday 23:59 UTC deadline (≈ 21:20 UTC), so
-    a pot funded after that is too late for Votion this round. The simulator shows each vault's re-votes / holds and how often it did so.
+    $0.05 AND its split shifts more than 5% — otherwise it holds. It casts once a round, on Sunday between about 20:20 and 21:20 UTC (on chain it has been
+    20:28–20:31 UTC every Sunday since 13 Sep 2026); a pot funded after the cast is too late for Votion this round. The simulator shows each vault's re-votes / holds and how often it did so.
   - **Best split**: the most bribes for a wallet's VP (or a typed VP) across every bucket with Votion reacting — a starting point; a pool
     whose pot is small moves a lot when anyone else votes it.
   - Numbers agree everywhere: pots are priced once ($1,250 in 17 pots for round 204), Votion's moves are in real VP (its own units ÷ k).

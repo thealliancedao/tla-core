@@ -3,6 +3,10 @@
 Newest on top, UTC times, one entry per delivery. Spec: `docs/pending-changes/SPEC-mobile-app.md`.
 
 
+## 2.1.9 — 2026-11-25 · vote engine 1.6.1
+- The Vote Market tab loads engine 1.6.1: a funded pool that is off its bucket's reward list is shown as off the list, not as
+  "not included by Votion".
+
 ## 2.1.0 → 2.1.1 — 2026-09-27 · the Vote Market tab
 - **2.1.0** (owner: "a tool built specifically for mobile … a tab to this simulator and in that tab smaller tools or tabs for the three
   sections"): a pickable **Vote Market** tab (Me → Your five tabs) and a card on TLA that opens it. Three sub-tabs — **Where $ goes**

@@ -1,5 +1,30 @@
 # TLA Stats Changelog
 
+## T8.17 — 2026-11-25 — the Vote Market tile is one screen (tile 2.0.0, engine 1.6.1)
+Owner: "messy, confusing, hard to understand, difficult to navigate … this is the simplified version for the overview — what people
+would use it for and play with quickly; the simulator is the full page. I want to see what bribes do to drive Votion's VP and
+ultimately the rewards to these LPs."
+- **The question first** — *I add $X to a pool* — and **its answer**: a verdict in a few words ("Votion adds 3.87M votes." ·
+  "Not enough for Votion." · "Nothing moves.") and three figures: Votion's votes on the pool, its LPs' APR next epoch, what its LPs
+  earn a week; then who pays for it and that the totals do not change. The pool picker holds every bucket.
+- **One table** of the round's bribes (pool · pot · Votion's votes now → after it casts · APR), by bucket.
+- **Four folds**: *Why is Votion not including these pools?* (what is known and no more: one wallet casts the vaults' votes and
+  follows Votion's server; nothing on chain keeps the pools out — the chain read `votion/chain/vaults.json` is linked; Votion's
+  output gives no reason) · *Where would $X do the most?* (the old second tab, for the question's amount) · *How Votion decides* ·
+  *Check against Votion's and Eris's own pages*.
+- **Gone:** the four tabs (Votion's next move and Pots & rates repeated the table), the four stat boxes, "a vote costs $9.02 per
+  1M VP" and "the next 1M VP costs about $22 more" in the open view.
+- **Fixed — two figures for one thing.** "If included: needs about $80 more" on This round and "$54 more" on the other tabs were two
+  footings (every pot back together · this pool alone) shown as one fact. Every "if included" figure is now the first.
+- **Fixed — when Votion casts.** The tile said "about 2.6 h before close" (21:23 UTC). That is when an hourly capture first *shows*
+  the cast; the cast is in the hour before it (on chain: 20:28–20:31 UTC every Sunday since 13 Sep). The tile now gives the window
+  (Sun 20:23–21:23 UTC) and says a bribe has to be in before it.
+- **Engine 1.6.1:** a funded pool that is off its bucket's reward list is shown as off the list, not as "not included by Votion"
+  (ampCAPA since 24 Nov; no reading could include it). Also loaded by the simulator (VM1.10.5) and the app (2.1.9).
+- Gate `gate-vote-market.mjs`: 168/168 on today's files, 169 / 170 / 162 on three earlier sets; six planted mistakes each caught
+  (jargon back on a row, the tab strip back, the wrong verdict, the two footings, a token named in the why fold). Rendered at
+  1280 and at phone width: no text under 13px in the new parts, nothing runs off the side.
+
 ## T8.16 — 2026-11-25 — the tab bar; PD Watch is its own tab
 Owner: "PD placement tab from LP grades moved to the main tab alongside contract watch … hide Pools and remove docs from the bar …
 add in vote simulator — Overview, member portfolio, slippage simulator, vote simulator, LP grades, contract watch, PD watch."
