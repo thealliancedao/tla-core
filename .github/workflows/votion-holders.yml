@@ -2,14 +2,11 @@ name: votion-holders — every Votion depositor since launch (archive node)
 
 # 2026-10-16: the public LCDs have pruned early history, so the votion cron could not discover early depositors. This reads every
 # vault's full deposit history from the archive node and writes candidates to votion/archive-holders.json; the votion cron verifies
-# each by live balance. Runs on push of this file / the script, weekly, or by hand.
+# each by live balance. Runs by hand only.
+# 2026-11-25 (owner): the archive node is for backfill only, started by a person. The timer and the start-on-push were removed;
+# this workflow now runs ONLY from "Run workflow". Anything newer has to come from the forward capture, which does not use the archive.
 on:
   workflow_dispatch: {}
-  push:
-    branches: [main]
-    paths: ['.github/workflows/votion-holders.yml', '.github/scripts/votion-holders/**']
-  schedule:
-    - cron: '41 4 * * 1'
 permissions:
   contents: write
 concurrency:

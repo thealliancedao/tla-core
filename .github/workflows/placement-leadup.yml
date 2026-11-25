@@ -3,17 +3,14 @@ name: placement-leadup — the picked pools before each PD proposal opened (arch
 # 2026-10-16: for every PD bribe placement, each bribed pool's swaps and liquidity adds / withdrawals in the 14 days before the
 # proposal opened vs the 28 days before that, and whether the same wallets lead that activity across placements. Public file:
 # lp-grades/leadup/placements.json (aggregates; organisations named, individuals only counted). Wallet-level detail goes ONLY to the
-# private tla-archive repo (ARCHIVE_REPO_TOKEN). Log prints counts only. Runs on push of this file / the script, weekly, or by hand.
+# private tla-archive repo (ARCHIVE_REPO_TOKEN). Log prints counts only. Runs by hand only.
+# 2026-11-25 (owner): the archive node is for backfill only, started by a person. The timer and the start-on-push were removed;
+# this workflow now runs ONLY from "Run workflow". Anything newer has to come from the forward capture, which does not use the archive.
 on:
   workflow_dispatch:
     inputs:
       lead_days: { description: 'days before the proposal opened', required: false, default: '14' }
       base_days: { description: 'baseline days before the lead window', required: false, default: '28' }
-  push:
-    branches: [main]
-    paths: ['.github/workflows/placement-leadup.yml', '.github/scripts/placement-leadup/**']
-  schedule:
-    - cron: '23 5 * * 1'
 permissions:
   contents: write
 concurrency:

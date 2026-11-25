@@ -3,9 +3,11 @@ name: dex-history — weekly swap volume per TLA pool (archive node)
 # 2026-10-16: fills what the daily DEX capture (from 2026-05-12) lacks so past PD placements can be checked against the pool data from
 # before they were made. Liquidity comes from dex-data/state-history (already chain-read weekly since E97); this reads each pool's swaps
 # per week from the archive node (ARCHIVE_RPC) and writes dex-data/history/weekly.json (pool aggregates only). Resumable; starts its own
-# next run while pool-weeks are left (bounded by chain). Runs on push of this file / the script, nightly, or by hand.
+# next run while pool-weeks are left (bounded by chain). Runs by hand only.
 # 1.1.0 (2026-10-16): also who trades each pool each week (distinct traders, top-1/top-3 share, two-way share — aggregates only),
-# through the last completed epoch; the nightly run adds each new week.
+# through the last completed epoch.
+# 2026-11-25 (owner): the archive node is for backfill only, started by a person. The timer and the start-on-push were removed;
+# this workflow now runs ONLY from "Run workflow". Anything newer has to come from the forward capture, which does not use the archive.
 on:
   workflow_dispatch:
     inputs:
@@ -14,11 +16,6 @@ on:
       concurrency: { description: 'pool-weeks read at once', required: false, default: '4' }
       max_minutes: { description: 'stop cleanly after (job limit 6 h)', required: false, default: '320' }
       chain:      { description: 'how many more runs may start themselves while cells are left', required: false, default: '6' }
-  push:
-    branches: [main]
-    paths: ['.github/workflows/dex-history.yml', '.github/scripts/dex-history/**']
-  schedule:
-    - cron: '17 3 * * *'   # nightly: a no-op once every cell is read
 permissions:
   contents: write
   actions: write
