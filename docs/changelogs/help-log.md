@@ -24,8 +24,9 @@ Owner: "get the help bot brought up to speed … so it can answer questions on w
 - **A budget for the corpus** (`CORPUS_BUDGET_CHARS`, default 460,000). Each source had a cap; their sum had none, and the prompt had
   crept close to the model's window, where a question that needs several tool results fails instead of being answered. Above the
   budget the changelogs, specs, build queue and cron table are shortened in proportion (never below 6,000 characters each); knowledge
-  chapters, the data map and the live heads are never shortened. With today's sources that takes about 55,000 characters off those
-  files — a changelog is read to roughly its newest 14,000 characters instead of 20,000.
+  chapters, the data map and the live heads are never shortened. With today's sources that takes about 60,000 characters off those
+  files — a changelog is read to roughly its newest 14,000 characters instead of 20,000 — and the whole prompt is a little smaller
+  than it was before this version, new chapter, rules and tool included.
 - `GET /health` returns `version` and `corpus` (size, budget, what was shortened, any source that could not be read).
   `read_product` may read `contract-watch/**`.
 - Gate `gate-contract-watch-tool.mjs` — 72/72 on the real record (755 records, 288 changes): every count against a recount of the
