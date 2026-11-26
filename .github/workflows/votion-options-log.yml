@@ -1,0 +1,51 @@
+name: "Public · Votion's list — when a bribed pool left it or came back"
+
+# 2026-11-26: keeps votion/options-log.json — each time a pool that has a bribe stops being, or begins to be, among the
+# voting options of Votion's published plan, with the two hourly captures the change happened between.
+# Reads only votion/optimization/current.json in this repository (the hourly capture of Votion's own answer) and the
+# capture before it from git history. No node, no network, no secret. NOT SCHEDULED: runs when that file changes, when
+# this workflow or its script changes, or by hand. A run that finds no change leaves the file alone.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'votion/optimization/current.json'
+      - '.github/workflows/votion-options-log.yml'
+      - '.github/scripts/votion-options-log/log.mjs'
+permissions:
+  contents: write
+concurrency:
+  group: votion-options-log
+  cancel-in-progress: false
+jobs:
+  log:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 400
+          sparse-checkout: |
+            .github/scripts/votion-options-log
+            votion/optimization/current.json
+            votion/options-log.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: the capture before this one (for the "after" time)
+        run: |
+          prev=$(git log -n 2 --format=%H -- votion/optimization/current.json | sed -n 2p)
+          if [ -n "$prev" ]; then git show "$prev:votion/optimization/current.json" > "$RUNNER_TEMP/prev.json" || rm -f "$RUNNER_TEMP/prev.json"; fi
+      - name: log
+        run: |
+          if [ -s "$RUNNER_TEMP/prev.json" ]; then export PREV="$RUNNER_TEMP/prev.json"; fi
+          CUR=votion/optimization/current.json OUT=votion/options-log.json node .github/scripts/votion-options-log/log.mjs
+      - name: commit
+        run: |
+          git config user.name "votion-options-log" && git config user.email "bot@thealliancedao.com"
+          git add votion/options-log.json
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -m "votion: a bribed pool left or rejoined the list ($(date -u +%Y-%m-%dT%H:%MZ))"
+          for i in 1 2 3 4 5 6; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep $((i * 15)); done; exit 1

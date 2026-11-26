@@ -1,5 +1,16 @@
 # cron-votion — changelog
 
+## votion-options-log 1.0.0 — 2026-11-26 — a dated record of which bribed pools the published plan offers
+- **The owner (2026-11-26):** wants to watch his bribes toward the end of a round and see any last-minute change that would leave
+  them out. Until now "not offered since when" could only be found by walking the capture's git history by hand.
+- **`votion/options-log.json` (new, public):** `state` — every pool with a bribe for the round, `offered` or `not offered` in
+  Votion's published plan; `changes` — each change with the two hourly captures it happened between (`after`, `by`), the bucket,
+  the pool id and the round. It says what the published answer listed, never why. Rewritten only when something changes.
+- Workflow *Public · Votion's list — when a bribed pool left it or came back*: not scheduled; runs when the hourly capture
+  changes. No node, no network, no secret. Seeded with the change of 22 Nov 2026 (four pools, between the 20:20 and 21:20 UTC
+  captures) by running the same script on those two captures.
+- Shown on the site's new Optimizer Watch page (`optimizer-watch.html` 1.0.0).
+
 ## votion-chain-read 1.0.2 — 2026-11-26 — the numbered-round question in the form the contract takes
 - 1.0.1 asked `bribes {period: 213}`; the contract refuses a bare number. The form is `bribes {period: {period: 213}}`.
 

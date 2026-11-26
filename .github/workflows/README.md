@@ -40,6 +40,7 @@ An Action's *file name* never changes; docs and changelogs name Actions by file 
 | Public · Price backfill | `price-backfill.yml` | Historical prices and LST ratios for a chosen token → `price-history/`. | 2026-07-17 |
 | Public · Votion vaults — what the chain says | `votion-chain-read.yml` | For each Votion vault: the code it runs, the address that can upgrade it, the contract's own code history (every change, with its block and message) and its settings as the contract reports them → `votion/chain/vaults.json`. GET requests only; nothing simulated, signed or sent. Also runs by itself when its script changes. | 2026-11-25 |
 | Public · Contract Watch alerts — what needs a look | `contract-watch-alerts.yml` | Loads the Contract Watch page itself against the record and writes down the changes it marks "needs a look" → `contract-watch/alerts.json` (the home page's Contracts tab reads it). Public files only; no node. Not scheduled: runs when the record or the groups file changes, or by hand (by hand after the page's rule changes). |
+| Public · Votion's list — when a bribed pool left it or came back | `votion-options-log.yml` | Each time a pool that has a bribe stops being, or begins to be, among the voting options of Votion's published plan → `votion/options-log.json`, with the two hourly captures it happened between. Reads only the capture in this repository; no node, no network. Not scheduled: runs when the capture changes. The Optimizer Watch page shows it. |
 
 ## One-time · (done — kept for the record)
 
