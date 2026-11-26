@@ -46,7 +46,7 @@ in that DAO's `registry.json` with the matching `validAction`; otherwise
 worth maintaining: new proposals automatically get triaged against vetted
 knowledge, and anything new shows up as needing a human look.
 
-**Ownership rule (Camron, 2026-08-11):** aDAO's registry is audited by us.
+**Ownership rule (the owner, 2026-08-11):** aDAO's registry is audited by us.
 Other collections (Lion-DAO, Pixel-Lions) maintain their OWN registry file in
 their own folder — we don't know their contracts well enough to vouch for
 them. The tool renders whatever trust data each DAO's registry provides; an

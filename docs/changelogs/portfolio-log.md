@@ -244,7 +244,7 @@ assertions (new page surface = new baseline suite in the session workspace).
   org dailies. Vault labels derived from the factory vdenom
   ({duration}/{vtoken}).
 
-**P1.1 — same-day feedback round (Camron):**
+**P1.1 — same-day feedback round (the owner):**
 - **TLA-wide VP rank**: identity now ranks across ALL lock holders from the
   org member-data snapshot (fixture wallet: #4 of 203 — the old "#1" was the
   registered subset only), with a tap-to-open **peer ladder** modal: top
@@ -277,7 +277,7 @@ assertions (new page surface = new baseline suite in the session workspace).
 - **Trend paging**: 12w range added; ◀ earlier / later ▶ window paging —
   ready to walk into the epoch-ledger history when that derive lands.
 
-**P1.2 — second feedback round (Camron):**
+**P1.2 — second feedback round (the owner):**
 - **ampCAPA gov row completed**: now carries the pool's TLA reward APR
   (base/≈amplified pair — the gov-staked receipt IS an amplified position),
   pool share = your ampCAPA value ÷ ALL ampCAPA staked in TLA (non-amp +
@@ -294,7 +294,7 @@ assertions (new page surface = new baseline suite in the session workspace).
   catalog — never guessed), empty chains fold away, Injective excluded by
   construction (different key scheme).
 
-**P1.3 — third feedback round (Camron):**
+**P1.3 — third feedback round (the owner):**
 - **NFT valuation switched to the CONSERVATIVE floor** — min(live listing
   floor, recent sales floor) per tier. Root cause of the "value too high"
   report: Atrium listings WERE captured all along (19 live, SOLID-denom) and
@@ -311,7 +311,7 @@ assertions (new page surface = new baseline suite in the session workspace).
   with an honest empty-state that offers linking instead of pretending
   absence. Native Terra staking row also gains pending rewards (priced).
 
-**P1.4 — "make it mean something" round (Camron):**
+**P1.4 — "make it mean something" round (the owner):**
 - **"How you've done" card** (new, under the trend chart) — the honest
   bottom line: in-TLA-since fact (first epoch + real date; **the fixture
   wallet has been in since e96, TLA's literal first epoch, 2024-08-26 —

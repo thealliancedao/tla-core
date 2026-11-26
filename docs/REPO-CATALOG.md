@@ -132,7 +132,7 @@ NOW UNBLOCKED) · capture-registry Phase-2 extensions.
 SPEC-price-history-format · SPEC-token-catalog (staged table) ·
 SOURCE-AUDIT-DRAFT · UI-DATA-READINESS (G-gates; G5 apr/pool-status epoch
 series → satisfied by the dex-extension plan) · SPEC-grading-and-dex-data
-(OLD grading system, Camron-flagged remnant — retire after confirming no live
+(OLD grading system, the owner-flagged remnant — retire after confirming no live
 citation) · CHANGES_PENDING (the queue).
 
 ## SITE SHARED LIBS (added 2026-08-12 — read before touching any page)
