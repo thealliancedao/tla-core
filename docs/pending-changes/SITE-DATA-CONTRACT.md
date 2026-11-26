@@ -70,7 +70,7 @@ Fetch both sides and compare shapes first; a matching domain with a different
 schema is a PORT/ADAPTER, not a repoint.
 
 ## SWEEP 2 — 2026-08-11: curated governance migrated to the tenant repo
-**Principle applied (Camron):** legacy MACHINE data is method-tainted and not
+**Principle applied (the owner):** legacy MACHINE data is method-tainted and not
 worth auditing — discard and re-derive from org crons. What must be preserved
 is the CURATED knowledge: vetted addresses, trusted proposals/messages,
 queries. `adao_json_storage` is exactly that, and it fed 6 pages.

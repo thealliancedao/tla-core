@@ -149,7 +149,7 @@ UNHEALABLE from this API — flagged for the step-2 reader map: if no page
 consumes astroport weekly-avg they're remnant-tier anyway; if a page does,
 the honest options are a taint-note column or archiving pre-194 like SS's
 legacy-unverified. Gate 15/15 (D30 coverage math [194,195,196] proven).
-HEAL RERUN (Camron): REMOVE ASTRO_CHART_RANGE from Render, keep
+HEAL RERUN (the owner): REMOVE ASTRO_CHART_RANGE from Render, keep
 ASTRO_WEEKLY_BACKFILL=1, deploy latest commit, trigger once — expect
 "weekly backfill: 2 reachable" (+ skips logged for uncovered epochs) and a
 green 36-pool capture — then remove the backfill env.
@@ -172,7 +172,7 @@ count). Early-Monday guard: if no pool has the bucket yet, the weekly write
 is skipped and self-heals next run. Daily refresh means zero-freezes repair
 themselves as chart points land. pickLastCompleteEpoch removed (dead).
 
-**ONE-TIME HEAL (Camron, after commit):** on Render org-dex-data set
+**ONE-TIME HEAL (the owner, after commit):** on Render org-dex-data set
 ASTRO_WEEKLY_BACKFILL=1 and ASTRO_CHART_RANGE=D90, trigger once, verify the
 log line "weekly backfill: N reachable completed epochs" and that the logged
 bucket reach spans ~185–197, then REMOVE both envs (normal runs stay D30).
