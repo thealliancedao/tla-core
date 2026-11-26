@@ -12,7 +12,7 @@
 // refuses to run when an archive setting is present. One request at a time, at most 2 a second, at most MAX_REQUESTS a run.
 // A query that would list depositors or positions is never sent (see SKIP). Output: votion/chain/vaults.json (tla-core).
 import fs from 'fs'; import path from 'path'; import { execSync } from 'child_process'; import { fileURLToPath } from 'url';
-export const VERSION = 'votion-chain-read-1.0.1';   // 1.0.1 (2026-11-26): the bribe manager is also asked for the pots of the round being voted on and the one after (`bribes {period}`) — its plain `bribes` answer is the round already being paid, so a bribe just posted was not visible in this read
+export const VERSION = 'votion-chain-read-1.0.2';   // 1.0.2: the numbered-round form is {period:{period:n}} (1.0.1 sent a bare number, which the contract refuses)   // 1.0.1 (2026-11-26): the bribe manager is also asked for the pots of the round being voted on and the one after (`bribes {period}`) — its plain `bribes` answer is the round already being paid, so a bribe just posted was not visible in this read
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ACCT = /^terra1[0-9a-z]{38}$/, CONTRACT = /^terra1[0-9a-z]{58}$/;
 const readJsonAt = (p, d) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return d; } };
@@ -122,7 +122,7 @@ export async function run(opts = {}) {
   // 1.0.1: the pots per round, as the bribe manager holds them. The gauge's periods are weeks from 2022-10-31 00:00 UTC; the round being
   // voted on is the one that begins at the next flip (clock period + 1). Pots only — the answer names pools and tokens, no account.
   { const bm = doc.also['bribe-manager']; if (bm && !bm.info.error) { const clock = Math.floor((Date.now() - Date.UTC(2022, 9, 31)) / (7 * 864e5)); bm.round_being_voted = clock + 1; bm.bribes_by_round = {};
-      for (const p of [clock + 1, clock + 2]) { const r = await smart(bm.address, { bribes: { period: p } }); bm.bribes_by_round[p] = r.ok ? keep(r.json.data) : (r.answered ? { refused: trimErr(r.text) } : { error: 'no node answered' }); }
+      for (const p of [clock + 1, clock + 2]) { const r = await smart(bm.address, { bribes: { period: { period: p } } });   /* the form the contract takes for a numbered round; a bare number is refused */ bm.bribes_by_round[p] = r.ok ? keep(r.json.data) : (r.answered ? { refused: trimErr(r.text) } : { error: 'no node answered' }); }
       log(`bribe-manager: pots of round ${clock + 1} — ${Array.isArray((bm.bribes_by_round[clock + 1] || {}).buckets) ? bm.bribes_by_round[clock + 1].buckets.length + ' pools' : 'not read'}`); } }
   // one step: a settings contract a vault names, and the accounts it names
   const known = new Set([...VAULTS, ...ALSO].map((x) => x[2])); const follow = new Map(), accts = new Map();

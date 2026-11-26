@@ -1,5 +1,8 @@
 # cron-votion — changelog
 
+## votion-chain-read 1.0.2 — 2026-11-26 — the numbered-round question in the form the contract takes
+- 1.0.1 asked `bribes {period: 213}`; the contract refuses a bare number. The form is `bribes {period: {period: 213}}`.
+
 ## votion-chain-read 1.0.1 — 2026-11-26 — the pots of the round being voted on
 - The bribe manager's plain `bribes` answer is the round already being paid, so a bribe just posted for the round being voted on
   was not in `votion/chain/vaults.json`. The read now also asks `bribes {period}` for that round and the one after:
