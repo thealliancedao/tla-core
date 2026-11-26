@@ -1,5 +1,28 @@
 # Optimizer Watch Changelog
 
+## optimizer-watch.html 1.1.0 · lib/vote-market.js 1.6.2 — 2026-11-26 — a suggestion for Votion's page, in the layout of its pages
+- **The owner, the same day:** "I'm not trying to build our own version, I'm trying to provide an example of what Votion can do to
+  improve trust and transparency … you see the winner but you don't see the ones left out or why they were left out … I hate how
+  there isn't a combined view of all of them." He attached Votion's vault list and all eight vault pages.
+- **Reframed:** the page is titled *What Votion's page could show*; every part that is not on Votion's page today carries an
+  "added" mark. It stays in the site's own look and says whose page it is (it is not made to look like Votion's site).
+- **The alert (added), first on the page:** every pool that has a bribe and is not among the voting options — its bribe, what
+  Votion shows (not offered), what its own rule would give (votes and share), marked "possible error". No reason is given
+  because none is published.
+- **All eight vaults, one view (added):** each vault's voting power and share of Votion, whether it changes or keeps its vote in
+  each bucket with the gain Votion's plan gives, what it expects to collect; totals.
+- **One vault in the layout of Votion's own vault page:** period · calculated · vote before · total expected rewards, then each
+  bucket with current → optimized per pool, the change flag and Votion's own note, the expected rewards — and, **added under each
+  bucket**, the pools that are in that vault's bribes and not in its options (marked "possible error — not offered", with the
+  share the rule would give that vault), and offered pools that get 0% (under the going rate).
+- **Vault names (engine 1.6.2):** the short vaults are **1 Week** and **3 Months** (12 weeks) — the engine called them 1-month and
+  12-month. All eight page ids were checked against the chain read (`votion/chain/vaults.json`): id ↔ name ↔ contract match the
+  names and contract endings on Votion's own pages. TLA Stats' Votion total already counts all eight (10.19M votes a bucket).
+- **Found, not changed here:** the two Claim vaults and Votion's settings contract are not in the Contract Watch list or in
+  `known_contracts.json`, and the votion cron's on-chain vault products find vaults by one code id, which the Claim vaults do
+  not share.
+- Gate `gate-optimizer-watch.mjs` 44/44 (nine new checks); `gate-vote-market.mjs` 168/168 on two data sets after the name fix.
+
 ## optimizer-watch.html 1.0.0 — 2026-11-26 — a vote optimizer's decision, shown in full
 - **The owner (2026-11-26):** "Could we build an example of what trust and transparency would look like, so when we say this
   isn't working — we can't prove why — we can suggest making it more clear so we don't need to question it." Four parts asked for;
