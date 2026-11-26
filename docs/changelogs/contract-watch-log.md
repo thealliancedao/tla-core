@@ -1,5 +1,23 @@
 # Contract Watch Changelog
 
+## contract-watch.html 1.4.2 · contract-watch-alerts 1.0.0 — 2026-11-26 — the older marked changes are linked; the home page gets a Contracts tab
+- **The owner:** "I thought you said 4 in total — why do I only see 2?" The box at the top of the page counts the last 30 days
+  (the two changes of 24 Nov). The two older marked changes (1 Oct 2025, 8 Oct 2024) were in the list but the box did not say so
+  while it was showing. **Now** it adds "2 older changes on record also need a look", a link that opens all of them.
+- **One list.** The marked changes are one function on the page (`lookList` / `alertsData`): the box, the gate and the new file
+  below read it.
+- **`contract-watch/alerts.json` (new, public)** — every change on record that the page marks "needs a look", newest first:
+  key, time, title, contract, how it was sent, each reason as a sentence, transaction. Built by `.github/scripts/contract-watch-alerts/build.mjs`,
+  which loads the page itself in jsdom against the record — the rule is not written a second time. It refuses to write when the
+  page could not read the record or a governance capture did not load. Workflow *Public · Contract Watch alerts — what needs a look*:
+  not scheduled; runs when the record or the groups file changes, or by hand (by hand after the page's rule changes). Public
+  files only, no node, no secret. A run that finds the same list leaves the file alone.
+- **Home page (index 4.48, `lib/contract-alerts.js` 1.0.0):** a Contracts tab beside Props. Quiet: a plain link to this page.
+  When a change of the last 30 days is marked, the tab glows with the count and opens a panel listing each one, linked to its
+  entry here. See index-log.md.
+- Gates: `gate-contract-watch.mjs` 102/102 (two new checks; the wider-inventory check now reads the same inventory file the
+  page is served); `gate-contract-alerts.mjs` 17/17.
+
 ## contract-watch-archive 1.0.1 — 2026-11-25 — a contract too busy to count no longer leaves the backfill open
 - **What happened:** the first two real runs (09:55 and 11:39 UTC) each ended with one search left — the count of executes on a
   token contract. The node gives no answer to that count, so the search stayed open and the record stayed "not complete" although

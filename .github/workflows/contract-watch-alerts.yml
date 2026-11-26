@@ -1,0 +1,62 @@
+name: "Public · Contract Watch alerts — what needs a look"
+
+# 2026-11-26: writes contract-watch/alerts.json — every change on record that the Contract Watch page marks "needs a look".
+# The home page's Contracts tab reads that one small file (the record itself is about 7 MB, too much for a home page).
+#
+# HOW: it loads the Contract Watch page itself (aDAO-links-site contract-watch.html) in jsdom against the record in this
+# checkout and writes down what the page marks. The rule exists once, on that page; nothing here re-implements it.
+#
+# PUBLIC FILES ONLY. No chain node and no archive node are asked (the script refuses to run if an archive setting is
+# present); the only network requests are GETs of public files on raw.githubusercontent.com. No secret.
+# NOT SCHEDULED. Runs when the record changes (a change was filed, or the daily state read landed), when the groups file,
+# this workflow or its script changes, or by hand — by hand after the page's own rule changes, since that lives in the
+# other repository. A run that finds the same list leaves the file alone.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'contract-watch/events/**'
+      - 'contract-watch/state/**'
+      - 'contract-watch/accounts.json'
+      - 'docs/curated/contract-watch.json'
+      - '.github/workflows/contract-watch-alerts.yml'
+      - '.github/scripts/contract-watch-alerts/build.mjs'
+permissions:
+  contents: write
+concurrency:
+  group: contract-watch-alerts
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/contract-watch-alerts
+            contract-watch
+            docs/curated/contract-watch.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/checkout@v4
+        with:
+          repository: thealliancedao/aDAO-links-site
+          path: _site
+          sparse-checkout: |
+            contract-watch.html
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: jsdom
+        run: mkdir -p "$RUNNER_TEMP/cwa" && cp .github/scripts/contract-watch-alerts/build.mjs "$RUNNER_TEMP/cwa/" && cd "$RUNNER_TEMP/cwa" && npm init -y >/dev/null && npm i --no-audit --no-fund jsdom@24 >/dev/null
+      - name: build contract-watch/alerts.json from the page's own marks
+        run: CORE_DIR="$GITHUB_WORKSPACE" SITE_DIR="$GITHUB_WORKSPACE/_site" node "$RUNNER_TEMP/cwa/build.mjs"
+      - name: commit
+        run: |
+          git config user.name "contract-watch-alerts" && git config user.email "bot@thealliancedao.com"
+          git add contract-watch/alerts.json
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -m "contract-watch: what needs a look ($(date -u +%Y-%m-%dT%H:%MZ))"
+          for i in 1 2 3 4 5 6; do git pull --rebase origin main && git push origin HEAD:main && exit 0; sleep $((i * 15)); done; exit 1

@@ -13,13 +13,18 @@ directly.** Most changes are ordinary. The page stays quiet about those and mark
 
 ## The page, top to bottom
 
-- **Needs a look** banner (only when something is marked), then four tiles (changes on record · through a passed
+- **Needs a look** banner (only when a change of the **last 30 days** is marked; it also says how many older changes on
+  record are marked and links to them), then four tiles (changes on record · through a passed
   proposal · sent directly · seen in a state read), the latest change, and one line on what the record covers.
 - Four views: **Changes** (the list, filters How / What / Where, search by contract, address, transaction, asset or
   proposal number), **Contracts** (every watched contract by group: its code id, its admin, its changes), **Who holds
   the keys** (every role in the TLA address book, who holds it, what it is required for, how the holder signs) and
   **Look up an address** (everything on record that an address changed, the contracts it can upgrade, the roles it holds).
 - "How to read a change" and "What this record covers" at the bottom.
+- **On the home page:** a **Contracts** tab beside Props. With nothing marked in the last 30 days it is a plain link to this
+  page. When a change of the last 30 days is marked, the tab glows with the count and opens a list of those changes, each a
+  link to its entry here. It reads `contract-watch/alerts.json` — this page's own marks, written down — and adds no rule of
+  its own.
 - Links: `contract-watch.html#k=<record key>` one change · `#contract=<address>` one contract · `#address=<address>` one
   address · `#tx=<hash>` one transaction · `#att=look` only the marked changes · `#view=roles` who holds the keys ·
   `#how=direct`, `#kind=upgrade`, `#bucket=<group id>` filters.
@@ -133,7 +138,8 @@ role table comes from. The archive node is a courtesy to the project: the read w
 `contract-watch/index.json` (months, counts, coverage — read first) · `contract-watch/events/<YYYY>/<MM>.json` (the
 records) · `contract-watch/state/current.json` (each contract now; the address book) · `contract-watch/guards.json` ·
 `contract-watch/accounts.json` · `contract-watch/rewalk.json` · `docs/curated/contract-watch.json` (groups and names) ·
-changelog `docs/changelogs/contract-watch-log.md`. The help bot reads them with its `contract_watch` tool.
+`contract-watch/alerts.json` (every change on record that the page marks "needs a look", newest first — built by loading the
+page against the record, rewritten only when the list changes; anyone may read it) · changelog `docs/changelogs/contract-watch-log.md`. The help bot reads them with its `contract_watch` tool.
 
 ## For the help bot — how to answer
 

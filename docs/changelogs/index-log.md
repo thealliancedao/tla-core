@@ -1,5 +1,21 @@
 # Index Page Changelog
 
+## 2026-11-26 — index 4.48 · lib/contract-alerts.js 1.0.0: a Contracts tab beside Props
+
+- **The owner:** "something next to the Props tab … when something is alerting it is glowing or showing it needs attention,
+  because by default it would be hidden. If no alerts are present or in the past 30 days then it is just a forward to the
+  contract watcher."
+- **Quiet:** the tab is a plain link to Contract Watch. No glow, no count.
+- **Alerting:** when a change of the last 30 days is marked "needs a look" on Contract Watch, the tab glows amber with the count.
+  A click opens a panel in the home window: when · what changed · which contract · how it was sent · each reason, every row a
+  link to that change on Contract Watch; below, how many older changes are also marked, what the mark means, and a link to the
+  page. Props brings the props back; a second click closes the panel; Ctrl/Cmd-click opens the page.
+- **Where the marks come from:** `tla-core contract-watch/alerts.json`, built by running the Contract Watch page on the record
+  (contract-watch-log.md). The tab only applies the 30-day window. If the file cannot be read the tab stays a plain link — no
+  alert is ever invented. The panel repeats the page's own sentences: no verdict, no motive, no person.
+- Gate `gate-contract-alerts.mjs` 17/17 (real tab bar, real alerts file; quiet in four ways; the window to the second; data as
+  text). Rendered on a desktop and a phone: no text under 13px, no sideways scroll on the phone.
+
 ## 2026-11-25 — lib/site-header.js 1.14.0: one TLA tab bar
 
 - `SiteHeader.TLA_TABS` / `SiteHeader.tlaTabs('<tab>')`: the TLA tab bar is one list — Overview · Member Portfolio · Slippage

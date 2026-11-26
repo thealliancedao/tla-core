@@ -39,6 +39,7 @@ An Action's *file name* never changes; docs and changelogs name Actions by file 
 | Public · FCD harvest (old Terra indexer) | `fcd-harvest.yml` | Transaction history from Terra's FCD indexer (the chain's start → January 2025) → `archive/fcd/`. | 2026-09-12 |
 | Public · Price backfill | `price-backfill.yml` | Historical prices and LST ratios for a chosen token → `price-history/`. | 2026-07-17 |
 | Public · Votion vaults — what the chain says | `votion-chain-read.yml` | For each Votion vault: the code it runs, the address that can upgrade it, the contract's own code history (every change, with its block and message) and its settings as the contract reports them → `votion/chain/vaults.json`. GET requests only; nothing simulated, signed or sent. Also runs by itself when its script changes. | 2026-11-25 |
+| Public · Contract Watch alerts — what needs a look | `contract-watch-alerts.yml` | Loads the Contract Watch page itself against the record and writes down the changes it marks "needs a look" → `contract-watch/alerts.json` (the home page's Contracts tab reads it). Public files only; no node. Not scheduled: runs when the record or the groups file changes, or by hand (by hand after the page's rule changes). |
 
 ## One-time · (done — kept for the record)
 
