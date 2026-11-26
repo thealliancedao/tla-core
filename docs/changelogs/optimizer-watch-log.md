@@ -1,5 +1,14 @@
 # Optimizer Watch Changelog
 
+## optimizer-watch.html 1.4.2 — 2026-11-26 — other voters' votes, on the face of the error tile
+- **The owner**, relaying a reader of the page: "this isn't showing what other people are voting for — that is the key metric".
+- **What was true:** the figures already counted them — Votion's rule is `votes = pot ÷ rate − votes already there`, and "already
+  there" is every other voter — and an opened row said so. The error tile itself did not.
+- **Now on the tile, for each pool:** the votes already on the pool from other voters · what the bribe pays per 1M votes with
+  every vote counted · Votion's going rate in the bucket · how many times that the pool pays.
+- **Gate:** 72/72 (two new: the tile's figures against the engine; the missing pool with the most votes from others is the one
+  the rule gives the fewest votes per bribe dollar). One planted fault, caught. Run on two data sets (04:45 and 10:20 UTC).
+
 ## optimizer-watch.html 1.4.1 — 2026-11-26 — a deposit token says what is behind it
 - **The owner**, on the row "vcausdci": "what LP is this? … if you hover, a tooltip could say."
 - **What it is, from the chain:** not an LP pair. The token is Credia's deposit token for USDC.inj — the token contract's own
