@@ -1,5 +1,22 @@
 # Optimizer Watch Changelog
 
+## optimizer-watch.html 1.3.0 — 2026-11-26 — now vs expected as one picture; the selected vault is its own tile
+- **The owner:** "the lockup by lockup view needs more separation so it is obvious it changes the tile below … the error text is
+  a word wall and lacking visuals — the part that shows now vs should-be needs to be more clear … at the bottom of each pool in
+  that tile an expandable of the other pools that visually shows the system sees them, or calls out errors … if there are errors
+  maybe it changes or flashes."
+- **NOW vs EXPECTED:** two boxes side by side — what Votion shows · what its own rule gives — each with votes and the pool's APR.
+  Used in the alert, in a pool's row on the main card, and in a vault's bucket. The paragraphs are gone; one short line remains
+  ("listed by Votion, not offered, no reason published").
+- **The selected vault** is a framed tile of its own under the table: "Selected vault", its name and voting power; the picked row
+  says "shown below"; a hint line sits between the two; the tile flashes when the pick changes.
+- **Each bucket of a vault ends in a fold of every pool of the bucket**, each with a state chip (in the plan · offered, bribe under
+  the rate · missing, possible error · no bribe · off the reward list). With nothing missing it is a plain fold ("every one
+  accounted for"). When bribed pools are missing it turns red, pulses and says how many; the missing pools come first, each as
+  the NOW vs EXPECTED picture.
+- A bucket a vault **keeps** is drawn as kept (no red or green), with the optimizer's split said beside it.
+- Gate `gate-optimizer-watch.mjs` 52/52.
+
 ## optimizer-watch.html 1.2.0 — 2026-11-26 — one picture for all of Votion; the rest folded away
 - **The owner:** "we could do a way better job of adding visual elements and compacting text — sharp and easy to see quickly, with
   expandable details … for the whole view I was thinking combined, how all these will shift the LPs affected … if an LP is losing
