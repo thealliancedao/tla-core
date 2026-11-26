@@ -1,5 +1,11 @@
 # cron-votion — changelog
 
+## votion-chain-read 1.0.1 — 2026-11-26 — the pots of the round being voted on
+- The bribe manager's plain `bribes` answer is the round already being paid, so a bribe just posted for the round being voted on
+  was not in `votion/chain/vaults.json`. The read now also asks `bribes {period}` for that round and the one after:
+  `also["bribe-manager"].round_being_voted` and `.bribes_by_round` (pools and tokens only — no account). Two more GET requests.
+  Gate `mock-run.mjs` 19/19.
+
 Owner: `platform-crons/votion/` (Render job `org-votion`, hourly at :20).
 Writes `tla-core/votion/`. Spec: SPEC-votion-capture.md (G2 from
 UI-DATA-READINESS — the data-loss-clock gap).
