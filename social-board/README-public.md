@@ -19,7 +19,8 @@ Requires Python 3.10+. `classify.py` and `verify.py --relabel` need an Anthropic
 
 ## What is published and what is not
 Published (public build): ideas, questions, open questions, commitments, announcements, support — sender, date, topics,
-a one-line summary and the link to the original message. Plus the manifest (counts, id ranges, content hashes, prompt hash,
+who or what the message is about, a one-line summary, the link to the original message, the name of the person replied to,
+and reply / reaction counts. The board page itself embeds no data: it reads `data/messages.json`, the file the manifest hashes. Plus the manifest (counts, id ranges, content hashes, prompt hash,
 model), coverage, the hand-check results, and every override/exclusion with its note.
 
 Not published, by design: message text, tone, stance, reply behaviour, per-person tables. The model reads these for the

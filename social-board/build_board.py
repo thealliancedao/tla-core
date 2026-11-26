@@ -102,8 +102,8 @@ a{color:var(--acc);text-decoration:none}a:hover{color:var(--acc2);text-decoratio
 /* header — mirrors lib/site-header.js */
 .sh{position:sticky;top:0;z-index:40;background:rgba(10,11,15,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.06)}
 .sh-wrap{max-width:1400px;margin:0 auto;padding:.7em 1.5em;display:flex;align-items:center;gap:1.2em}
-.sh-brand{display:flex;align-items:center;gap:.8em;flex:0 0 auto}.sh-brand img{height:42px;width:auto}.sh-brand h1{margin:0;font-size:1.15em;font-weight:800;color:#fff;letter-spacing:.01em;line-height:1.1}
-.sh-brand .sub{display:block;font-size:.72em;font-weight:500;color:var(--mut);margin-top:2px}.sh-brand .sub b{color:var(--against);font-weight:700}
+.sh-brand{display:flex;align-items:center;gap:.8em;flex:1 1 auto;min-width:0}.sh-brand>div{min-width:0}.sh-brand img{height:42px;width:auto}.sh-brand h1{margin:0;font-size:1.15em;font-weight:800;color:#fff;letter-spacing:.01em;line-height:1.1}
+.sh-brand .sub{display:block;font-size:.72em;font-weight:500;color:var(--mut);margin-top:2px;white-space:normal;max-width:60ch}.sh-brand .sub b{color:var(--against);font-weight:700}
 .sh-nav{display:flex;flex:1;justify-content:center;gap:.45em;flex-wrap:wrap}
 .sh-tab{min-width:92px;height:2.6em;display:inline-flex;align-items:center;justify-content:center;gap:.5em;color:#fff;font-weight:700;font-size:.92em;padding:0 .9em;border-radius:.5em;background:rgba(31,41,55,.5);border:1px solid #374151;box-shadow:0 10px 15px -3px rgba(0,0,0,.3);transition:transform .15s,background .15s;white-space:nowrap;cursor:pointer;font-family:inherit}
 .sh-tab:hover{background:rgba(55,65,81,.8);transform:scale(1.04)}
@@ -208,7 +208,7 @@ footer{max-width:1400px;margin:0 auto;padding:10px 1.5em 30px;color:var(--dim);f
 <main id="main"></main>
 <footer>Private analytics over public Telegram groups · nothing here is published · every count links to its source messages</footer>
 <script>
-const DATA=__DATA__, PUBLIC=__PUBBOOL__, KINDS=__KINDS__, MIN_DATE="__MINDATE__", COVERAGE=__COVERAGE__, ROLES=__ROLES__, MANIFEST=__MANIFEST__, EXCL=__EXCL__;
+let DATA=__DATA__; const PUBLIC=__PUBBOOL__, KINDS=__KINDS__, MIN_DATE="__MINDATE__", COVERAGE=__COVERAGE__, ROLES=__ROLES__, MANIFEST=__MANIFEST__, EXCL=__EXCL__;
 const rolesOf=s=>(ROLES.people[s]||{}).roles||[];
 const badge=s=>rolesOf(s).map(r=>`<span class="role" style="--rc:${esc(ROLES.colors[r]||'#9aa1ad')}" title="${esc((ROLES.people[s]||{}).verified||'')}">${esc(r)}</span>`).join('');
 const PRIMARY=PUBLIC?[['overview','Overview'],['targets','Teams & people'],['qp','Questions & ideas'],['search','Search'],['about','About']]
@@ -239,7 +239,7 @@ function filtered(){
  const c=$('#fchat').value,f=$('#ffrom').value,t=$('#fto').value,s=$('#fsender').value,ro=$('#frole').value,tg=$('#ftarget').value,q=$('#fq').value.toLowerCase(),n=$('#fnot').checked,lab=$('#flab').checked,kd=$('#fkind').value;
  const kindOk=d=>!kd||(kd==='openq'?(d.kind==='question'&&!d.nrep):kd==='notable'?d.notable:kd==='hostile'?d.tone==='hostile':kd==='reacted'?(d.rx&&d.rx[0]>=3):d.kind===kd);
  return DATA.filter(d=>kindOk(d)&&(!c||d.chat===c)&&(!f||d.date>=f)&&(!t||d.date<=t+'~')&&(!s||d.sender===s)&&(!ro||rolesOf(d.sender).includes(ro))&&(!tg||d.targets.includes(tg))&&(!n||d.notable)&&(!lab||d.kind!=='unlabeled')
-   &&(!q||(d.text+' '+d.summary+' '+d.topics.join(' ')+' '+d.sender).toLowerCase().includes(q)));
+   &&(!q||((d.text||'')+' '+d.summary+' '+d.topics.join(' ')+' '+d.sender).toLowerCase().includes(q)));
 }
 function count(rows,key){const m={};rows.forEach(r=>{const v=key(r);(Array.isArray(v)?v:[v]).forEach(x=>{if(x)m[x]=(m[x]||0)+1;});});return Object.entries(m).sort((a,b)=>b[1]-a[1]);}
 const stAt=(r,t)=>t?((r.st&&r.st[t])||r.stance||'none'):(r.stance||'none');   // stance toward one target (falls back to overall)
@@ -256,9 +256,9 @@ function stanceList(rows,key,onclick,limit){const all=rows;if(onclick==='goPerso
  const sorter=PUBLIC?'':`<span class="sorter">sort: ${['volume','critical','supportive'].map(x=>`<a href="#" class="${sortBy===x?'on':''}" onclick="setSort('${x}');return false">${x}</a>`).join('')}</span>`;
  return sorter+legend+items.map(([k,n])=>{const sub=rows.filter(r=>(Array.isArray(key(r))?key(r):[key(r)]).includes(k));const c=(onclick==='goTarget'||onclick==='drillBoth')?stanceOf(sub,k):stanceOf(sub);
   return `<div class="srow" onclick="${onclick}('${esc(k).replace(/'/g,"\\'")}')"><div class="nm" title="${esc(k)}">${esc(k)}${onclick==='goPerson'?badge(k):''}</div>${PUBLIC?kbar(sub):sbar(c)}<div class="tot" title="${totals?'substantive posts / all posts incl. chatter':''}">${n}${totals&&totals[k]!==n?`<span style="color:var(--dim)"> / ${totals[k]}</span>`:''}</div></div>`;}).join('');}
-function card(r){const txt=esc(r.text);const long=r.text.length>420;
+function card(r){const txt=esc(r.text||'');const long=(r.text||'').length>420;
  return `<div class="msg ${esc(r.stance)} ${r.notable?'notable':''}"><div class="top"><b onclick="goPerson('${esc(r.sender).replace(/'/g,"\\'")}')">${esc(r.sender)}</b>${badge(r.sender)}<span class="d">${esc(r.date.slice(0,16))}</span><span>${esc(r.chat)}</span>${r.reply_to?'<span>↩ reply</span>':''}${r.nrep?`<span class="rep">${r.nrep} repl${r.nrep>1?'ies':'y'}</span>`:''}${r.rx?`<span class="rxs" title="${esc(r.rx[2].join(', '))}${r.rx[2].length?' …':''}">${esc(r.rx[1])} <b>${r.rx[0]}</b></span>`:''}<a href="${esc(r.url)}" target="_blank">open ↗</a></div>
- ${r.rt?`<div class="rt">↩ <b>${esc(r.rt[0])}</b>: ${esc(r.rt[1])}</div>`:''}<div class="sum">${r.ov?`<span class="ovm" title="${esc(r.ov)}">✎ corrected</span> `:''}${esc(r.summary||r.text.slice(0,140))}</div><div class="txt${long?'':' open'}" onclick="this.classList.toggle('open')">${txt}</div>${long?'<div class="more">click text to expand</div>':''}
+ ${r.rt?`<div class="rt">↩ <b>${esc(r.rt[0])}</b>${r.rt[1]?': '+esc(r.rt[1]):''}</div>`:''}<div class="sum">${r.ov?`<span class="ovm" title="${esc(r.ov)}">✎ corrected</span> `:''}${esc(r.summary||(r.text||'').slice(0,140))}</div>${txt?`<div class="txt${long?'':' open'}" onclick="this.classList.toggle('open')">${txt}</div>${long?'<div class="more">click text to expand</div>':''}`:''}
  <div class="tags">${r.kind!=='unlabeled'?`<span class="tag ${esc(r.kind)}">${esc(r.kind)}</span>`:'<span class="tag">unlabeled</span>'}${r.tone?`<span class="tag ${esc(r.tone)}">${esc(r.tone)}</span>`:''}${r.stance&&r.stance!=='none'?`<span class="tag ${esc(r.stance)}">${esc(r.stance)}</span>`:''}${r.targets.map(t=>`<span class="tag" onclick="goTarget('${esc(t).replace(/'/g,"\\'")}')" style="cursor:pointer">→ ${esc(t)}</span>`).join('')}${!PUBLIC&&r.tp&&r.tp!=='none'&&r.rt?`<span class="tag ${esc(r.tp)}">${r.tp==='for'?'backs':r.tp==='against'?'against':'mixed on'} ${esc(r.rt[0])}</span>`:''}${!PUBLIC&&r.ad?`<span class="mv ${r.ad==='direct'?'good':r.ad==='none'?'bad':''}">${r.ad==='direct'?'answers':r.ad==='partial'?'partly answers':'does not answer'}</span>`:''}${(r.mv||[]).map(m=>`<span class="mv ${['ad-hominem','subject-change','dismissal','misstates-other','denies-prior'].includes(m)?'bad':['evidence','concedes'].includes(m)?'good':''}">${esc(m)}</span>`).join('')}${r.topics.map(t=>`<span class="tag">#${esc(t)}</span>`).join('')}</div></div>`;}
 let listSort='newest';
 function list(rows,max){rows=[...rows].sort((a,b)=>listSort==='reacted'?((b.rx?b.rx[0]:0)-(a.rx?a.rx[0]:0))||b.date.localeCompare(a.date):listSort==='replied'?(b.nrep-a.nrep)||b.date.localeCompare(a.date):b.date.localeCompare(a.date));const n=rows.length;rows=rows.slice(0,max||400);return rows.length?`<div class="msgs">${rows.map(card).join('')}</div>${n>rows.length?`<div class="empty">showing ${rows.length} of ${n} — narrow the filters to see the rest</div>`:''}`:'<div class="empty">nothing matches</div>';}
@@ -286,7 +286,7 @@ function raised(rows){
  if(!rq.trim()) return h;
  const ws=rq.toLowerCase().split(/\s+/).filter(Boolean);
  const kinds=window.rqall?null:new Set(['idea','question','announcement','feedback']);
- const hits=lab.filter(r=>(!kinds||kinds.has(r.kind))&&ws.every(w=>(r.text+' '+r.summary+' '+r.topics.join(' ')).toLowerCase().includes(w))).sort((a,b)=>a.date.localeCompare(b.date));
+ const hits=lab.filter(r=>(!kinds||kinds.has(r.kind))&&ws.every(w=>((r.text||'')+' '+r.summary+' '+r.topics.join(' ')).toLowerCase().includes(w))).sort((a,b)=>a.date.localeCompare(b.date));
  if(!hits.length) return h+`<div class="empty">nothing matches — try fewer or different words</div>`;
  const who=count(hits,r=>r.sender).slice(0,8), byk=count(hits,r=>r.kind), byc=count(hits,r=>r.chat);
  h+=`<div class="kpis"><div class="kpi"><b>${hits.length}</b><span>times raised</span></div><div class="kpi"><b style="font-size:1.05em">${esc(hits[0].date.slice(0,10))}</b><span>first · ${esc(hits[0].sender)}</span></div><div class="kpi"><b style="font-size:1.05em">${esc(hits.at(-1).date.slice(0,10))}</b><span>latest · ${esc(hits.at(-1).sender)}</span></div><div class="kpi"><b style="font-size:1.05em">${who.map(([s,n])=>esc(s)+' '+n).slice(0,3).join(' · ')}</b><span>raised most by</span></div></div>`;
@@ -362,7 +362,7 @@ function replies(rows){const lab=rows.filter(r=>r.kind!=='unlabeled'&&r.rt);
  h+=`<div class="card beh"><table><tr><th>person</th><th class="num">replies</th><th class="num">answers</th><th class="num">partly</th><th class="num">doesn't</th><th>moves (click the name for the pairs)</th></tr>${rowsT.map(([s,p])=>`<tr class="click" onclick="drill='${esc(s).replace(/'/g,"\\'")}';render()"><td>${esc(s)}${badge(s)}</td><td class="num">${p.n}</td><td class="num"><span class="pct d">${Math.round(100*p.direct/p.n)}%</span></td><td class="num"><span class="pct p">${Math.round(100*p.partial/p.n)}%</span></td><td class="num"><span class="pct n">${Math.round(100*p.none/p.n)}%</span></td><td>${mvs(p)}</td></tr>`).join('')}</table><div style="color:var(--dim);font-size:.8em;margin-top:8px">people with fewer than 3 labeled replies are not listed. "answers" = the reply engages the actual point of the question or criticism; it says nothing about whether the answer is right.</div></div>`;
  return h;}
 function pairsList(rows){rows=[...rows].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,150);
- return rows.map(r=>{const parent=DATA.find(x=>x.chat===r.chat&&x.id===r.reply_to);return `<div class="pair">${parent?card(parent):`<div class="msg"><div class="top"><b>${esc(r.rt[0])}</b><span>(not in this page)</span></div><div class="txt open">${esc(r.rt[1])}</div></div>`}${card(r)}</div>`;}).join('')||'<div class="empty">nothing</div>';}
+ return rows.map(r=>{const parent=DATA.find(x=>x.chat===r.chat&&x.id===r.reply_to);return `<div class="pair">${parent?card(parent):`<div class="msg"><div class="top"><b>${esc(r.rt[0])}</b><span>(not in this page)</span></div>${r.rt[1]?`<div class="txt open">${esc(r.rt[1])}</div>`:''}</div>`}${card(r)}</div>`;}).join('')||'<div class="empty">nothing</div>';}
 function coverage(){
  let h=`<div class="hd"><h2>Coverage</h2><span class="n">what is in the store (board.sqlite) — not just what is on this page</span></div>`;
  h+=`<div class="card cov"><table><tr><th>chat</th><th>first message</th><th>last message</th><th class="num">messages</th><th class="num">substantive</th><th class="num">labeled</th><th style="width:140px">labeled %</th><th class="num">on this page</th></tr>`;
@@ -375,7 +375,7 @@ function overview(rows){
  const lab=rows.filter(r=>r.kind!=='unlabeled');const k=count(lab,r=>r.kind);const tone=count(lab,r=>r.tone);const g=x=>(k.find(y=>y[0]===x)||[0,0])[1];const tn=x=>(tone.find(y=>y[0]===x)||[0,0])[1];
  let h=`<div class="hd"><h2>Overview</h2><span class="n">${rows.length} messages in view · ${lab.length} labeled</span></div>`+hint('Click a tile, a team or a name. Green = supportive, amber = mixed, red = critical, grey = neutral. Everything respects the filters above.');
  const K=(v,n,l,col)=>{const go={idea:"view='qp';qpTab='idea'",question:"view='qp';qpTab='question'",openq:"view='qp';qpTab='openq'",commitment:"view='qp';qpTab='commitment'",support:"view='search';srTab='feed';$('#fkind').value='support'",criticism:"view='search';srTab='feed';$('#fkind').value='criticism'",hostile:"view='search';srTab='hostile'",notable:"view='search';srTab='notable'"}[v]||`view='${v}'`;return `<div class="kpi link" onclick="${go};drill=null;render()"><b${col?` style="color:var(--${col})"`:''}>${n}</b><span>${l}</span></div>`;};
- h+=`<div class="kpis">${K('idea',g('idea'),'ideas')}${K('question',g('question'),'questions')}${K('openq',lab.filter(r=>r.kind==='question'&&!r.nrep).length,'open questions','q')}${K('commitment',g('commitment'),'commitments','teal')}${K('support',g('support'),'support','for')}${K('criticism',g('criticism'),'criticism','crit')}${PUBLIC?'':K('hostile',tn('hostile'),'hostile','hostile')}${K('notable',lab.filter(r=>r.notable).length,'notable')}</div>`;
+ h+=`<div class="kpis">${K('idea',g('idea'),'ideas')}${K('question',g('question'),'questions')}${K('openq',lab.filter(r=>r.kind==='question'&&!r.nrep).length,'open questions','q')}${K('commitment',g('commitment'),'commitments','teal')}${K('support',g('support'),'support','for')}${PUBLIC?'':K('criticism',g('criticism'),'criticism','crit')}${PUBLIC?'':K('hostile',tn('hostile'),'hostile','hostile')}${K('notable',lab.filter(r=>r.notable).length,'notable')}</div>`;
  h+=`<div class="grid ov"><div class="card"><h3>Who/what is being talked about — click to drill in</h3>${stanceList(lab,r=>r.targets,'goTarget',14)}</div>`;
  if(!PUBLIC) h+=`<div class="card"><h3>Who is talking — stance of their substantive posts (chatter excluded), click for detail</h3>${stanceList(lab,r=>r.sender,'goPerson',14)}</div>`;
  const hot=[...rows].filter(r=>r.rx).sort((a,b)=>b.rx[0]-a.rx[0]).slice(0,6);
@@ -430,7 +430,14 @@ function render(){
   $('#fnote').innerHTML=(act.length?`${rows.length.toLocaleString()} messages match · ${act.join(' · ')}`:`${rows.length.toLocaleString()} messages · all chats · all history — use the filters to narrow`);}
  const rqi=$('#rq');if(rqi){rqi.focus();rqi.setSelectionRange(rqi.value.length,rqi.value.length);let t;rqi.oninput=()=>{clearTimeout(t);t=setTimeout(()=>{rq=rqi.value;render();},350);};const a=$('#rqall');if(a)a.onchange=()=>{window.rqall=a.checked;render();};}
 }
-init();
+// PUBLIC build: no message text is embedded or fetched. The page reads data/messages.json — the same verifiable dataset the
+// manifest hashes (sender, date, kind, topics, summary, targets, link, reply-to name, counts) — and adapts it to the row shape above.
+if(PUBLIC){fetch('data/messages.json',{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();}).then(rows=>{
+  DATA=rows.map(r=>({chat:r.chat,id:r.id,sender:r.sender,date:r.date,text:'',reply_to:r.reply_to||null,kind:r.kind,tone:'',stance:'',targets:r.targets||[],topics:r.topics||[],summary:r.summary||'',
+    notable:r.notable?1:0,st:{},tp:'',ad:'',mv:[],url:r.url,nrep:r.replies||0,ov:r.corrected||'',rt:r.reply_to_sender?[r.reply_to_sender,'']:undefined,rx:r.reactions?[r.reactions,'',[]]:undefined}));
+  const sub=document.querySelector('.sh-brand .sub');if(sub)sub.innerHTML=sub.innerHTML.replace(/^[\d,]+ messages/,DATA.length.toLocaleString()+' messages');
+  init();}).catch(e=>{document.getElementById('main').innerHTML='<div class="card" style="margin:20px">Could not load <code>data/messages.json</code> ('+esc(e.message)+'). The board needs to be served from its folder (not opened as a file).</div>';});}
+else init();
 </script></body></html>"""
 
 def ensure_schema():
@@ -463,9 +470,9 @@ def main():
     ensure_schema()
     rows = load()
     title = ('Terra social board — public view' if PUBLIC else 'Terra social board')
-    out = TEMPLATE.replace('__DATA__', json.dumps(rows, ensure_ascii=False).replace('</', '<\\/')) \
+    out = TEMPLATE.replace('__DATA__', 'null' if PUBLIC else json.dumps(rows, ensure_ascii=False).replace('</', '<\\/')) \
         .replace('__TITLE__', title).replace('__BUILT__', datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d %H:%M UTC')) \
-        .replace('__SUBTITLE__', (f'{len(rows):,} messages · ' + ('ideas · questions · support · announcements only' if PUBLIC else '<b>private</b> — do not share') + ((' · ' + html.escape(NOTE)) if NOTE else ''))) \
+        .replace('__SUBTITLE__', (f'{len(rows):,} messages · ' + ('ideas · questions · support · announcements only' if PUBLIC else '<b>private</b> — do not share') + ((' · ' + NOTE) if NOTE else ''))) \
         .replace('__LOGO__', LOGO_B64) \
         .replace('__MANIFEST__', json.dumps(manifest(), ensure_ascii=False).replace('</', '<\\/')) \
         .replace('__EXCL__', json.dumps(EXCLUSIONS, ensure_ascii=False).replace('</', '<\\/')) \

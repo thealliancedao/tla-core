@@ -98,6 +98,18 @@ def git_publish(msg):
     if subprocess.run(['git', 'push'], cwd=CHECKOUT).returncode != 0:   # a cron may have pushed meanwhile: rebase once and retry
         g('pull', '--rebase'); g('push')
     print(f"  pushed → {PUB.get('repo', '')}/tree/main/{REPO_PATH}")
+    purge_cdn()
+
+def purge_cdn():
+    """The site serves the folder through jsDelivr (cached up to 12 h); ask it to refresh the files that change every build. Best effort."""
+    import urllib.request
+    repo = PUB.get('repo', '').rstrip('/').split('github.com/')[-1]
+    if not repo: return
+    for f in ('index.html', 'method.html', 'data/manifest.json', 'data/messages.json', 'data/coverage.json', 'data/qa.json', 'data/overrides.json', 'data/exclusions.json'):
+        url = f"https://purge.jsdelivr.net/gh/{repo}@main/{REPO_PATH}/public/{f}"
+        try: urllib.request.urlopen(urllib.request.Request(url, headers={'user-agent': 'social-board-update'}), timeout=15).read()
+        except Exception as e: print(f"  (cdn purge skipped for {f}: {e})")
+    print("  cdn cache refreshed — theadao.com/social/ shows the new build within a minute")
 
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
