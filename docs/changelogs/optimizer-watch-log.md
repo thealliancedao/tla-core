@@ -1,5 +1,19 @@
 # Optimizer Watch Changelog
 
+## optimizer-watch.html 1.4.1 — 2026-11-26 — a deposit token says what is behind it
+- **The owner**, on the row "vcausdci": "what LP is this? … if you hover, a tooltip could say."
+- **What it is, from the chain:** not an LP pair. The token is Credia's deposit token for USDC.inj — the token contract's own
+  label names the asset and Credia's market lists this token as that asset's deposit token (`docs/fixtures/2026-09-29/
+  credia-probe.json`). So the note states it; nothing is guessed.
+- **Where it is kept:** `docs/curated/token_overrides.json` gains an optional `receipt_for { symbol, denom, protocol, kind,
+  source }` and one entry. It sets no display name and no warning, and its note avoids the words the LP grades read as "bridged",
+  so no name and no grade changes.
+- **On the page:** such a name has a dotted underline and says on hover "Credia's deposit token for USDC.inj (lending market) —
+  a single token, not an LP pair"; the opened row says the same in words (hover does not exist on a phone). Pools without a
+  note are untouched. If the curated file cannot be read the page works as before.
+- **Gate:** 70/70 (four new: the curated asset is the price registry's own denom for that symbol · the note on the page · no
+  note elsewhere · file unreadable). Three planted faults, each caught.
+
 ## optimizer-watch.html 1.4.0 — 2026-11-26 — the whole width; every bucket at once, with a picture; a feed that reads as live
 - **The owner:** "can this be compacted to show maybe 5–10 most recent or have a scrollable feed … this doesn't look or feel like a
   feed of live activity … an insane amount of free space left and right … you see Project but no others and the selector is at

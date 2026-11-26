@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "Per-token overrides for display name, subtype, or any field the auto-discovery got wrong. Address-keyed. Only fields you set here override the cron's auto-discovered values; everything else falls through.",
-    "lastUpdated": "2026-07-17",
+    "lastUpdated": "2026-11-26",
     "schema": {
       "display_name": "preferred display (overrides Eris/Astroport/etc.)",
       "subtype": "override subtype (e.g. force 'lst')",
@@ -9,7 +9,8 @@
       "flags_added": "extra flags to add to scoring.flags",
       "verified": "boolean — has this been confirmed?",
       "warning": "free text — shown prominently if present (for tokens that have a real risk)",
-      "logo_url": "Direct URL to a token logo image (PNG/SVG, ~64-256px square). Used by catalog UI and downstream consumers. Falls back to a colored letter-circle if the URL 404s or isn't set."
+      "logo_url": "Direct URL to a token logo image (PNG/SVG, ~64-256px square). Used by catalog UI and downstream consumers. Falls back to a colored letter-circle if the URL 404s or isn't set.",
+      "receipt_for": "{ symbol, denom, protocol, kind, source } — set when the token is a deposit or receipt token for another asset (e.g. a lending market's deposit token). Read from the chain, with the fixture named in source. Pages show it as a hover note; it changes no name and no grade."
     },
     "note_on_hardcoded_overrides": "Some overrides live in the cron code itself (Stage 7b HARDCODED_OVERRIDES dict) rather than this file — specifically the boneLUNA naming case, which also needs to propagate _display_overridden + _display_original to sources.eris for transparency UI. Normal cases belong here. See PROJECT_KNOWLEDGE.md 'Two-tier override system' for context.",
     "notes_2026_06_05": "Audited all curated logo URLs against chain-registry assetlists. Many had wrong filename casing (e.g. arbLUNA.png → arbluna.svg) or wrong chain (e.g. FUEL was on migaloo, actually on neutron). All 20 URLs now HTTP 200 verified.",
@@ -207,6 +208,17 @@
       "logo_url": "https://raw.githubusercontent.com/cosmos/chain-registry/master/stride/images/statom.png",
       "decimals": 6,
       "decimals_note": "denom-convention (u-prefix/factory=6, satoshi=8, wei/inj=18) — trace-verified base denom 2026-07-17; probe bank metadata before relying beyond pricing display"
+    },
+    "terra1eu2q29k5nnvwzjf6x89rzccevd442304793xp7xqt4f9t9kz6c8qczfd65": {
+      "notes": "Credia lending market deposit token for USDC.inj: what a lender holds after supplying USDC.inj to Credia. A single token, not an LP pair. Read from the chain 2026-09-29: the token contract's own label names the asset, and Credia's market lists this token as that asset's deposit token.",
+      "receipt_for": {
+        "symbol": "USDC.inj",
+        "denom": "ibc/E8481AD838C31D4FC12A504B10F9B4E2F830F8818D2735C2FFC707579B5FA60B",
+        "protocol": "Credia",
+        "kind": "lending market",
+        "source": "docs/fixtures/2026-09-29/credia-probe.json"
+      },
+      "verified": true
     }
   },
   "_curation_queue": {
