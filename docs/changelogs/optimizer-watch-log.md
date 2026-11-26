@@ -1,5 +1,30 @@
 # Optimizer Watch Changelog
 
+## optimizer-watch.html 1.4.0 — 2026-11-26 — the whole width; every bucket at once, with a picture; a feed that reads as live
+- **The owner:** "can this be compacted to show maybe 5–10 most recent or have a scrollable feed … this doesn't look or feel like a
+  feed of live activity … an insane amount of free space left and right … you see Project but no others and the selector is at
+  the very top — show all buckets in their own tiles … is there not a graph or chart … the vault by vault as small tiles, the
+  largest selected by default", and the order of the page: header · countdown · live feed · error tile · big picture · vault by
+  vault · where the numbers come from.
+- **Order and width:** the page follows that order and is as wide as the screen (was 76rem). The header reads "Votion, in a
+  transparent light — for anyone who wants more data, or wants to verify the optimization". The bucket selector is gone.
+- **Countdown:** the two clocks with a bar of the voting week between them — how much is gone, and, striped at its end, the
+  stretch from Votion's cast to the end of the round.
+- **Live feed:** a LIVE mark, the time of the last read of the chain and the seconds to the next. Left: the bribes on chain right
+  now, one row a pool, with whether Votion offers it. Right: ONE list, newest first — bribes added (+), taken back (−), a bribed
+  pool leaving or rejoining Votion's list (!) — in a box that shows about five and scrolls.
+- **The big picture:** four tiles, one a bucket, all shown at once (the bucket with missing pools first). Each opens with a
+  picture: Votion's votes NOW and AFTER ITS CAST as one bar each, cut by pool; where bribed pools are missing a third bar, BY
+  ITS OWN RULE, shows them as dashed pieces. A pool keeps one colour within its bucket (six colours checked for colour-blind
+  separation on this background; green and red stay for gains and loses). Under the picture the pool rows as before; each tile
+  ends in its own fold of every pool of the bucket.
+- **Vault by vault:** eight small tiles (name, lockup, votes and share as a bar, ✓/✕ per bucket, expected rewards). The vault
+  with the most voting power is picked first; the picked tile says "shown below", the others "show ›".
+- **Kept across refreshes:** a row or fold the reader opened, and a list's scroll position, survive the minute's re-read.
+- **Gate:** `gate-optimizer-watch.mjs` 66/66 on the live files (was 52): the order, no selector, the shares in every bar against
+  the engine, the dashed pieces, one colour a pool, the feed's order, the week bar, the largest vault first, open rows kept.
+  Eleven planted faults, each caught. Rendered at 1760, 1360 and phone width: no sideways scroll, no text under 13px.
+
 ## optimizer-watch.html 1.3.0 — 2026-11-26 — now vs expected as one picture; the selected vault is its own tile
 - **The owner:** "the lockup by lockup view needs more separation so it is obvious it changes the tile below … the error text is
   a word wall and lacking visuals — the part that shows now vs should-be needs to be more clear … at the bottom of each pool in

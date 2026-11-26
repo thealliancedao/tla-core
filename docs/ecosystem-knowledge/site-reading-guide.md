@@ -155,13 +155,19 @@ is not on record and offer the report path.
 
 aDAO's own page — not Votion's, and aDAO is not affiliated with Votion or Eris. It is an example of what a vote optimizer's page
 could show, built from public data only.
-- **Two clocks:** when Votion is expected to cast (the hour its weekly cast fell in on the rounds on record — Votion does not
-  publish the time) and when the round ends (Monday 00:00 UTC). A bribe only moves Votion's votes if it is there at the cast.
-- **Part 1 — the plan:** each pool Votion has votes on now or after its cast: votes now → after, the bribe, the pool's APR this
-  round → next. "After" figures are worked out with the rule Votion's published plans follow; they are estimates.
-- **Part 2 — bribed and no votes:** the reason the data gives. "Not offered — no reason published" means Votion's published plan
-  lists the bribe but does not list the pool as a voting option; the plan gives no reason and neither does the page. "Offered —
-  under the going rate" means the bribe per vote is below what Votion gets elsewhere. "Off the reward list" is a chain fact.
-- **Part 3 — every pool** of the bucket. **Part 4 — the bribes:** the bribe contract read live every minute, the recorded adds and
-  withdrawals, and `votion/options-log.json` (when a bribed pool left Votion's list or came back).
+- **Countdown:** two clocks — when Votion is expected to cast (the hour its weekly cast fell in on the rounds on record; Votion
+  does not publish the time) and when the round ends (Monday 00:00 UTC) — with a bar of the voting week between them. A bribe
+  only moves Votion's votes if it is there at the cast.
+- **Live feed:** the bribe contract read every minute. Left, the bribes on chain now and whether Votion offers each pool; right,
+  one list, newest first: bribes added, taken back, and (from `votion/options-log.json`) a bribed pool leaving or rejoining
+  Votion's list.
+- **Error tile:** shown only when a pool has a bribe and is not among Votion's voting options: what Votion shows beside what its
+  own rule would give. "Not offered — no reason published" means Votion's published plan lists the bribe but not the pool; the
+  plan gives no reason and neither does the page.
+- **The big picture:** one tile a bucket, all four at once, all eight vaults added together. The bars at the top of a tile are
+  Votion's votes now, after its cast and — only where bribed pools are missing — by its own rule. Below, each pool: votes now →
+  after, the pool's APR this round → next. "After" figures are worked out with the rule Votion's published plans follow; they
+  are estimates. "Under the rate" means the bribe per vote is below what Votion gets elsewhere; "off the reward list" is a chain
+  fact. Each tile ends in a fold of every pool of the bucket.
+- **Vault by vault:** eight small tiles; the picked one is shown below them in the layout of Votion's own vault page.
 - For the help bot: say what the page shows; never say why a pool is not offered, and never attribute it to a person.
