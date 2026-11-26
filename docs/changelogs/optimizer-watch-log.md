@@ -1,5 +1,22 @@
 # Optimizer Watch Changelog
 
+## optimizer-watch.html 1.2.0 — 2026-11-26 — one picture for all of Votion; the rest folded away
+- **The owner:** "we could do a way better job of adding visual elements and compacting text — sharp and easy to see quickly, with
+  expandable details … for the whole view I was thinking combined, how all these will shift the LPs affected … if an LP is losing
+  Votion votes then have a red bar over the current grey bar … a bar for the APR shift as a result … at the bottom a place to
+  expand ALL LPs and why … the tiles following, I am confused by the layout."
+- **One main card — Votion as a whole:** all eight vaults added together, one row a pool. A bar for Votion's votes (grey = stays,
+  green = gains, red over the grey = loses, dashed outline = what its own rule would give a pool that is not offered) and a second
+  bar for the pool's APR this round → next. Each row opens for the detail (the bribe, what LPs earn, each vault's published split,
+  and the reason when a bribed pool gets no votes).
+- **At the bottom of the card:** a fold with every pool of the bucket and one line on why it does or does not get votes — gets
+  votes · offered, under the going rate · possible error, not offered · no bribe · off the reward list.
+- **The alert** is three compact cards (bribe · Votion shows · its own rule gives · pool APR next round).
+- **Folded:** vault by vault (the eight side by side, and each one in the layout of Votion's own page — now with the same red /
+  green bars), the live bribes, where the numbers come from. The separate "bribed and no votes" and "every pool" cards are merged
+  into the main card. Text cut throughout.
+- Gate `gate-optimizer-watch.mjs` 47/47 (bar geometry checked against the engine's figures; three planted faults each caught).
+
 ## optimizer-watch.html 1.1.0 · lib/vote-market.js 1.6.2 — 2026-11-26 — a suggestion for Votion's page, in the layout of its pages
 - **The owner, the same day:** "I'm not trying to build our own version, I'm trying to provide an example of what Votion can do to
   improve trust and transparency … you see the winner but you don't see the ones left out or why they were left out … I hate how
