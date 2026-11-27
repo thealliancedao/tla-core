@@ -48,6 +48,7 @@ An Action's *file name* never changes; docs and changelogs name Actions by file 
 
 | Name in the Actions tab | File | What it did | Ran |
 |---|---|---|---|
+| One-time · Gov validator votes probe | `gov-validator-votes-probe.yml` | The node's own answers behind "how each validator voted" on a Terra proposal in its voting period (bonded validators; the votes), and the table made of them → `docs/fixtures/2026-11-27/gov-validator-votes-probe.json`. Public node, read-only. | 2026-11-27 |
 | One-time · Astroport dailies bank | `tla-snapshot-daily-bank.yml` | Banked the legacy Astroport daily files into `dex-data/`. | 2026-08-11 |
 | One-time · CAPA supply fold (legacy) | `capa-supply-fold-legacy.yml` | Folded the retired cron's CAPA snapshots into the org series. | 2026-08-24 |
 | One-time · CAPA supply probe | `capa-supply-probe.yml` | Read-only look at every place CAPA can sit (public nodes). | 2026-08-24 |

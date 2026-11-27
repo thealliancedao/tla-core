@@ -1,0 +1,46 @@
+name: "One-time · Gov validator votes probe"
+
+# 2026-11-27 (owner: "for props can we show who voted and how they voted please — validators"). Before the site and the
+# dao-governance capture rely on it: the node's OWN answers for the two public endpoints behind "how each validator voted"
+# (bonded validators; the votes on a proposal in its voting period), and the table made of them — written to
+# docs/fixtures/2026-11-27/gov-validator-votes-probe.json. A voter that is not a validator's own account is written "<wallet>".
+# PUBLIC NODE, READ-ONLY GETs, paced (about 3 a second at most), a few dozen requests. No secret. Never the archive node.
+# Runs when this file is pushed, or by hand. Not scheduled.
+on:
+  workflow_dispatch: {}
+  push:
+    branches: [main]
+    paths: ['.github/workflows/gov-validator-votes-probe.yml']
+permissions:
+  contents: write
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            docs/fixtures
+          sparse-checkout-cone-mode: false
+      - uses: actions/checkout@v4
+        with:
+          repository: thealliancedao/platform-crons
+          path: crons
+          sparse-checkout: |
+            dao-governance
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: probe (GET requests to a public node)
+        run: |
+          mkdir -p docs/fixtures/2026-11-27
+          OUT=docs/fixtures/2026-11-27/gov-validator-votes-probe.json node crons/dao-governance/probe-validator-votes.js
+      - name: keep the answers
+        run: |
+          git config user.name "probe" && git config user.email "bot@thealliancedao.com"
+          git add docs/fixtures/2026-11-27/gov-validator-votes-probe.json
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -q -m "probe: gov validator votes ($(date -u +%Y-%m-%d))"
+          for i in 1 2 3 4 5 6; do git pull -q --rebase origin main && git push -q origin HEAD:main && exit 0; sleep $((i * 10)); done; exit 1
