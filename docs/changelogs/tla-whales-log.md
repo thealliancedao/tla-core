@@ -1,5 +1,47 @@
 # TLA Whales Changelog
 
+## tla-whales.html 1.1.0 · reader tla-whales 1.1.3 — 2026-11-27 — full width; direct against amplified; votes and bribes beside the liquidity
+- **The owner:** "massive amount of blank spots here and left and right and can we do better with layout. Also would it be worth
+  while to show whales in TLA voting power as well and or have some way of showing those who vote and bribe the pools they
+  deposit into? Also can we show these whales' LPs in different colours if they are amplified vs non-amplified, and a way to
+  filter for this so you can see the whale list for those who would collect the LUNA and those who amplify and build liquidity?"
+- **Layout:** the page is as wide as the screen (it was held to a centre column). A row is one line of ten columns on a wide
+  screen and folds to labelled cells on a narrow one. The pool card carries two boxes side by side — the pool by holder and how
+  it is held (with its five largest direct stakers and five largest amplified holders), and its votes and bribes.
+- **Directly, or amplified:** one colour each across the page (cyan = staked directly: the rewards are paid out as LUNA, to
+  claim · violet = amplified, through the pool's amp token: the rewards are compounded back into the pool). Every row carries a
+  strip in its colour and a tag in words; position chips take the same colours. Three buttons — All · Staked directly ·
+  Amplified — cut either list to one kind and re-rank it by that part (`?held=direct|amp`). A bar per pool, and one for all
+  pools, draws the two parts.
+- **Votes and bribes:** beside each account its voting power, the votes it gives the pool it holds, and the bribes it placed on
+  that pool. Each pool shows the votes on it and the bribes placed on it, the part of each that comes from accounts holding it,
+  and its largest voters and bribers, each marked "holds it" or not. The all-pools list can be ordered by voting power or by
+  bribes placed, and says how many holders vote and bribe and what they hold.
+- **A third view, "Voting power"** (`?view=vote`): every voter by voting power — also those holding no liquidity — where each
+  points its votes (a pool it also holds is marked), the liquidity it holds, the share of its votes on pools it holds, and its
+  bribes.
+- **Where the new figures come from (reader 1.1.0 → 1.1.3):** voting power and votes from the hourly lock-holder record
+  (`member-data/participants`), else the weekly voting rollup; bribes from the rollup's briber ledger
+  (`tla-voting/events/rollups.json`), in dollars on the day placed. A pool's votes = Σ voting power × the share each voter gives
+  it (a voter splits its full power in each bucket).
+- **Found while looking at the first render — fixed before it shipped:** a bribe in a token the ledger has no price for counted
+  as **$0** and nothing said so (one pool showed "21 bribes · $0.00"). Twenty-seven pools have such bribes; across the ledger
+  the unpriced amounts are large (millions of CAPA, bWHALE and ampWHALE). The reader now carries those tokens beside every
+  dollar figure (`np`, `unpriced`, `brb_np`), the page names them wherever they apply, reads "no price" instead of $0, and says
+  that the dollar sums and the share from holders leave them out.
+- **What the page does not say:** that an account votes for or bribes a pool it holds is given as a figure, with no judgement —
+  that is what the system is built for. Nobody is named beyond a registered name, a verified label, or the name the public
+  bribe record gives a briber.
+- **First read with the new fields (16:39 UTC, 27 Nov; $890,649 staked):** 63.7% staked directly (125 accounts), 35.1% amplified
+  (203 accounts). 107 of the 384 holders have voting power — they hold 16.4% of the staked value and 19.5% of all voting power;
+  14 holders have placed bribes — they hold 44.1% of the staked value. Voting power: 36.81M in 210 accounts; the largest holds
+  27.9%, the top five 64.5%, the top ten 76.3%; three of the ten largest voters hold staked liquidity, and two of the ten largest
+  liquidity holders have voting power.
+- **Tested:** `gate-tla-whales.mjs` 82/82 on the real read (figures recounted from the file; a pool's votes worked again from
+  each voter's own split); eleven planted faults all caught (colours swapped, a filter ranking by the wrong part, "holds it" on
+  everyone, the wrong figure in a cell, a missing-data crash …). Reader mock run 34/34. Rendered at 1760 and 390 wide: no
+  sideways scroll, no text under 13px.
+
 ## tla-whales.html 1.0.0 · reader tla-whales 1.0.2 — 2026-11-27 — who holds each pool's staked liquidity
 - **The owner:** "we need a TLA whale list … select an LP and it pulls up all the whales in that LP, highest to lowest … shows handle
   name and address … current position and sparkline … if they are building liquidity … how long they have held … I really want

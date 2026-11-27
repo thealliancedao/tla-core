@@ -174,9 +174,20 @@ could show, built from public data only.
 
 ## TLA Whales (tla-whales.html — Tools → TLA Whales)
 - **What it is:** for every pool in the Liquidity Alliance, the accounts that hold its staked liquidity, largest first — read
-  from the chain (`tla-whales/current.json`), not modelled. Two views: *By pool*, and *Largest accounts, all pools*.
-- **Two ways of holding:** staked directly in the bucket's staking contract, or through the pool's amp token
-  (auto-compounding). The bar beside a share shows the two apart.
+  from the chain (`tla-whales/current.json`), not modelled. Three views: *By pool*, *Largest accounts, all pools*, and
+  *Voting power*.
+- **Two ways of holding, two colours:** cyan = staked directly in the bucket's staking contract — the rewards are paid out as
+  LUNA, which the account claims. Violet = amplified, through the pool's amp token — the rewards are compounded back into the
+  pool and nothing is claimed. Rows, bars and position chips all use these two colours; the buttons *All · Staked directly ·
+  Amplified* cut a list to one kind and re-rank it by that part. What an account does with LUNA after claiming is not shown.
+- **Voting power / Votes for this pool / Bribed this pool:** beside each account, its voting power (from locked LUNA — not from
+  liquidity), the votes it gives the pool on screen, and the bribes it placed on that pool. The box "Who votes for this pool,
+  and who bribes it" gives the pool's votes and bribes and the part of each that comes from accounts holding the pool.
+- **Bribe dollars** are the value on the day the bribe was placed. A bribe in a token the bribe record has no price for is
+  counted as a bribe but is not in any dollar figure — the page names those tokens and reads "no price", never $0.
+- **The Voting power view:** every voter, largest first, also those holding no liquidity. A voter splits its full power in each
+  bucket, so its shares add up to 100% per bucket. A green chip is a pool the voter also holds liquidity in.
+- **No judgement:** voting for or bribing a pool one holds is what the system is built for. The page gives the figures only.
 - **Accounted for / not attributed:** per pool the list is checked against the staking contract's total. A part the accounts
   found do not explain is shown as its own striped piece and is never spread over the others.
 - **Names:** "registered name" = a name the account gave itself; "verified" = a label the address catalog has checked. Everyone
