@@ -1,5 +1,22 @@
 # cron-dao-governance — changelog
 
+## 1.3.0 — 2026-11-27 — how each validator voted on an x/gov proposal: read while open, kept after close
+- **The owner:** "for props can we show who voted and how they voted please — validators."
+- Terra proposals in `terra/governance/proposals.json` carry **`validatorVotes`**: `{ read_at, validators, voted,
+  voted_stake_pct, voters_total, complete, why_incomplete, by{yes|no|no_with_veto|abstain|split|none: {n, stake_pct}},
+  list[{rank, moniker, operator, stake_pct, vote, weights?}] }` — every bonded validator, largest stake first, with the vote its
+  own account cast. Made by `validator-votes.js`, the same file the site runs (keep the two identical).
+- **While the vote is open** it is read on every run (two more public requests per open proposal). A read that fails keeps
+  the previous copy — an empty list never replaces a good one.
+- **After the vote closes** the chain no longer holds individual votes: the proposal keeps the last copy from the previous
+  capture, untouched, for as long as it is among the newest 60.
+- Delegators' votes are still not captured. `votersNote` says what is and is not there.
+- The node's answers were probed before this was wired in (`docs/fixtures/2026-11-27/gov-validator-votes-probe.json`,
+  workflow *One-time · Gov validator votes probe*).
+- Kinds gate 27/27 (fresh read replaces; a failed or throwing read keeps the old copy; a closed proposal is never read; no
+  copy is made up). **Not yet seen on the hosted run** — the first run with it is 00:26 UTC 28 Nov.
+
+
 ---
 
 ## 1.1.1 — 2026-08-22 — explicit `registry.coreAddress` wins (Lion DAO captured the msig)

@@ -16,6 +16,27 @@
 - Gate `gate-contract-alerts.mjs` 17/17 (real tab bar, real alerts file; quiet in four ways; the window to the second; data as
   text). Rendered on a desktop and a phone: no text under 13px, no sideways scroll on the phone.
 
+## 2026-11-27 — index 4.49 · alert-center 2.5.0 · lib/validator-votes.js 1.0.0: how each validator voted on a Terra proposal
+- **The owner**, on a Terra proposal card: "for props can we show who voted and how they voted please — validators."
+- A chain-governance (Terra) proposal card has a section **"Validators — who has voted, and how"**. Opened, it lists every
+  bonded validator, largest stake first, with the vote its own account cast (Yes · No · No with veto · Abstain · a split vote
+  with its weights · Not voted), a bar and counts by stake, and buttons to keep one group. It says how many have voted, what
+  share of the staked LUNA they hold, and when it was read.
+- **Where it comes from:** two public endpoints, read when the section is opened — the bonded validators and the proposal's
+  votes; a validator votes from the account behind its operator address (same key, account prefix), so nothing is matched by
+  name. The node's own answers were probed first (`docs/fixtures/2026-11-27/gov-validator-votes-probe.json`: proposals 4858,
+  4860, 4861 — 100 validators; 17, 19 and 16 had voted).
+- **Closed votes:** the chain keeps individual votes only while a vote is open. From now on the dao-governance capture keeps the
+  last copy it read (cron-dao-governance-log.md 1.3.0) and the card shows it, marked "as last read while the vote was open".
+  A proposal that closed before 27 Nov 2026 says plainly that the chain no longer holds its votes.
+- **What a row means, said on the card:** a validator's vote counts for the LUNA staked with it except where a delegator votes
+  themselves, so the shares can differ from the tally. Only validators are listed, not delegators.
+- A read that does not reach the end says so ("a validator shown as not voted may have voted"); a failed read shows no table.
+- Gate `gate-validator-votes.mjs` 43/43 (the read on a made-up chain in the node's shapes; the drawing; the card; the probe's
+  real answers — a raw vote from a validator's account is the vote on that validator's row); nine planted faults caught.
+  Rendered at 1600 and 390 wide: no sideways scroll, no text under 13px in the new section.
+- Not changed, noticed: `gate-alert-center-daos.mjs` has three stale literal checks (aDAO now has 40 props, the checks say 39).
+
 ## 2026-11-27 — lib/site-header.js 1.15.0: Whales, the eighth TLA tab
 - **The owner**, on a screenshot of the bar of seven: "I don't see the tab in the tab bar, can we add it here please."
 - `TLA_TABS` gains `whales` → `tla-whales.html`, last on the bar; the seven before it keep their order. The page lights it
