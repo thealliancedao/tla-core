@@ -16,6 +16,13 @@
 - Gate `gate-contract-alerts.mjs` 17/17 (real tab bar, real alerts file; quiet in four ways; the window to the second; data as
   text). Rendered on a desktop and a phone: no text under 13px, no sideways scroll on the phone.
 
+## 2026-11-27 — lib/site-header.js 1.15.0: Whales, the eighth TLA tab
+- **The owner**, on a screenshot of the bar of seven: "I don't see the tab in the tab bar, can we add it here please."
+- `TLA_TABS` gains `whales` → `tla-whales.html`, last on the bar; the seven before it keep their order. The page lights it
+  (it showed the bar with no tab lit). Every TLA page loads `site-header.js?v=1.15.0` so the new bar is not served from cache.
+- `gate-tla-nav.mjs` 42/42 (the list is the seven, then Whales); drawn at 1900, 1280 and 390 wide: eight tabs, one row, no
+  sideways scroll.
+
 ## 2026-11-25 — lib/site-header.js 1.14.0: one TLA tab bar
 
 - `SiteHeader.TLA_TABS` / `SiteHeader.tlaTabs('<tab>')`: the TLA tab bar is one list — Overview · Member Portfolio · Slippage

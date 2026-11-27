@@ -172,7 +172,7 @@ could show, built from public data only.
 - **Vault by vault:** eight small tiles; the picked one is shown below them in the layout of Votion's own vault page.
 - For the help bot: say what the page shows; never say why a pool is not offered, and never attribute it to a person.
 
-## TLA Whales (tla-whales.html — Tools → TLA Whales)
+## TLA Whales (tla-whales.html — the Whales tab of the TLA bar; also Tools → TLA Whales)
 - **What it is:** for every pool in the Liquidity Alliance, the accounts that hold its staked liquidity, largest first — read
   from the chain (`tla-whales/current.json`), not modelled. Three views: *By pool*, *Largest accounts, all pools*, and
   *Voting power*.

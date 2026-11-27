@@ -1,5 +1,9 @@
 # TLA Whales Changelog
 
+## 2026-11-27 — on the TLA tab bar
+- The owner asked for the tab. Whales is the eighth tab of the TLA bar (lib/site-header.js 1.15.0) and is lit on this page. The
+  tile on Tools stays.
+
 ## tla-whales.html 1.1.0 · reader tla-whales 1.1.3 — 2026-11-27 — full width; direct against amplified; votes and bribes beside the liquidity
 - **The owner:** "massive amount of blank spots here and left and right and can we do better with layout. Also would it be worth
   while to show whales in TLA voting power as well and or have some way of showing those who vote and bribe the pools they
