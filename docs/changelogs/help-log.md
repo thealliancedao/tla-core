@@ -1,5 +1,23 @@
 # Help Page Changelog
 
+## v1.24.1 — 2026-11-27 — the assistant could not be reached from the site's new address
+
+Owner: "it's not working" — the Help panel answered "Still unreachable — the service may be down rather than sleeping".
+
+- **Cause:** the site moved to theadao.com in October. The assistant's list of addresses it accepts questions from still held only
+  thealliancedao.com (the setup notes said to set exactly that), so the browser's pre-check refused every question before it was
+  sent. The service itself was up. The last answered question on record is 4 Oct. Reproduced locally with the documented setting:
+  a question from theadao.com was refused; after the change it is accepted.
+- **Fix (platform-crons `f18050e`):** theadao.com and thealliancedao.com, each with www, are always allowed. The `ALLOWED_ORIGIN`
+  setting now only adds addresses, so a stale setting can no longer silence the assistant after a site move. `GET /health` reports
+  1.24.1 once the new version is live.
+- **Rule 22 — who holds a pool's liquidity:** the public per-wallet record covers only wallets with a TLA lock (209 on 26 Nov). On
+  the 16 pools with more than $5,000 staked those wallets hold a median 6% of the staked liquidity and nowhere more than half. The
+  assistant must not rank a pool's "top depositors" from it, nor call unlabelled wallets team or community. It says the ranking is
+  not available yet and gives what is: the pool's totals, who holds the vote, and a pinned wallet's own share.
+- One line on Tools → Optimizer Watch: what the page shows; no reason is given for a pool that is not offered.
+- Checked: the vote-market tool gate 16/16; the file parses; the pre-check tested for four addresses before and after.
+
 ## v1.24.0 — 2026-11-25 — Contract Watch, where things are, and a budget for what the bot reads
 
 Owner: "get the help bot brought up to speed … so it can answer questions on what we have added in here."
