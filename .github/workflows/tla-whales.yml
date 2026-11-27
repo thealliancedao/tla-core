@@ -1,0 +1,53 @@
+name: "Public · TLA whales — who holds each pool's liquidity"
+
+# 2026-11-27: for every pool in the Liquidity Alliance, the accounts that hold its staked liquidity, largest first.
+#   · direct stakers  — the accounts the public flow record (tla-flows/pnl) shows with stake left, each asked on the chain;
+#   · amp holders     — every holder of the pool's amp token, from the chain's own list, × the compounder's exchange rate.
+# Per pool the list is checked against the staking contract's total; what it does not explain is published as
+# "not attributed". Output: tla-whales/current.json.
+#
+# PUBLIC NODES ONLY, READ-ONLY. GET requests; nothing is simulated, signed or sent. This workflow has no secret and never
+# reads the archive node (the script refuses to run if an archive setting is present). One request at a time, at most
+# 2 a second, at most `max` requests a run (about 25 minutes at 3,000).
+# Runs by hand, or when this workflow or its script changes. Not scheduled.
+on:
+  workflow_dispatch:
+    inputs:
+      max:
+        description: 'LEAVE AT 3000. The most requests this run may send (ceiling 6000).'
+        required: false
+        default: '3000'
+  push:
+    branches: [main]
+    paths: ['.github/workflows/tla-whales.yml', '.github/scripts/tla-whales/read.mjs']
+permissions:
+  contents: write
+concurrency:
+  group: tla-whales
+  cancel-in-progress: false
+jobs:
+  read:
+    runs-on: ubuntu-latest
+    timeout-minutes: 70
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/tla-whales
+            tla-flows/pnl
+            member-data/tla-snapshot
+            member-data/participants
+            catalog/trusted
+            tla-whales
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: the script's own check (no network)
+        run: node .github/scripts/tla-whales/mock-run.mjs
+      - name: read the pools (GET requests to public nodes)
+        env:
+          MAX_REQUESTS: ${{ github.event.inputs.max || '3000' }}
+        run: |
+          git config user.name "tla-whales" && git config user.email "bot@thealliancedao.com"
+          node .github/scripts/tla-whales/read.mjs
