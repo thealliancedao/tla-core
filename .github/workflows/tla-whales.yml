@@ -9,8 +9,13 @@ name: "Public · TLA whales — who holds each pool's liquidity"
 # PUBLIC NODES ONLY, READ-ONLY. GET requests; nothing is simulated, signed or sent. This workflow has no secret and never
 # reads the archive node (the script refuses to run if an archive setting is present). One request at a time, at most
 # 2 a second, at most `max` requests a run (about 25 minutes at 3,000).
-# Runs by hand, or when this workflow or its script changes. Not scheduled.
+# Runs by hand, when this workflow or its script changes, and ONCE A DAY (05:17 UTC) so the page does not go stale
+# (2026-11-27, owner: "just want to get the whale page done with and working"). The daily run is the same read: public nodes,
+# about 600 requests at 2 a second, one run at a time, capped by `max`. It never touches the archive node.
+# To stop the daily run: delete the two `schedule` lines below.
 on:
+  schedule:
+    - cron: '17 5 * * *'
   workflow_dispatch:
     inputs:
       max:

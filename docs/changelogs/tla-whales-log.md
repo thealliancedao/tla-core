@@ -1,5 +1,28 @@
 # TLA Whales Changelog
 
+## tla-whales.html 1.2.0 · reader tla-whales 1.2.0 — 2026-11-27 — what each account did lately, how often it acts, its value over a year; a daily read
+- **The owner:** "shows if they are building liquidity and or selling the rewards … if they are bot" and, tonight, "just want to
+  get the whale page done with and working — if you feel good about it let's just do it."
+- **All from the public flow record** (`tla-flows/pnl/ledger/<account>.json`) — no archive, no private data:
+  - **Last 12 rounds** per account: claims and what they were worth on the day, deposits, withdrawals. The all-pools list can be
+    ordered by it, and says the sum.
+  - **"N moves a week"** — a tag on any account whose deposits, withdrawals and claims come to seven or more a week over the last
+    8 rounds. It is a count; the page says activity that regular is usually automated and does not say who or what runs it.
+  - **Value, past year** — the record's value of the account's Alliance positions at each round. **Drawn only where the record's
+    present figure is within 10% of what the chain says the account holds now** (and the account holds $25 or more). Where the
+    two differ the page gives both figures and draws nothing.
+- **What is deliberately not shown:** what happens to LUNA after a claim (kept, swapped, bridged, sent to an exchange). The
+  public record does not hold it. The first look at the stored wallet history (below) showed its dollar flows are not good
+  enough to put beside an account yet, so the page says "not here" instead of guessing.
+- **First read (17:59 UTC):** 376 of 384 accounts carry the last 12 rounds; 107 claimed in that time, $71,656 in all, 15 of them
+  with no deposit; **19 accounts act seven or more times a week and hold 45.9% of the staked value** (the busiest: 127 moves a
+  week); a value line is drawn for 145 accounts and withheld for 16 where the record and the chain disagree.
+- **The read now runs once a day by itself** (05:17 UTC; public nodes only; delete the two `schedule` lines in
+  `tla-whales.yml` to stop it), besides by hand and on a change of its script.
+- **Tested:** `gate-tla-whales.mjs` 96/96 on the real read (the reader's 10% rule re-checked against the chain figures for every
+  account; an older read without the new fields still draws); eight planted faults caught. Reader mock 38/38, four planted
+  faults caught. Rendered at 1760 and 390 wide: no sideways scroll, no text under 13px.
+
 ## 2026-11-27 — behaviour summary 0.1.1: a first look at value in and out, by group (counts only, no node) — NOT for quoting
 - **The owner:** "shows if they are building liquidity and or selling the rewards … lets get that process started."
 - **No node run was needed.** 372 of the 384 accounts on the list already have a stored wallet history (the deep-walk derive of

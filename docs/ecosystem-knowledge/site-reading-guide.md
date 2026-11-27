@@ -188,6 +188,14 @@ could show, built from public data only.
 - **The Voting power view:** every voter, largest first, also those holding no liquidity. A voter splits its full power in each
   bucket, so its shares add up to 100% per bucket. A green chip is a pool the voter also holds liquidity in.
 - **No judgement:** voting for or bribing a pool one holds is what the system is built for. The page gives the figures only.
+- **Last 12 rounds:** an account's claims (worth on the day), deposits and withdrawals across the Alliance in the last 12 weekly
+  rounds. "Claimed, no deposit" is what the record shows — it does not say the LUNA was sold.
+- **"N moves a week":** shown from seven a week up (last 8 rounds). Usually automated; the page gives the count and never says
+  who or what runs the account. For the help bot: never state that an account "is a bot".
+- **Value, past year:** the public record's value of the account's Alliance positions per round — drawn only where that record
+  agrees with the chain to 10% now. "record differs" means it does not, and no line is drawn.
+- **Not on the page:** what is done with LUNA after a claim. Do not infer it.
+- The list is read once a day (05:17 UTC) and whenever someone presses Run; the page says when it was read.
 - **Accounted for / not attributed:** per pool the list is checked against the staking contract's total. A part the accounts
   found do not explain is shown as its own striped piece and is never spread over the others.
 - **Names:** "registered name" = a name the account gave itself; "verified" = a label the address catalog has checked. Everyone

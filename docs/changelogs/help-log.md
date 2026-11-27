@@ -1,5 +1,14 @@
 # Help Page Changelog
 
+## v1.27.0 — 2026-11-27 — "is it a bot?", "do they take the rewards out?"
+
+- **Tool `tla_whales` 1.2.0:** `account` returns the last 12 rounds (claims and their worth, deposits, withdrawals), moves a
+  week, and the position value then and now where the record agrees with the chain; `overview` returns the sums; a pool list
+  gives moves a week for accounts at seven or more.
+- **Rule 22:** moves a week is a count — the assistant never states that an account is a bot or who runs it. What was done with
+  LUNA after a claim is not in the data, so it never infers selling from "claimed, no deposit".
+- Gate `gate-tla-whales-tool.mjs` 40/40 on the real read.
+
 ## v1.26.0 — 2026-11-27 — the assistant can answer "who compounds, who votes for it, who bribes it?"
 
 Owner: the TLA Whales page gained how a pool is held, voting power, and votes and bribes beside the liquidity (page 1.1.0).

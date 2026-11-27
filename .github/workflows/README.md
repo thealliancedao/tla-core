@@ -5,7 +5,7 @@ Every Action's name begins with its group, so the list in the Actions tab reads 
 - **Archive ·** — reads the archive node. The node is a courtesy: these start only when a person presses *Run workflow*, one at a
   time (a second one waits behind the first), never on a timer.
 - **One-time ·** — jobs and probes that did their work once. Kept for the record; there is nothing to press.
-- **Public ·** — tools on public nodes or public APIs. Run one when you want what it makes.
+- **Public ·** — tools on public nodes or public APIs. Run one when you want what it makes. One of them also runs by itself once a day: *TLA whales* (05:17 UTC, public nodes only), so its page stays current.
 
 To run one: Actions tab → pick it in the list on the left → **Run workflow** (right side, above the list of runs) → the green
 **Run workflow** at the bottom of the form.
