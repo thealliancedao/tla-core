@@ -171,3 +171,20 @@ could show, built from public data only.
   fact. Each tile ends in a fold of every pool of the bucket.
 - **Vault by vault:** eight small tiles; the picked one is shown below them in the layout of Votion's own vault page.
 - For the help bot: say what the page shows; never say why a pool is not offered, and never attribute it to a person.
+
+## TLA Whales (tla-whales.html — Tools → TLA Whales)
+- **What it is:** for every pool in the Liquidity Alliance, the accounts that hold its staked liquidity, largest first — read
+  from the chain (`tla-whales/current.json`), not modelled. Two views: *By pool*, and *Largest accounts, all pools*.
+- **Two ways of holding:** staked directly in the bucket's staking contract, or through the pool's amp token
+  (auto-compounding). The bar beside a share shows the two apart.
+- **Accounted for / not attributed:** per pool the list is checked against the staking contract's total. A part the accounts
+  found do not explain is shown as its own striped piece and is never spread over the others.
+- **Names:** "registered name" = a name the account gave itself; "verified" = a label the address catalog has checked. Everyone
+  else is an address only. "No name" means neither community nor team — nothing public ties the account to anyone, and one
+  person may hold several. A contract holds for others; the people behind it are not on the list.
+- **In since / Moves / the line / the last eight rounds:** from the public record of deposits and withdrawals for that pool. An
+  account that only bought or received the amp token has none.
+- **Rewards claimed:** an account's claims across the whole Alliance (a claim is not tied to one pool), each valued on the day
+  it was made. Amp tokens compound by themselves, so a large amp holder can show no claim.
+- For the help bot: give the figures and the labels as the page has them; never say who owns an unlabelled account, never call
+  a group of accounts a team, a community, or "insiders", and say when a pool has a part that is not attributed.
