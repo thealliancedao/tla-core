@@ -1,5 +1,20 @@
 # Help Page Changelog
 
+## v1.26.0 — 2026-11-27 — the assistant can answer "who compounds, who votes for it, who bribes it?"
+
+Owner: the TLA Whales page gained how a pool is held, voting power, and votes and bribes beside the liquidity (page 1.1.0).
+
+- **Tool `tla_whales` 1.1.0:** a pool answer now carries how the pool is held (staked directly — rewards paid out as LUNA, to
+  claim · amplified — compounded back), the votes on it and the bribes placed on it with the part of each that comes from
+  accounts holding it, and per account its voting power, the votes it gives that pool and the bribes it placed there.
+  `held = direct | amplified` cuts a pool or the overview to one kind. New action **voters**: every voter by voting power, where
+  it points its votes, the liquidity it holds, the share of its votes on pools it holds. **account** gains voting and bribes.
+- **Rule 22 extended:** figures only — voting for or bribing a pool one holds is what the system is built for, so no verdict
+  and no motive; voting power comes from locked LUNA, not liquidity; a bribe with no price on the record is named, never $0;
+  what an account does with LUNA after claiming is not in the data yet.
+- A single pool's list is capped at 20 accounts so the answer stays under the server's cut.
+- Gate `gate-tla-whales-tool.mjs` 35/35 on the real read.
+
 ## v1.25.0 — 2026-11-27 — the assistant can answer "who holds this pool?"
 
 Owner: a community member asked for the top depositors of four pools and whether the liquidity is the team's or the community's.
