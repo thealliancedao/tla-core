@@ -1,5 +1,24 @@
 # TLA Whales Changelog
 
+## 2026-11-27 — behaviour summary 0.1.1: a first look at value in and out, by group (counts only, no node) — NOT for quoting
+- **The owner:** "shows if they are building liquidity and or selling the rewards … lets get that process started."
+- **No node run was needed.** 372 of the 384 accounts on the list already have a stored wallet history (the deep-walk derive of
+  26 Nov, 2022-05-30 → 2026-11-23); the 12 without are 5 small accounts and 7 contracts.
+- **`.github/scripts/tla-whales/behaviour-summary.mjs`** + workflow *"Public · TLA whales — value in and out, by group (stored
+  history, no node)"* (by hand only; reads files from the private archive repo; refuses to run if a node address is set). It
+  writes `tla-whales/behaviour-summary.json`: per group of accounts (all · by size · by how held · voters · bribers) and window
+  (all time · 52 weeks · 12 weeks), value crossing the wallet boundary by kind, beside the Alliance rewards claimed. **Sums and
+  counts only — no account is named; a group under 5 is withheld; the file is refused if an address would appear.**
+- **What the first run showed about the data itself — why nothing is on the page yet:**
+  1. the stored history names **no exchange address**, so a transfer to an exchange sits under "another plain wallet";
+  2. **one token carries most of the recent bridge inflow** (xASTRO: $6.78M of the $7.5M in the last 12 weeks, against $0.77M
+     staked by the whole group) — the same token the derive already holds "under review"; a price that is wrong, not a fact
+     about the accounts. "Unlisted token" is a further $5.6M all-time.
+  The file carries `status: first look — NOT checked` and lists what it found wrong with itself.
+- Mock `mock-behaviour.mjs` 17/17 (windows cut to the week, small groups withheld, an address refused; five planted faults caught).
+- **Next, before anything per account:** fix the price of xASTRO and the unlisted tokens in the stored history, name the
+  exchange addresses, then decide what is shown per account.
+
 ## 2026-11-27 — on the TLA tab bar
 - The owner asked for the tab. Whales is the eighth tab of the TLA bar (lib/site-header.js 1.15.0) and is lit on this page. The
   tile on Tools stays.
