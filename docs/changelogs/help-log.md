@@ -1,5 +1,19 @@
 # Help Page Changelog
 
+## v1.25.0 — 2026-11-27 — the assistant can answer "who holds this pool?"
+
+Owner: a community member asked for the top depositors of four pools and whether the liquidity is the team's or the community's.
+
+- **Tool `tla_whales`** (`lib/tla-whales-tool.js`) reads the file the TLA Whales page renders (`tla-whales/current.json`, read from
+  the chain): **pool** — a pool's largest accounts with share, value, how held, since when and the last eight rounds, its top-5 /
+  top-10 share, and how much of the pool the list explains; **overview** — all pools: accounts, the share of the largest 1 / 5 /
+  10 / 25, the split verified label · registered name · no name · not attributed, rewards claimed; **account** — one address
+  across pools. A pool is found the way people say it ("Astro-Luna" finds LUNA-ASTRO); two pools of one name are told apart by DEX.
+- **Rule 22 rewritten** (it said "not answerable yet" since the morning): figures as returned; an account named only as the file
+  names it; unlabelled accounts never called a team, a community or insiders; every note repeated (not read to the end, not
+  attributed, stated rate against stake); the read time given, because the list is refreshed by hand.
+- **Gate** `gate-tla-whales-tool.mjs` 23/23 on the real read (six planted faults caught); vote-market tool gate 16/16.
+
 ## v1.24.1 — 2026-11-27 — the assistant could not be reached from the site's new address
 
 Owner: "it's not working" — the Help panel answered "Still unreachable — the service may be down rather than sleeping".
