@@ -1,16 +1,16 @@
 {
  "schemaVersion": 1,
  "product": "member-data/tla-snapshot/epoch-history",
- "version": "1.1.0",
+ "version": "1.2.0",
  "generatedAt": "2026-11-26T23:51:47.609Z",
- "rule": "one row per epoch = the LAST daily reading of that epoch (what the page showed at the end of the week); `avg` = mean of the epoch's dailies; voting_vp = max bucket VP (Eris convention); APR = TVL-weighted eris-apr per gauge (null before 2026-08-02, the first eris-apr daily); bribes_usd = that day's active pots at that day's oracle price (token-catalog resolver + price-history); null when any asset of the day is unpriced",
+ "rule": "one row per epoch = the LAST daily reading of that epoch (what the page showed at the end of the week); `avg` = mean of the epoch's dailies; voting_vp = max bucket VP (Eris convention); APR = TVL-weighted eris-apr per gauge (null before 2026-08-02, the first eris-apr daily); bribes_usd = that day's active pots at that day's oracle price (token-catalog resolver + price-history); null when any asset of the day is unpriced; tvl_split (1.2.0) = the TVL change against the epoch before, split pool by pool from the staked amount and the unit price (value \u00f7 amount): prices + flows + newly_valued + lost_value + other = change, nothing averaged across tokens; price_index = the price part chained from 100 at the first epoch; unvalued_staked = pools staked that week with no price (left out of the TVL)",
  "basis": {
   "tla_tvl_usd": "tla-snapshot totals.tla_tvl_usd (TLA-staked gauges, that day's LUNA price)",
   "active_pools": "tla-snapshot totals.active_pools_count; astro/ss from pools[].dex where status=active",
   "rewards": "tla-snapshot totals.rewards (annual/weekly emissions USD at that day's price)",
   "voting_vp": "max(buckets[].bucket_vp_human)",
   "apr": "eris-apr daily eris_apr_pct / eris_apy_pct weighted by tla_staked_usd",
-  "bribes": "tla-snapshot pools[].bribes.active_now assets × price-history/<day>[symbol].usd (symbol via lib/denom-symbol.js, token-catalog effective layer)"
+  "bribes": "tla-snapshot pools[].bribes.active_now assets \u00d7 price-history/<day>[symbol].usd (symbol via lib/denom-symbol.js, token-catalog effective layer)"
  },
  "epochs": [
   {
@@ -49,7 +49,16 @@
     "apr_amp_pct": null,
     "bribes_usd": null
    },
-   "source": "tla-snapshot daily (last reading of the epoch)"
+   "source": "tla-snapshot daily (last reading of the epoch)",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "ampWHALE-WHALE",
+     "bWHALE-WHALE"
+    ]
+   },
+   "price_index": 100,
+   "tvl_split": null
   },
   {
    "epoch": 185,
@@ -85,7 +94,62 @@
     "apr_amp_pct": null,
     "bribes_usd": 1526.57
    },
-   "source": "tla-snapshot daily (last reading of the epoch)"
+   "source": "tla-snapshot daily (last reading of the epoch)",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "ampWHALE-WHALE",
+     "bWHALE-WHALE"
+    ]
+   },
+   "price_index": 98.2168,
+   "tvl_split": {
+    "vs_epoch": 184,
+    "change_usd": -77810.69,
+    "prices_usd": -55040.86,
+    "flows_usd": -22769.83,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -1.78,
+    "flows_pct": -0.74,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "USDC-EURe",
+      "dex": "Astroport",
+      "prices_usd": -1229,
+      "flows_usd": -40440
+     },
+     {
+      "name": "LUNA-INJ",
+      "dex": "Astroport",
+      "prices_usd": -3220,
+      "flows_usd": 18629
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": -10672,
+      "flows_usd": 1397
+     },
+     {
+      "name": "LUNA-arbLUNA",
+      "dex": "Astroport",
+      "prices_usd": -3505,
+      "flows_usd": -4174
+     },
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -3365,
+      "flows_usd": 2646
+     }
+    ]
+   }
   },
   {
    "epoch": 186,
@@ -121,7 +185,62 @@
     "apr_amp_pct": null,
     "bribes_usd": 1209.4157
    },
-   "source": "tla-snapshot daily (last reading of the epoch)"
+   "source": "tla-snapshot daily (last reading of the epoch)",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "ampWHALE-WHALE",
+     "bWHALE-WHALE"
+    ]
+   },
+   "price_index": 96.4288,
+   "tvl_split": {
+    "vs_epoch": 185,
+    "change_usd": -120020.41,
+    "prices_usd": -54774.25,
+    "flows_usd": -65246.15,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -1.82,
+    "flows_pct": -2.17,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "USDC-USDT",
+      "dex": "Astroport",
+      "prices_usd": -203,
+      "flows_usd": -161555
+     },
+     {
+      "name": "USDC-EURe",
+      "dex": "Astroport",
+      "prices_usd": -15,
+      "flows_usd": 64739
+     },
+     {
+      "name": "PAXG-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -147,
+      "flows_usd": 29851
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": -17702,
+      "flows_usd": 600
+     },
+     {
+      "name": "LUNA-ampLUNA",
+      "dex": "Astroport",
+      "prices_usd": -7319,
+      "flows_usd": 8953
+     }
+    ]
+   }
   },
   {
    "epoch": 187,
@@ -157,7 +276,62 @@
     "apr_amp_pct": null,
     "bribes_usd": 1180.9929
    },
-   "source": "tla-snapshot daily (last reading of the epoch)"
+   "source": "tla-snapshot daily (last reading of the epoch)",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 97.2894,
+   "tvl_split": {
+    "vs_epoch": 186,
+    "change_usd": 22385.45,
+    "prices_usd": 25781.68,
+    "flows_usd": -3396.23,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": 0.89,
+    "flows_pct": -0.12,
+    "pools_split": 61,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-arbLUNA",
+      "dex": "Astroport",
+      "prices_usd": 1588,
+      "flows_usd": -15407
+     },
+     {
+      "name": "LUNA-INJ",
+      "dex": "Astroport",
+      "prices_usd": 8800,
+      "flows_usd": -35
+     },
+     {
+      "name": "USDC-SOLID",
+      "dex": "Astroport",
+      "prices_usd": 1244,
+      "flows_usd": 7274
+     },
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -1332,
+      "flows_usd": 6707
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": 5601,
+      "flows_usd": -651
+     }
+    ]
+   }
   },
   {
    "epoch": 188,
@@ -193,7 +367,62 @@
     "apr_amp_pct": null,
     "bribes_usd": 1086.3814
    },
-   "source": "tla-snapshot daily (last reading of the epoch)"
+   "source": "tla-snapshot daily (last reading of the epoch)",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 88.175,
+   "tvl_split": {
+    "vs_epoch": 187,
+    "change_usd": -734215.49,
+    "prices_usd": -272729.78,
+    "flows_usd": -461485.71,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -9.37,
+    "flows_pct": -15.85,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": -53074,
+      "flows_usd": -206560
+     },
+     {
+      "name": "LUNA-PAXG",
+      "dex": "Astroport",
+      "prices_usd": -10262,
+      "flows_usd": -58519
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": -3760,
+      "flows_usd": 55353
+     },
+     {
+      "name": "ampCAPA",
+      "dex": "Single",
+      "prices_usd": -46268,
+      "flows_usd": -4439
+     },
+     {
+      "name": "USDC-SOLID",
+      "dex": "Astroport",
+      "prices_usd": -2310,
+      "flows_usd": -47318
+     }
+    ]
+   }
   },
   {
    "epoch": 189,
@@ -229,7 +458,62 @@
     "apr_amp_pct": null,
     "bribes_usd": 1002.6814
    },
-   "source": "tla-snapshot daily (last reading of the epoch)"
+   "source": "tla-snapshot daily (last reading of the epoch)",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 88.7828,
+   "tvl_split": {
+    "vs_epoch": 188,
+    "change_usd": 23963.47,
+    "prices_usd": 15005.66,
+    "flows_usd": 8957.8,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": 0.69,
+    "flows_pct": 0.41,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": 3566,
+      "flows_usd": -8542
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": 1312,
+      "flows_usd": 8540
+     },
+     {
+      "name": "LUNA-CAPA",
+      "dex": "Astroport",
+      "prices_usd": 637,
+      "flows_usd": -3186
+     },
+     {
+      "name": "xASTRO",
+      "dex": "Single",
+      "prices_usd": -3221,
+      "flows_usd": 455
+     },
+     {
+      "name": "LUNA-arbLUNA",
+      "dex": "Astroport",
+      "prices_usd": -560,
+      "flows_usd": 2738
+     }
+    ]
+   }
   },
   {
    "epoch": 190,
@@ -265,7 +549,62 @@
     "apr_amp_pct": null,
     "bribes_usd": 1146.3086
    },
-   "source": "tla-snapshot daily (last reading of the epoch)"
+   "source": "tla-snapshot daily (last reading of the epoch)",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 87.1681,
+   "tvl_split": {
+    "vs_epoch": 189,
+    "change_usd": 94235.9,
+    "prices_usd": -40027.89,
+    "flows_usd": 134263.79,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -1.82,
+    "flows_pct": 6.1,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "USDC-USDT",
+      "dex": "Astroport",
+      "prices_usd": -63,
+      "flows_usd": 71596
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": -1375,
+      "flows_usd": 49722
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": -3223,
+      "flows_usd": -25894
+     },
+     {
+      "name": "LUNA-ATOM",
+      "dex": "Astroport",
+      "prices_usd": -1210,
+      "flows_usd": 23230
+     },
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -2147,
+      "flows_usd": -11946
+     }
+    ]
+   }
   },
   {
    "epoch": 191,
@@ -301,7 +640,62 @@
     "apr_amp_pct": null,
     "bribes_usd": 1068.93
    },
-   "source": "tla-snapshot daily (last reading of the epoch)"
+   "source": "tla-snapshot daily (last reading of the epoch)",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 84.1285,
+   "tvl_split": {
+    "vs_epoch": 190,
+    "change_usd": -125237.19,
+    "prices_usd": -80033.44,
+    "flows_usd": -45203.75,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -3.49,
+    "flows_pct": -1.97,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "USDC-EURe",
+      "dex": "Astroport",
+      "prices_usd": -1344,
+      "flows_usd": -69341
+     },
+     {
+      "name": "USDC-USDt",
+      "dex": "Skeleton Swap",
+      "prices_usd": -30,
+      "flows_usd": -36515
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": -12254,
+      "flows_usd": 16241
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": -6517,
+      "flows_usd": 13511
+     },
+     {
+      "name": "LUNA-ATOM",
+      "dex": "Astroport",
+      "prices_usd": -3629,
+      "flows_usd": 9968
+     }
+    ]
+   }
   },
   {
    "epoch": 192,
@@ -337,7 +731,62 @@
     "apr_amp_pct": null,
     "bribes_usd": 1026.3829
    },
-   "source": "tla-snapshot daily (last reading of the epoch)"
+   "source": "tla-snapshot daily (last reading of the epoch)",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 85.7789,
+   "tvl_split": {
+    "vs_epoch": 191,
+    "change_usd": 47543.49,
+    "prices_usd": 42567.06,
+    "flows_usd": 4976.43,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": 1.96,
+    "flows_pct": 0.23,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": 6514,
+      "flows_usd": -9958
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": 3193,
+      "flows_usd": 6273
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Skeleton Swap",
+      "prices_usd": 1115,
+      "flows_usd": 5725
+     },
+     {
+      "name": "PAXG-WBTC",
+      "dex": "Astroport",
+      "prices_usd": 4411,
+      "flows_usd": -633
+     },
+     {
+      "name": "LUNA-ampLUNA",
+      "dex": "Astroport",
+      "prices_usd": 4622,
+      "flows_usd": 232
+     }
+    ]
+   }
   },
   {
    "epoch": 193,
@@ -373,7 +822,62 @@
     "apr_amp_pct": null,
     "bribes_usd": 1041.6614
    },
-   "source": "tla-snapshot daily (last reading of the epoch)"
+   "source": "tla-snapshot daily (last reading of the epoch)",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 84.31,
+   "tvl_split": {
+    "vs_epoch": 192,
+    "change_usd": -73085.98,
+    "prices_usd": -37971.56,
+    "flows_usd": -35114.42,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -1.71,
+    "flows_pct": -1.58,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "USDC-USDT",
+      "dex": "Astroport",
+      "prices_usd": 83,
+      "flows_usd": -51810
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": -6826,
+      "flows_usd": -16967
+     },
+     {
+      "name": "LUNA-INJ",
+      "dex": "Astroport",
+      "prices_usd": -1602,
+      "flows_usd": 7049
+     },
+     {
+      "name": "USDC-SOLID",
+      "dex": "Astroport",
+      "prices_usd": -249,
+      "flows_usd": 7747
+     },
+     {
+      "name": "PAXG-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -988,
+      "flows_usd": 4568
+     }
+    ]
+   }
   },
   {
    "epoch": 194,
@@ -409,7 +913,62 @@
     "apr_amp_pct": null,
     "bribes_usd": 1020.6586
    },
-   "source": "tla-snapshot daily (last reading of the epoch)"
+   "source": "tla-snapshot daily (last reading of the epoch)",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 83.573,
+   "tvl_split": {
+    "vs_epoch": 193,
+    "change_usd": -30517.63,
+    "prices_usd": -18744.43,
+    "flows_usd": -11773.2,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -0.87,
+    "flows_pct": -0.55,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "USDC-USDT",
+      "dex": "Astroport",
+      "prices_usd": -23,
+      "flows_usd": 52784
+     },
+     {
+      "name": "USDC-USDt",
+      "dex": "Skeleton Swap",
+      "prices_usd": -10,
+      "flows_usd": -52435
+     },
+     {
+      "name": "LUNA-INJ",
+      "dex": "Astroport",
+      "prices_usd": 2056,
+      "flows_usd": -23755
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": -2438,
+      "flows_usd": 16840
+     },
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -600,
+      "flows_usd": 16666
+     }
+    ]
+   }
   },
   {
    "epoch": 195,
@@ -445,7 +1004,62 @@
     "apr_amp_pct": null,
     "bribes_usd": 986.6129
    },
-   "source": "tla-snapshot daily (last reading of the epoch)"
+   "source": "tla-snapshot daily (last reading of the epoch)",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 81.8915,
+   "tvl_split": {
+    "vs_epoch": 194,
+    "change_usd": -258498.81,
+    "prices_usd": -42532.32,
+    "flows_usd": -215966.48,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -2.01,
+    "flows_pct": -10.22,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "USDC-USDT",
+      "dex": "Astroport",
+      "prices_usd": -14,
+      "flows_usd": -84012
+     },
+     {
+      "name": "USDC-EURe",
+      "dex": "Astroport",
+      "prices_usd": 48,
+      "flows_usd": -51592
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": -4596,
+      "flows_usd": 46497
+     },
+     {
+      "name": "PAXG-WBTC",
+      "dex": "Astroport",
+      "prices_usd": 1357,
+      "flows_usd": -47715
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": -7170,
+      "flows_usd": -25913
+     }
+    ]
+   }
   },
   {
    "epoch": 196,
@@ -483,7 +1097,62 @@
     "apr_amp_pct": 24.7434,
     "bribes_usd": 948.35
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 80.5485,
+   "tvl_split": {
+    "vs_epoch": 195,
+    "change_usd": 48297.13,
+    "prices_usd": -30428.28,
+    "flows_usd": 78725.41,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -1.64,
+    "flows_pct": 4.24,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "USDC-EURe",
+      "dex": "Astroport",
+      "prices_usd": 15,
+      "flows_usd": 66804
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": -6198,
+      "flows_usd": 20566
+     },
+     {
+      "name": "USDC-USDT",
+      "dex": "Astroport",
+      "prices_usd": -5,
+      "flows_usd": -14580
+     },
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -3958,
+      "flows_usd": 4517
+     },
+     {
+      "name": "LUNA-ampLUNA",
+      "dex": "Astroport",
+      "prices_usd": -4885,
+      "flows_usd": -2185
+     }
+    ]
+   }
   },
   {
    "epoch": 197,
@@ -519,7 +1188,62 @@
     "apr_amp_pct": 35.3126,
     "bribes_usd": 941.0586
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 82.5906,
+   "tvl_split": {
+    "vs_epoch": 196,
+    "change_usd": 56669.68,
+    "prices_usd": 48262.85,
+    "flows_usd": 8406.83,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": 2.54,
+    "flows_pct": 0.44,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "ampCAPA",
+      "dex": "Single",
+      "prices_usd": 24941,
+      "flows_usd": 2802
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": 2471,
+      "flows_usd": 18077
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": 3872,
+      "flows_usd": -11602
+     },
+     {
+      "name": "LUNA-CAPA",
+      "dex": "Astroport",
+      "prices_usd": 4295,
+      "flows_usd": 4042
+     },
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": 2202,
+      "flows_usd": -3409
+     }
+    ]
+   }
   },
   {
    "epoch": 198,
@@ -555,7 +1279,62 @@
     "apr_amp_pct": 37.1815,
     "bribes_usd": 1058.5729
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 2,
+    "names": [
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 82.3105,
+   "tvl_split": {
+    "vs_epoch": 197,
+    "change_usd": -58939.65,
+    "prices_usd": -6646.64,
+    "flows_usd": -52293,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -0.34,
+    "flows_pct": -2.67,
+    "pools_split": 62,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "USDC-EURe",
+      "dex": "Astroport",
+      "prices_usd": -1097,
+      "flows_usd": -26743
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": -1314,
+      "flows_usd": -23871
+     },
+     {
+      "name": "USDC-SOLID",
+      "dex": "Astroport",
+      "prices_usd": 213,
+      "flows_usd": -18100
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": -528,
+      "flows_usd": 13501
+     },
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -1881,
+      "flows_usd": -11280
+     }
+    ]
+   }
   },
   {
    "epoch": 199,
@@ -591,7 +1370,73 @@
     "apr_amp_pct": 41.3811,
     "bribes_usd": 1147.4414
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 7,
+    "names": [
+     "LUNA-WHALE",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "xASTRO"
+    ]
+   },
+   "price_index": 89.5458,
+   "tvl_split": {
+    "vs_epoch": 198,
+    "change_usd": 88765.02,
+    "prices_usd": 167137.72,
+    "flows_usd": -62421.69,
+    "newly_valued_usd": 0,
+    "lost_value_usd": -15951.01,
+    "other_usd": 0,
+    "prices_pct": 8.79,
+    "flows_pct": -3.28,
+    "pools_split": 57,
+    "newly_valued": [],
+    "lost_value": [
+     "LUNA-WHALE",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "xASTRO"
+    ],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": 23746,
+      "flows_usd": -19047
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": 16348,
+      "flows_usd": -16948
+     },
+     {
+      "name": "LUNA-ampLUNA",
+      "dex": "Astroport",
+      "prices_usd": 16326,
+      "flows_usd": -16659
+     },
+     {
+      "name": "ampCAPA",
+      "dex": "Single",
+      "prices_usd": 25270,
+      "flows_usd": -428
+     },
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": 17730,
+      "flows_usd": -2882
+     }
+    ]
+   }
   },
   {
    "epoch": 200,
@@ -627,7 +1472,67 @@
     "apr_amp_pct": 42.7497,
     "bribes_usd": 1147.7357
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 7,
+    "names": [
+     "LUNA-WHALE",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "xASTRO"
+    ]
+   },
+   "price_index": 85.342,
+   "tvl_split": {
+    "vs_epoch": 199,
+    "change_usd": -61129.78,
+    "prices_usd": -93429.92,
+    "flows_usd": 32300.14,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -4.69,
+    "flows_pct": 1.62,
+    "pools_split": 57,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": -13531,
+      "flows_usd": -15971
+     },
+     {
+      "name": "ampCAPA",
+      "dex": "Single",
+      "prices_usd": -27280,
+      "flows_usd": -1037
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": -9049,
+      "flows_usd": 7696
+     },
+     {
+      "name": "USDC-EURe",
+      "dex": "Astroport",
+      "prices_usd": -1081,
+      "flows_usd": 15089
+     },
+     {
+      "name": "LUNA-ampLUNA",
+      "dex": "Astroport",
+      "prices_usd": -8373,
+      "flows_usd": 6960
+     }
+    ]
+   }
   },
   {
    "epoch": 201,
@@ -663,7 +1568,67 @@
     "apr_amp_pct": 38.5063,
     "bribes_usd": 1430.2843
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 7,
+    "names": [
+     "LUNA-WHALE",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "xASTRO"
+    ]
+   },
+   "price_index": 88.479,
+   "tvl_split": {
+    "vs_epoch": 200,
+    "change_usd": 97975.58,
+    "prices_usd": 70906.53,
+    "flows_usd": 27069.05,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": 3.68,
+    "flows_pct": 1.4,
+    "pools_split": 57,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "USDC-EURe",
+      "dex": "Astroport",
+      "prices_usd": 22,
+      "flows_usd": 90550
+     },
+     {
+      "name": "USDC-USDT",
+      "dex": "Astroport",
+      "prices_usd": 21,
+      "flows_usd": -39900
+     },
+     {
+      "name": "ampCAPA",
+      "dex": "Single",
+      "prices_usd": 17044,
+      "flows_usd": -69
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": 5434,
+      "flows_usd": 3995
+     },
+     {
+      "name": "USDC-USDt",
+      "dex": "Skeleton Swap",
+      "prices_usd": 2,
+      "flows_usd": -9360
+     }
+    ]
+   }
   },
   {
    "epoch": 202,
@@ -699,7 +1664,68 @@
     "apr_amp_pct": 42.6527,
     "bribes_usd": 1461.53
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 6,
+    "names": [
+     "LUNA-WHALE",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 87.41,
+   "tvl_split": {
+    "vs_epoch": 201,
+    "change_usd": -9085.61,
+    "prices_usd": -24489.24,
+    "flows_usd": -2991.76,
+    "newly_valued_usd": 18395.39,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -1.21,
+    "flows_pct": -0.15,
+    "pools_split": 57,
+    "newly_valued": [
+     "xASTRO"
+    ],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "wBTC.creda.a",
+      "dex": "Credia",
+      "prices_usd": 0,
+      "flows_usd": 79889
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": -3498,
+      "flows_usd": -58788
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": -5004,
+      "flows_usd": 53762
+     },
+     {
+      "name": "USDC-USDT",
+      "dex": "Astroport",
+      "prices_usd": -53,
+      "flows_usd": -36356
+     },
+     {
+      "name": "USDC-EURe",
+      "dex": "Astroport",
+      "prices_usd": 40,
+      "flows_usd": -25435
+     }
+    ]
+   }
   },
   {
    "epoch": 203,
@@ -735,7 +1761,66 @@
     "apr_amp_pct": 42.1957,
     "bribes_usd": 1201.6143
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 6,
+    "names": [
+     "LUNA-WHALE",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75"
+    ]
+   },
+   "price_index": 95.8197,
+   "tvl_split": {
+    "vs_epoch": 202,
+    "change_usd": 105660.01,
+    "prices_usd": 194142.62,
+    "flows_usd": -88482.61,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": 9.62,
+    "flows_pct": -4.38,
+    "pools_split": 55,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-USDC.n",
+      "dex": "Astroport",
+      "prices_usd": 0,
+      "flows_usd": 379896
+     },
+     {
+      "name": "USDC-EURe",
+      "dex": "Astroport",
+      "prices_usd": 0,
+      "flows_usd": -338505
+     },
+     {
+      "name": "USDC.n-EURe",
+      "dex": "Astroport",
+      "prices_usd": 0,
+      "flows_usd": 334390
+     },
+     {
+      "name": "LUNA-USDC",
+      "dex": "Astroport",
+      "prices_usd": 0,
+      "flows_usd": -321440
+     },
+     {
+      "name": "USDC-USDT",
+      "dex": "Astroport",
+      "prices_usd": 0,
+      "flows_usd": -202296
+     }
+    ]
+   }
   },
   {
    "epoch": 204,
@@ -771,7 +1856,82 @@
     "apr_amp_pct": 37.7504,
     "bribes_usd": 1277.5814
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 10,
+    "names": [
+     "LUNA-USDC.inj",
+     "LUNA-WHALE",
+     "USDC.inj-SOLID",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "USDC.inj-EURe",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "USDC.inj-USDT"
+    ],
+    "later_valued": {
+     "names": [
+      "LUNA-USDC.inj",
+      "USDC.inj-SOLID",
+      "USDC.inj-EURe",
+      "USDC.inj-USDT"
+     ],
+     "est_usd_at_first_price": 4864,
+     "note": "staked that week with no price; valued here at the unit price each first got in a later epoch \u2014 an estimate, not in tla_tvl_usd"
+    }
+   },
+   "price_index": 92.4477,
+   "tvl_split": {
+    "vs_epoch": 203,
+    "change_usd": -263365.81,
+    "prices_usd": -74731.34,
+    "flows_usd": -164511.05,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": -24123.42,
+    "prices_pct": -3.52,
+    "flows_pct": -7.75,
+    "pools_split": 54,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [
+     "xASTRO"
+    ],
+    "movers": [
+     {
+      "name": "LUNA-USDC.n",
+      "dex": "Astroport",
+      "prices_usd": 0,
+      "flows_usd": -379896
+     },
+     {
+      "name": "USDC.n-EURe",
+      "dex": "Astroport",
+      "prices_usd": 0,
+      "flows_usd": -334390
+     },
+     {
+      "name": "LUNA-USDC.nbl",
+      "dex": "Astroport",
+      "prices_usd": 0,
+      "flows_usd": 296789
+     },
+     {
+      "name": "USDC.nbl-EURe",
+      "dex": "Astroport",
+      "prices_usd": 0,
+      "flows_usd": 188284
+     },
+     {
+      "name": "USDC.nbl-USDT",
+      "dex": "Astroport",
+      "prices_usd": 0,
+      "flows_usd": 149725
+     }
+    ]
+   }
   },
   {
    "epoch": 205,
@@ -807,7 +1967,80 @@
     "apr_amp_pct": 109.9371,
     "bribes_usd": 1129.5671
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 10,
+    "names": [
+     "LUNA-USDC.inj",
+     "LUNA-WHALE",
+     "USDC.inj-SOLID",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "USDC.inj-EURe",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "USDC.inj-USDT"
+    ],
+    "later_valued": {
+     "names": [
+      "LUNA-USDC.inj",
+      "USDC.inj-SOLID",
+      "USDC.inj-EURe",
+      "USDC.inj-USDT"
+     ],
+     "est_usd_at_first_price": 749240,
+     "note": "staked that week with no price; valued here at the unit price each first got in a later epoch \u2014 an estimate, not in tla_tvl_usd"
+    }
+   },
+   "price_index": 91.1024,
+   "tvl_split": {
+    "vs_epoch": 204,
+    "change_usd": -693796.09,
+    "prices_usd": -27069.6,
+    "flows_usd": -666726.48,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -1.46,
+    "flows_pct": -35.84,
+    "pools_split": 59,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-USDC.nbl",
+      "dex": "Astroport",
+      "prices_usd": -5382,
+      "flows_usd": -261340
+     },
+     {
+      "name": "USDC.nbl-EURe",
+      "dex": "Astroport",
+      "prices_usd": -1482,
+      "flows_usd": -186703
+     },
+     {
+      "name": "USDC.nbl-USDT",
+      "dex": "Astroport",
+      "prices_usd": 48,
+      "flows_usd": -145062
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": -2421,
+      "flows_usd": 58721
+     },
+     {
+      "name": "LUNA-ampLUNA",
+      "dex": "Astroport",
+      "prices_usd": -5335,
+      "flows_usd": -41878
+     }
+    ]
+   }
   },
   {
    "epoch": 206,
@@ -843,7 +2076,80 @@
     "apr_amp_pct": 3.9933804197000296e+212,
     "bribes_usd": 1134.5257
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 10,
+    "names": [
+     "LUNA-USDC.inj",
+     "LUNA-WHALE",
+     "USDC.inj-SOLID",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "USDC.inj-EURe",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "USDC.inj-USDT"
+    ],
+    "later_valued": {
+     "names": [
+      "LUNA-USDC.inj",
+      "USDC.inj-SOLID",
+      "USDC.inj-EURe",
+      "USDC.inj-USDT"
+     ],
+     "est_usd_at_first_price": 760751,
+     "note": "staked that week with no price; valued here at the unit price each first got in a later epoch \u2014 an estimate, not in tla_tvl_usd"
+    }
+   },
+   "price_index": 86.9828,
+   "tvl_split": {
+    "vs_epoch": 205,
+    "change_usd": -72152.83,
+    "prices_usd": -52745.15,
+    "flows_usd": -19407.68,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -4.52,
+    "flows_pct": -1.66,
+    "pools_split": 59,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "ampCAPA",
+      "dex": "Single",
+      "prices_usd": -5944,
+      "flows_usd": 15065
+     },
+     {
+      "name": "LUNA-ampLUNA",
+      "dex": "Astroport",
+      "prices_usd": -7698,
+      "flows_usd": -9050
+     },
+     {
+      "name": "LUNA-USDC.nbl",
+      "dex": "Astroport",
+      "prices_usd": -1119,
+      "flows_usd": -14279
+     },
+     {
+      "name": "LUNA-SOLID",
+      "dex": "Astroport",
+      "prices_usd": -1208,
+      "flows_usd": 9554
+     },
+     {
+      "name": "bLUNA-LUNA",
+      "dex": "Skeleton Swap",
+      "prices_usd": -2691,
+      "flows_usd": -7392
+     }
+    ]
+   }
   },
   {
    "epoch": 207,
@@ -879,7 +2185,80 @@
     "apr_amp_pct": 38.5143,
     "bribes_usd": 1358.0486
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 10,
+    "names": [
+     "LUNA-USDC.inj",
+     "LUNA-WHALE",
+     "USDC.inj-SOLID",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "USDC.inj-EURe",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "USDC.inj-USDT"
+    ],
+    "later_valued": {
+     "names": [
+      "LUNA-USDC.inj",
+      "USDC.inj-SOLID",
+      "USDC.inj-EURe",
+      "USDC.inj-USDT"
+     ],
+     "est_usd_at_first_price": 754754,
+     "note": "staked that week with no price; valued here at the unit price each first got in a later epoch \u2014 an estimate, not in tla_tvl_usd"
+    }
+   },
+   "price_index": 80.2464,
+   "tvl_split": {
+    "vs_epoch": 206,
+    "change_usd": -65976.56,
+    "prices_usd": -84746.21,
+    "flows_usd": 18769.65,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -7.74,
+    "flows_pct": 1.72,
+    "pools_split": 58,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "ampCAPA",
+      "dex": "Single",
+      "prices_usd": -15691,
+      "flows_usd": 18176
+     },
+     {
+      "name": "PAXG-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -1040,
+      "flows_usd": -10514
+     },
+     {
+      "name": "LUNA-CAPA",
+      "dex": "Astroport",
+      "prices_usd": -3116,
+      "flows_usd": 8179
+     },
+     {
+      "name": "LUNA-ampLUNA",
+      "dex": "Astroport",
+      "prices_usd": -10178,
+      "flows_usd": -66
+     },
+     {
+      "name": "LUNA-ATOM",
+      "dex": "Astroport",
+      "prices_usd": -3919,
+      "flows_usd": 5628
+     }
+    ]
+   }
   },
   {
    "epoch": 208,
@@ -915,7 +2294,83 @@
     "apr_amp_pct": 38.1873,
     "bribes_usd": 1334.2514
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 11,
+    "names": [
+     "LUNA-USDC.inj",
+     "LUNA-WHALE",
+     "USDC.inj-SOLID",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "USDC.inj-EURe",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "USDC.inj-USDT",
+     "xASTRO"
+    ],
+    "later_valued": {
+     "names": [
+      "LUNA-USDC.inj",
+      "USDC.inj-SOLID",
+      "USDC.inj-EURe",
+      "USDC.inj-USDT"
+     ],
+     "est_usd_at_first_price": 794351,
+     "note": "staked that week with no price; valued here at the unit price each first got in a later epoch \u2014 an estimate, not in tla_tvl_usd"
+    }
+   },
+   "price_index": 79.7448,
+   "tvl_split": {
+    "vs_epoch": 207,
+    "change_usd": -36852.88,
+    "prices_usd": -6427.6,
+    "flows_usd": -30425.27,
+    "newly_valued_usd": 0,
+    "lost_value_usd": -0.01,
+    "other_usd": 0,
+    "prices_pct": -0.63,
+    "flows_pct": -2.96,
+    "pools_split": 58,
+    "newly_valued": [],
+    "lost_value": [
+     "xASTRO"
+    ],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": -1036,
+      "flows_usd": -22101
+     },
+     {
+      "name": "LUNA-ATOM",
+      "dex": "Astroport",
+      "prices_usd": -565,
+      "flows_usd": -13094
+     },
+     {
+      "name": "LUNA-SOLID",
+      "dex": "Astroport",
+      "prices_usd": -405,
+      "flows_usd": 3821
+     },
+     {
+      "name": "LUNA-ampLUNA",
+      "dex": "Astroport",
+      "prices_usd": -1057,
+      "flows_usd": -2754
+     },
+     {
+      "name": "ampCAPA",
+      "dex": "Single",
+      "prices_usd": 2624,
+      "flows_usd": -166
+     }
+    ]
+   }
   },
   {
    "epoch": 209,
@@ -951,7 +2406,81 @@
     "apr_amp_pct": 44.578,
     "bribes_usd": 1163.9657
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 11,
+    "names": [
+     "LUNA-USDC.inj",
+     "LUNA-WHALE",
+     "USDC.inj-SOLID",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "USDC.inj-EURe",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "USDC.inj-USDT",
+     "xASTRO"
+    ],
+    "later_valued": {
+     "names": [
+      "LUNA-USDC.inj",
+      "USDC.inj-SOLID",
+      "USDC.inj-EURe",
+      "USDC.inj-USDT"
+     ],
+     "est_usd_at_first_price": 656975,
+     "note": "staked that week with no price; valued here at the unit price each first got in a later epoch \u2014 an estimate, not in tla_tvl_usd"
+    }
+   },
+   "price_index": 71.7373,
+   "tvl_split": {
+    "vs_epoch": 208,
+    "change_usd": -206917.4,
+    "prices_usd": -99555.06,
+    "flows_usd": -107362.34,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -10.04,
+    "flows_pct": -10.83,
+    "pools_split": 58,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": -3290,
+      "flows_usd": -58672
+     },
+     {
+      "name": "wBTC.creda.a",
+      "dex": "Credia",
+      "prices_usd": -1431,
+      "flows_usd": -59287
+     },
+     {
+      "name": "ampCAPA",
+      "dex": "Single",
+      "prices_usd": -55292,
+      "flows_usd": 251
+     },
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -3615,
+      "flows_usd": 47556
+     },
+     {
+      "name": "PAXG-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -2098,
+      "flows_usd": -33904
+     }
+    ]
+   }
   },
   {
    "epoch": 210,
@@ -987,7 +2516,81 @@
     "apr_amp_pct": 42.9898,
     "bribes_usd": 1119.1657
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 11,
+    "names": [
+     "LUNA-USDC.inj",
+     "LUNA-WHALE",
+     "USDC.inj-SOLID",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "USDC.inj-EURe",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "USDC.inj-USDT",
+     "xASTRO"
+    ],
+    "later_valued": {
+     "names": [
+      "LUNA-USDC.inj",
+      "USDC.inj-SOLID",
+      "USDC.inj-EURe",
+      "USDC.inj-USDT"
+     ],
+     "est_usd_at_first_price": 736166,
+     "note": "staked that week with no price; valued here at the unit price each first got in a later epoch \u2014 an estimate, not in tla_tvl_usd"
+    }
+   },
+   "price_index": 64.3485,
+   "tvl_split": {
+    "vs_epoch": 209,
+    "change_usd": -109113.71,
+    "prices_usd": -80803.86,
+    "flows_usd": -28309.85,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -10.3,
+    "flows_pct": -3.61,
+    "pools_split": 59,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "ampCAPA",
+      "dex": "Single",
+      "prices_usd": -25144,
+      "flows_usd": -3952
+     },
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -9293,
+      "flows_usd": -16827
+     },
+     {
+      "name": "LUNA-SOLID",
+      "dex": "Astroport",
+      "prices_usd": -2576,
+      "flows_usd": 10501
+     },
+     {
+      "name": "LUNA-ampLUNA",
+      "dex": "Astroport",
+      "prices_usd": -6853,
+      "flows_usd": 5858
+     },
+     {
+      "name": "ampROAR-ROAR",
+      "dex": "Skeleton Swap",
+      "prices_usd": -11069,
+      "flows_usd": -1043
+     }
+    ]
+   }
   },
   {
    "epoch": 211,
@@ -1023,7 +2626,81 @@
     "apr_amp_pct": 46.5418,
     "bribes_usd": 949.8043
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 11,
+    "names": [
+     "LUNA-USDC.inj",
+     "LUNA-WHALE",
+     "USDC.inj-SOLID",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "USDC.inj-EURe",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "USDC.inj-USDT",
+     "xASTRO"
+    ],
+    "later_valued": {
+     "names": [
+      "LUNA-USDC.inj",
+      "USDC.inj-SOLID",
+      "USDC.inj-EURe",
+      "USDC.inj-USDT"
+     ],
+     "est_usd_at_first_price": 566523,
+     "note": "staked that week with no price; valued here at the unit price each first got in a later epoch \u2014 an estimate, not in tla_tvl_usd"
+    }
+   },
+   "price_index": 58.7044,
+   "tvl_split": {
+    "vs_epoch": 210,
+    "change_usd": -65213.74,
+    "prices_usd": -59241.61,
+    "flows_usd": -5972.13,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -8.77,
+    "flows_pct": -0.88,
+    "pools_split": 59,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -12739,
+      "flows_usd": 3400
+     },
+     {
+      "name": "LUNA-SOLID",
+      "dex": "Astroport",
+      "prices_usd": -2651,
+      "flows_usd": -10707
+     },
+     {
+      "name": "LUNA-ampLUNA",
+      "dex": "Astroport",
+      "prices_usd": -8221,
+      "flows_usd": 4001
+     },
+     {
+      "name": "LUNA-INJ",
+      "dex": "Astroport",
+      "prices_usd": -2249,
+      "flows_usd": -6630
+     },
+     {
+      "name": "wBTC.creda.a",
+      "dex": "Credia",
+      "prices_usd": -3108,
+      "flows_usd": 4862
+     }
+    ]
+   }
   },
   {
    "epoch": 212,
@@ -1059,7 +2736,81 @@
     "apr_amp_pct": 49.2924,
     "bribes_usd": 880.2671
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 11,
+    "names": [
+     "LUNA-USDC.inj",
+     "LUNA-WHALE",
+     "USDC.inj-SOLID",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "USDC.inj-EURe",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "USDC.inj-USDT",
+     "xASTRO"
+    ],
+    "later_valued": {
+     "names": [
+      "LUNA-USDC.inj",
+      "USDC.inj-SOLID",
+      "USDC.inj-EURe",
+      "USDC.inj-USDT"
+     ],
+     "est_usd_at_first_price": 543461,
+     "note": "staked that week with no price; valued here at the unit price each first got in a later epoch \u2014 an estimate, not in tla_tvl_usd"
+    }
+   },
+   "price_index": 57.4516,
+   "tvl_split": {
+    "vs_epoch": 211,
+    "change_usd": 485.08,
+    "prices_usd": -13021.54,
+    "flows_usd": 13506.61,
+    "newly_valued_usd": 0,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -2.13,
+    "flows_pct": 2.21,
+    "pools_split": 59,
+    "newly_valued": [],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": -4101,
+      "flows_usd": 15610
+     },
+     {
+      "name": "vcausdci",
+      "dex": "Credia",
+      "prices_usd": -15,
+      "flows_usd": -6819
+     },
+     {
+      "name": "LUNA-INJ",
+      "dex": "Astroport",
+      "prices_usd": -663,
+      "flows_usd": 4260
+     },
+     {
+      "name": "LUNA-SOLID",
+      "dex": "Astroport",
+      "prices_usd": -405,
+      "flows_usd": 3821
+     },
+     {
+      "name": "LUNA-PAXG",
+      "dex": "Astroport",
+      "prices_usd": -434,
+      "flows_usd": -3170
+     }
+    ]
+   }
   },
   {
    "epoch": 213,
@@ -1095,10 +2846,76 @@
     "apr_amp_pct": 70.8576,
     "bribes_usd": 585.8
    },
-   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily"
+   "source": "tla-snapshot daily (last reading of the epoch) + eris-apr daily",
+   "unvalued_staked": {
+    "n": 7,
+    "names": [
+     "LUNA-WHALE",
+     "native:factory/terra1zushwxgqdkg22mtv9p946yp53r6de",
+     "LUNA-wSOL.wh",
+     "LUNA-wSOL",
+     "cw20:terra16z3ksy6aqjkug8l3u48q0kvdaqk3dgaytl7ykt6",
+     "cw20:terra1le46uu9qjk53aktjs8dev96sl9sd2ujvcpspk75",
+     "xASTRO"
+    ]
+   },
+   "price_index": 57.2221,
+   "tvl_split": {
+    "vs_epoch": 212,
+    "change_usd": 274647.41,
+    "prices_usd": -2439.98,
+    "flows_usd": -20501.26,
+    "newly_valued_usd": 297588.65,
+    "lost_value_usd": 0,
+    "other_usd": 0,
+    "prices_pct": -0.4,
+    "flows_pct": -3.36,
+    "pools_split": 59,
+    "newly_valued": [
+     "LUNA-USDC.inj",
+     "USDC.inj-SOLID",
+     "USDC.inj-EURe",
+     "USDC.inj-USDT"
+    ],
+    "lost_value": [],
+    "other": [],
+    "movers": [
+     {
+      "name": "LUNA-WBTC",
+      "dex": "Astroport",
+      "prices_usd": 1577,
+      "flows_usd": -54020
+     },
+     {
+      "name": "LUNA-PAXG",
+      "dex": "Astroport",
+      "prices_usd": 111,
+      "flows_usd": 50622
+     },
+     {
+      "name": "vcausdci",
+      "dex": "Credia",
+      "prices_usd": 10,
+      "flows_usd": 43390
+     },
+     {
+      "name": "LUNA-EURe",
+      "dex": "Astroport",
+      "prices_usd": 680,
+      "flows_usd": 31998
+     },
+     {
+      "name": "wBTC.creda.a",
+      "dex": "Credia",
+      "prices_usd": -166,
+      "flows_usd": -24553
+     }
+    ]
+   }
   }
  ],
  "days_read": 198,
  "eris_days_read": 117,
- "bribes_priced": true
+ "bribes_priced": true,
+ "split_note": "tvl_split / price_index / unvalued_staked added 2026-11-27 by epoch-history-rollup 1.2.0 run on the same dailies; every other field is as the hosted run of 2026-11-26T23:51:47.609Z wrote it"
 }
