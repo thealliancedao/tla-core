@@ -37,7 +37,9 @@
   14 holders have placed bribes — they hold 44.1% of the staked value. Voting power: 36.81M in 210 accounts; the largest holds
   27.9%, the top five 64.5%, the top ten 76.3%; three of the ten largest voters hold staked liquidity, and two of the ten largest
   liquidity holders have voting power.
-- **Tested:** `gate-tla-whales.mjs` 82/82 on the real read (figures recounted from the file; a pool's votes worked again from
+- **Under a filter the rewards sum follows the list:** with "Amplified" on, the line said the listed accounts had claimed the
+  sum of *all* accounts. It now sums the accounts the filter keeps (an account holding both ways is on both lists).
+- **Tested:** `gate-tla-whales.mjs` 83/83 on the real read (figures recounted from the file; a pool's votes worked again from
   each voter's own split); eleven planted faults all caught (colours swapped, a filter ranking by the wrong part, "holds it" on
   everyone, the wrong figure in a cell, a missing-data crash …). Reader mock run 34/34. Rendered at 1760 and 390 wide: no
   sideways scroll, no text under 13px.
