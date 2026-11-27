@@ -19,7 +19,7 @@
 // Output: tla-whales/current.json (tla-core). Addresses are the chain's; a name is shown only where the account registered
 // one or the address catalog has verified it. No owner is guessed.
 import fs from 'fs'; import path from 'path'; import { execSync } from 'child_process'; import { fileURLToPath } from 'url';
-export const VERSION = 'tla-whales-1.0.1';   // 1.0.1 (2026-11-27, after the first real read: 75 pools, 21 of the 21 over $5k explained to 100%): (a) an amp holder's share is its part of the amp tokens outstanding × what the compounder HAS STAKED — on five pools the tokens × the compounder's stated rate came to more than its stake (up to 110.9%), which put those pools over 100%; both figures are now published per pool (amp_check) and the stated rate is used only for that comparison; (b) the node's working form of the holders list is remembered, so the other form is not asked 69 times; (c) a catalog label loses a trailing first name in brackets — an organisation is named, a person is not; (d) a pool the compounder holds a stake in without listing an amp token for it says so
+export const VERSION = 'tla-whales-1.0.2';   // 1.0.2 (2026-11-27): claims are an ACCOUNT's, not a pool's — the public record ties only some claims to a pool (120 of 947 rows had any), so a per-pool "0 claims" was wrong. The per-pool claim figures are gone; each holder's account-wide deposits, withdrawals, claims and what the claims were worth on the day are published once, under `accounts`   // 1.0.1 (2026-11-27, after the first real read: 75 pools, 21 of the 21 over $5k explained to 100%): (a) an amp holder's share is its part of the amp tokens outstanding × what the compounder HAS STAKED — on five pools the tokens × the compounder's stated rate came to more than its stake (up to 110.9%), which put those pools over 100%; both figures are now published per pool (amp_check) and the stated rate is used only for that comparison; (b) the node's working form of the holders list is remembered, so the other form is not asked 69 times; (c) a catalog label loses a trailing first name in brackets — an organisation is named, a person is not; (d) a pool the compounder holds a stake in without listing an amp token for it says so
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const readJsonAt = (p, d) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return d; } };
 const ADDR = /^terra1[0-9a-z]{38}([0-9a-z]{20})?$/;
@@ -136,7 +136,7 @@ export async function run(opts = {}) {
       const f = flowOf.get(r.a), bp = f && f.by_pool && f.by_pool[P.key], L = led.get(r.a), lab = labels.get(r.a);
       const o = { a: r.a, kind: r.a.length > 50 ? 'contract' : 'account', name: names.get(r.a) || undefined, label: lab ? lab.label : undefined, protocol: lab && lab.protocol ? lab.protocol : undefined,
         lp: r.lp.toString(), pct: pct(r.lp, P.total_lp), direct_pct: r.direct > 0n ? pct(r.direct, P.total_lp) : undefined, amp_pct: r.amp > 0n ? pct(r.amp, P.total_lp) : undefined };
-      if (bp) { o.dep = bp.deposits || 0; o.wdr = bp.withdraws || 0; o.clm = bp.claims || 0; if (bp.claim_usd_at_event) o.clm_usd = Math.round(bp.claim_usd_at_event * 100) / 100; }
+      if (bp) { o.dep = bp.deposits || 0; o.wdr = bp.withdraws || 0; }
       if (L && L.epochs) { const eps = Object.keys(L.epochs).map(Number).sort((x, y) => x - y); let since = null, last = null, dep8 = 0, wdr8 = 0; const h = [];
         for (const e of eps) { const x = L.epochs[e].pools && L.epochs[e].pools[P.key]; if (!x) continue; if (since == null && x.dep) since = e; last = e; if (head && e > head - 8) { dep8 += x.dep || 0; wdr8 += x.wdr || 0; }
           if (i < TOP_SERIES && (!head || e > head - HISTORY_EPOCHS) && x.units) h.push([e, x.units.shares || '0', x.units.amplp || '0']); }
@@ -151,12 +151,17 @@ export async function run(opts = {}) {
       complete: P.complete, why_incomplete: P.why.length ? P.why : undefined, others: rest.length ? { n: rest.length, pct: Math.round(rest.reduce((s, x) => s + x.pct, 0) * 10000) / 10000 } : undefined, holders: kept });
   }
   outPools.sort((x, y) => (y.staked_usd || 0) - (x.staked_usd || 0) || (x.key < y.key ? -1 : 1));
+  // what the public flow record holds for each account on the list, across the whole Alliance (claims cannot be tied to one pool)
+  const accounts = {}; for (const P of outPools) for (const h of P.holders) { if (accounts[h.a]) continue; const f = flowOf.get(h.a); if (!f) continue; const c = f.counts || {}, y = f.claimed_yield || {};
+    accounts[h.a] = { dep: c.deposit || 0, wdr: c.withdraw || 0, clm: c.claim || 0, clm_usd: y.usd_at_event == null ? null : Math.round(y.usd_at_event * 100) / 100, clm_luna: y.luna_display == null ? null : Math.round(y.luna_display * 100) / 100, first: f.first_event ? String(f.first_event).slice(0, 10) : null, last: f.last_event ? String(f.last_event).slice(0, 10) : null }; }
+  const rt = rollup.totals || {};
   const limitHit = stats.requests >= MAX;
   const doc = { schemaVersion: 1, version: VERSION, capturedAt: new Date().toISOString(), epoch: head,
     how: { direct: 'accounts the public flow record (tla-flows/pnl) shows with stake left in a pool, each asked on the chain (all_staked_balances)', amp: 'every holder of the pool\'s amp token, from the chain\'s own list (bank denom_owners); each holder\'s LP = its part of the tokens outstanding × what the compounder has staked in the pool. amp_check gives, beside it, the tokens × the compounder\'s stated rate',
-      check: 'per pool: the staking contract\'s total = the compounder\'s own stake + the direct stakers; what is not explained is "not_attributed" and is never spread over the others', names: 'a name is one the account registered; a label is one the address catalog has verified. Nothing else is named.', units: 'lp = LP tokens in the token\'s smallest unit; pct = share of the pool\'s staked LP' },
+      check: 'per pool: the staking contract\'s total = the compounder\'s own stake + the direct stakers; what is not explained is "not_attributed" and is never spread over the others', accounts: 'deposits, withdrawals and claims of each listed account across the whole Alliance, from the public flow record; a claim is not tied to a pool. An account that only holds amp tokens has no entry.', names: 'a name is one the account registered; a label is one the address catalog has verified. Nothing else is named.', units: 'lp = LP tokens in the token\'s smallest unit; pct = share of the pool\'s staked LP' },
     counts: { pools: outPools.length, amp_tokens: ampDenoms, direct_accounts_asked: asked, direct_accounts_not_read: notRead, flow_record_wallets: rollup.wallets.length, requests: stats.requests, failed: stats.failed, limit_reached: limitHit },
-    buckets_read: bucketOk, pools: outPools };
+    claims_all: { usd: rt.claimed_yield_usd_at_event == null ? null : Math.round(rt.claimed_yield_usd_at_event), luna: rt.claimed_yield_luna == null ? null : Math.round(rt.claimed_yield_luna), wallets: rollup.wallets.length, note: 'every claim on the public flow record, by all wallets ever — also those that hold nothing now; valued as LUNA at the price of the day of the claim' },
+    buckets_read: bucketOk, pools: outPools, accounts };
 
   const rel = 'tla-whales/current.json'; const write = () => { const f = path.join(core, rel); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, JSON.stringify(doc)); };
   if (noPush) write();
