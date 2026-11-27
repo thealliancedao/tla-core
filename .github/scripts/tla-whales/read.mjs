@@ -19,7 +19,7 @@
 // Output: tla-whales/current.json (tla-core). Addresses are the chain's; a name is shown only where the account registered
 // one or the address catalog has verified it. No owner is guessed.
 import fs from 'fs'; import path from 'path'; import { execSync } from 'child_process'; import { fileURLToPath } from 'url';
-export const VERSION = 'tla-whales-1.0.0';
+export const VERSION = 'tla-whales-1.0.1';   // 1.0.1 (2026-11-27, after the first real read: 75 pools, 21 of the 21 over $5k explained to 100%): (a) an amp holder's share is its part of the amp tokens outstanding × what the compounder HAS STAKED — on five pools the tokens × the compounder's stated rate came to more than its stake (up to 110.9%), which put those pools over 100%; both figures are now published per pool (amp_check) and the stated rate is used only for that comparison; (b) the node's working form of the holders list is remembered, so the other form is not asked 69 times; (c) a catalog label loses a trailing first name in brackets — an organisation is named, a person is not; (d) a pool the compounder holds a stake in without listing an amp token for it says so
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const readJsonAt = (p, d) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return d; } };
 const ADDR = /^terra1[0-9a-z]{38}([0-9a-z]{20})?$/;
@@ -35,6 +35,7 @@ export function parseStaked(data) {
   return data.map((row) => { const k = keyOf(row && row.asset && row.asset.info), amount = String(row && row.asset && row.asset.amount);
     if (!k || !/^\d+$/.test(amount)) throw new Error('staked balances: a row without an asset or an amount'); return { key: k, lp: big(amount), shares: row.shares != null ? big(row.shares) : null }; });
 }
+export const cleanLabel = (t) => String(t || '').replace(/\s*\((?:[A-Z][a-z]+)\)\s*$/, '').slice(0, 60);   // "Some DAO ops (Firstname)" → "Some DAO ops"
 // amp tokens × rate → LP tokens, in whole units (rate is a decimal string; 18 places kept)
 export function ampToLp(amp, rate) { const m = String(rate).match(/^(\d+)(?:\.(\d+))?$/); if (!m) return null; const frac = (m[2] || '').slice(0, 18).padEnd(18, '0'); return (big(amp) * (BigInt(m[1]) * 10n ** 18n + BigInt(frac))) / 10n ** 18n; }
 const pct = (part, whole) => (whole > 0n ? Number((part * 1000000n) / whole) / 10000 : 0);
@@ -70,7 +71,7 @@ export async function run(opts = {}) {
   const snap = readJsonAt(path.join(core, 'member-data/tla-snapshot/current.json'), null); if (!snap || !Array.isArray(snap.pools)) throw new Error('the pool snapshot is unreadable');
   const meta = new Map(); for (const p of snap.pools) if (p.gauge_pool_id && !meta.has(p.gauge_pool_id)) meta.set(p.gauge_pool_id, { name: p.name, bucket: p.bucket, dex: p.dex || null, status: p.status || null, staked_usd: p.staked_in_tla_usd == null ? null : Math.round(p.staked_in_tla_usd * 100) / 100 });
   const names = new Map(); for (const m of (readJsonAt(path.join(core, 'member-data/participants/current.json'), {}).members || [])) if (m && m.wallet && m.name) names.set(m.wallet, String(m.name).slice(0, 40));
-  const labels = new Map(); for (const a of (readJsonAt(path.join(core, 'catalog/trusted/current.json'), {}).addresses || [])) if (a && a.address && a.label) labels.set(a.address, { label: String(a.label).slice(0, 60), protocol: a.protocol || null, type: a.type || null });
+  const labels = new Map(); for (const a of (readJsonAt(path.join(core, 'catalog/trusted/current.json'), {}).addresses || [])) if (a && a.address && a.label) labels.set(a.address, { label: cleanLabel(a.label), protocol: a.protocol || null, type: a.type || null });
   const rollup = readJsonAt(path.join(core, 'tla-flows/pnl/rollup.json'), null); if (!rollup || !Array.isArray(rollup.wallets)) throw new Error('the public flow record (tla-flows/pnl/rollup.json) is unreadable');
   const ledgerDir = path.join(core, 'tla-flows/pnl/ledger'); const led = new Map();
   for (const w of rollup.wallets) { const L = readJsonAt(path.join(ledgerDir, w.address + '.json'), null); if (L) led.set(w.address, L); }
@@ -88,7 +89,7 @@ export async function run(opts = {}) {
   if (!pools.size) throw new Error('no staking contract could be read — nothing written');
 
   // ── 2. the amp tokens: every holder of each, from the chain's own list ──────────────────────────────────────────────
-  const rates = await smart(COMPOUNDER, { amplp_exchange_rates: {} }); let ampDenoms = 0;
+  const rates = await smart(COMPOUNDER, { amplp_exchange_rates: {} }); let ampDenoms = 0, ownersForm = null;   // which form of the holders list this node answers (0 = by path, 1 = by query)
   if (!rates.ok || !Array.isArray(rates.data)) { for (const P of pools.values()) if (P.compounder_lp > 0n) { P.complete = false; P.why.push('the compounder\'s exchange rates were not read'); } }
   else for (const r of rates.data) {
     const k = keyOf(r && r.asset), P = k && pools.get(k); if (!P || typeof r.amplp_denom !== 'string' || !(Number(r.exchange_rate) > 0)) continue;
@@ -96,8 +97,9 @@ export async function run(opts = {}) {
     let next = null, pages = 0, ok = true;
     do {
       const q = `?pagination.limit=500${next ? '&pagination.key=' + encodeURIComponent(next) : ''}`;
-      let d = await ask(`/cosmos/bank/v1beta1/denom_owners/${r.amplp_denom}${q}`);
-      if (!d.ok && !d.limit) d = await ask(`/cosmos/bank/v1beta1/denom_owners_by_query${q}&denom=${encodeURIComponent(r.amplp_denom)}`);
+      const forms = [`/cosmos/bank/v1beta1/denom_owners/${r.amplp_denom}${q}`, `/cosmos/bank/v1beta1/denom_owners_by_query${q}&denom=${encodeURIComponent(r.amplp_denom)}`]; if (ownersForm === 1) forms.reverse();
+      let d = await ask(forms[0]); if (d.ok) ownersForm = ownersForm == null ? 0 : ownersForm;
+      else if (!d.limit) { d = await ask(forms[1]); if (d.ok) ownersForm = ownersForm === 1 ? 0 : 1; }
       if (!d.ok) { ok = false; break; }
       for (const o of d.json.denom_owners || []) { const a = o && o.address, amt = big(o && o.balance && o.balance.amount); if (ADDR.test(a || '') && amt > 0n) P.amp.set(a, (P.amp.get(a) || 0n) + amt); }
       next = d.json.pagination && d.json.pagination.next_key ? d.json.pagination.next_key : null; pages++;
@@ -123,8 +125,11 @@ export async function run(opts = {}) {
   for (const P of pools.values()) {
     const m = meta.get(P.key) || {}; const rows = new Map();
     for (const [a, lp] of P.direct) rows.set(a, { a, direct: lp, amp: 0n, amp_tokens: 0n });
-    let ampLpSum = 0n;
-    for (const [a, t] of P.amp) { const lp = ampToLp(t, P.amp_rate); if (lp == null) continue; ampLpSum += lp; const r = rows.get(a) || rows.set(a, { a, direct: 0n, amp: 0n, amp_tokens: 0n }).get(a); r.amp = lp; r.amp_tokens = t; }
+    // an amp holder's LP = its part of the amp tokens outstanding × what the compounder has staked in this pool (its stated rate is kept for the comparison only)
+    let ampLpSum = 0n; const ampSupply = [...P.amp.values()].reduce((s, v) => s + v, 0n);
+    for (const [a, t] of P.amp) { if (ampSupply <= 0n) break; const lp = (P.compounder_lp * t) / ampSupply; ampLpSum += lp; const r = rows.get(a) || rows.set(a, { a, direct: 0n, amp: 0n, amp_tokens: 0n }).get(a); r.amp = lp; r.amp_tokens = t; }
+    const statedLp = P.amp_rate ? ampToLp(ampSupply, P.amp_rate) : null;
+    const ampCheck = P.amp_denom && ampSupply > 0n && statedLp != null ? { amp_tokens: ampSupply.toString(), stated_rate: P.amp_rate, stated_lp: statedLp.toString(), staked_lp: P.compounder_lp.toString(), stated_over_staked: P.compounder_lp > 0n ? Number((statedLp * 1000000n) / P.compounder_lp) / 1000000 : null } : undefined;
     const directSum = [...P.direct.values()].reduce((s, v) => s + v, 0n); const directTotal = P.total_lp - P.compounder_lp;
     const list = [...rows.values()].map((r) => ({ ...r, lp: r.direct + r.amp })).sort((x, y) => (y.lp > x.lp ? 1 : y.lp < x.lp ? -1 : x.a < y.a ? -1 : 1));
     const holders = list.map((r, i) => {
@@ -140,7 +145,7 @@ export async function run(opts = {}) {
     const keepN = Math.max(KEEP_MIN_ROWS, holders.findIndex((x) => x.pct < KEEP_MIN_PCT) < 0 ? holders.length : holders.findIndex((x) => x.pct < KEEP_MIN_PCT)); const kept = holders.slice(0, keepN), rest = holders.slice(keepN);
     const attributed = directSum + ampLpSum;
     outPools.push({ key: P.key, name: m.name || null, bucket: P.bucket, dex: m.dex || null, status: m.status || null, staked_usd: m.staked_usd == null ? null : m.staked_usd,
-      total_lp: P.total_lp.toString(), amplified_pct: pct(P.compounder_lp, P.total_lp), amp_denom: P.amp_denom || undefined, amp_rate: P.amp_rate || undefined,
+      total_lp: P.total_lp.toString(), amplified_pct: pct(P.compounder_lp, P.total_lp), amp_denom: P.amp_denom || undefined, amp_check: ampCheck, amp_token_missing: P.compounder_lp > 0n && !P.amp_denom ? true : undefined,
       holders_n: holders.length, attributed_pct: pct(attributed, P.total_lp),
       not_attributed: { direct_pct: pct(directTotal > directSum ? directTotal - directSum : 0n, P.total_lp), amp_pct: pct(P.compounder_lp > ampLpSum ? P.compounder_lp - ampLpSum : 0n, P.total_lp) },
       complete: P.complete, why_incomplete: P.why.length ? P.why : undefined, others: rest.length ? { n: rest.length, pct: Math.round(rest.reduce((s, x) => s + x.pct, 0) * 10000) / 10000 } : undefined, holders: kept });
@@ -148,7 +153,7 @@ export async function run(opts = {}) {
   outPools.sort((x, y) => (y.staked_usd || 0) - (x.staked_usd || 0) || (x.key < y.key ? -1 : 1));
   const limitHit = stats.requests >= MAX;
   const doc = { schemaVersion: 1, version: VERSION, capturedAt: new Date().toISOString(), epoch: head,
-    how: { direct: 'accounts the public flow record (tla-flows/pnl) shows with stake left in a pool, each asked on the chain (all_staked_balances)', amp: 'every holder of the pool\'s amp token, from the chain\'s own list (bank denom_owners) × the compounder\'s exchange rate',
+    how: { direct: 'accounts the public flow record (tla-flows/pnl) shows with stake left in a pool, each asked on the chain (all_staked_balances)', amp: 'every holder of the pool\'s amp token, from the chain\'s own list (bank denom_owners); each holder\'s LP = its part of the tokens outstanding × what the compounder has staked in the pool. amp_check gives, beside it, the tokens × the compounder\'s stated rate',
       check: 'per pool: the staking contract\'s total = the compounder\'s own stake + the direct stakers; what is not explained is "not_attributed" and is never spread over the others', names: 'a name is one the account registered; a label is one the address catalog has verified. Nothing else is named.', units: 'lp = LP tokens in the token\'s smallest unit; pct = share of the pool\'s staked LP' },
     counts: { pools: outPools.length, amp_tokens: ampDenoms, direct_accounts_asked: asked, direct_accounts_not_read: notRead, flow_record_wallets: rollup.wallets.length, requests: stats.requests, failed: stats.failed, limit_reached: limitHit },
     buckets_read: bucketOk, pools: outPools };

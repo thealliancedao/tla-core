@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // tla-whales — the script's own check. No network: a small invented Alliance (two pools, five accounts) is served by a fake
 // node, and the list the script writes is compared with what that Alliance holds. Run: node mock-run.mjs
-import fs from 'fs'; import os from 'os'; import path from 'path'; import { run, parseStaked, ampToLp, BUCKETS, COMPOUNDER } from './read.mjs';
+import fs from 'fs'; import os from 'os'; import path from 'path'; import { run, parseStaked, ampToLp, cleanLabel, BUCKETS, COMPOUNDER } from './read.mjs';
 let pass = 0, fail = 0; const check = (name, ok, extra) => { if (ok) { pass++; console.log('  ✓ ' + name); } else { fail++; console.log('  ✗ ' + name + (extra !== undefined ? ' — ' + JSON.stringify(extra) : '')); } };
 const A = (c) => 'terra1' + c.repeat(38), POOL1 = 'cw20:terra1' + 'p'.repeat(58), POOL2 = 'native:factory/terra1' + 'q'.repeat(58) + '/uLP', DEN1 = `factory/${COMPOUNDER}/1/stable/amplp`;
 const CONTRACT = 'terra1' + 'k'.repeat(58);
@@ -10,7 +10,7 @@ function world(over = {}) {
   const core = fs.mkdtempSync(path.join(os.tmpdir(), 'whales-')); const W = (rel, o) => { const f = path.join(core, rel); fs.mkdirSync(path.dirname(f), { recursive: true }); fs.writeFileSync(f, JSON.stringify(o)); };
   W('member-data/tla-snapshot/current.json', { pools: [{ name: 'AAA-BBB', bucket: 'stable', dex: 'Astroport', status: 'active', gauge_pool_id: POOL1, staked_in_tla_usd: 10000 }, { name: 'CCC-DDD', bucket: 'stable', dex: 'Astroport', status: 'active', gauge_pool_id: POOL2, staked_in_tla_usd: 500 }] });
   W('member-data/participants/current.json', { members: [{ wallet: A('a'), name: 'alice', lp_positions: [] }, { wallet: A('e'), name: null, lp_positions: [{ position_type: 'non_amplified', pool_gauge_id: POOL2 }] }] });
-  W('catalog/trusted/current.json', { addresses: [{ address: CONTRACT, label: 'Some DAO treasury', protocol: 'Some DAO', type: 'dao' }] });
+  W('catalog/trusted/current.json', { addresses: [{ address: CONTRACT, label: 'Some DAO treasury (Alex)', protocol: 'Some DAO', type: 'dao' }] });
   // the flow record: a (stake left: 100 shares — the chain will say 250 LP), b (stake left), c (left the pool: 0), d (only ever held amp)
   const ledger = (pools, epochs) => ({ cumulative_units_at_head: pools, epochs });
   W('tla-flows/pnl/rollup.json', { wallets: [A('a'), A('b'), A('c'), COMPOUNDER].map((address) => ({ address, v3: { as_of_epoch: 213 }, by_pool: { [POOL1]: { deposits: 3, withdraws: 1, claims: 7, claim_usd_at_event: 12.345 } } })) });
@@ -55,13 +55,19 @@ console.log('— the list —');
   check('what the flow record knows of each: deposits, withdrawals, claims, since which round, and what it did in the last eight (a adding, b reducing)', by[A('a')].dep === 3 && by[A('a')].clm === 7 && by[A('a')].clm_usd === 12.35 && by[A('a')].since === 150 && by[A('a')].trend === 'adding' && by[A('b')].since === 190 && by[A('b')].trend === 'reducing' && by[A('d')].since === undefined);
   check('the round-by-round changes of the leading accounts are kept for a history line', JSON.stringify(by[A('a')].h) === JSON.stringify([[150, '60', '0'], [210, '40', '0']]) && JSON.stringify(by[A('b')].h) === JSON.stringify([[190, '20', '0'], [209, '-13', '0']]));
   check('an account known only from the lock record is asked too (the second pool: e holds all of it)', Q.holders.length === 1 && Q.holders[0].a === A('e') && Q.holders[0].pct === 100 && Q.attributed_pct === 100);
-  check('the file says how it was made and what it counted', /denom_owners/.test(R.file.how.amp) && /not_attributed/.test(R.file.how.check) && R.file.counts.direct_accounts_asked === 3 && R.file.counts.amp_tokens === 1 && R.file.epoch === 213 && R.file.version === 'tla-whales-1.0.0'); }
+  check('the file says how it was made and what it counted', /denom_owners/.test(R.file.how.amp) && /not_attributed/.test(R.file.how.check) && R.file.counts.direct_accounts_asked === 3 && R.file.counts.amp_tokens === 1 && R.file.epoch === 213 && /^tla-whales-1\.0\.\d+$/.test(R.file.version));
+  check('beside the shares, the pool carries the compounder\'s own arithmetic: 160 amp tokens × its stated 2.5 = 400 LP, against 400 staked (1.0)', P.amp_check && P.amp_check.amp_tokens === '160' && P.amp_check.stated_lp === '400' && P.amp_check.staked_lp === '400' && P.amp_check.stated_over_staked === 1 && P.amp_token_missing === undefined, P.amp_check); }
+{ const R = await go({ rates: [{ gauge: 'stable', asset: { cw20: POOL1.slice(5) }, amplp_denom: DEN1, exchange_rate: '2.75' }] }); const P = R.file.pools.find((p) => p.key === POOL1); const by = Object.fromEntries(P.holders.map((h) => [h.a, h]));
+  check('when the compounder states a rate that comes to MORE than it has staked (160 × 2.75 = 440 against 400), the shares still add up to the stake — d 20%, 80% attributed — and the difference is published (1.1), not hidden', by[A('d')].pct === 20 && by[A('a')].pct === 30 && P.attributed_pct === 80 && P.not_attributed.amp_pct === 0 && P.amp_check.stated_lp === '440' && P.amp_check.stated_over_staked === 1.1, [P.attributed_pct, P.amp_check]); }
+{ const R = await go({ rates: [] }); const P = R.file.pools.find((p) => p.key === POOL1);
+  check('a pool the compounder holds a stake in without listing an amp token says so, and that part is not attributed (40%)', P.amp_token_missing === true && P.not_attributed.amp_pct === 40 && P.attributed_pct === 40, [P.amp_token_missing, P.not_attributed]); }
+check('a label keeps the organisation and drops a first name in brackets; a describing bracket stays', cleanLabel('Some DAO ops (Alex)') === 'Some DAO ops' && cleanLabel('Fuel (FUEL bribes)') === 'Fuel (FUEL bribes)' && cleanLabel('aDAO Treasury') === 'aDAO Treasury');
 
 console.log('— when the chain does not answer —');
 { const R = await go({ fail: [A('b')] }); const P = R.file.pools.find((p) => p.key === POOL1);
   check('a staker that could not be read is never shown as 0: the pool is marked incomplete, with the reason', P.complete === false && /stakers were not read/.test(P.why_incomplete.join(' ')) && !P.holders.some((h) => h.a === A('b')) && R.file.counts.direct_accounts_not_read === 1 && P.not_attributed.direct_pct === 35); }
 { const R = await go({ noPathForm: true }); const P = R.file.pools.find((p) => p.key === POOL1);
-  check('a node that lacks the first form of the holders list is asked the second; the list is the same', P.holders.find((h) => h.a === A('d')).pct === 20 && R.seen.some((s) => s.startsWith('/cosmos/bank/v1beta1/denom_owners_by_query')) && P.complete === true); }
+  check('a node that lacks the first form of the holders list is asked the second, and the first form is not tried again for the next page', P.holders.find((h) => h.a === A('d')).pct === 20 && R.seen.filter((s) => s.startsWith('/cosmos/bank/v1beta1/denom_owners_by_query')).length === 2 && R.seen.filter((s) => s.startsWith('/cosmos/bank/v1beta1/denom_owners/')).length === 1 && P.complete === true, R.seen.filter((s) => /denom_owners/.test(s)).map((s) => s.slice(0, 44))); }
 { const R = await go({}, { max: 9 }); const P = R.file.pools.find((p) => p.key === POOL1);
   check('the request ceiling is respected, reported, and what it cut off is marked incomplete — not shown as empty', R.stats.requests <= 9 && R.file.counts.limit_reached === true && P.complete === false, [R.stats.requests, P.complete, P.why_incomplete]); }
 { let refused = false; try { const w = world(); await run({ core: w.core, fetch: w.fetchFake, lcds: 'https://node.test', env: { ARCHIVE_LCD: 'x' }, noPush: true, _unpaced: true, log: () => { } }); } catch (e) { refused = /archive setting/.test(String(e.message)); }
