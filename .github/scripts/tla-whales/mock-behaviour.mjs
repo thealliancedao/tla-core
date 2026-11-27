@@ -1,0 +1,33 @@
+#!/usr/bin/env node
+// mock-behaviour.mjs — behaviour-summary.mjs on a made-up world (no network, no archive): the sums, the windows, the groups, the
+// small-group rule, what has no history, and the refusal to write an address.
+import { summarise, MIN_GROUP } from './behaviour-summary.mjs';
+let pass = 0, fail = 0; const check = (n, ok, x) => { if (ok) { pass++; console.log('  ✓ ' + n); } else { fail++; console.log('  ✗ ' + n + (x !== undefined ? '  ← ' + JSON.stringify(x).slice(0, 400) : '')); } };
+const A = (i) => 'terra1' + String(i).padStart(2, '0').repeat(19), C = 'terra1' + 'c'.repeat(58); const W = 60; const weeks = Array.from({ length: W }, (_, i) => new Date(Date.UTC(2025, 9, 6) + i * 7 * 864e5).toISOString().slice(0, 10));
+const zero = () => new Array(W).fill(0);
+// 12 accounts hold POOL (1..12, shares 20,15,10,9,8,7,6,5,4,3,2,1 = 90%), a contract holds 10%. Accounts 1–6 direct, 7–12 amplified.
+const sh = [20, 15, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1]; const whales = { version: 'tla-whales-mock', capturedAt: '2026-11-27T16:48:00Z', pools: [{ key: 'P', staked_usd: 1000, holders: [...sh.map((p, i) => ({ a: A(i + 1), kind: 'account', pct: p, direct_pct: i < 6 ? p : undefined, amp_pct: i < 6 ? undefined : p })), { a: C, kind: 'contract', pct: 10, amp_pct: 10 }] }],
+  accounts: Object.fromEntries(sh.map((_, i) => [A(i + 1), { clm_usd: i < 6 ? 100 : 0, vp: i === 0 ? 5 : 0, brb_n: 0 }])) };
+const hist = {}; for (let i = 1; i <= 11; i++) { const f = { bridge: { in: zero(), out: zero() }, exchange: { in: zero(), out: zero() }, external: { in: zero(), out: zero() } };
+  f.bridge.out[0] = 1000;                 // long ago: only in "all"
+  f.bridge.out[W - 20] = 50;              // inside the last 52 weeks, outside the last 12
+  f.exchange.out[W - 1] = i <= 6 ? 30 : 0; // the last week: direct stakers only
+  f.bridge.in[W - 2] = i === 11 ? 5000 : 0; // one account brought a lot in
+  f.external.out[W - 53] = 100; f.external.out[W - 52] = 1; f.external.out[W - 13] = 7; f.external.out[W - 12] = 3;   // on each side of both window edges
+  hist[A(i)] = { version: 'deep-walk-mock', weeks, flows_usd: f, checks: { unpriced_flows: i === 3 ? 2 : 0 } }; }
+const R = summarise({ whales, readHistory: (a) => hist[a] || null }); const d = R.doc, g = d.groups;
+check('coverage: 13 holders, 11 with history, 1 account and 1 contract without; the staked value with history is said', d.coverage.holders === 13 && d.coverage.with_history === 11 && d.coverage.without_history.accounts === 1 && d.coverage.without_history.contracts === 1 && d.coverage.staked_usd_with_history === 890 && d.coverage.staked_value_with_history_pct === 89, d.coverage);
+const all = g['all accounts with history'];
+check('all time: every account\'s flows are summed (bridge out 11 × 1,050; exchange out 6 × 30; bridge in 5,000)', all.accounts === 11 && all.windows.all.bridge.out_usd === 11550 && all.windows.all.exchange.out_usd === 180 && all.windows.all.bridge.in_usd === 5000 && all.windows.all.net_out_to_other_chains_and_exchanges_usd === 6730, all.windows.all);
+check('the last 52 weeks leave out what is older; the last 12 weeks leave out more', all.windows.last_52_weeks.bridge.out_usd === 550 && all.windows.last_12_weeks.bridge.out_usd === 0 && all.windows.last_12_weeks.exchange.out_usd === 180 && all.windows.last_12_weeks.bridge.in_usd === 5000);
+check('a window of 12 weeks is exactly the last 12 weekly rows, one of 52 the last 52 (a flow one week older is out)', all.windows.last_12_weeks.external.out_usd === 33 && all.windows.last_52_weeks.external.out_usd === 121 && all.windows.all.external.out_usd === 1221, [all.windows.last_12_weeks.external, all.windows.last_52_weeks.external, all.windows.all.external]);
+check('accounts are counted by direction: 10 net out, 1 net in (all time); in the last 12 weeks 6 out, 1 in, 4 neither', all.windows.all.accounts_net_out === 10 && all.windows.all.accounts_net_in === 1 && all.windows.last_12_weeks.accounts_net_out === 6 && all.windows.last_12_weeks.accounts_net_in === 1 && all.windows.last_12_weeks.accounts_neither === 4, all.windows.last_12_weeks);
+check('beside the rewards the same accounts claimed ($600), and how many sent out more than they claimed (the 6 that claimed)', all.alliance_rewards_claimed_usd_all_time === 600 && all.windows.all.accounts_net_out_more_than_they_claimed === 6);
+check('groups by how it is held: 6 staked directly only, 5 amplified only with history; the direct ones carry the exchange flows', g['staked directly only'].accounts === 6 && g['amplified only'].accounts === 5 && g['staked directly only'].windows.all.exchange.out_usd === 180 && g['amplified only'].windows.all.exchange.out_usd === 0);
+check('groups by size are cut on the rank among ALL holders — the contract is 4th, so the largest 10 hold 9 accounts with history ($840); the next group has 2', g['largest 10 by staked value'].accounts === 9 && g['largest 10 by staked value'].staked_usd === 840 && g['11th to 25th'].accounts === 2, [g['largest 10 by staked value'].accounts, g['largest 10 by staked value'].staked_usd, g['11th to 25th'].accounts]);
+check(`a group of fewer than ${MIN_GROUP} accounts shows its size and nothing else`, g['11th to 25th'].withheld && g['11th to 25th'].windows === undefined && g['has voting power'].accounts === 1 && g['has voting power'].withheld && g['both ways'].accounts === 0);
+check('unpriced flows are counted, the history span and versions are said', d.unpriced_boundary_flows === 2 && d.history_weeks.from === weeks[0] && d.history_weeks.to === weeks[W - 1] && d.history_versions.join() === 'deep-walk-mock');
+check('no address is in the file', !/terra1[0-9a-z]{38,58}/.test(R.txt));
+{ let refused = false; try { summarise({ whales: Object.assign({}, whales, { capturedAt: A(1) }), readHistory: (a) => hist[a] || null }); } catch (e) { refused = /NOT written/.test(e.message); } check('if an address would appear in the file it is not written', refused); }
+{ const r = summarise({ whales, readHistory: (a) => { if (a === A(2)) throw new Error('bad gzip'); return hist[a] || null; } }); check('a history file that cannot be read is counted and the account left out, the run goes on', r.doc.coverage.unreadable === 1 && r.doc.coverage.with_history === 10); }
+console.log(`\n=== mock behaviour summary: ${pass} passed, ${fail} failed ===`); process.exit(fail ? 1 : 0);

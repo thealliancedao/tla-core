@@ -1,0 +1,52 @@
+name: "Public · TLA whales — value in and out, by group (stored history, no node)"
+
+# 2026-11-27 (owner: "shows if they are building liquidity and or selling the rewards … lets get that process started").
+# For the accounts on the whale list (tla-whales/current.json): what the STORED wallet history says about value crossing the
+# wallet boundary (another chain · an exchange · another wallet), by window, beside the Alliance rewards those accounts claimed.
+# COUNTS AND SUMS PER GROUP ONLY — no account is named; a group of fewer than 5 accounts is withheld. Output:
+# tla-whales/behaviour-summary.json.
+#
+# NO NODE. It reads files from the private archive REPO (the histories built on 26 Nov from transactions already walked) and
+# never calls the archive node or any other node: no node address is passed in, and the script refuses to run if one is present.
+# Runs ONLY when a person presses Run. Not scheduled, not started by a push, starts no other run. Ends in a few minutes.
+on:
+  workflow_dispatch: {}
+permissions:
+  contents: write
+concurrency:
+  group: tla-whales-behaviour
+  cancel-in-progress: false
+jobs:
+  summary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts/tla-whales
+            tla-whales
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: the script's own check (no network)
+        run: node .github/scripts/tla-whales/mock-behaviour.mjs
+      - name: the stored histories (the private archive repo — files only)
+        env:
+          TOKEN: ${{ secrets.ARCHIVE_REPO_TOKEN }}
+        run: |
+          git clone -q --depth 1 --filter=blob:none --sparse "https://x-access-token:${TOKEN}@github.com/thealliancedao/tla-archive.git" archive
+          cd archive && git sparse-checkout set derived/history >/dev/null && echo "history files: $(find derived/history -name '*.json.gz' | wc -l)"
+      - name: the summary (counts only)
+        env:
+          ARCHIVE_DIR: archive
+        run: node .github/scripts/tla-whales/behaviour-summary.mjs
+      - name: publish the summary
+        run: |
+          git config user.name "tla-whales" && git config user.email "bot@thealliancedao.com"
+          if grep -Eq 'terra1[0-9a-z]{38,58}' tla-whales/behaviour-summary.json; then echo "an address is in the file — not published"; exit 1; fi
+          git add tla-whales/behaviour-summary.json
+          if git diff --cached --quiet; then echo "nothing to commit"; exit 0; fi
+          git commit -q -m "tla whales: value in and out by group (counts only, $(date -u +%Y-%m-%d))"
+          for i in 1 2 3 4 5 6; do git pull -q --rebase origin main && git push -q origin HEAD:main && exit 0; sleep $((i * 10)); done; exit 1
