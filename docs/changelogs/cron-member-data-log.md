@@ -1,5 +1,17 @@
 # cron-member-data — changelog
 
+## epoch-history-rollup 1.2.0 (member-data 1.7.3) — 2026-11-27 — why the TVL moved
+- `tvl_split` per epoch against the epoch before — `prices_usd · flows_usd · newly_valued_usd · lost_value_usd · other_usd`
+  (they add up to `change_usd`), `prices_pct` / `flows_pct` of the TVL before, the pools named, the five largest movers.
+  Per pool: prices = amount before × change of the unit price (value ÷ `amp_lp.underlying_lp_amount`); flows = change of the
+  amount × the unit price now. A pool staked all along that only got or lost its price is its own part, never a flow. A unit
+  price that moves more than 5× in a week is "other" (an LP token change), never forced into prices or flows.
+- `price_index`: the price part chained from 100 at the first epoch. `unvalued_staked`: pools staked with no price that week,
+  and for those priced later an estimate at the unit price they first got (beside the TVL, never in it).
+- The published `epoch-history.json` had the three fields added on 27 Nov by the same code on the same 198 dailies (every
+  other field untouched); the nightly hosted run rewrites the file with them from then on.
+- Gate `mock-run-epoch-split.js` 18/18 (made-up world with every part known + all real dailies); six planted faults caught.
+
 ## history-series 1.2.1 — 2026-09-30 — the treasury's chart gap
 
 - A $0 unpriced row no longer erases a day's LP (priced ≥ 90 % of the last LP → kept, flagged `lpu`). Mock 22/22.

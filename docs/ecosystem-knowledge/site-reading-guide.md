@@ -172,6 +172,17 @@ could show, built from public data only.
 - **Vault by vault:** eight small tiles; the picked one is shown below them in the layout of Votion's own vault page.
 - For the help bot: say what the page shows; never say why a pool is not offered, and never attribute it to a person.
 
+## The TVL history popup (TLA Stats → click the TVL tile)
+- **Value** is the TVL at the last daily reading of the epoch; the top row is live.
+- **From prices / From deposits & withdrawals:** the week's change split in two. "From prices" = the liquidity staked the week
+  before, at this week's prices. "From deposits & withdrawals" = liquidity added or taken out, at this week's prices. Prices
+  are never averaged across tokens — each pool counts by its share of the TVL.
+- **The violet line "Prices only":** what the TVL would be if nobody had deposited or withdrawn since the first epoch shown.
+- **"understated" / the dashed line:** that week some staked pools had no price, so the TVL left them out; the amount is an
+  estimate at the unit price the pools first got. **"newly priced"** = pools that were already staked and got a price that
+  week — not a deposit. For the help bot: E205–E212 are understated (the USDC.inj pools); do not call E205 a 37% outflow or
+  E213 a 45% inflow without saying so.
+
 ## TLA Whales (tla-whales.html — the Whales tab of the TLA bar; also Tools → TLA Whales)
 - **What it is:** for every pool in the Liquidity Alliance, the accounts that hold its staked liquidity, largest first — read
   from the chain (`tla-whales/current.json`), not modelled. Three views: *By pool*, *Largest accounts, all pools*, and

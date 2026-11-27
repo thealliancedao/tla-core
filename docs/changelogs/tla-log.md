@@ -1,5 +1,29 @@
 # TLA Stats Changelog
 
+## T8.18 — 2026-11-27 — the TVL history says why the TVL moved: prices, or deposits and withdrawals
+Owner, on the TVL history popup: "we see TVL in USD but what are token prices doing — is this losing this much or are the tokens
+losing this much, is it outflows of liquidity or just prices … add a column for token prices and a second line in the chart —
+not sure how, BTC at 60,000 and ROAR at 0.0000000x don't average nicely."
+- **Two more columns** on the TVL history: *From prices* and *From deposits & withdrawals* — each week's change of the TVL as
+  two shares of the TVL the week before (the dollars on hover). They come from the epoch-history rollup 1.2.0
+  (cron-member-data-log.md), which works them pool by pool from the staked amount and the pool's unit price.
+- **Prices are never averaged.** A pool counts by how much of the TVL it is: a $60,000 token and a $0.000001 token each move
+  the index only by their own percent change × their share.
+- **A second line, "Prices only"**, on the same dollar axis: the first epoch's TVL carried forward by the price index — what the
+  TVL would be if nobody had deposited or withdrawn. The gap to the TVL line is liquidity added or taken out.
+- **Weeks when staked pools had no price are marked "understated"**, with an estimate at the unit price the pools first got,
+  and a dashed line adds that estimate. A week when pools only *got* a price says "+$… newly priced", apart from deposits.
+- **What it shows on the real file:** E184 → E213 the TVL went $3.09M → $0.89M; on prices alone it would be −42.8%. E205's
+  "−37.3%" was −35.8% from deposits and withdrawals — but E205–E212 are understated: the USDC.inj pools (LUNA-USDC.inj,
+  USDC.inj-EURe, USDC.inj-SOLID, USDC.inj-USDT) were staked and had no price, about $545K–$795K a week at the price they first
+  got. E213's "+45%" is $297,589 newly priced; deposits and withdrawals that week were −3.4%.
+- Every other popup (rewards, APR, bribes, pools) is unchanged: five columns, one line.
+- Gate `gate-tla-tvl-split.mjs` 16/16 on the published file (the parts add up to the change in every epoch; the index is the
+  chained price part; the lines are what the note says; an older file draws the old popup); seven planted faults caught.
+  Rendered at 1500 and 390 wide: no sideways scroll, the new notes at 13px.
+- **Open, the owner's call:** pricing USDC.inj for E205–E212 after the fact (it is USDC) would repair those eight weeks of TVL
+  history; the dailies are archives and nothing has been changed in them.
+
 ## T8.17 — 2026-11-25 — the Vote Market tile is one screen (tile 2.0.0, engine 1.6.1)
 Owner: "messy, confusing, hard to understand, difficult to navigate … this is the simplified version for the overview — what people
 would use it for and play with quickly; the simulator is the full page. I want to see what bribes do to drive Votion's VP and
