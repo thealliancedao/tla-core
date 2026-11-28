@@ -1,5 +1,11 @@
 # Token-Catalog Cron — Changelog
 
+## 2026-11-27 — price oracle: CAPA filled on 233 days from our own swap record (a labelled repair)
+- CoinGecko holds no CAPA price 2024-04-15 → 2025-08-27. Days 2025-01-07 → 2025-08-27 now carry
+  `CAPA { src: "LUNA×swap(LUNA-CAPA)", repair: "capa-swap-implied" }` from `price-history/reserve-implied`; checked against
+  CoinGecko on 458 days (median ratio 1.0026). Nothing existing was changed. Full entry:
+  `.github/scripts/price-history/CHANGELOG.md`. 2024-04-15 → 2025-01-06 is still blank; WHALE before 2026-06-26 is missing too.
+
 ## repair-oracle-symbol (one-off) — 2026-09-21 — USDC.n aliased back to 2022-10 (TLA queue item 2)
 
 Delivered and committed 2026-09-21 ~00:45Z: 47 month files, 1,397 days aliased USDC → USDC.n (verbatim, labeled
