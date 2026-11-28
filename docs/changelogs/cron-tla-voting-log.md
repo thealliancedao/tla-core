@@ -1,5 +1,16 @@
 # cron-tla-voting — changelog
 
+## 2026-11-28 — rollups.json rebuilt by hand, three days early (same code, no change to the cron)
+- **Why.** The price oracle gained CAPA for 2025-01-07 → 2025-08-27 on 27 Nov (a labelled repair —
+  `.github/scripts/price-history/CHANGELOG.md`). The rollup only re-reads prices at its weekly build, so the bribe board and TLA
+  Whales would have gone on saying "no price" until Monday.
+- **How.** `lib/rollups.js` (schema 6, unchanged) run against this repository at its head, written to
+  `tla-voting/events/rollups.json` — the same thing `FORCE_ROLLUPS=1` does on the host. Still built on period 212.
+- **What changed.** CAPA bribe placements without a price 128 → 15; CAPA bribes at placement $22,369 → $37,188 (all bribes
+  $128,370 → $143,591); CAPA claims at claim $14,719 → $27,579, CAPA claimed without a price 6.04M → 0.87M. It also carries the
+  week's events so far (one more voter, 17 more bribe events) and today's prices in `usd_at_build`. bWHALE, ampWHALE and MOAR
+  are unchanged. Monday's hosted build replaces this file as usual.
+
 
 ## pd-bribes 1.3.0 — 2026-10-16 — proposal descriptions
 

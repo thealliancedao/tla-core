@@ -1,5 +1,23 @@
 # price-backfill — changelog
 
+## 2026-11-28 — CAPA, looked for again: what is priced now, what stays blank, and why
+The owner: "you need to look harder, we have capa price going very far back … if we are only missing .9 million can probably not
+worry about it, just get the bulk working — and the bwhale and ampwhale stuff doesn't matter, this was abandoned a long time ago."
+
+- **What the oracle holds for CAPA now.** CoinGecko 2023-10-13 → 2024-04-14; blank 2024-04-15 → 2025-01-06; our swap fill
+  2025-01-07 → 2025-08-27; CoinGecko from 2025-08-28. No CAPA bribe was placed in the blank stretch before 9 Nov 2024.
+- **The bulk works.** The bribe record was rebuilt the same day (see `docs/changelogs/cron-tla-voting-log.md`): CAPA bribe
+  placements without a price 128 → 15; CAPA bribes valued $22,369 → $37,188; CAPA claims valued $14,719 → $27,579.
+- **Searched for late 2024, and not used.** `dex-data/state-history/epochs` holds the LUNA-CAPA pool's reserves at every epoch
+  boundary from epoch 109 (25 Nov 2024). LUNA ÷ CAPA × LUNA usd agrees with CoinGecko on 42 of 43 boundary days within 5% — but
+  the pool is a **concentrated** pool, where the reserves are not the price by rule: against our own swap prices the same reading
+  is 36% off on 21 Jul 2025 and 26% off on 3 Feb 2025. The standing guard — no price from the reserves of a non-xyk pool — holds,
+  so the seven Mondays 25 Nov 2024 → 6 Jan 2025 stay blank. Deposits into the pool were tried as well: too noisy (worst 17× and
+  117× off). No swap rows are held for 2024, and the pool has no reading at all before 25 Nov 2024.
+- **Left blank on purpose:** 15 placements, 886,538 CAPA (9 Nov → 17 Dec 2024; roughly $4K by the pool readings above).
+  One paced read of the pool's 2024 swaps from the history would close it; not asked for.
+- **bWHALE / ampWHALE:** no work — abandoned tokens, by the owner's word. They stay "no price".
+
 ## fill-capa-swap-implied 1.0.0 — 2026-11-27 — one-time: CAPA on 233 of the 500 days the oracle had none
 The owner, on "no price" beside CAPA bribes on the TLA Whales page: "what is going on here — we surely have token prices in our
 data, we have had this for months?"
